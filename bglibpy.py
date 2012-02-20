@@ -1,4 +1,3 @@
-import sys
 import neuron
 import numpy
 import re
@@ -22,35 +21,9 @@ class Cell:
         self.recordings = {}
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrogram = None
+        self.plotWindows = {}
+        self.activeDendrogram = False
 
-        '''neuron.h.Cell[0].dend[57].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()'''
-
-        '''neuron.h.Cell[0].dend[58].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()'''
-
-        '''neuron.h.Cell[0].dend[37].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()'''
-
-        '''neuron.h.Cell[0].dend[48].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()'''
-
-        '''neuron.h.Cell[0].dend[0].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()
-
-        neuron.h.Cell[0].dend[24].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()
-
-        neuron.h.Cell[0].dend[2].push()
-        neuron.h.disconnect()
-        neuron.h.pop_section()
-        '''
         neuron.h.finitialize()
 
         neuron.h.topology()
@@ -111,22 +84,80 @@ class Cell:
     def getSomaVoltage(self):
         return numpy.array(self.getRecording('soma(0.5)._ref_v'))
 
-    def activateDendrogram(self):
-        self.cell_dendrogram = dendrogram([x for x in self.cell.getCell().all])
+    def addPlotWindow(self, var_name):
+        if var_name not in self.recordings:
+            self.addRecording(var_name)
+        self.plotWindows[var_name] = PlotWindow(var_name, self)
+        #self.plotWindows[var_name].queue = multiprocessing.Queue()
+        #self.plotWindows[var_name].process = multiprocessing.Process(target=self.plotWindows[var_name].drawLoop, args=(self.plotWindows[var_name].queue,))
+        #self.plotWindows[var_name].process.start()
 
-    def redraw(self):
-        pass
-        if self.cell_dendrogram:
+    def activateDendrogram(self):
+        self.activeDendrogram = True
+
+    def showDendrogram(self):
+        self.cell_dendrogram = dendrogram([x for x in self.cell.getCell().all])
+        self.cell_dendrogram.redraw()
+
+    def update(self):
+        for var_name in self.plotWindows:
+            self.plotWindows[var_name].redraw()
+        #queue.put([self.getTime(),self.getRecording(var_name)])
+        if self.cell_dendrogram and self.activeDendrogram:
             self.cell_dendrogram.redraw()
 
     def delete(self):
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
-
+        for var_name in self.plotWindows:
+            self.plotWindows[var_name].process.join()
 
     def __del__(self):
         self.delete()
+
+
+class PlotWindow:
+    def __init__(self, var_name, cell):
+        self.cell = cell
+        self.var_name = var_name
+        pylab.ion()
+        self.figure = pylab.figure(figsize=(10, 10))
+        pylab.ioff()
+
+        self.figure.gca().set_ylim(-100, 100)
+        self.figure.gca().set_xlim(0, 1000)
+
+        self.ax = self.figure.gca()
+        self.canvas = self.ax.figure.canvas
+        self.background = self.canvas.copy_from_bbox(self.ax.bbox)
+
+        self.line = pylab.Line2D(self.cell.getTime(), self.cell.getRecording(self.var_name))
+        self.ax.add_line(self.line)
+        self.figure.canvas.draw()
+
+    '''
+    def drawLoop(self, q):
+        prev_time = 0
+        [time,voltage] = q.get()
+        while q.qsize() is not 0:
+            while time[-1] - prev_time < 10:
+                try:
+                    [time, voltage] = q.get(True,1)
+                except Queue.Empty:
+                    break
+            prev_time = time[-1]
+            self.redraw(time,voltage)
+    '''
+
+    def redraw(self):
+        time = self.cell.getTime()
+        voltage = self.cell.getRecording(self.var_name)
+        self.line.set_data(time, voltage)
+        self.ax.draw_artist(self.line)
+        self.canvas.blit(self.ax.bbox)
+
+        return True
 
 
 class dendrogram:
@@ -149,20 +180,16 @@ class dendrogram:
         pylab.gcf().subplots_adjust(top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
 
         self.proot.drawTree(self.dend_figure, 0, 0)
-        pylab.draw()
+        self.dend_figure.canvas.draw()
 
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()
         self.background = self.canvas.copy_from_bbox(self.dend_figure.gca().bbox)
 
     def redraw(self):
-        self.canvas.restore_region(self.background)
-
         for psection in self.psections:
             psection.redraw()
-
         self.canvas.blit(self.ax.bbox)
-
         return True
 
 
@@ -187,17 +214,19 @@ class PSection:
         self.figX = None
         self.figY = None
         self.color_map = plt.cm.get_cmap("hot")
+        self.ax = None
+        self.patch = None
 
     def setupDraw(self, figure, x, y):
         self.figure = figure
         self.ax = self.figure.gca()
         self.figX = x
         self.figY = y
-        color = self.color_map((self.hsection.v+100)/200)
-        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.L, self.diam, facecolor=color, edgecolor=color)
+        #color = self.color_map((self.hsection.v+100)/200)
+        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.L, self.diam, facecolor="white", edgecolor="black")
 
     def redraw(self):
-        self.patch.set_color(self.color_map((self.hsection.v+100)/200))
+        self.patch.set_facecolor(self.color_map((self.hsection.v+100)/200))
         self.ax.add_patch(self.patch)
         self.ax.draw_artist(self.patch)
 
@@ -252,6 +281,7 @@ class simulation:
     def __init__(self, verbose_level=0):
         self.verbose_level = verbose_level
         self.cells = []
+        self.steps_per_ms = 1
 
     def addCell(self, new_cell):
         self.cells.append(new_cell)
@@ -272,11 +302,10 @@ class simulation:
     def continuerun(self, maxtime):
         for i in range(0, maxtime/1):
             for cell in self.cells:
-                cell.redraw()
+                cell.update()
             neuron.h.tstop = neuron.h.tstop + 1
             if self.verbose_level >= 1:
                 print str(1*i) + " ms"
-            #sys.stdout.flush()
             try:
                 neuron.h.continuerun(neuron.h.tstop)
             except Exception, e:
