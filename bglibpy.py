@@ -19,14 +19,15 @@ class Cell:
         cell_name = match.group(1)
         self.cell = eval("neuron.h."+ cell_name +"(0, morphology_name)")
         self.recordings = {}
+
+        neuron.h.finitialize()
+        neuron.h.topology()
+
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrogram = None
         self.plotWindows = {}
         self.activeDendrogram = False
 
-        neuron.h.finitialize()
-
-        neuron.h.topology()
 
     def addRecording(self, var_name):
         soma = [x for x in self.cell.getCell().somatic][0]
@@ -84,10 +85,10 @@ class Cell:
     def getSomaVoltage(self):
         return numpy.array(self.getRecording('soma(0.5)._ref_v'))
 
-    def addPlotWindow(self, var_name):
+    def addPlotWindow(self, var_name, xlim=[0, 1000], ylim=[-100, 100]):
         if var_name not in self.recordings:
             self.addRecording(var_name)
-        self.plotWindows[var_name] = PlotWindow(var_name, self)
+        self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
         #self.plotWindows[var_name].queue = multiprocessing.Queue()
         #self.plotWindows[var_name].process = multiprocessing.Process(target=self.plotWindows[var_name].drawLoop, args=(self.plotWindows[var_name].queue,))
         #self.plotWindows[var_name].process.start()
@@ -118,23 +119,36 @@ class Cell:
 
 
 class PlotWindow:
-    def __init__(self, var_name, cell):
+    def __init__(self, var_name, cell, xlim, ylim):
         self.cell = cell
         self.var_name = var_name
         pylab.ion()
         self.figure = pylab.figure(figsize=(10, 10))
         pylab.ioff()
 
-        self.figure.gca().set_ylim(-100, 100)
-        self.figure.gca().set_xlim(0, 1000)
-
         self.ax = self.figure.gca()
         self.canvas = self.ax.figure.canvas
+
+        self.ax.set_xlim(xlim)
+        self.ax.set_ylim(ylim)
+        self.ax.set_xlabel("ms")
+        self.ax.set_ylabel("mV")
+
         self.background = self.canvas.copy_from_bbox(self.ax.bbox)
 
-        self.line = pylab.Line2D(self.cell.getTime(), self.cell.getRecording(self.var_name))
+        recording = self.cell.getRecording(self.var_name)
+        if recording:
+            time = self.cell.getTime()
+        else:
+            time = self.cell.getTime()[1:]
+
+        self.line = pylab.Line2D(time, recording, label=self.var_name)
         self.ax.add_line(self.line)
+        self.ax.legend()
+
         self.figure.canvas.draw()
+
+        self.drawCount = 10
 
     '''
     def drawLoop(self, q):
@@ -151,12 +165,15 @@ class PlotWindow:
     '''
 
     def redraw(self):
-        time = self.cell.getTime()
-        voltage = self.cell.getRecording(self.var_name)
-        self.line.set_data(time, voltage)
-        self.ax.draw_artist(self.line)
-        self.canvas.blit(self.ax.bbox)
-
+        if not self.drawCount:
+            time = self.cell.getTime()
+            voltage = self.cell.getRecording(self.var_name)
+            self.line.set_data(time, voltage)
+            self.ax.draw_artist(self.line)
+            self.canvas.blit(self.ax.bbox)
+            self.drawCount = 10
+        else:
+            self.drawCount = self.drawCount - 1
         return True
 
 
@@ -185,11 +202,16 @@ class dendrogram:
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()
         self.background = self.canvas.copy_from_bbox(self.dend_figure.gca().bbox)
+        self.drawCount = 10
 
     def redraw(self):
-        for psection in self.psections:
-            psection.redraw()
-        self.canvas.blit(self.ax.bbox)
+        if not self.drawCount:
+            for psection in self.psections:
+                psection.redraw()
+            self.canvas.blit(self.ax.bbox)
+            self.drawCount = 10
+        else:
+            self.drawCount = self.drawCount - 1
         return True
 
 
@@ -224,10 +246,10 @@ class PSection:
         self.figY = y
         #color = self.color_map((self.hsection.v+100)/200)
         self.patch = plt.patches.Rectangle([self.figX, self.figY], self.L, self.diam, facecolor="white", edgecolor="black")
+        self.ax.add_patch(self.patch)
 
     def redraw(self):
         self.patch.set_facecolor(self.color_map((self.hsection.v+100)/200))
-        self.ax.add_patch(self.patch)
         self.ax.draw_artist(self.patch)
 
     def drawTree(self, figure, x, y):
@@ -300,14 +322,13 @@ class simulation:
         self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
-        for i in range(0, maxtime/1):
+        while neuron.h.t < maxtime:
             for cell in self.cells:
                 cell.update()
-            neuron.h.tstop = neuron.h.tstop + 1
             if self.verbose_level >= 1:
-                print str(1*i) + " ms"
+                print str(neuron.h.t) + " ms"
             try:
-                neuron.h.continuerun(neuron.h.tstop)
+                neuron.h.step()
             except Exception, e:
                 print 'The Interneuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
                 break

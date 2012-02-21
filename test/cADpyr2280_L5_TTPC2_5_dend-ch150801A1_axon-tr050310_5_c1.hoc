@@ -1,0 +1,347 @@
+{load_file("Cell.hoc")}
+begintemplate cADpyr228_L5_TTPC2_5_dend_ch150801A1_axon_tr050310_5_c1
+public init, printInfo, AddMorphNL, delete_axon,  getCell, biophys, hardcode_biophys, connect2target
+public gid, CellRef, locateSite, locateSites, getLongestBranch, getThreshold
+objref this, CellRef
+public spineAreaFactor
+
+proc init() { localobj morphPath
+    spineAreaFactor = 2
+	if(numarg() == 0){
+		CellRef = new Cell()
+	}else if(numarg()==1) {
+		CellRef = new Cell($1)
+	}else if(numarg() == 2){
+        //arg 2 is directory with morphology files
+        morphPath = new String()
+        sprint( morphPath.s, "%s/%s", $s2, "dend-ch150801A1_axon-tr050310_5_c1.asc")
+		CellRef = new Cell($1, morphPath.s)
+		biophys()
+        geom_nseg()
+    }
+    CellRef.setCCell(this)
+    gid = CellRef.gid
+}
+
+proc AddMorphNL(){ localobj nl, import
+    CellRef.AddMorphNL($s1)
+}
+
+proc SetCellProperties(){local Rm,v_init
+	CellRef.SetCellProperties($1, $2)
+}
+
+proc geom_nseg() {
+	CellRef.geom_nseg_fixed()  //must be changed to either geom_nseg_lambda or geom_nseg_fixed dependingy on modeler
+}
+
+obfunc getCell(){
+	return CellRef
+}
+
+proc delete_axon(){ local i1, i2, nSec
+    //need to preserve the value of v(0.0001) from up to 2 existing axon pieces; otherwise, reuse i1
+    nSec = 0
+    forsec CellRef.axonal {
+        if(nSec == 0){
+            i1 = v(0.0001)
+        }   
+        if(nSec == 1){
+            i2 = v(0.0001)
+        }   
+        nSec = nSec + 1
+    }   
+    
+    forsec CellRef.axonal{delete_section()}
+    execute1("create axon[2]\n", CellRef)
+    access CellRef.axon[0] {
+        L= 30
+        diam = 1
+        nseg = 1+2*int(L/40)
+        v(0.0001) = i1
+        CellRef.all.append()
+        CellRef.axonal.append()
+    }
+    access CellRef.axon[1] {
+        L= 30
+        diam = 1
+        nseg = 1+2*int(L/40)
+        v(0.0001) = i1
+    }
+
+    if( nSec > 1 ) {
+        access CellRef.axon[1] {
+            v(0.0001) = i2
+            CellRef.all.append()
+            CellRef.axonal.append()
+        }
+    } else {
+        //print "Error in Morphology: No axon section[1] found"
+    }
+
+    nSecAxonal = 2
+    CellRef.soma[0] connect CellRef.axon[0](0), 0.5
+    CellRef.axon[0] connect CellRef.axon[1](0), 1
+}
+
+
+proc distribute_channels()	{local dist,val,base,maxLength localobj tstr
+	base = $8
+	tstr = new String()
+	maxLength = getLongestBranch($o1)
+    
+	forsec $o1		{
+		if(0==strcmp($s2,"Ra")){
+			Ra = $8
+		} else {
+			for(x) {
+				if ($3==3) {
+					dist = distance(x)
+				} else {
+					dist = distance(x)/maxLength
+				}
+				val = calculate_distribution($3,dist,$4,$5,$6,$7,$8)
+				sprint(tstr.s,"%s(%-5.10f) = %-5.10f",$s2,x,val)
+                                //print tstr.s
+				execute(tstr.s)
+			}
+		}
+	}
+}
+
+// $1 is the distribution type:
+//     0 linear, 1 sigmoid, 2 exponential
+//     3 step for absolute distance (in microns)
+func calculate_distribution()	{local value
+	if ($1==0)	{value = $3 + $2*$4}
+	if ($1==1) {value = $3 + ($4/(1+exp(($2-$5)/$6)))}
+  	if ($1==2) {value = $3 + $6*exp($4*($2-$5))}
+	if ($1==3) {
+		if (($2 > $5) && ($2 < $6)) {
+			value = $3
+		} else {
+			value = $4
+		}
+	}
+	value = value*$7
+	return value
+}
+
+// $o1 SectionList
+func getLongestBranch(){local maxL, d, firstFlag  localobj distallist,sref
+    //need to set origin of the distance func to use the first section of the given subset.
+    // unfortunaetly, no random access to the first element of a SectionList.  Instead, we iterate over the whole
+    // list, but only do anything with first item
+    firstFlag = 1
+    forsec $o1 {
+        if( firstFlag == 1 ) {
+            if( $o1 == CellRef.axonal ) {
+                distance(1)
+            } else {
+                distance()
+            }
+            firstFlag = 0
+        }
+    }
+
+    maxL = 0
+    d = 0
+    distallist = new SectionList()
+    forsec $o1 {
+        sref = new SectionRef()
+        if (sref.nchild==0) distallist.append()
+    }
+    forsec distallist {
+        d = distance(1)
+        if(maxL<d) maxL = d
+    }
+    
+    // for the soma case - note this is triggered if the seclist (esp. apical) was empty, too...
+    if (maxL == 0) {
+        CellRef.soma {
+            maxL = L
+        }
+    }
+    
+    return maxL
+}
+
+// $o1 SectionList
+// $2 distance x between 0 and 1
+// $o3 return vector - of the appropriate section and the location in it
+func locateSite() {local maxL,site,d0,d1,siteX,i, firstFlag
+    //need to set origin of the distance func to use the first section of the given subset.
+    // unfortunaetly, no random access to the first element of a SectionList.  Instead, we iterate over the whole
+    // list, but only do anything with first item
+    firstFlag = 1
+    forsec $o1 {
+        if( firstFlag == 1 ) {
+            if( $o1 == CellRef.axonal ) {
+                distance(1)
+            } else {
+                distance()
+            }
+            firstFlag = 0
+        }
+    }
+
+	maxL = getLongestBranch($s1)
+	site = $2
+	i = 0
+	forsec $o1 {
+        if (distance(0) < distance(1)) {
+            d0 = distance(0)/maxL
+            d1 = distance(1)/maxL
+        } else {
+            d1 = distance(0)/maxL
+            d0 = distance(1)/maxL
+        }
+
+        if (site <= d1 && site >= d0) {
+            siteX = (site-d0)/(d1-d0)
+            secNum = i
+            $&3[0] = secNum
+			$&3[1] = siteX
+            return 1
+		}
+		i = i+1
+	}
+    
+    return 0
+}
+
+// $o1 SectionList
+// $2 distance x between 0 and 1
+// return list of [1,2] vectors  - of the appropriate section and the location in each vector
+obfunc locateSites() {local maxL,site,d0,d1,siteX,i localobj vv,ll, firstFlag
+    //need to set origin of the distance func to use the first section of the given subset.
+    // unfortunaetly, no random access to the first element of a SectionList.  Instead, we iterate over the whole
+    // list, but only do anything with first item
+    firstFlag = 1
+    forsec $o1 {
+        if( firstFlag == 1 ) {
+            if( $o1 == CellRef.axonal ) {
+                distance(1)
+            } else {
+                distance()
+            }
+            firstFlag = 0
+        }
+    }
+        
+	ll = new List()
+    
+	maxL = getLongestBranch($s1)
+	site = $2
+	i = 0
+	forsec $o1 {
+        if (distance(0) < distance(1)) {
+            d0 = distance(0)/maxL
+            d1 = distance(1)/maxL
+        } else {
+            d1 = distance(0)/maxL
+            d0 = distance(1)/maxL
+        }
+
+        if (site <= d1 && site >= d0) {
+            siteX = (site-d0)/(d1-d0)
+            secNum = i
+            vv = new Vector()
+            ll.append(vv.append(secNum,siteX))
+        }
+		i = i+1
+	}
+    
+    return ll
+}
+
+proc hardcode_biophys() {
+	forsec CellRef.somatic {
+		ek = -85
+		ena = 50
+	}
+
+	forsec CellRef.axonal {
+		ek = -85
+		ena = 50
+	}
+
+	forsec CellRef.apical {
+		ek = -85
+		ena = 50
+	}
+
+	forsec CellRef.all {
+		cm = 1
+		Ra = 100
+		e_pas = -75
+	}
+
+	forsec CellRef.apical {
+		cm = 2
+	}
+	forsec CellRef.basal {
+		cm = 2
+	}
+
+  forsec CellRef.somatic insert Ih
+	distribute_channels(CellRef.somatic,"gIhbar_Ih",0,1.000000,0.000000,0.000000,0.000000,0.000080000000) 
+
+  forsec CellRef.basal insert Ih
+	distribute_channels(CellRef.basal,"gIhbar_Ih",0,1.000000,0.000000,0.000000,0.000000,0.000080000000) 
+
+  forsec CellRef.apical insert Ih
+	distribute_channels(CellRef.apical,"gIhbar_Ih",2,-0.8696,3.6161,0.0,2.0870,0.000080000000) 
+}
+
+proc biophys() {
+	delete_axon()
+	area(0.5)
+	distance()
+	SetCellProperties(10000,-70)
+	access CellRef.soma
+
+	forsec CellRef.apical insert SKv3_1 
+	forsec CellRef.apical insert NaTa_t 
+	forsec CellRef.apical insert Im 
+	forsec CellRef.somatic insert SKv3_1 
+	forsec CellRef.somatic insert NaTs2_t 
+	forsec CellRef.axonal insert Ca_LVAst 
+	forsec CellRef.axonal insert Ca 
+	forsec CellRef.axonal insert CaDynamics_E2 
+	forsec CellRef.axonal insert SKv3_1 
+	forsec CellRef.axonal insert SK_E2 
+	forsec CellRef.axonal insert K_Tst 
+	forsec CellRef.axonal insert K_Pst 
+	forsec CellRef.axonal insert Nap_Et2 
+	forsec CellRef.axonal insert NaTa_t 
+	hardcode_biophys() 
+	distribute_channels(CellRef.apical,"gSKv3_1bar_SKv3_1",0,1.000000,0.000000,0.000000,0.000000,0.0031400000) 
+	distribute_channels(CellRef.apical,"gNaTa_tbar_NaTa_t",0,1.000000,0.000000,0.000000,0.000000,0.0276000000) 
+	distribute_channels(CellRef.apical,"gImbar_Im",0,1.000000,0.000000,0.000000,0.000000,0.0010000000) 
+	distribute_channels(CellRef.somatic,"gSKv3_1bar_SKv3_1",0,1.000000,0.000000,0.000000,0.000000,0.4480000000) 
+	distribute_channels(CellRef.somatic,"gNaTs2_tbar_NaTs2_t",0,1.000000,0.000000,0.000000,0.000000,0.9710000000) 
+	distribute_channels(CellRef.apical,"g_pas",0,1.000000,0.000000,0.000000,0.000000,0.0000780000) 
+	distribute_channels(CellRef.basal,"g_pas",0,1.000000,0.000000,0.000000,0.000000,0.0000346000) 
+	distribute_channels(CellRef.somatic,"g_pas",0,1.000000,0.000000,0.000000,0.000000,0.0000291000) 
+	distribute_channels(CellRef.axonal,"g_pas",0,1.000000,0.000000,0.000000,0.000000,0.0000340000) 
+	distribute_channels(CellRef.axonal,"decay_CaDynamics_E2",0,1.000000,0.000000,0.000000,0.000000,203.0000000000) 
+	distribute_channels(CellRef.axonal,"gamma_CaDynamics_E2",0,1.000000,0.000000,0.000000,0.000000,0.0011500000) 
+	distribute_channels(CellRef.axonal,"gCa_LVAstbar_Ca_LVAst",0,1.000000,0.000000,0.000000,0.000000,0.0031100000) 
+	distribute_channels(CellRef.axonal,"gCabar_Ca",0,1.000000,0.000000,0.000000,0.000000,0.0007010000) 
+	distribute_channels(CellRef.axonal,"gSKv3_1bar_SKv3_1",0,1.000000,0.000000,0.000000,0.000000,0.0559000000) 
+	distribute_channels(CellRef.axonal,"gSK_E2bar_SK_E2",0,1.000000,0.000000,0.000000,0.000000,0.0824000000) 
+	distribute_channels(CellRef.axonal,"gK_Tstbar_K_Tst",0,1.000000,0.000000,0.000000,0.000000,0.0815000000) 
+	distribute_channels(CellRef.axonal,"gK_Pstbar_K_Pst",0,1.000000,0.000000,0.000000,0.000000,0.5450000000) 
+	distribute_channels(CellRef.axonal,"gNap_Et2bar_Nap_Et2",0,1.000000,0.000000,0.000000,0.000000,0.0057600000) 
+	distribute_channels(CellRef.axonal,"gNaTa_tbar_NaTa_t",0,1.000000,0.000000,0.000000,0.000000,3.9600000000) 
+}
+
+func getThreshold(){return 0.0 }
+
+proc connect2target() { //$o1 target point process, $o2 returned NetCon
+  CellRef.soma $o2 = new NetCon(&v(1), $o1)
+  $o2.threshold = -30
+}
+
+endtemplate cADpyr228_L5_TTPC2_5_dend_ch150801A1_axon_tr050310_5_c1
