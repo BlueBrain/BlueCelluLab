@@ -38,10 +38,7 @@ class Cell:
 
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
-        #self.cell_dendrogram = None
         self.plotWindows = {}
-        #self.activeDendrogram = False
-
 
     def addRecording(self, var_name):
         soma = [x for x in self.cell.getCell().somatic][0]
@@ -73,7 +70,6 @@ class Cell:
 
     def addSynapticStimulus(self, section, location):
         segname = section.name() + "(" + str(location) + ")"
-        #print segname
         synapse = neuron.h.tmgInhSyn(location, sec=section)
         synapse.Use = 0.25 #0.02
         synapse.Dep = 706 #194
@@ -98,7 +94,6 @@ class Cell:
     def addAllSynapses(self):
         dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
         for section in dendritic_sections:
-            #var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
             self.addSynapticStimulus(section, 0)
             self.addSynapticStimulus(section, 0.5)
             self.addSynapticStimulus(section, 1)
@@ -131,9 +126,6 @@ class Cell:
         vclamp.dur2 = 0
         vclamp.dur3 = 0
         self.persistent.objects.append(vclamp)
-        #t_content = numpy.arange(start_time, stop_time, dt)
-        #i_content = [((stop_level-start_level)/(stop_time-start_time))*(x-start_time)+start_level for x in t_content]
-        #self.injectCurrentWaveform(t_content, i_content)
 
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
         t_content = numpy.arange(start_time, stop_time, dt)
@@ -188,11 +180,8 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
     simulation.run(1000)
     time = cell.getTime()
     voltage = cell.getSomaVoltage()
-    #pylab.plot(time, voltage)
-    #pylab.show()
     SS_voltage = numpy.mean(voltage[numpy.where((time < 1000) & (time > 800))])
     cell.delete()
-    #SS_voltage = numpy.mean(cell.getSomaVoltage()[int(400.0*constants.dt):int(500.0*constants.dt)])
 
     return SS_voltage
 
@@ -255,7 +244,6 @@ def calculateAllSynapticAttenuations(bglibcell):
 
     bglibcell.addAllSectionsVoltageRecordings()
 
-    #all_sections = [x for x in bglibcell.cell.getCell().all]
     basal_sections = [x for x in bglibcell.cell.getCell().basal]
     apical_sections = [x for x in bglibcell.cell.getCell().apical]
     dendritic_sections = basal_sections + apical_sections
@@ -263,15 +251,10 @@ def calculateAllSynapticAttenuations(bglibcell):
     absdistances = []
     attenuations = []
     sectiontypes = []
-    #pylab.ion()
-    #pylab.figure(11)
-    #xvalues = numpy.arange(0,1,0.01)
-    #pylab.plot(xvalues,numpy.exp(numpy.divide(xvalues,0.2)))
 
     for section in dendritic_sections:
         for location in [0.0, 0.5, 1]:
             segname = section.name() + "(" + str(location) + ")"
-            #section.push()
             print segname
             synapse = neuron.h.tmgExSyn(location, sec=section)
             synapse.Use = 0.02
@@ -292,12 +275,6 @@ def calculateAllSynapticAttenuations(bglibcell):
             somavoltage = numpy.array(allsectionrecordings[soma.name()])
             dendvoltage = numpy.array(allsectionrecordings[section.name()])
             del connection
-            #neuron.h.pop_section()
-            #pylab.figure()
-            #pylab.plot(somavoltage, label='soma')
-            #pylab.plot(dendvoltage, label='dend')
-            #pylab.legend()
-            #pylab.show()
 
             interval_indices = numpy.where((time > netstim.start) & (time < netstim.start+90))
             max_soma = max(somavoltage[numpy.where((time > netstim.start) & (time < netstim.start+90))])
@@ -331,7 +308,6 @@ def calculateAllSSAttenuations(bglibcell):
 
     bglibcell.addAllSectionsVoltageRecordings()
 
-    #all_sections = [x for x in bglibcell.cell.getCell().all]
     basal_sections = [x for x in bglibcell.cell.getCell().basal]
     apical_sections = [x for x in bglibcell.cell.getCell().apical]
     dendritic_sections = basal_sections + apical_sections
@@ -343,7 +319,6 @@ def calculateAllSSAttenuations(bglibcell):
     for section in dendritic_sections:
         for location in [0.0, 0.25, 0.5, 0.75, 1]:
             segname = section.name() + "(" + str(location) + ")"
-            #section.push()
             print segname
             clamp = neuron.h.IClamp(0.5, sec=section)
             clamp.dur = 300
@@ -371,14 +346,6 @@ def calculateAllSSAttenuations(bglibcell):
             soma = [x for x in bglibcell.cell.getCell().somatic][0]
             somavoltage = numpy.array(allsectionrecordings[soma.name()])
             dendvoltage = numpy.array(allsectionrecordings[section.name()])
-
-            #del connection
-            #neuron.h.pop_section()
-            #pylab.figure()
-            #pylab.plot(somavoltage, label='soma')
-            #pylab.plot(dendvoltage, label='dend')
-            #pylab.legend()
-            #pylab.show()
 
             interval_indices = numpy.where((time > clamp.delay) & (time < clamp.delay+90))
             max_soma = max(somavoltage[numpy.where((time > clamp.delay) & (time < clamp.delay+90))])
@@ -653,9 +620,7 @@ class PSegment:
 
     def redraw(self):
         if self.plotvariable:
-            #print self.varbounds
             plotvariable_value = self.getVariableValue(self.plotvariable)
-            #print plotvariable_value
             if not plotvariable_value is None:
                 self.patch.set_facecolor(self.color_map((plotvariable_value-self.varbounds[0])/(self.varbounds[1]-self.varbounds[0])))
             else:
