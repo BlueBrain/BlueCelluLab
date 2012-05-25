@@ -1,16 +1,28 @@
 import sys
-sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
-import neuron
+import os
+os.environ['HOC_LIBRARY_PATH'] = "/home/vangeit/src/bglib1.5/lib/hoclib"
+
+
 import numpy
 import re
 import matplotlib as plt
 import pylab
 import multiprocessing
 import math
+import itertools
 
-
+tmpstdout = os.dup(1)
+tmpstderr = os.dup(2)
+devnull = os.open('/dev/null', os.O_WRONLY)
+os.dup2(devnull, 1)
+os.dup2(devnull, 2)
+os.close(devnull)
+sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
+import neuron
 neuron.h.nrn_load_dll('/home/vangeit/scripts/bglibpy/i686/.libs/libnrnmech.so')
 neuron.h.load_file("nrngui.hoc")
+os.dup2(tmpstdout, 1)
+os.dup2(tmpstderr, 2)
 
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
@@ -38,7 +50,12 @@ class Cell:
 
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
-        self.plotWindows = {}
+        self.plotWindows = []
+
+    def showDendDiam(self):
+        diamlist = [section.diam for section in self.apical]
+        pylab.hist(diamlist, bins=int((max(diamlist)-min(diamlist))/.1))
+        pylab.show()
 
     def addRecording(self, var_name):
         soma = [x for x in self.cell.getCell().somatic][0]
@@ -68,23 +85,30 @@ class Cell:
     def getRecording(self, var_name):
         return self.recordings[var_name].to_python()
 
-    def addSynapticStimulus(self, section, location):
+    def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
         segname = section.name() + "(" + str(location) + ")"
-        synapse = neuron.h.tmgInhSyn(location, sec=section)
-        synapse.Use = 0.25 #0.02
-        synapse.Dep = 706 #194
+        synapse = neuron.h.tmgExSyn(location, sec=section)
+        #synapse.gmax = gmax
+        synapse.Use = 0.5 #0.02
+        #synapse.Dep = 706 #194
+        #
         synapse.Fac = 21 #507
-        synapse.e = -80
+        #synapse.e = -80
+
         netstim = neuron.h.NetStim(sec=section)
         stimfreq = 70
         netstim.interval = 1000/stimfreq
         netstim.number = 1
-        netstim.start = 150
+        netstim.start = delay
         netstim.noise = 0
         connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
+        connection.weight[0] = .2
         self.synapses[segname] = synapse
         self.netstims[segname] = netstim
         self.connections[segname] = connection
+
+    def locateBAPSite(self, seclistName, distance):
+        return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
 
     def removeSynapticStimulus(self, segname):
         self.synapses[segname] = None
@@ -139,12 +163,20 @@ class Cell:
     def getSomaVoltage(self):
         return numpy.array(self.getRecording('soma(0.5)._ref_v'))
 
-    def addPlotWindow(self, var_name, xlim=None, ylim=None):
+    #def addPlotWindow(self, var_name, xlim=None, ylim=None):
+        #xlim = [0, 1000] if xlim is None else xlim
+        #ylim = [-100, 100] if ylim is None else ylim
+        #if var_name not in self.recordings:
+        #    self.addRecording(var_name)
+        #self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
+
+    def addPlotWindow(self, var_list, xlim=None, ylim=None):
         xlim = [0, 1000] if xlim is None else xlim
         ylim = [-100, 100] if ylim is None else ylim
-        if var_name not in self.recordings:
-            self.addRecording(var_name)
-        self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
+        for var_name in var_list:
+            if var_name not in self.recordings:
+                self.addRecording(var_name)
+        self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim))
 
     def showDendrogram(self, variable=None, active=False):
         cell_dendrogram = dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
@@ -152,8 +184,8 @@ class Cell:
         self.cell_dendrograms.append(cell_dendrogram)
 
     def update(self):
-        for var_name in self.plotWindows:
-            self.plotWindows[var_name].redraw()
+        for window in self.plotWindows:
+            window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
 
@@ -161,8 +193,8 @@ class Cell:
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
-        for var_name in self.plotWindows:
-            self.plotWindows[var_name].process.join()
+        for window in self.plotWindows:
+            window.process.join()
 
     def __del__(self):
         self.delete()
@@ -257,10 +289,16 @@ def calculateAllSynapticAttenuations(bglibcell):
             segname = section.name() + "(" + str(location) + ")"
             print segname
             synapse = neuron.h.tmgExSyn(location, sec=section)
-            synapse.Use = 0.02
-            synapse.Dep = 194
-            synapse.Fac = 507
-            synapse.gmax = synapse.gmax/5
+            #synapse.Use = 0.02
+            synapse.Use = 0.5
+            #synapse.Dep = 194
+            synapse.Dep = 671
+            #synapse.Fac = 507
+            synapse.Fac = 17
+            #if section in apical_sections and section.diam > .575:
+            synapse.gmax = .0000002
+            #else:
+            #    synapse.gmax = .00000005
             netstim = neuron.h.NetStim(sec=section)
             stimfreq = 70
             netstim.interval = 1000/stimfreq
@@ -290,10 +328,10 @@ def calculateAllSynapticAttenuations(bglibcell):
             absdistances.append(absdistance)
             if section in basal_sections:
                 sectiontypes.append("basal")
-                normdistance = absdistance/bglibcell.cell.getLongestBranch(bglibcell.cell.getCell().basal)
+                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
             elif section in apical_sections:
                 sectiontypes.append("apical")
-                normdistance = absdistance/bglibcell.cell.getLongestBranch(bglibcell.cell.getCell().apical)
+                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
             else:
                 print "Section is not in apical nor basal"
                 exit(1)
@@ -317,7 +355,7 @@ def calculateAllSSAttenuations(bglibcell):
     sectiontypes = []
 
     for section in dendritic_sections:
-        for location in [0.0, 0.25, 0.5, 0.75, 1]:
+        for location in [0.5]:
             segname = section.name() + "(" + str(location) + ")"
             print segname
             clamp = neuron.h.IClamp(0.5, sec=section)
@@ -361,10 +399,10 @@ def calculateAllSSAttenuations(bglibcell):
             absdistances.append(absdistance)
             if section in basal_sections:
                 sectiontypes.append("basal")
-                normdistance = absdistance/bglibcell.cell.getLongestBranch(bglibcell.cell.getCell().basal)
+                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
             elif section in apical_sections:
                 sectiontypes.append("apical")
-                normdistance = absdistance/bglibcell.cell.getLongestBranch(bglibcell.cell.getCell().apical)
+                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
             else:
                 print "Section is not in apical nor basal"
                 exit(1)
@@ -374,9 +412,9 @@ def calculateAllSSAttenuations(bglibcell):
     return normdistances, absdistances, attenuations, sectiontypes
 
 class PlotWindow:
-    def __init__(self, var_name, cell, xlim, ylim):
+    def __init__(self, var_list, cell, xlim, ylim):
         self.cell = cell
-        self.var_name = var_name
+        self.var_list = var_list
         pylab.ion()
         self.figure = pylab.figure(figsize=(10, 10))
         pylab.ioff()
@@ -390,41 +428,36 @@ class PlotWindow:
         self.ax.set_ylabel("mV")
 
         self.background = self.canvas.copy_from_bbox(self.ax.bbox)
+        self.line = {}
 
-        recording = self.cell.getRecording(self.var_name)
-        if recording:
-            time = self.cell.getTime()
-        else:
-            time = self.cell.getTime()[1:]
+        linenumber = 0
+        for var_name in self.var_list:
+            recording = self.cell.getRecording(var_name)
+            if recording:
+                time = self.cell.getTime()
+            else:
+                time = self.cell.getTime()[1:]
 
-        self.line = pylab.Line2D(time, recording, label=self.var_name)
-        self.ax.add_line(self.line)
+            #print dir(pylab.gca()._get_lines)
+            #print pylab.gca()._get_lines.color_cycle
+            linecolors = [x for x in itertools.islice(pylab.gca()._get_lines.color_cycle, 0, 50)]
+            self.line[var_name] = pylab.Line2D(time, recording, label=var_name, color=linecolors[linenumber % len(linecolors)])
+            self.ax.add_line(self.line[var_name])
+            linenumber += 1
+
         self.ax.legend()
 
         self.figure.canvas.draw()
 
         self.drawCount = 10
 
-    '''
-    def drawLoop(self, q):
-        prev_time = 0
-        [time,voltage] = q.get()
-        while q.qsize() is not 0:
-            while time[-1] - prev_time < 10:
-                try:
-                    [time, voltage] = q.get(True,1)
-                except Queue.Empty:
-                    break
-            prev_time = time[-1]
-            self.redraw(time,voltage)
-    '''
-
     def redraw(self):
         if not self.drawCount:
             time = self.cell.getTime()
-            voltage = self.cell.getRecording(self.var_name)
-            self.line.set_data(time, voltage)
-            self.ax.draw_artist(self.line)
+            for var_name in self.var_list:
+                voltage = self.cell.getRecording(var_name)
+                self.line[var_name].set_data(time, voltage)
+                self.ax.draw_artist(self.line[var_name])
             self.canvas.blit(self.ax.bbox)
             self.drawCount = 10
         else:
@@ -446,8 +479,8 @@ class dendrogram:
         self.proot = PSection(self.hroot, None)
         self.psections = [self.proot] + self.proot.getAllPDescendants()
 
-        pylab.xlim([0, self.proot.treeWidth()])
-        pylab.ylim([0, self.proot.treeHeight()])
+        pylab.xlim([0, self.proot.treeWidth()+self.proot.ySpacing])
+        pylab.ylim([0, self.proot.treeHeight()+self.proot.xSpacing])
         pylab.gca().set_xticks([])
         pylab.gca().set_yticks([])
         pylab.gcf().subplots_adjust(top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
@@ -457,13 +490,13 @@ class dendrogram:
         else:
             varbounds = self.proot.getTreeVarBounds(variable)
 
-        cax = pylab.imshow(numpy.outer(numpy.arange(0, 1, 0.01), numpy.ones(1)), aspect='auto', cmap=pylab.get_cmap("hot"), origin="lower")
+        cax = pylab.imshow(numpy.outer(numpy.arange(0, 1, 0.1), numpy.ones(1)), aspect='auto', cmap=pylab.get_cmap("hot"), origin="lower")
         pylab.clim(varbounds[0], varbounds[1])
 
         cbar = self.dend_figure.colorbar(cax, ticks=[varbounds[0], varbounds[1]])
         cbar.ax.set_yticklabels(["%.2e"%(varbounds[0]), "%.2e"%(varbounds[1])])
 
-        self.proot.drawTree(self.dend_figure, 0, 0, variable=variable, varbounds=varbounds)
+        self.proot.drawTree(self.dend_figure, self.proot.ySpacing, self.proot.xSpacing, variable=variable, varbounds=varbounds)
         self.dend_figure.canvas.draw()
 
         for psection in self.psections:
@@ -516,10 +549,10 @@ class PSection:
         self.ySpacing = 1
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
-        x_accum = 0
+        y_accum = 0
         for psegment in self.psegments:
-            psegment.setupDraw(figure, x + x_accum, y + (self.maxsegdiam-psegment.diam)/2, variable=variable, varbounds=varbounds)
-            x_accum += psegment.L
+            psegment.setupDraw(figure, x + (self.maxsegdiam-psegment.diam)/2, y + y_accum, variable=variable, varbounds=varbounds)
+            y_accum += psegment.L
 
     def redraw(self):
         for psegment in self.psegments:
@@ -547,25 +580,25 @@ class PSection:
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
         self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
-        new_x = x + self.L + self.xSpacing
-        new_y = y
+        new_x = x # + self.L + self.xSpacing
+        new_y = y + self.L + self.xSpacing
         for child in self.pchildren:
             child.drawTree(figure, new_x, new_y, variable=variable, varbounds=varbounds)
-            pylab.plot([x+self.L, new_x], [y+self.diam/2, new_y+child.diam/2], 'k')
-            new_y = new_y + child.treeHeight()
-
-    def treeHeight(self):
-        if self.isLeaf:
-            treeHeight = self.maxsegdiam + self.ySpacing
-        else:
-            treeHeight = 0
-            for child in self.pchildren:
-                treeHeight += child.treeHeight()
-
-        return max(self.diam + self.ySpacing, treeHeight)
+            pylab.plot([x+self.diam/2, new_x+child.diam/2], [y+self.L, new_y], 'k')
+            new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
-        return self.L + self.xSpacing + (max([child.treeWidth() for child in self.pchildren]) if self.pchildren else 0)
+        if self.isLeaf:
+            treeWidth = self.maxsegdiam + self.ySpacing
+        else:
+            treeWidth = 0
+            for child in self.pchildren:
+                treeWidth += child.treeWidth()
+
+        return max(self.diam + self.ySpacing, treeWidth)
+
+    def treeHeight(self):
+        return self.L + self.xSpacing + (max([child.treeHeight() for child in self.pchildren]) if self.pchildren else 0)
 
     def getHChildren(self):
         return self.hchildren
@@ -615,7 +648,7 @@ class PSegment:
         self.ax = self.figure.gca()
         self.figX = x
         self.figY = y
-        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.L, self.diam, facecolor="white", edgecolor="black")
+        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="white", edgecolor="black")
         self.ax.add_patch(self.patch)
 
     def redraw(self):
