@@ -10,6 +10,7 @@ import pylab
 import multiprocessing
 import math
 import itertools
+#import random
 
 tmpstdout = os.dup(1)
 tmpstderr = os.dup(2)
@@ -19,7 +20,7 @@ os.dup2(devnull, 2)
 os.close(devnull)
 sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
 import neuron
-neuron.h.nrn_load_dll('/home/vangeit/scripts/bglibpy/i686/.libs/libnrnmech.so')
+neuron.h.nrn_load_dll('/home/vangeit/scripts/libraries/bglibpy/i686/.libs/libnrnmech.so')
 neuron.h.load_file("nrngui.hoc")
 os.dup2(tmpstdout, 1)
 os.dup2(tmpstderr, 2)
@@ -36,17 +37,23 @@ class Cell:
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h."+ cell_name +"(0, morphology_name)")
+        #neuron.h('print psections()')
+        #neuron.h('p = new PythonObject()')
+        #neuron.h('nrnpython(\"ev = lambda arg: eval(arg)\"')
+        #neuron.h('print p.cell')
         self.recordings = {}
         self.synapses = {}
         self.netstims = {}
         self.connections = {}
 
+        #self.cell.re_init_rng()
         neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         self.somatic = [x for x in self.cell.getCell().somatic]
         self.basal = [x for x in self.cell.getCell().basal]
         self.apical = [x for x in self.cell.getCell().apical]
+        self.axonal = [x for x in self.cell.getCell().axonal]
 
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
@@ -102,12 +109,13 @@ class Cell:
         netstim.start = delay
         netstim.noise = 0
         connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
-        connection.weight[0] = .2
+        connection.weight[0] = 1.0
         self.synapses[segname] = synapse
         self.netstims[segname] = netstim
         self.connections[segname] = connection
 
     def locateBAPSite(self, seclistName, distance):
+        #return [[int(secnumber), x] for [secnumber, x] in self.cell.getCell().locateBAPSite(seclistName, distance)]
         return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
 
     def removeSynapticStimulus(self, segname):
@@ -137,6 +145,26 @@ class Cell:
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
+
+    def apicaltrunk(self):
+        if len(self.apical) is 0:
+            return []
+        else:
+            apicaltrunk = []
+            apicaltrunk.append(self.apical[0])
+            currentsection = self.apical[0]
+            #neuron.h.psection()
+            while True:
+                children = [neuron.h.SectionRef(sec=currentsection).child[index] for index in range(0, int(neuron.h.SectionRef(sec=currentsection).nchild()))]
+                if len(children) is 0:
+                    break
+                maxdiam = 0
+                for child in children:
+                    if child.diam > maxdiam:
+                        currentsection = child
+                        maxdiam = child.diam
+                apicaltrunk.append(child)
+            return apicaltrunk
 
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
         t_content = numpy.arange(start_time, stop_time, dt)
@@ -170,13 +198,13 @@ class Cell:
         #    self.addRecording(var_name)
         #self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
 
-    def addPlotWindow(self, var_list, xlim=None, ylim=None):
+    def addPlotWindow(self, var_list, xlim=None, ylim=None, title=""):
         xlim = [0, 1000] if xlim is None else xlim
         ylim = [-100, 100] if ylim is None else ylim
         for var_name in var_list:
             if var_name not in self.recordings:
                 self.addRecording(var_name)
-        self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim))
+        self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
         cell_dendrogram = dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
@@ -217,6 +245,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
 
     return SS_voltage
 
+
 def search_hyp_current(template_name, morphology_name, hyp_voltage, start_current, stop_current):
     med_current = start_current + abs(start_current-stop_current)/2
     new_hyp_voltage = calculate_SS_voltage(template_name, morphology_name, med_current)
@@ -228,14 +257,17 @@ def search_hyp_current(template_name, morphology_name, hyp_voltage, start_curren
     elif new_hyp_voltage < hyp_voltage:
         return search_hyp_current(template_name, morphology_name, hyp_voltage, med_current, stop_current)
 
+
 def detect_hyp_current(template_name, morphology_name, hyp_voltage):
     return search_hyp_current(template_name, morphology_name, hyp_voltage, -1.0, 0.0)
+
 
 def detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level):
     pool = multiprocessing.Pool(processes=1)
     spike_detected = pool.apply(detect_spike_step_subprocess, [template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level])
     pool.terminate()
     return spike_detected
+
 
 def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level):
     cell = Cell(template_name, morphology_name)
@@ -257,7 +289,7 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_
 def search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, start_current, stop_current):
     med_current = start_current + abs(start_current-stop_current)/2
     spike_detected = detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_stop, med_current)
-    print "Spike threshold detection at: ", med_current, "mV", spike_detected
+    print "Spike threshold detection at: ", med_current, "nA", spike_detected
 
     if abs(stop_current - start_current) < .01:
         return stop_current
@@ -269,6 +301,7 @@ def search_threshold_current(template_name, morphology_name, hyp_level, inj_star
 def detect_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop):
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
+'''
 
 def calculateAllSynapticAttenuations(bglibcell):
     sim = Simulation()
@@ -278,68 +311,83 @@ def calculateAllSynapticAttenuations(bglibcell):
 
     basal_sections = [x for x in bglibcell.cell.getCell().basal]
     apical_sections = [x for x in bglibcell.cell.getCell().apical]
-    dendritic_sections = basal_sections + apical_sections
+    #dendritic_sections = basal_sections + apical_sections
+    thick_apical_sections = [section for section in apical_sections if section.diam > .6]
+    thin_apical_sections = [section for section in apical_sections if section.diam < .7]
+    random.shuffle(thin_apical_sections, random.random)
     normdistances = []
     absdistances = []
     attenuations = []
     sectiontypes = []
 
-    for section in dendritic_sections:
-        for location in [0.0, 0.5, 1]:
-            segname = section.name() + "(" + str(location) + ")"
-            print segname
-            synapse = neuron.h.tmgExSyn(location, sec=section)
-            #synapse.Use = 0.02
-            synapse.Use = 0.5
-            #synapse.Dep = 194
-            synapse.Dep = 671
-            #synapse.Fac = 507
-            synapse.Fac = 17
-            #if section in apical_sections and section.diam > .575:
-            synapse.gmax = .0000002
-            #else:
-            #    synapse.gmax = .00000005
-            netstim = neuron.h.NetStim(sec=section)
-            stimfreq = 70
-            netstim.interval = 1000/stimfreq
-            netstim.number = 1
-            netstim.start = 150
-            netstim.noise = 0
-            connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
-            sim.run(300)
-            time = bglibcell.getTime()
-            allsectionrecordings = bglibcell.getAllSectionsVoltageRecordings()
-            soma = [x for x in bglibcell.cell.getCell().somatic][0]
-            somavoltage = numpy.array(allsectionrecordings[soma.name()])
-            dendvoltage = numpy.array(allsectionrecordings[section.name()])
-            del connection
+    [secnumber, location] = bglibcell.locateBAPSite("apic", 200)
+    #print secnumber, location
+    #for record_section in [apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)]]:
+    for record_section in bglibcell.apicaltrunk(): #thick_apical_sections:
+        location = 0.5
+        print record_section.name()
+        source_section = thin_apical_sections.pop()
+        #source_segname = source_section.name() + "(" + str(location) + ")"
+        synapse = neuron.h.tmgExSyn(location, sec=source_section)
+        #synapse.Use = 0.02
+        # synapse.Use = 0.5
+        #synapse.Dep = 194
+        # synapse.Dep = 671
+        #synapse.Fac = 507
+        # synapse.Fac = 17
+        #if section in apical_sections and section.diam > .575:
+        # synapse.gmax = .0000002
+        #else:
+        #    synapse.gmax = .00000005
+        netstim = neuron.h.NetStim(sec=source_section)
+        stimfreq = 70
+        netstim.interval = 1000/stimfreq
+        netstim.number = 1
+        netstim.start = 300
+        netstim.noise = 0
+        connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=source_section)
+        connection.weight[0] = 1.0
+        sim.run(600)
+        time = bglibcell.getTime()
+        allsectionrecordings = bglibcell.getAllSectionsVoltageRecordings()
+        soma = [x for x in bglibcell.cell.getCell().somatic][0]
+        somavoltage = numpy.array(allsectionrecordings[soma.name()])
+        dendvoltage = numpy.array(allsectionrecordings[record_section.name()])
+        #pylab.plot(time, somavoltage, label="soma")
+        #pylab.plot(time, dendvoltage, label="dend")
+        #pylab.legend()
+        #pylab.show()
+        del connection
 
-            interval_indices = numpy.where((time > netstim.start) & (time < netstim.start+90))
-            max_soma = max(somavoltage[numpy.where((time > netstim.start) & (time < netstim.start+90))])
-            min_soma = numpy.min(somavoltage[interval_indices])
-            amp_soma = max_soma - min_soma
-            max_dend = numpy.max(dendvoltage[interval_indices])
-            min_dend = numpy.min(dendvoltage[interval_indices])
-            amp_dend = max_dend - min_dend
-            attenuation = amp_dend / amp_soma
-            attenuations.append(attenuation)
-            neuron.h.distance(sec=soma)
-            absdistance = neuron.h.distance(location, sec=section)
-            absdistances.append(absdistance)
-            if section in basal_sections:
-                sectiontypes.append("basal")
-                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
-            elif section in apical_sections:
-                sectiontypes.append("apical")
-                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
-            else:
-                print "Section is not in apical nor basal"
-                exit(1)
-            normdistances.append(normdistance)
+        interval_indices = numpy.where((time > netstim.start) & (time < netstim.start+90))
+        max_soma = max(somavoltage[numpy.where((time > netstim.start) & (time < netstim.start+90))])
+        min_soma = numpy.min(somavoltage[interval_indices])
+        amp_soma = max_soma - min_soma
+        max_dend = numpy.max(dendvoltage[interval_indices])
+        min_dend = numpy.min(dendvoltage[interval_indices])
+        amp_dend = max_dend - min_dend
+        attenuation = amp_dend / amp_soma
+        attenuations.append(attenuation)
+        neuron.h.distance(sec=soma)
+        absdistance = neuron.h.distance(location, sec=record_section)
+        absdistances.append(absdistance)
+        if record_section in basal_sections:
+            sectiontypes.append("basal")
+            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
+        elif record_section in apical_sections:
+            sectiontypes.append("apical")
+            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
+        else:
+            sectiontypes.append("apical")
+            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
+            print "Section is not in apical nor basal"
+            #exit(1)
+        normdistances.append(normdistance)
 
 
     return normdistances, absdistances, attenuations, sectiontypes
-
+'''
+'''
 def calculateAllSSAttenuations(bglibcell):
     sim = Simulation()
     sim.addCell(bglibcell)
@@ -362,21 +410,6 @@ def calculateAllSSAttenuations(bglibcell):
             clamp.dur = 300
             clamp.delay = 150
             clamp.amp = 0.01
-
-            '''
-            synapse = neuron.h.tmgExSyn(location, sec=section)
-            synapse.Use = 0.02
-            synapse.Dep = 194
-            synapse.Fac = 507
-            synapse.gmax = synapse.gmax/5
-            netstim = neuron.h.NetStim(sec=section)
-            stimfreq = 70
-            netstim.interval = 1000/stimfreq
-            netstim.number = 1
-            netstim.start = 150
-            netstim.noise = 0
-            connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
-            '''
             sim.run(300)
 
             time = bglibcell.getTime()
@@ -410,9 +443,10 @@ def calculateAllSSAttenuations(bglibcell):
 
 
     return normdistances, absdistances, attenuations, sectiontypes
+'''
 
 class PlotWindow:
-    def __init__(self, var_list, cell, xlim, ylim):
+    def __init__(self, var_list, cell, xlim, ylim, title):
         self.cell = cell
         self.var_list = var_list
         pylab.ion()
@@ -422,6 +456,7 @@ class PlotWindow:
         self.ax = self.figure.gca()
         self.canvas = self.ax.figure.canvas
 
+        self.figure.suptitle(title)
         self.ax.set_xlim(xlim)
         self.ax.set_ylim(ylim)
         self.ax.set_xlabel("ms")
@@ -672,19 +707,24 @@ class Simulation:
     def __init__(self, verbose_level=0):
         self.verbose_level = verbose_level
         self.cells = []
-        self.steps_per_ms = 1
+        neuron.h.celsius = 34
+        #self.steps_per_ms = 1
 
     def addCell(self, new_cell):
         self.cells.append(new_cell)
 
     def run(self, maxtime, cvode=True):
         neuron.h.tstop = 0.000001
-        neuron.h.dt = 0.1
+        #print "dt=", neuron.h.dt
+        neuron.h.dt = 0.025
+        neuron.h.v_init = -80
 
         if cvode:
             neuron.h('{cvode_active(1)}')
         else:
             neuron.h('{cvode_active(0)}')
+
+        neuron.h.finitialize()
 
         try:
             neuron.h.run()
