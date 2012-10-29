@@ -4,7 +4,7 @@ Python library for running single cell bglib templates
 
 import sys
 import os
-os.environ['HOC_LIBRARY_PATH'] = "/home/vangeit/src/bglib1.5/lib/hoclib"
+os.environ['HOC_LIBRARY_PATH'] = "/home/torben/work/epfl/projects/bglib1.5/lib/hoclib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
 
 
 import numpy
@@ -22,13 +22,15 @@ import itertools
 #os.dup2(devnull, 1)
 #os.dup2(devnull, 2)
 #os.close(devnull)
-sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
+#sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
+sys.path = ["/home/torben/local/lib/python2.7/site-packages"]  + sys.path
 import neuron
-neuron.h.nrn_load_dll('/home/vangeit/scripts/libraries/bglibpy/i686/.libs/libnrnmech.so')
+neuron.h.nrn_load_dll('/home/torben/work/epfl/projects/bglibpy/x86_64/.libs/libnrnmech.so')
 neuron.h.load_file("nrngui.hoc")
 #os.dup2(tmpstdout, 1)
 #os.dup2(tmpstderr, 2)
 
+# load some BGLIB stuff
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
