@@ -1,3 +1,7 @@
+"""
+Python library for running single cell bglib templates
+"""
+
 import sys
 import os
 os.environ['HOC_LIBRARY_PATH'] = "/home/vangeit/src/bglib1.5/lib/hoclib"
@@ -12,23 +16,32 @@ import math
 import itertools
 #import random
 
-tmpstdout = os.dup(1)
-tmpstderr = os.dup(2)
-devnull = os.open('/dev/null', os.O_WRONLY)
-os.dup2(devnull, 1)
-os.dup2(devnull, 2)
-os.close(devnull)
+#tmpstdout = os.dup(1)
+#tmpstderr = os.dup(2)
+#devnull = os.open('/dev/null', os.O_WRONLY)
+#os.dup2(devnull, 1)
+#os.dup2(devnull, 2)
+#os.close(devnull)
 sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
 import neuron
 neuron.h.nrn_load_dll('/home/vangeit/scripts/libraries/bglibpy/i686/.libs/libnrnmech.so')
 neuron.h.load_file("nrngui.hoc")
-os.dup2(tmpstdout, 1)
-os.dup2(tmpstderr, 2)
+#os.dup2(tmpstdout, 1)
+#os.dup2(tmpstderr, 2)
 
+neuron.h.load_file("Cell.hoc")
+neuron.h.load_file("TDistFunc.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
+def load_nrnmechanisms(libnrnmech_location):
+    """Load another shared library with neuron mechanisms"""
+    neuron.h.nrn_load_dll(libnrnmech_location)
+
 class Cell:
+    """Represents a bglib cell"""
+
     class persistent:
+        """The objects that need to stay persistent in python"""
         objects = []
 
     def __init__(self, template_name, morphology_name):
@@ -46,7 +59,6 @@ class Cell:
         self.netstims = {}
         self.connections = {}
 
-        #self.cell.re_init_rng()
         neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
@@ -54,17 +66,33 @@ class Cell:
         self.basal = [x for x in self.cell.getCell().basal]
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
+        self.all = [x for x in self.cell.getCell().all]
 
         self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
         self.plotWindows = []
 
+    def re_init_rng(self):
+        """Reinitialize the random number generator for the stochastic channels"""
+        self.cell.re_init_rng()
+        neuron.h.finitialize()
+
+    def getThreshold(self):
+        """Get the spiking threshold of the cell"""
+        return self.cell.getThreshold()
+
+    def getHypAmp(self):
+        """Get the current level necessary to bring the cell to -85 mV"""
+        return self.cell.getHypAmp()
+
     def showDendDiam(self):
+        """Show a dendrogram plot"""
         diamlist = [section.diam for section in self.apical]
         pylab.hist(diamlist, bins=int((max(diamlist)-min(diamlist))/.1))
         pylab.show()
 
     def addRecording(self, var_name):
+        """Add a recording to the cell"""
         soma = [x for x in self.cell.getCell().somatic][0]
         soma = soma
         recording = neuron.h.Vector()
@@ -72,16 +100,19 @@ class Cell:
         self.recordings[var_name] = recording
 
     def addRecordings(self, var_names):
+        """Add a set of recordings to the cell"""
         for var_name in var_names:
             self.addRecording(var_name)
 
     def addAllSectionsVoltageRecordings(self):
+        """Add a voltage recording to every section of the cell"""
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
             self.addRecording(var_name)
 
     def getAllSectionsVoltageRecordings(self):
+        """Get all the voltage recordings from all the sections"""
         allSectionVoltages = {}
         all_sections = self.cell.getCell().all
         for section in all_sections:
@@ -90,9 +121,11 @@ class Cell:
         return allSectionVoltages
 
     def getRecording(self, var_name):
+        """Get recorded values"""
         return self.recordings[var_name].to_python()
 
     def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
+        """Add a synaptic stimulus to a certain section"""
         segname = section.name() + "(" + str(location) + ")"
         synapse = neuron.h.tmgExSyn(location, sec=section)
         #synapse.gmax = gmax
@@ -115,15 +148,18 @@ class Cell:
         self.connections[segname] = connection
 
     def locateBAPSite(self, seclistName, distance):
+        """Return the location of the BAP site"""
         #return [[int(secnumber), x] for [secnumber, x] in self.cell.getCell().locateBAPSite(seclistName, distance)]
         return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
 
     def removeSynapticStimulus(self, segname):
+        """Removed a synaptic stimulus"""
         self.synapses[segname] = None
         self.netstims[segname] = None
         self.connections[segname] = None
 
     def addAllSynapses(self):
+        """Add synapses to all dendritic sections"""
         dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
         for section in dendritic_sections:
             self.addSynapticStimulus(section, 0)
@@ -131,6 +167,7 @@ class Cell:
             self.addSynapticStimulus(section, 1)
 
     def injectCurrentWaveform(self, t_content, i_content):
+        """Inject a current in the cell"""
         start_time = t_content[0]
         stop_time = t_content[-1]
         time = neuron.h.Vector()
@@ -147,6 +184,7 @@ class Cell:
         currents.play(pulse._ref_amp, time)
 
     def apicaltrunk(self):
+        """Return the apical trunk of the cell"""
         if len(self.apical) is 0:
             return []
         else:
@@ -167,11 +205,13 @@ class Cell:
             return apicaltrunk
 
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
+        """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level-start_level)/(stop_time-start_time))*(x-start_time)+start_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)
 
     def addVClamp(self, stop_time, level):
+        """Add a voltage clamp"""
         vclamp = neuron.h.SEClamp(0.5, sec=self.soma)
         vclamp.amp1 = level
         vclamp.dur1 = stop_time
@@ -180,16 +220,26 @@ class Cell:
         self.persistent.objects.append(vclamp)
 
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
+        """Add a sinusoidal current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [amplitude*math.sin(freq*(x-start_time)*(2*math.pi))+mid_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)
         return (t_content, i_content)
 
     def getTime(self):
+        """Get the time vector"""
         return numpy.array(self.getRecording('neuron.h._ref_t'))
 
     def getSomaVoltage(self):
+        """Get a vector of the soma voltage"""
         return numpy.array(self.getRecording('soma(0.5)._ref_v'))
+
+    def getNumberOfSegments(self):
+        """Get the number of segments in the cell"""
+        totalnseg = 0
+        for section in self.all:
+            totalnseg += section.nseg
+        return totalnseg
 
     #def addPlotWindow(self, var_name, xlim=None, ylim=None):
         #xlim = [0, 1000] if xlim is None else xlim
@@ -199,6 +249,7 @@ class Cell:
         #self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
 
     def addPlotWindow(self, var_list, xlim=None, ylim=None, title=""):
+        """Add a window to plot a variable"""
         xlim = [0, 1000] if xlim is None else xlim
         ylim = [-100, 100] if ylim is None else ylim
         for var_name in var_list:
@@ -207,17 +258,20 @@ class Cell:
         self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
+        """Show a dendrogram of the cell"""
         cell_dendrogram = dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
 
     def update(self):
+        """Update all the windows"""
         for window in self.plotWindows:
             window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
 
     def delete(self):
+        """Delete the cell"""
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
@@ -227,13 +281,24 @@ class Cell:
     def __del__(self):
         self.delete()
 
+def calculate_inputresistance(template_name, morphology_name, current_delta=0.01):
+    """Calculate the input resistance at rest of the cell"""
+    rest_voltage = calculate_SS_voltage(template_name, morphology_name, 0.0)
+    step_voltage = calculate_SS_voltage(template_name, morphology_name, current_delta)
+
+    voltage_delta = step_voltage - rest_voltage
+
+    return voltage_delta/current_delta
+
 def calculate_SS_voltage(template_name, morphology_name, step_level):
+    """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
     SS_voltage = pool.apply(calculate_SS_voltage_subprocess, [template_name, morphology_name, step_level])
     pool.terminate()
     return SS_voltage
 
 def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
+    """Subprocess wrapper of calculate_SS_voltage"""
     cell = Cell(template_name, morphology_name)
     cell.addRamp(500, 5000, step_level, step_level, dt=1.0)
     simulation = Simulation()
@@ -247,6 +312,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
 
 
 def search_hyp_current(template_name, morphology_name, hyp_voltage, start_current, stop_current):
+    """Search current necessary to bring cell to -85 mV"""
     med_current = start_current + abs(start_current-stop_current)/2
     new_hyp_voltage = calculate_SS_voltage(template_name, morphology_name, med_current)
     print "Detected voltage: ", new_hyp_voltage
@@ -259,10 +325,12 @@ def search_hyp_current(template_name, morphology_name, hyp_voltage, start_curren
 
 
 def detect_hyp_current(template_name, morphology_name, hyp_voltage):
+    """Search current necessary to bring cell to -85 mV"""
     return search_hyp_current(template_name, morphology_name, hyp_voltage, -1.0, 0.0)
 
 
 def detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level):
+    """Detect if there is a spike at a certain step level"""
     pool = multiprocessing.Pool(processes=1)
     spike_detected = pool.apply(detect_spike_step_subprocess, [template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level])
     pool.terminate()
@@ -270,6 +338,7 @@ def detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_
 
 
 def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_start, inj_stop, step_level):
+    """Detect if there is a spike at a certain step level"""
     cell = Cell(template_name, morphology_name)
     cell.addRamp(0, 5000, hyp_level, hyp_level, dt=1.0)
     cell.addRamp(inj_start, inj_stop, step_level, step_level, dt=1.0)
@@ -287,6 +356,7 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_
     return spike_detected
 
 def search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, start_current, stop_current):
+    """Search current necessary to reach threshold"""
     med_current = start_current + abs(start_current-stop_current)/2
     spike_detected = detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_stop, med_current)
     print "Spike threshold detection at: ", med_current, "nA", spike_detected
@@ -299,10 +369,10 @@ def search_threshold_current(template_name, morphology_name, hyp_level, inj_star
         return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, med_current, stop_current)
 
 def detect_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop):
+    """Search current necessary to reach threshold"""
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
 '''
-
 def calculateAllSynapticAttenuations(bglibcell):
     sim = Simulation()
     sim.addCell(bglibcell)
@@ -386,8 +456,7 @@ def calculateAllSynapticAttenuations(bglibcell):
 
 
     return normdistances, absdistances, attenuations, sectiontypes
-'''
-'''
+
 def calculateAllSSAttenuations(bglibcell):
     sim = Simulation()
     sim.addCell(bglibcell)
@@ -446,6 +515,8 @@ def calculateAllSSAttenuations(bglibcell):
 '''
 
 class PlotWindow:
+    """Class the represents a plotting window"""
+
     def __init__(self, var_list, cell, xlim, ylim, title):
         self.cell = cell
         self.var_list = var_list
@@ -487,6 +558,7 @@ class PlotWindow:
         self.drawCount = 10
 
     def redraw(self):
+        """Redraw the plot window"""
         if not self.drawCount:
             time = self.cell.getTime()
             for var_name in self.var_list:
@@ -494,13 +566,14 @@ class PlotWindow:
                 self.line[var_name].set_data(time, voltage)
                 self.ax.draw_artist(self.line[var_name])
             self.canvas.blit(self.ax.bbox)
-            self.drawCount = 10
+            self.drawCount = 1000
         else:
             self.drawCount = self.drawCount - 1
         return True
 
 
 class dendrogram:
+    """Class that represent a dendrogram plot"""
     def __init__(self, sections, variable=None, active=False):
         pylab.ion()
         self.dend_figure = pylab.figure(figsize=(20, 12))
@@ -520,7 +593,7 @@ class dendrogram:
         pylab.gca().set_yticks([])
         pylab.gcf().subplots_adjust(top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
 
-        if variable is "v":
+        if variable is "v" or variable is None:
             varbounds = [-70, 50]
         else:
             varbounds = self.proot.getTreeVarBounds(variable)
@@ -547,6 +620,7 @@ class dendrogram:
         self.active = active
 
     def redraw(self):
+        """Redraw the dendrogram"""
         if self.active:
             if not self.drawCount:
                 for psection in self.psections:
@@ -559,6 +633,7 @@ class dendrogram:
 
 
 class PSection:
+    """Class that represents a cell section"""
     def __init__(self, hsection, pparent):
         self.L = hsection.L
         self.diam = hsection.diam
@@ -584,16 +659,19 @@ class PSection:
         self.ySpacing = 1
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
+        """Setup draw of psection"""
         y_accum = 0
         for psegment in self.psegments:
             psegment.setupDraw(figure, x + (self.maxsegdiam-psegment.diam)/2, y + y_accum, variable=variable, varbounds=varbounds)
             y_accum += psegment.L
 
     def redraw(self):
+        """Redraw psection"""
         for psegment in self.psegments:
             psegment.redraw()
 
     def getSectionVarBounds(self, variable):
+        """Get bounds a variable in a section"""
         varmin = None
         varmax = None
         for psegment in self.psegments:
@@ -604,6 +682,7 @@ class PSection:
         return [varmin, varmax]
 
     def getTreeVarBounds(self, variable):
+        """Get the bounds of a variable in a dendritic subtree"""
         varbounds = self.getSectionVarBounds(variable)
         for child in self.pchildren:
             child_varbounds = child.getTreeVarBounds(variable)
@@ -614,6 +693,7 @@ class PSection:
         return varbounds
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
+        """Draw a dendritic tree"""
         self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
         new_x = x # + self.L + self.xSpacing
         new_y = y + self.L + self.xSpacing
@@ -623,6 +703,7 @@ class PSection:
             new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
+        """Width of a dendritic tree"""
         if self.isLeaf:
             treeWidth = self.maxsegdiam + self.ySpacing
         else:
@@ -633,24 +714,30 @@ class PSection:
         return max(self.diam + self.ySpacing, treeWidth)
 
     def treeHeight(self):
+        """Height of dendritic tree"""
         return self.L + self.xSpacing + (max([child.treeHeight() for child in self.pchildren]) if self.pchildren else 0)
 
     def getHChildren(self):
+        """All hoc children of a section"""
         return self.hchildren
 
     def getPParent(self):
+        """The python parent of a section"""
         return self.parent
 
     def getHParent(self):
+        """The hoc parent of a section"""
         return self.parent.hsection
 
     def getAllPDescendants(self):
+        """The python descendents of a section"""
         pdescendants = [x for x in self.pchildren]
         for child in self.pchildren:
             pdescendants += child.getAllPDescendants()
         return pdescendants
 
     def getAllPLeaves(self):
+        """All the python leaves of a tree"""
         pleaves = []
         if not self.pchildren:
             pleaves.append(self)
@@ -660,6 +747,7 @@ class PSection:
         return pleaves
 
 class PSegment:
+    """A python representation of a segment"""
     def __init__(self, hsegment, parentsection):
         self.hsegment = hsegment
         self.parentsection = parentsection
@@ -677,6 +765,7 @@ class PSegment:
         self.varbounds = None
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
+        """Set up the drawing of a segment"""
         self.figure = figure
         self.plotvariable = variable
         self.varbounds = varbounds
@@ -687,6 +776,7 @@ class PSegment:
         self.ax.add_patch(self.patch)
 
     def redraw(self):
+        """Redraw a segment"""
         if self.plotvariable:
             plotvariable_value = self.getVariableValue(self.plotvariable)
             if not plotvariable_value is None:
@@ -698,12 +788,14 @@ class PSegment:
 
 
     def getVariableValue(self, variable):
+        """Get a variable value in a segment"""
         if variable is "v" or neuron.h.execute1("{%s.%s(%f)}" % (neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
             return eval("self.hsegment."+variable)
         else:
             return None
 
 class Simulation:
+    """Class that represents a neuron simulation"""
     def __init__(self, verbose_level=0):
         self.verbose_level = verbose_level
         self.cells = []
@@ -711,13 +803,15 @@ class Simulation:
         #self.steps_per_ms = 1
 
     def addCell(self, new_cell):
+        """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True):
+    def run(self, maxtime, cvode=True, dt=0.025):
+        """Run the simulation"""
         neuron.h.tstop = 0.000001
         #print "dt=", neuron.h.dt
-        neuron.h.dt = 0.025
-        neuron.h.v_init = -80
+        neuron.h.dt = dt
+        neuron.h.v_init = -85
 
         if cvode:
             neuron.h('{cvode_active(1)}')
@@ -734,6 +828,7 @@ class Simulation:
         self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
+        """Continue a running simulation"""
         while neuron.h.t < maxtime:
             for cell in self.cells:
                 cell.update()
