@@ -183,6 +183,24 @@ class Cell:
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
 
+    def somaticbranches(self):
+        """Show the index numbers """
+        nchild = neuron.h.SectionRef(sec=self.soma).nchild()
+        for index in range(0, int(nchild)):
+            secname = neuron.h.secname(sec=neuron.h.SectionRef(sec=self.soma).child[index])
+            if not "axon" in secname:
+                if "dend" in secname:
+                    dendnumber = int(secname.split("dend")[1].split("[")[1].split("]")[0])
+                    secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + dendnumber)
+                    print dendnumber, secnumber
+                elif "apic" in secname:
+                    apicnumber = int(secname.split("apic")[1].split("[")[1].split("]")[0])
+                    secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + self.cell.getCell().nSecBasal + apicnumber)
+                    print apicnumber, secnumber
+                else:
+                    raise Exception("somaticbranches: No apic or dend found in section %s" % secname)
+
+
     def apicaltrunk(self):
         """Return the apical trunk of the cell"""
         if len(self.apical) is 0:
