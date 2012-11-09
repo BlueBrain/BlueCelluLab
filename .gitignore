@@ -1,4 +1,2 @@
 build
-*.pyc
-i686
-MANIFEST
+build.sh

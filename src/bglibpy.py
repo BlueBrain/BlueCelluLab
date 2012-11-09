@@ -4,8 +4,6 @@ Python library for running single cell bglib templates
 
 import sys
 import os
-os.environ['HOC_LIBRARY_PATH'] = "/home/vangeit/src/bglib1.5/lib/hoclib"
-
 
 import numpy
 import re
@@ -14,20 +12,23 @@ import pylab
 import multiprocessing
 import math
 import itertools
-#import random
 
-#tmpstdout = os.dup(1)
-#tmpstderr = os.dup(2)
-#devnull = os.open('/dev/null', os.O_WRONLY)
-#os.dup2(devnull, 1)
-#os.dup2(devnull, 2)
-#os.close(devnull)
-sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
+installdir = os.path.dirname(__file__)
+pathsconfig_filename = installdir+"/paths.config"
+
+if os.path.exists(pathsconfig_filename):
+    pathsconfig = {line.strip().split("=")[0]: line.strip().split("=")[1] for line in open(pathsconfig_filename, "r")}
+else:
+    raise Exception("Sorry, can not find the file paths.config")
+
+print "Paths config: ", pathsconfig
+
+os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
+
+sys.path = [pathsconfig["NRN_PYTHONPATH"]]  + sys.path
 import neuron
-neuron.h.nrn_load_dll('/home/vangeit/scripts/libraries/bglibpy/i686/.libs/libnrnmech.so')
+neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("nrngui.hoc")
-#os.dup2(tmpstdout, 1)
-#os.dup2(tmpstderr, 2)
 
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
