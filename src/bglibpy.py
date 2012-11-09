@@ -21,11 +21,9 @@ if os.path.exists(pathsconfig_filename):
 else:
     raise Exception("Sorry, can not find the file paths.config")
 
-print "Paths config: ", pathsconfig
-
 os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 
-sys.path = [pathsconfig["NRN_PYTHONPATH"]]  + sys.path
+sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("nrngui.hoc")

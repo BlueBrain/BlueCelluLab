@@ -85,10 +85,13 @@ add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBBUILDMODS} ${SYNUTILSIN
 if (NOT HOCLIBPATH)
     message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
 endif ()
+
+if (NOT NRNPYTHONPATH)
+    message(FATAL_ERROR "The user should set NRNPYTHON to a directory where the Neuron python module is installed")
+endif ()
+
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
-message("${HOC_LIBRARY_PATH}")
-set(NRN_PYTHONPATH ${NRNPATH}/lib/python2.7/site-packages)
-set(NRNMECH_PATH "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so")
+set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")
 
 configure_file(paths.config.in paths.config)
 
