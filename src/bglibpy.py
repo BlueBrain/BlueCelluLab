@@ -43,16 +43,13 @@ class Cell:
         """The objects that need to stay persistent in python"""
         objects = []
 
+
     def __init__(self, template_name, morphology_name):
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h."+ cell_name +"(0, morphology_name)")
-        #neuron.h('print psections()')
-        #neuron.h('p = new PythonObject()')
-        #neuron.h('nrnpython(\"ev = lambda arg: eval(arg)\"')
-        #neuron.h('print p.cell')
         self.recordings = {}
         self.synapses = {}
         self.netstims = {}
@@ -67,22 +64,26 @@ class Cell:
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
 
-        self.addRecordings(['soma(0.5)._ref_v', 'neuron.h._ref_t'])
+        self.addRecordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
         self.plotWindows = []
+
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
         self.cell.re_init_rng()
         neuron.h.finitialize()
 
+
     def getThreshold(self):
         """Get the spiking threshold of the cell"""
         return self.cell.getThreshold()
 
+
     def getHypAmp(self):
         """Get the current level necessary to bring the cell to -85 mV"""
         return self.cell.getHypAmp()
+
 
     def showDendDiam(self):
         """Show a dendrogram plot"""
@@ -90,10 +91,11 @@ class Cell:
         pylab.hist(diamlist, bins=int((max(diamlist)-min(diamlist))/.1))
         pylab.show()
 
+
     def addRecording(self, var_name):
         """Add a recording to the cell"""
-        soma = [x for x in self.cell.getCell().somatic][0]
-        soma = soma
+        #soma = [x for x in self.cell.getCell().somatic][0]
+        #soma = soma
         recording = neuron.h.Vector()
         recording.record(eval(var_name))
         self.recordings[var_name] = recording
@@ -103,12 +105,14 @@ class Cell:
         for var_name in var_names:
             self.addRecording(var_name)
 
+
     def addAllSectionsVoltageRecordings(self):
         """Add a voltage recording to every section of the cell"""
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
             self.addRecording(var_name)
+
 
     def getAllSectionsVoltageRecordings(self):
         """Get all the voltage recordings from all the sections"""
@@ -119,20 +123,18 @@ class Cell:
             allSectionVoltages[section.name()] = self.getRecording(var_name)
         return allSectionVoltages
 
+
     def getRecording(self, var_name):
         """Get recorded values"""
         return self.recordings[var_name].to_python()
+
 
     def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
         """Add a synaptic stimulus to a certain section"""
         segname = section.name() + "(" + str(location) + ")"
         synapse = neuron.h.tmgExSyn(location, sec=section)
-        #synapse.gmax = gmax
-        synapse.Use = 0.5 #0.02
-        #synapse.Dep = 706 #194
-        #
-        synapse.Fac = 21 #507
-        #synapse.e = -80
+        synapse.Use = 0.5
+        synapse.Fac = 21
 
         netstim = neuron.h.NetStim(sec=section)
         stimfreq = 70
@@ -146,16 +148,18 @@ class Cell:
         self.netstims[segname] = netstim
         self.connections[segname] = connection
 
+
     def locateBAPSite(self, seclistName, distance):
         """Return the location of the BAP site"""
-        #return [[int(secnumber), x] for [secnumber, x] in self.cell.getCell().locateBAPSite(seclistName, distance)]
         return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
+
 
     def removeSynapticStimulus(self, segname):
         """Removed a synaptic stimulus"""
         self.synapses[segname] = None
         self.netstims[segname] = None
         self.connections[segname] = None
+
 
     def addAllSynapses(self):
         """Add synapses to all dendritic sections"""
@@ -164,6 +168,7 @@ class Cell:
             self.addSynapticStimulus(section, 0)
             self.addSynapticStimulus(section, 0.5)
             self.addSynapticStimulus(section, 1)
+
 
     def injectCurrentWaveform(self, t_content, i_content):
         """Inject a current in the cell"""
@@ -182,7 +187,40 @@ class Cell:
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
 
-    def somaticbranches(self):
+
+    def get_childrensections(self, parentsection):
+        """Get the children section of a neuron section"""
+        number_children = neuron.h.SectionRef(sec=parentsection).nchild()
+        children = []
+        for index in range(0, int(number_children)):
+            children.append(neuron.h.SectionRef(sec=self.soma).child[index])
+        return children
+
+
+    def get_parentsection(self, childsection):
+        """Get the parent section of a neuron section"""
+        print self.soma
+        return neuron.h.SectionRef(sec=childsection).parent
+
+
+    def addAxialCurrentRecordings(self, section):
+        """Create a recording that will contain all the axial current flowing in and out of the section"""
+        secname = neuron.h.secname(sec=section)
+        self.addRecording(secname)
+        for child in self.get_childrensections(section):
+            self.addRecording(child)
+        self.get_parentsection(section)
+
+
+    def getAxialCurrentRecording(self, section):
+        """Return the axial current recording"""
+        secname = neuron.h.secname(sec=section)
+        for child in self.get_childrensections(section):
+            self.getRecording(secname)
+            self.getRecording(child)
+
+
+    def somatic_branches(self):
         """Show the index numbers """
         nchild = neuron.h.SectionRef(sec=self.soma).nchild()
         for index in range(0, int(nchild)):
@@ -200,7 +238,7 @@ class Cell:
                     raise Exception("somaticbranches: No apic or dend found in section %s" % secname)
 
 
-    def apicaltrunk(self):
+    def apical_trunk(self):
         """Return the apical trunk of the cell"""
         if len(self.apical) is 0:
             return []
@@ -208,7 +246,6 @@ class Cell:
             apicaltrunk = []
             apicaltrunk.append(self.apical[0])
             currentsection = self.apical[0]
-            #neuron.h.psection()
             while True:
                 children = [neuron.h.SectionRef(sec=currentsection).child[index] for index in range(0, int(neuron.h.SectionRef(sec=currentsection).nchild()))]
                 if len(children) is 0:
@@ -221,11 +258,13 @@ class Cell:
                 apicaltrunk.append(child)
             return apicaltrunk
 
+
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
         """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level-start_level)/(stop_time-start_time))*(x-start_time)+start_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)
+
 
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp"""
@@ -236,6 +275,7 @@ class Cell:
         vclamp.dur3 = 0
         self.persistent.objects.append(vclamp)
 
+
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
         """Add a sinusoidal current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
@@ -243,13 +283,16 @@ class Cell:
         self.injectCurrentWaveform(t_content, i_content)
         return (t_content, i_content)
 
+
     def getTime(self):
         """Get the time vector"""
         return numpy.array(self.getRecording('neuron.h._ref_t'))
 
+
     def getSomaVoltage(self):
         """Get a vector of the soma voltage"""
         return numpy.array(self.getRecording('soma(0.5)._ref_v'))
+
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell"""
@@ -258,12 +301,6 @@ class Cell:
             totalnseg += section.nseg
         return totalnseg
 
-    #def addPlotWindow(self, var_name, xlim=None, ylim=None):
-        #xlim = [0, 1000] if xlim is None else xlim
-        #ylim = [-100, 100] if ylim is None else ylim
-        #if var_name not in self.recordings:
-        #    self.addRecording(var_name)
-        #self.plotWindows[var_name] = PlotWindow(var_name, self, xlim, ylim)
 
     def addPlotWindow(self, var_list, xlim=None, ylim=None, title=""):
         """Add a window to plot a variable"""
@@ -274,11 +311,13 @@ class Cell:
                 self.addRecording(var_name)
         self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim, title))
 
+
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
         cell_dendrogram = dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
+
 
     def update(self):
         """Update all the windows"""
@@ -287,13 +326,14 @@ class Cell:
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
 
+
     def delete(self):
         """Delete the cell"""
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
-        for window in self.plotWindows:
-            window.process.join()
+        #for window in self.plotWindows:
+        #    window.process.join()
 
     def __del__(self):
         self.delete()
@@ -583,7 +623,7 @@ class PlotWindow:
                 self.line[var_name].set_data(time, voltage)
                 self.ax.draw_artist(self.line[var_name])
             self.canvas.blit(self.ax.bbox)
-            self.drawCount = 1000
+            self.drawCount = 100
         else:
             self.drawCount = self.drawCount - 1
         return True
