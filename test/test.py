@@ -10,7 +10,7 @@ def main():
     #cell = bglibpy.Cell("cAC.hoc","/bgscratch/bbp/build/morphologies/ascii/rp100426-2_idA.asc") #stuck
     #cell = bglibpy.Cell("bAC.hoc","/bgscratch/bbp/build/morphologies/ascii/C011098A-I3.asc")
     #cell = bglibpy.Cell("cADpyr2280_L23_PC_2_dend-C031000B-P3_axon-C170797A-P2.hoc","/bgscratch/bbp/build/morphologies/ascii/")
-    cell = bglibpy.Cell("cADpyr2280_L5_TTPC2_5_dend-ch150801A1_axon-tr050310_5_c1.hoc","/bgscratch/bbp/build/morphologies/ascii/")
+    cell = bglibpy.Cell("cADpyr230_L4_SS_4_dend-C050800E2_cor_axon-C120398A-P2_-_Scale_x1.000_y0.975_z1.000_-_Clone_23.hoc","/bgscratch/bbp/morphologies/31.05.12/ascii/")
     #cell = bglibpy.Cell("cADpyr228_L5TTPC_5_C060110A3.hoc","/bgscratch/bbp/release/02.05.11/morphologies/ascii")
     hyp_level = -0.005
     #dep_level = 0.05
@@ -18,24 +18,24 @@ def main():
     cell.addRamp(0, 9000, hyp_level, hyp_level, dt=1.0)
     cell.addRamp(100, 900, dep_level-hyp_level, dep_level-hyp_level, dt=1.0)
     cell.addAllSectionsVoltageRecordings()
-    cell.addPlotWindow('soma(0.5)._ref_v',ylim=[-100,100])
+    cell.addPlotWindow(['self.soma(0.5)._ref_v'],ylim=[-100,100])
     #bglibpy.calculateAllSynapticAttenuations(cell)
     #cell.addAllSynapses()
-    cell.showDendrogram(variable="v")
+    cell.showDendrogram(variable="v",active=True)
     #cell.activateDendrogram()
     #cell.addPlotWindow('soma(0.5)._ref_ina_NaTs2_t',ylim=[-1,1])
     #cell.addPlotWindow('soma(0.5)._ref_ina_Nap_Et2',ylim=[-1,1])
     simulation = bglibpy.Simulation(verbose_level=0)
     simulation.addCell(cell)
-    simulation.run(115)
+    simulation.run(3000)
 
-    all_voltage = cell.getAllSectionsVoltageRecordings()
-    pylab.figure()
-    for section_name in all_voltage:
-        pylab.plot(cell.getTime(), all_voltage[section_name])
+    # all_voltage = cell.getAllSectionsVoltageRecordings()
+    # pylab.figure()
+    # for section_name in all_voltage:
+    #     pylab.plot(cell.getTime(), all_voltage[section_name])
 
-    pylab.plot(cell.getTime(), cell.getSomaVoltage())
-    pylab.draw()
+    # pylab.plot(cell.getTime(), cell.getSomaVoltage())
+    # pylab.draw()
 
     raw_input()
 

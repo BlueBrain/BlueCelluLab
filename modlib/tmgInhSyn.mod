@@ -106,7 +106,7 @@ UNITS {
 PARAMETER {
 	: e = -70 mV for inhibitory synapses 
 	:     0 mV for excitatory
-	e = -70 (mV)
+	e = -80 (mV)
 	: tau_d was the same for inhibitory and excitatory synapses
 	: in the models used by T et al.
 	tau_d = 8 (ms) < 1e-9, 1e9 >

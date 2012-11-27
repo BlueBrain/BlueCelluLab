@@ -1,12 +1,30 @@
+COMMENT
+/**
+ * @file utility.mod
+ * @brief Collection of functions to give hoc access to extended functionality
+ * @author king
+ * @date 2009-06-12
+ * @remark Copyright © BBP/EPFL 2005-2011; All rights reserved. Do not distribute without further notice.
+ */
+ENDCOMMENT
+
 NEURON {
 	SUFFIX nothing
 }
 
 VERBATIM
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+
 extern char* gargstr();
 extern char** hoc_pgargstr();
 extern void hoc_assign_str();
 extern double chkarg();
+extern errno;
+
 ENDVERBATIM
 
 : like File.scanstr
@@ -80,5 +98,29 @@ VERBATIM
 
 	return (double)(h%n);
 }
+ENDVERBATIM
+}
+
+FUNCTION checkDirectory() {
+VERBATIM
+    char* dirName = gargstr(1);
+    
+    struct stat st;
+    if ( stat(dirName, &st) == 0) {
+        if( !S_ISDIR(st.st_mode) ) {
+            fprintf( stderr, "%s does not name a directory.\n", dirName );
+            return -1;
+        }
+        return 0;
+    }
+    else if( errno == ENOENT ) {
+        fprintf( stdout, "Directory %s does not exist.  Creating...\n", dirName );
+        int res = mkdir( dirName, 0777 );
+        if( res < 0 ) {
+            fprintf( stderr, "Failed to create directory %s.\n", dirName );
+            return -1;
+        }
+        return 0;
+    }
 ENDVERBATIM
 }
