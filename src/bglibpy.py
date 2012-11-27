@@ -4,6 +4,10 @@ Python library for running single cell bglib templates
 
 import sys
 import os
+import inspect
+import pickle
+
+os.environ['HOC_LIBRARY_PATH'] = "/home/torben/work/epfl/projects/bglib1.5/lib/hoclib:/home/torben/work/epfl/projects/bglib1.5/lib/hoclib/alib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
 
 import numpy
 import re
@@ -27,14 +31,313 @@ sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("nrngui.hoc")
+import collections
 
+import bluepy
+from bluepy.targets.mvddb import MType
+from bluepy.targets.mvddb import Neuron
+
+#tmpstdout = os.dup(1)
+#tmpstderr = os.dup(2)
+#devnull = os.open('/dev/null', os.O_WRONLY)
+#os.dup2(devnull, 1)
+#os.dup2(devnull, 2)
+#os.close(devnull)
+#sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
+#sys.path = ["/home/torben/local/lib/python2.7/site-packages"]  + sys.path
+#import neuron
+#neuron.h.nrn_load_dll('/home/torben/work/epfl/projects/bglibpy/x86_64/.libs/libnrnmech.so')
+
+#neuron.h.load_file("stdrun.hoc")
+#neuron.h.load_file("TStim.hoc")
+#neuron.h.load_file("nrngui.hoc") # I prefer not using the gui
+
+#os.dup2(tmpstdout, 1)
+#os.dup2(tmpstderr, 2)
+
+# load some BGLIB stuff
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
+
+neuron.h.load_file("SerializedCell.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
+
+BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
+
+def _me() : print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
 
 def load_nrnmechanisms(libnrnmech_location):
     """Load another shared library with neuron mechanisms"""
     neuron.h.nrn_load_dll(libnrnmech_location)
+
+def parse_complete_BlueConfig(fName) :
+    """ Simplistic parser of the BlueConfig file """
+    bc = open(fName,'r')
+    uber_hash = {}#collections.OrderedDict
+    for keyword in BLUECONFIG_KEYWORDS :
+        uber_hash[keyword] = {}
+    line = bc.next()
+
+    while(line != '') :
+        stripped_line = line.strip()
+        if(stripped_line.startswith('#')) :
+            ''' continue to next line '''
+            line = bc.next()
+        elif(stripped_line == '') :
+            # print 'found empty line'
+            try :
+                line = bc.next()
+            except StopIteration :
+                # print 'I think i am at the end of the file'
+                break
+        elif(stripped_line.split()[0].strip() in BLUECONFIG_KEYWORDS ) :
+            key = stripped_line.split()[0].strip()
+            value = stripped_line.split()[1].strip()
+            # print 'came accross key >',key,'<, value: >',value,'<'
+            # parse the entries in that block
+            parsed_dict = _parse_block_statement(bc)
+            # add to the correct uber-dictionary
+            uber_hash[key][value] = parsed_dict
+            # print 'came accross key >',key,'<, value: >',value,'<'
+            # print 'added the following dict:\n',parsed_dict
+            line = bc.next()
+        else :
+            line = bc.next()
+    return uber_hash
+
+def _parse_block_statement(file_object) :
+    ''' parse the content of the blocks in BlueConfig'''
+    file_object.next() # skip the opening "}"
+    line = file_object.next().strip()
+    ret_dict = {}
+    while(not line.startswith('}')) :
+        # print '_parse_block_statement, line: >',line,'<'
+        if(len(line) == 0 or line.startswith('#')) :
+            line = file_object.next().strip()
+        else :
+            key = line.split(' ')[0].strip()
+            values = line.split(' ')[1:]
+            for value in values :
+                if(value == '') :
+                    pass
+                else :
+                    ret_dict[key] = value
+                # print '_parse_block... stored [',key,']: >', value,'<'
+            line = file_object.next().strip()
+        # raw_input('press ENTER')
+    # print 'line after the }, returning: ', ret_dict
+    return ret_dict
+
+def parse_paths_BlueConfig(fName) :
+    """ Parse the main paths defined in the BlueConfig file """
+    bc = open(fName,'r')
+    return_object = {}
+    for line in bc.readlines() :
+        stripped_line = line.strip()
+        if(stripped_line.startswith('Prefix')) :
+            return_object['prefix'] = stripped_line.split()[1]
+        elif(stripped_line.startswith('MorphologyPath')) :
+            return_object['morphology_path'] = stripped_line.split()[1]
+        elif(stripped_line.startswith('METypePath')) :
+            return_object['me_type_path'] = stripped_line.split()[1]
+        elif(stripped_line.startswith('CircuitPath')) :
+            return_object['circuit_path'] = stripped_line.split()[1]
+        elif(stripped_line.startswith('nrnPath')) :
+            return_object['nrn_path'] = stripped_line.split()[1]
+
+            return_object['main_path'] = fName[:-10] # stripped the "BlueConfig"
+    return return_object
+
+def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
+    xhashed = {}
+    inFile = open(path + '/' + fName,'r')
+    inLine = inFile.readline()
+    inLine = inFile.readline() # avoid the trailing "/scatter"
+    counter = 0
+    all_gids = []
+    while(inLine != None) :
+        try :
+            # format: time gid
+            t,gid = inLine.split() # returns 2 strings
+            t = float(t)
+            igid = int(gid)
+            all_gids.append(igid)
+            if(igid in xhashed) :
+                xhashed[igid].append(t)
+            else :
+                xhashed[igid] = []
+                xhashed[igid].append(t)
+            counter = counter + 1
+            inLine = inFile.readline()
+        except :
+            print 'no issue, most likely the last entry'
+            print 'current inLine: ', inLine
+            print 'current counter: ', counter
+            inLine = inFile.readline()
+            break
+
+    print 'read and stored all spikes. now going to write the output'
+    if not os.path.exists('presynaptic_temp'): os.makedirs('presynaptic_temp')
+
+    if(store) :
+        for key in xhashed.keys() :
+            fN = 'presynaptic_temp/' +str(key) + '_spikes.dat'
+            #print 'fn >%s<' % fN
+            outF = open(fN,'w')
+            outF.write( '\t'.join(map(str, xhashed[key]))  )
+            outF.flush()
+            outF.close()
+    return xhashed
+
+def _get_template_name_of_gid(bg_dict,cell_gid) :
+    ncs_file = open(bg_dict['Run']['Default']['nrnPath']+'/start.ncs')
+    template_name = None
+    for line in ncs_file.readlines() :
+        stripped_line = line.strip()
+
+        #if(stripped_line.startswith('a'+str(cell_gid))) :
+        try :
+            if( int(stripped_line.split(' ')[0][1:]) == cell_gid) :
+                template_name = line.split()[4]
+                print stripped_line
+        except :
+            pass
+    return template_name
+
+def recreate_bare_gid(blue_config_filename,cell_gid) :
+    bg_dict = parse_complete_BlueConfig(blue_config_filename)
+    bp_simulation = bluepy.Simulation(blue_config_filename)
+
+    ''' fetch the template for this GID, stored in template_name '''
+    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    if(template_name == None) :
+        _me()
+        print 'i could not find the template. terminating replay'
+        return
+
+    ''' fetch synapse details '''
+    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
+
+    ''' parse incoming spike data'''
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+
+    ''' construct the model neuron '''
+    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
+    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
+    model = Cell(full_template_name,path_of_morphology)
+
+    ''' add the synapses to the model'''
+    counter = 0
+    synapse_distances = []
+    for syn_description in pre_datas :
+        spiketrain = []
+        if(counter == -1) : # a bit pointless, no: i never wantthe spiketrains here. so just remove the if statement
+            spiketrain = pre_spike_trains[int(syn_description[0])]
+        distance = model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0,nmda_ratio=0,test=0)
+        synapse_distances.append(distance)
+        counter = counter  +1
+    print 'added synapses: %i' % (counter)
+
+    return model,synapse_distances
+
+def recreate_one_gid(blue_config_filename, cell_gid,without_pre_spikes=False) :
+    bg_dict = parse_complete_BlueConfig(blue_config_filename)
+    bp_simulation = bluepy.Simulation(blue_config_filename)
+
+    ''' fetch the template for this GID, stored in template_name '''
+    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    if(template_name == None) :
+        _me()
+        print 'i could not find the template. terminating replay'
+        return
+
+    ''' fetch synapse details '''
+    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
+
+    ''' parse incoming spike data'''
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+
+    ''' construct the model neuron '''
+    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
+    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
+    model = Cell(full_template_name,path_of_morphology)
+
+    ''' add the synapses to the model'''
+    counter = 0
+    no_input_synapses = 0
+    for syn_description in pre_datas :
+        spiketrain = []
+        try :
+            if(without_pre_spikes) :
+                spiketrain = [] #pre_spike_trains[int(syn_description[0])]
+            else :
+                spiketrain = pre_spike_trains[int(syn_description[0])]
+            # fN = 'presynaptic_temp/' +str(pre_gid) + '_spikes.dat'
+            # spiketrain = list(scipy.loadtxt(fN))
+            # print 'spiketrain: ', spiketrain
+        except Exception:
+            no_input_synapses = no_input_synapses + 1
+            model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0.04,nmda_ratio=0.4,test=0)
+        counter = counter + 1
+    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter,no_input_synapses)
+
+    return model
+
+def imprecise_replay(blue_config_filename, cell_gid,t_stop=1000,dt=0.025) :
+    bg_dict = parse_complete_BlueConfig(blue_config_filename)
+    bp_simulation = bluepy.Simulation(blue_config_filename)
+
+    ''' fetch the template for this GID, stored in template_name '''
+    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    if(template_name == None) :
+        _me()
+        print 'i could not find the template. terminating replay'
+        return
+
+    ''' fetch synapse details '''
+    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
+
+    ''' parse incoming spike data'''
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+
+    ''' construct the model neuron '''
+    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
+    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
+    model = Cell(full_template_name,path_of_morphology)
+
+    ''' add the synapses to the model'''
+    counter = 0
+    no_input_synapses = 0
+    for syn_description in pre_datas :
+        spiketrain = []
+        try :
+            spiketrain = pre_spike_trains[int(syn_description[0])]
+            # fN = 'presynaptic_temp/' +str(pre_gid) + '_spikes.dat'
+            # spiketrain = list(scipy.loadtxt(fN))
+            # print 'spiketrain: ', spiketrain
+        except Exception:
+            no_input_synapses = no_input_synapses + 1
+        model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0.04,nmda_ratio=0.4,test=0)
+        counter = counter + 1
+    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter,no_input_synapses)
+
+    # THE FOLLOWING HAS TO BE SET HY HAND (at this moment)
+    model.add_replay_noise(cell_gid,1.2 * model.getThreshold(), 0.001*model.getThreshold()/100.0,0)
+    hypamp_i =1.0 * model.getHypAmp() #cell.getCell().getThreshold()
+    model.addRamp(0,10000,hypamp_i,hypamp_i,dt=0.025)
+
+    ''' RUN '''
+    simulation = Simulation()
+    simulation.addCell(model)
+    simulation.run(t_stop,cvode=False,dt=dt)
+    time = model.getTime()
+    voltage = model.getSomaVoltage()
+
+    pickle.dump([time,voltage],open(str(cell_gid)+'_imprecise_replay_'+str(t_stop)+'.pkl','w'))
+    return time,voltage
 
 class Cell:
     """Represents a bglib cell"""
@@ -55,6 +358,20 @@ class Cell:
         self.netstims = {}
         self.connections = {}
 
+        self.mechanisms = [] # BTN: all additional mechanism stored in one list. easy to delete...
+
+        self.synapse_number = 0
+        self.syn_vecs = {}
+        self.syn_vecstims ={}
+        self.syns = {}
+        self.syn_netcons = {}
+        self.ips = {}
+        self.syn_mini_netcons = {}
+
+
+        #neuron.h('objref serialized')
+        #neuron.h.serialized = neuron.h.SerializedSections(self.cell.getCell())#CellRef)
+        self.serialized = neuron.h.SerializedSections(self.cell.getCell())
         neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
@@ -73,6 +390,46 @@ class Cell:
         """Reinitialize the random number generator for the stochastic channels"""
         self.cell.re_init_rng()
         neuron.h.finitialize()
+
+    def get_section(self,raw_section_id) :
+        ''' use the serialized object to find your section'''
+        return self.serialized.isec2sec[int(raw_section_id)].sec
+
+    def location_to_point(self,syn_description,test=False) :
+        pre_gid =  syn_description[0]
+        post_sec_id = syn_description[2]
+        isec = post_sec_id
+        post_seg_id = syn_description[3]
+        ipt = post_seg_id
+        post_seg_distance = syn_description[4]
+        syn_offset = post_seg_distance
+
+        curr_sec = self.get_section(post_sec_id)
+        L = curr_sec.L
+
+        debug_too_large = 0
+        debug_too_small = 0
+        # access section to compute the distance
+        if( neuron.h.section_orientation(sec=self.get_section(isec)) == 1) :
+            ipt = neuron.h.n3d(sec=self.get_section(isec)) -1 - ipt
+
+        if(ipt < neuron.h.n3d(sec=self.get_section(isec)) ) :
+            distance = (ipt+syn_offset)/L
+            if(distance >= 1.0) :
+                distance = 1
+                debug_too_large = debug_too_large + 1
+
+        if( neuron.h.section_orientation(sec=self.get_section(isec)) == 1  ) :
+            distance = 1 - distance
+
+        if(distance <=0 ) :
+            distance =0
+            debug_too_small = debug_too_small + 1
+
+        if(test) :
+            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small,debug_too_large)
+
+        return distance
 
 
     def getThreshold(self):
@@ -128,6 +485,101 @@ class Cell:
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
+    def add_replay_noise(self,gid,mean,variance,noise_seed,delay=0,dur=10000) :
+        rand = neuron.h.Random(gid+noise_seed)
+        tstim =neuron.h.TStim(0.5, rand, sec=self.soma)# self.get_section(0)) # assuming that section 0 is the soma
+        tstim.noise(delay, dur, mean, variance)
+        self.mechanisms.append(rand)
+        self.mechanisms.append(tstim)
+
+    def add_replay_synapse(self,syn_description,spike_train,SID=1,TGID=1,baseSeed=0,weightScalar=1.0,spontMiniRate=0.0,nmda_ratio=-66,e_gaba=-80,dt=0.025,test=False) :
+        ''' Adds synapses the way BGLib does is. Supposedly.'''
+        pre_gid =  syn_description[0]
+        delay = syn_description[1]
+        post_sec_id = syn_description[2]
+        post_seg_id = syn_description[3]
+        post_seg_distance = syn_description[4]
+        gsyn = syn_description[8]
+        syn_U = syn_description[9]
+        syn_D = syn_description[10]
+        syn_F = syn_description[11]
+        syn_DTC = syn_description[12]
+        syn_type = syn_description[13]
+        syn_pre_m_type = syn_description[14]
+        syn_ASE = syn_description[17]
+
+        ''' set up the vecevent thing '''
+        t_vec = neuron.h.Vector(spike_train)
+        t_vec_stim = neuron.h.VecStim()
+        self.syn_vecs[SID] = t_vec
+        self.syn_vecstims[SID] = t_vec_stim
+        self.syn_vecstims[SID].play(self.syn_vecs[SID],dt)
+
+        location = self.location_to_point(syn_description,test=test)
+        distance =  neuron.h.distance(location, sec=self.get_section(post_sec_id))
+        if(syn_type < 100) :
+            ''' see: https://bbpteam.epfl.ch/wiki/index.php/BlueBuilder_Specifications#NRN,'''
+            ''' inhibitory synapse '''
+            if(test) :
+                print 'Inserting synapse in %i(%f)' % (post_sec_id,location)
+            syn = neuron.h.ProbGABAAB_EMS(location,sec=self.get_section(post_sec_id))
+            syn.e_GABAA = e_gaba
+            syn.tau_d_GABAA = syn_DTC
+            rng = neuron.h.Random()
+            rng.MCellRan4(SID *100000+100,TGID+250+baseSeed) # +0 is the baseSeed, what's baseSeed?
+            rng.lognormal(0.2,0.1)
+            syn.tau_r_GABAA = rng.repick()
+        else :
+            ''' else we have excitatory synapse '''
+            syn = neuron.h.ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
+            syn.tau_d_AMPA = syn_DTC
+            if(nmda_ratio != -66) :
+                syn.NMDA_ratio=nmda_ratio
+
+        syn.Use = abs( syn_U )
+        syn.Dep = abs( syn_D )
+        syn.Fac = abs( syn_F )
+        syn.synapseID=SID
+
+        rndd = neuron.h.Random()
+        rndd.MCellRan4(SID*100000+100, TGID+250+baseSeed )
+        rndd.uniform(0,1)
+        syn.setRNG(rndd)
+        self.mechanisms.append(rndd)
+
+        # self.mechanisms.append(syn)
+        self.syns[SID] = syn
+
+        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID],self.syns[SID],-30,delay,gsyn*weightScalar) # ...,threshold,delay,weight
+
+        ''' add the *minis*: spontaneous synaptic events '''
+        if(spontMiniRate > 0.0) :
+            self.ips[SID] = neuron.h.InhPoissonStim(location,sec=self.get_section(post_sec_id))
+
+            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID],self.syns[SID],-30,0.1,gsyn*weightScalar) # delay=0.1, fixed in Connection.hoc
+
+            exprng = neuron.h.Random()
+            exprng.MCellRan4( SID*100000+200, TGID+250+baseSeed )
+            exprng.negexp(1)
+            self.mechanisms.append(exprng)
+            uniformrng = neuron.h.Random()
+            uniformrng.MCellRan4( SID*100000+300, TGID+250+baseSeed )
+            uniformrng.uniform(0.0,1.0)
+            self.mechanisms.append(uniformrng)
+            self.ips[SID].setRNGs(exprng, uniformrng)
+            tbins_vec = neuron.h.Vector(1)
+            tbins_vec.x[0] = 0.0
+            rate_vec = neuron.h.Vector(1)
+            if(spontMiniRate == 0) :
+                rate_vec.x[0] = spontMiniRate # hack to set ALL the spont mini rates to 0
+            else :
+                rate_vec.x[0] = spontMiniRate if(syn_type >=100) else  0.012 # according to Blueconfig, ConInh-uni rule
+            self.mechanisms.append(tbins_vec)
+            self.mechanisms.append(rate_vec)
+            self.ips[SID].setTbins(tbins_vec)
+            self.ips[SID].setRate(rate_vec)
+
+        return distance
 
     def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
         """Add a synaptic stimulus to a certain section"""
@@ -334,6 +786,9 @@ class Cell:
                 self.cell.getCell().clear()
         #for window in self.plotWindows:
         #    window.process.join()
+        ''' BTN, clear mechanisms as well '''
+        self.mechanisms = []
+        del(self.mechanisms)
 
     def __del__(self):
         self.delete()
@@ -863,12 +1318,12 @@ class Simulation:
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True, dt=0.025):
+    def run(self, maxtime, cvode=True, v_init=-65, dt=0.025):
         """Run the simulation"""
         neuron.h.tstop = 0.000001
         #print "dt=", neuron.h.dt
         neuron.h.dt = dt
-        neuron.h.v_init = -85
+        neuron.h.v_init = v_init
 
         if cvode:
             neuron.h('{cvode_active(1)}')
