@@ -6,8 +6,6 @@ import sys
 import os
 import pickle
 
-os.environ['HOC_LIBRARY_PATH'] ="/home/torben/work/epfl/projects/bglib1.5/lib/hoclib:/home/torben/work/epfl/projects/bglib1.5/lib/hoclib/alib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
-
 import numpy
 import re
 import matplotlib as plt
@@ -38,12 +36,11 @@ os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
-
 neuron.h.load_file("stdrun.hoc")
 
+sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy
 
-# load some BGLIB stuff
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 

@@ -64,7 +64,8 @@ set(MODLIBBUILDMODS "")
 foreach (MODFILE ${MODLIBMODS})
     string(REGEX REPLACE "${MODLIBPATH}/" "" MODFILESHORT ${MODFILE})
     add_custom_command(
-        OUTPUT "${MODLIBBUILDPATH}/${MODFILESHORT}" 
+        OUTPUT "${MODLIBBUILDPATH}/${MODFILESHORT}"
+        DEPENDS ${MODFILE} 
         COMMAND cmake -E copy "${MODFILE}"
         "${MODLIBBUILDPATH}/${MODFILESHORT}")
     set(MODLIBBUILDMODS "${MODLIBBUILDPATH}/${MODFILESHORT}" ${MODLIBBUILDMODS})
@@ -80,7 +81,7 @@ endif()
 
 set(LIBNRNMECHS "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so.0.0.0" )
 add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECHS})
-add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
+add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
 
 if (NOT HOCLIBPATH)
     message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
@@ -90,8 +91,12 @@ if (NOT NRNPYTHONPATH)
     message(FATAL_ERROR "The user should set NRNPYTHON to a directory where the Neuron python module is installed")
 endif ()
 
+if (NOT BLUEPYPATH)
+    message(FATAL_ERROR "The user should set BluePy to a directory where the BluePy python module is installed")
+endif ()
+
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
-set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")
+set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")      
 
 configure_file(paths.config.in paths.config)
 
