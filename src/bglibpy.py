@@ -6,9 +6,6 @@ import sys
 import os
 import inspect
 import pickle
-
-os.environ['HOC_LIBRARY_PATH'] = "/home/torben/work/epfl/projects/bglib1.5/lib/hoclib:/home/torben/work/epfl/projects/bglib1.5/lib/hoclib/alib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
-
 import numpy
 import re
 import matplotlib as plt
@@ -31,31 +28,10 @@ sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("nrngui.hoc")
-#import collections
 
+sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy
-#from bluepy.targets.mvddb import MType
-#from bluepy.targets.mvddb import Neuron
 
-#tmpstdout = os.dup(1)
-#tmpstderr = os.dup(2)
-#devnull = os.open('/dev/null', os.O_WRONLY)
-#os.dup2(devnull, 1)
-#os.dup2(devnull, 2)
-#os.close(devnull)
-#sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
-#sys.path = ["/home/torben/local/lib/python2.7/site-packages"]  + sys.path
-#import neuron
-#neuron.h.nrn_load_dll('/home/torben/work/epfl/projects/bglibpy/x86_64/.libs/libnrnmech.so')
-
-#neuron.h.load_file("stdrun.hoc")
-#neuron.h.load_file("TStim.hoc")
-#neuron.h.load_file("nrngui.hoc") # I prefer not using the gui
-
-#os.dup2(tmpstdout, 1)
-#os.dup2(tmpstderr, 2)
-
-# load some BGLIB stuff
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 

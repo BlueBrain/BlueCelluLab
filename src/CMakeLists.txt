@@ -91,8 +91,12 @@ if (NOT NRNPYTHONPATH)
     message(FATAL_ERROR "The user should set NRNPYTHON to a directory where the Neuron python module is installed")
 endif ()
 
+if (NOT BLUEPYPATH)
+    message(FATAL_ERROR "The user should set BluePy to a directory where the BluePy python module is installed")
+endif ()
+
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
-set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")
+set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")      
 
 configure_file(paths.config.in paths.config)
 
