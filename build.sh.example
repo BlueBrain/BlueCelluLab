@@ -1,6 +1,6 @@
-rm -rf build
+#rm -rf build
 mkdir build
 cd build
 cmake .. -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib -DNRNPATH=/usr/local/nrnnoiv -DNRNPYTHONPATH=/usr/local/nrnnoiv/lib/python2.7/site-packages -DCMAKE_INSTALL_PREFIX=$HOME/local/bglibpy
-make VERBOSE=0
+make
 make install
