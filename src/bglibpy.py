@@ -16,10 +16,12 @@ import multiprocessing
 import math
 import itertools
 
+
 from tools import _me
-from tools load_nrnmechanisms
+from tools import load_nrnmechanisms
 from tools import parse_complete_BlueConfig
 from tools import _parse_block_statement
+
 
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir+"/paths.config"
