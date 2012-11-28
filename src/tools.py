@@ -4,6 +4,8 @@ Static tools for bglibpy
 
 import inspect
 
+BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
+
 def _me():
     '''Used for debgugging. Reads the stack and provides info about which
     function called  '''

@@ -48,9 +48,6 @@ neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedCell.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
-BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
-
-
 def parse_paths_BlueConfig(fName) :
     """ Parse the main paths defined in the BlueConfig file """
     bc = open(fName,'r')
