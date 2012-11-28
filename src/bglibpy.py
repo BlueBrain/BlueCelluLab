@@ -30,7 +30,9 @@ os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
-neuron.h.load_file("nrngui.hoc")
+
+neuron.h.load_file("stdrun.hoc")
+#neuron.h.load_file("stdrun.hoc")
 #import collections
 
 import bluepy
@@ -59,6 +61,7 @@ import bluepy
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 
+# neuron.h.load_file("TargetManager.hoc")
 neuron.h.load_file("SerializedCell.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
