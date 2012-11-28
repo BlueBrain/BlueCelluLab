@@ -4,10 +4,9 @@ Python library for running single cell bglib templates
 
 import sys
 import os
-import inspect
 import pickle
 
-os.environ['HOC_LIBRARY_PATH'] = "/home/torben/work/epfl/projects/bglib1.5/lib/hoclib:/home/torben/work/epfl/projects/bglib1.5/lib/hoclib/alib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
+os.environ['HOC_LIBRARY_PATH'] ="/home/torben/work/epfl/projects/bglib1.5/lib/hoclib:/home/torben/work/epfl/projects/bglib1.5/lib/hoclib/alib"#"/home/vangeit/src/bglib1.5/lib/hoclib"
 
 import numpy
 import re
@@ -17,11 +16,18 @@ import multiprocessing
 import math
 import itertools
 
+from tools import _me
+from tools load_nrnmechanisms
+from tools import parse_complete_BlueConfig
+from tools import _parse_block_statement
+
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir+"/paths.config"
 
 if os.path.exists(pathsconfig_filename):
-    pathsconfig = {line.strip().split("=")[0]: line.strip().split("=")[1] for line in open(pathsconfig_filename, "r")}
+    pathsconfig = {line.strip().split("=")[0]: line.strip().split("=")[1] for
+    line in open(pathsconfig_filename, "r")}
+    
 else:
     raise Exception("Sorry, can not find the file paths.config")
 
@@ -32,30 +38,8 @@ import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 
 neuron.h.load_file("stdrun.hoc")
-#neuron.h.load_file("stdrun.hoc")
-#import collections
 
 import bluepy
-#from bluepy.targets.mvddb import MType
-#from bluepy.targets.mvddb import Neuron
-
-#tmpstdout = os.dup(1)
-#tmpstderr = os.dup(2)
-#devnull = os.open('/dev/null', os.O_WRONLY)
-#os.dup2(devnull, 1)
-#os.dup2(devnull, 2)
-#os.close(devnull)
-#sys.path = ["/usr/local/nrnnogui/lib/python2.7/site-packages"]  + sys.path
-#sys.path = ["/home/torben/local/lib/python2.7/site-packages"]  + sys.path
-#import neuron
-#neuron.h.nrn_load_dll('/home/torben/work/epfl/projects/bglibpy/x86_64/.libs/libnrnmech.so')
-
-#neuron.h.load_file("stdrun.hoc")
-#neuron.h.load_file("TStim.hoc")
-#neuron.h.load_file("nrngui.hoc") # I prefer not using the gui
-
-#os.dup2(tmpstdout, 1)
-#os.dup2(tmpstderr, 2)
 
 # load some BGLIB stuff
 neuron.h.load_file("Cell.hoc")
@@ -67,71 +51,6 @@ neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 
-def _me() :
-    """me ???"""
-    print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
-
-def load_nrnmechanisms(libnrnmech_location):
-    """Load another shared library with neuron mechanisms"""
-    neuron.h.nrn_load_dll(libnrnmech_location)
-
-def parse_complete_BlueConfig(fName) :
-    """ Simplistic parser of the BlueConfig file """
-    bc = open(fName,'r')
-    uber_hash = {}#collections.OrderedDict
-    for keyword in BLUECONFIG_KEYWORDS :
-        uber_hash[keyword] = {}
-    line = bc.next()
-
-    while(line != '') :
-        stripped_line = line.strip()
-        if(stripped_line.startswith('#')) :
-            ''' continue to next line '''
-            line = bc.next()
-        elif(stripped_line == '') :
-            # print 'found empty line'
-            try :
-                line = bc.next()
-            except StopIteration :
-                # print 'I think i am at the end of the file'
-                break
-        elif(stripped_line.split()[0].strip() in BLUECONFIG_KEYWORDS ) :
-            key = stripped_line.split()[0].strip()
-            value = stripped_line.split()[1].strip()
-            # print 'came accross key >',key,'<, value: >',value,'<'
-            # parse the entries in that block
-            parsed_dict = _parse_block_statement(bc)
-            # add to the correct uber-dictionary
-            uber_hash[key][value] = parsed_dict
-            # print 'came accross key >',key,'<, value: >',value,'<'
-            # print 'added the following dict:\n',parsed_dict
-            line = bc.next()
-        else :
-            line = bc.next()
-    return uber_hash
-
-def _parse_block_statement(file_object) :
-    ''' parse the content of the blocks in BlueConfig'''
-    file_object.next() # skip the opening "}"
-    line = file_object.next().strip()
-    ret_dict = {}
-    while(not line.startswith('}')) :
-        # print '_parse_block_statement, line: >',line,'<'
-        if(len(line) == 0 or line.startswith('#')) :
-            line = file_object.next().strip()
-        else :
-            key = line.split(' ')[0].strip()
-            values = line.split(' ')[1:]
-            for value in values :
-                if(value == '') :
-                    pass
-                else :
-                    ret_dict[key] = value
-                # print '_parse_block... stored [',key,']: >', value,'<'
-            line = file_object.next().strip()
-        # raw_input('press ENTER')
-    # print 'line after the }, returning: ', ret_dict
-    return ret_dict
 
 def parse_paths_BlueConfig(fName) :
     """ Parse the main paths defined in the BlueConfig file """
