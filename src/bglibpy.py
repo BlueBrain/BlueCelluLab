@@ -31,11 +31,11 @@ sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("nrngui.hoc")
-import collections
+#import collections
 
 import bluepy
-from bluepy.targets.mvddb import MType
-from bluepy.targets.mvddb import Neuron
+#from bluepy.targets.mvddb import MType
+#from bluepy.targets.mvddb import Neuron
 
 #tmpstdout = os.dup(1)
 #tmpstderr = os.dup(2)
@@ -64,7 +64,9 @@ neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 
-def _me() : print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
+def _me() :
+    """me ???"""
+    print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
 
 def load_nrnmechanisms(libnrnmech_location):
     """Load another shared library with neuron mechanisms"""
@@ -148,7 +150,8 @@ def parse_paths_BlueConfig(fName) :
             return_object['main_path'] = fName[:-10] # stripped the "BlueConfig"
     return return_object
 
-def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
+def parse_and_store_GID_spiketrains(path, fName='out.dat', store=False) :
+    """need to put  description"""
     xhashed = {}
     inFile = open(path + '/' + fName,'r')
     inLine = inFile.readline()
@@ -158,7 +161,7 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
     while(inLine != None) :
         try :
             # format: time gid
-            t,gid = inLine.split() # returns 2 strings
+            t, gid = inLine.split() # returns 2 strings
             t = float(t)
             igid = int(gid)
             all_gids.append(igid)
@@ -169,7 +172,7 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
                 xhashed[igid].append(t)
             counter = counter + 1
             inLine = inFile.readline()
-        except :
+        except Exception :
             print 'no issue, most likely the last entry'
             print 'current inLine: ', inLine
             print 'current counter: ', counter
@@ -177,7 +180,8 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
             break
 
     print 'read and stored all spikes. now going to write the output'
-    if not os.path.exists('presynaptic_temp'): os.makedirs('presynaptic_temp')
+    if not os.path.exists('presynaptic_temp'):
+        os.makedirs('presynaptic_temp')
 
     if(store) :
         for key in xhashed.keys() :
@@ -189,43 +193,45 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat',store=False) :
             outF.close()
     return xhashed
 
-def _get_template_name_of_gid(bg_dict,cell_gid) :
-    ncs_file = open(bg_dict['Run']['Default']['nrnPath']+'/start.ncs')
+def _get_template_name_of_gid(bg_dict, cell_gid) :
+    """need to put  description"""
+    ncs_file = open("%s/%s" % (bg_dict['Run']['Default']['nrnPath'],'start.ncs'))
     template_name = None
     for line in ncs_file.readlines() :
         stripped_line = line.strip()
 
-        #if(stripped_line.startswith('a'+str(cell_gid))) :
-        try :
+        try:
             if( int(stripped_line.split(' ')[0][1:]) == cell_gid) :
                 template_name = line.split()[4]
                 print stripped_line
-        except :
+        except ValueError:
             pass
+
     return template_name
 
-def recreate_bare_gid(blue_config_filename,cell_gid) :
+def recreate_bare_gid(blue_config_filename, cell_gid):
+    """need to put  description"""
     bg_dict = parse_complete_BlueConfig(blue_config_filename)
     bp_simulation = bluepy.Simulation(blue_config_filename)
 
     ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
     if(template_name == None) :
         _me()
         print 'i could not find the template. terminating replay'
         return
 
     ''' fetch synapse details '''
-    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
     pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
 
     ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
 
     ''' construct the model neuron '''
     full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
     path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name,path_of_morphology)
+    model = Cell(full_template_name, path_of_morphology)
 
     ''' add the synapses to the model'''
     counter = 0
@@ -234,35 +240,36 @@ def recreate_bare_gid(blue_config_filename,cell_gid) :
         spiketrain = []
         if(counter == -1) : # a bit pointless, no: i never wantthe spiketrains here. so just remove the if statement
             spiketrain = pre_spike_trains[int(syn_description[0])]
-        distance = model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0,nmda_ratio=0,test=0)
+        distance = model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0, nmda_ratio=0, test=0)
         synapse_distances.append(distance)
         counter = counter  +1
     print 'added synapses: %i' % (counter)
 
-    return model,synapse_distances
+    return model, synapse_distances
 
-def recreate_one_gid(blue_config_filename, cell_gid,without_pre_spikes=False) :
+def recreate_one_gid(blue_config_filename, cell_gid, without_pre_spikes=False) :
+    """need to put  description"""
     bg_dict = parse_complete_BlueConfig(blue_config_filename)
     bp_simulation = bluepy.Simulation(blue_config_filename)
 
     ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
     if(template_name == None) :
         _me()
         print 'i could not find the template. terminating replay'
         return
 
     ''' fetch synapse details '''
-    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
     pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
 
     ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
 
     ''' construct the model neuron '''
     full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
     path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name,path_of_morphology)
+    model = Cell(full_template_name, path_of_morphology)
 
     ''' add the synapses to the model'''
     counter = 0
@@ -279,34 +286,35 @@ def recreate_one_gid(blue_config_filename, cell_gid,without_pre_spikes=False) :
             # print 'spiketrain: ', spiketrain
         except Exception:
             no_input_synapses = no_input_synapses + 1
-            model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0.04,nmda_ratio=0.4,test=0)
+            model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0.04, nmda_ratio=0.4, test=0)
         counter = counter + 1
-    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter,no_input_synapses)
+    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter, no_input_synapses)
 
     return model
 
-def imprecise_replay(blue_config_filename, cell_gid,t_stop=1000,dt=0.025) :
+def imprecise_replay(blue_config_filename, cell_gid, t_stop=1000, dt=0.025):
+    """need to put  description"""
     bg_dict = parse_complete_BlueConfig(blue_config_filename)
     bp_simulation = bluepy.Simulation(blue_config_filename)
 
     ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict,cell_gid)
+    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
     if(template_name == None) :
         _me()
         print 'i could not find the template. terminating replay'
         return
 
     ''' fetch synapse details '''
-    pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
+    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
     pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
 
     ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat',store=False)
+    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
 
     ''' construct the model neuron '''
-    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
+    full_template_name = bg_dict['Run']['Default']['METypePath'] + '/' + template_name + '.hoc'
     path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name,path_of_morphology)
+    model = Cell(full_template_name, path_of_morphology)
 
     ''' add the synapses to the model'''
     counter = 0
@@ -320,24 +328,24 @@ def imprecise_replay(blue_config_filename, cell_gid,t_stop=1000,dt=0.025) :
             # print 'spiketrain: ', spiketrain
         except Exception:
             no_input_synapses = no_input_synapses + 1
-        model.add_replay_synapse(syn_description,spiketrain,SID=counter,TGID=cell_gid,spontMiniRate=0.04,nmda_ratio=0.4,test=0)
+        model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0.04, nmda_ratio=0.4, test=0)
         counter = counter + 1
-    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter,no_input_synapses)
+    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter, no_input_synapses)
 
     # THE FOLLOWING HAS TO BE SET HY HAND (at this moment)
-    model.add_replay_noise(cell_gid,1.2 * model.getThreshold(), 0.001*model.getThreshold()/100.0,0)
-    hypamp_i =1.0 * model.getHypAmp() #cell.getCell().getThreshold()
-    model.addRamp(0,10000,hypamp_i,hypamp_i,dt=0.025)
+    model.add_replay_noise(cell_gid, 1.2 * model.getThreshold(), 0.001*model.getThreshold()/100.0, 0)
+    hypamp_i = 1.0 * model.getHypAmp() #cell.getCell().getThreshold()
+    model.addRamp(0, 10000, hypamp_i, hypamp_i, dt=0.025)
 
     ''' RUN '''
     simulation = Simulation()
     simulation.addCell(model)
-    simulation.run(t_stop,cvode=False,dt=dt)
+    simulation.run(t_stop, cvode=False, dt=dt)
     time = model.getTime()
     voltage = model.getSomaVoltage()
 
-    pickle.dump([time,voltage],open(str(cell_gid)+'_imprecise_replay_'+str(t_stop)+'.pkl','w'))
-    return time,voltage
+    pickle.dump([time, voltage], open(str(cell_gid)+'_imprecise_replay_'+str(t_stop)+'.pkl','w'))
+    return time, voltage
 
 class Cell:
     """Represents a bglib cell"""
@@ -362,7 +370,7 @@ class Cell:
 
         self.synapse_number = 0
         self.syn_vecs = {}
-        self.syn_vecstims ={}
+        self.syn_vecstims = {}
         self.syns = {}
         self.syn_netcons = {}
         self.ips = {}
@@ -391,12 +399,13 @@ class Cell:
         self.cell.re_init_rng()
         neuron.h.finitialize()
 
-    def get_section(self,raw_section_id) :
+    def get_section(self, raw_section_id) :
         ''' use the serialized object to find your section'''
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def location_to_point(self,syn_description,test=False) :
-        pre_gid =  syn_description[0]
+    def location_to_point(self, syn_description, test=False):
+        """need to put  description"""
+        #pre_gid =  syn_description[0]
         post_sec_id = syn_description[2]
         isec = post_sec_id
         post_seg_id = syn_description[3]
@@ -423,11 +432,11 @@ class Cell:
             distance = 1 - distance
 
         if(distance <=0 ) :
-            distance =0
+            distance = 0
             debug_too_small = debug_too_small + 1
 
         if(test) :
-            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small,debug_too_large)
+            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
 
         return distance
 
@@ -485,78 +494,80 @@ class Cell:
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
-    def add_replay_noise(self,gid,mean,variance,noise_seed,delay=0,dur=10000) :
+    def add_replay_noise(self, gid, mean, variance, noise_seed, delay=0, dur=10000):
+        """need to put  description"""
         rand = neuron.h.Random(gid+noise_seed)
-        tstim =neuron.h.TStim(0.5, rand, sec=self.soma)# self.get_section(0)) # assuming that section 0 is the soma
+        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)# self.get_section(0)) # assuming that section 0 is the soma
         tstim.noise(delay, dur, mean, variance)
         self.mechanisms.append(rand)
         self.mechanisms.append(tstim)
 
-    def add_replay_synapse(self,syn_description,spike_train,SID=1,TGID=1,baseSeed=0,weightScalar=1.0,spontMiniRate=0.0,nmda_ratio=-66,e_gaba=-80,dt=0.025,test=False) :
+    def add_replay_synapse(self, syn_description, spike_train, SID=1, TGID=1, baseSeed=0, weightScalar=1.0,
+            spontMiniRate=0.0, nmda_ratio=-66, e_gaba=-80, dt=0.025, test=False) :
         ''' Adds synapses the way BGLib does is. Supposedly.'''
-        pre_gid =  syn_description[0]
+        #pre_gid = syn_description[0]
         delay = syn_description[1]
         post_sec_id = syn_description[2]
-        post_seg_id = syn_description[3]
-        post_seg_distance = syn_description[4]
+        #post_seg_id = syn_description[3]
+        #post_seg_distance = syn_description[4]
         gsyn = syn_description[8]
         syn_U = syn_description[9]
         syn_D = syn_description[10]
         syn_F = syn_description[11]
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
-        syn_pre_m_type = syn_description[14]
-        syn_ASE = syn_description[17]
+        #syn_pre_m_type = syn_description[14]
+        #syn_ASE = syn_description[17]
 
         ''' set up the vecevent thing '''
         t_vec = neuron.h.Vector(spike_train)
         t_vec_stim = neuron.h.VecStim()
         self.syn_vecs[SID] = t_vec
         self.syn_vecstims[SID] = t_vec_stim
-        self.syn_vecstims[SID].play(self.syn_vecs[SID],dt)
+        self.syn_vecstims[SID].play(self.syn_vecs[SID], dt)
 
-        location = self.location_to_point(syn_description,test=test)
+        location = self.location_to_point(syn_description, test=test)
         distance =  neuron.h.distance(location, sec=self.get_section(post_sec_id))
-        if(syn_type < 100) :
+        if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/wiki/index.php/BlueBuilder_Specifications#NRN,'''
             ''' inhibitory synapse '''
-            if(test) :
-                print 'Inserting synapse in %i(%f)' % (post_sec_id,location)
-            syn = neuron.h.ProbGABAAB_EMS(location,sec=self.get_section(post_sec_id))
+            if(test):
+                print 'Inserting synapse in %i(%f)' % (post_sec_id, location)
+            syn = neuron.h.ProbGABAAB_EMS(location, sec=self.get_section(post_sec_id))
             syn.e_GABAA = e_gaba
             syn.tau_d_GABAA = syn_DTC
             rng = neuron.h.Random()
-            rng.MCellRan4(SID *100000+100,TGID+250+baseSeed) # +0 is the baseSeed, what's baseSeed?
-            rng.lognormal(0.2,0.1)
+            rng.MCellRan4(SID *100000+100, TGID+250+baseSeed) # +0 is the baseSeed, what's baseSeed?
+            rng.lognormal(0.2, 0.1)
             syn.tau_r_GABAA = rng.repick()
-        else :
+        else:
             ''' else we have excitatory synapse '''
-            syn = neuron.h.ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
+            syn = neuron.h.ProbAMPANMDA_EMS(location, sec=self.get_section(post_sec_id))
             syn.tau_d_AMPA = syn_DTC
-            if(nmda_ratio != -66) :
-                syn.NMDA_ratio=nmda_ratio
+            if (nmda_ratio != -66):
+                syn.NMDA_ratio = nmda_ratio
 
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
         syn.Fac = abs( syn_F )
-        syn.synapseID=SID
+        syn.synapseID = SID
 
         rndd = neuron.h.Random()
         rndd.MCellRan4(SID*100000+100, TGID+250+baseSeed )
-        rndd.uniform(0,1)
+        rndd.uniform(0, 1)
         syn.setRNG(rndd)
         self.mechanisms.append(rndd)
 
         # self.mechanisms.append(syn)
         self.syns[SID] = syn
 
-        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID],self.syns[SID],-30,delay,gsyn*weightScalar) # ...,threshold,delay,weight
+        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
 
         ''' add the *minis*: spontaneous synaptic events '''
         if(spontMiniRate > 0.0) :
-            self.ips[SID] = neuron.h.InhPoissonStim(location,sec=self.get_section(post_sec_id))
+            self.ips[SID] = neuron.h.InhPoissonStim(location, sec=self.get_section(post_sec_id))
 
-            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID],self.syns[SID],-30,0.1,gsyn*weightScalar) # delay=0.1, fixed in Connection.hoc
+            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID], self.syns[SID], -30, 0.1, gsyn*weightScalar) # delay=0.1, fixed in Connection.hoc
 
             exprng = neuron.h.Random()
             exprng.MCellRan4( SID*100000+200, TGID+250+baseSeed )
@@ -564,7 +575,7 @@ class Cell:
             self.mechanisms.append(exprng)
             uniformrng = neuron.h.Random()
             uniformrng.MCellRan4( SID*100000+300, TGID+250+baseSeed )
-            uniformrng.uniform(0.0,1.0)
+            uniformrng.uniform(0.0, 1.0)
             self.mechanisms.append(uniformrng)
             self.ips[SID].setRNGs(exprng, uniformrng)
             tbins_vec = neuron.h.Vector(1)
@@ -743,7 +754,7 @@ class Cell:
 
     def getSomaVoltage(self):
         """Get a vector of the soma voltage"""
-        return numpy.array(self.getRecording('soma(0.5)._ref_v'))
+        return numpy.array(self.getRecording('self.soma(0.5)._ref_v'))
 
 
     def getNumberOfSegments(self):
@@ -883,148 +894,6 @@ def search_threshold_current(template_name, morphology_name, hyp_level, inj_star
 def detect_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop):
     """Search current necessary to reach threshold"""
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
-
-'''
-def calculateAllSynapticAttenuations(bglibcell):
-    sim = Simulation()
-    sim.addCell(bglibcell)
-
-    bglibcell.addAllSectionsVoltageRecordings()
-
-    basal_sections = [x for x in bglibcell.cell.getCell().basal]
-    apical_sections = [x for x in bglibcell.cell.getCell().apical]
-    #dendritic_sections = basal_sections + apical_sections
-    thick_apical_sections = [section for section in apical_sections if section.diam > .6]
-    thin_apical_sections = [section for section in apical_sections if section.diam < .7]
-    random.shuffle(thin_apical_sections, random.random)
-    normdistances = []
-    absdistances = []
-    attenuations = []
-    sectiontypes = []
-
-    [secnumber, location] = bglibcell.locateBAPSite("apic", 200)
-    #print secnumber, location
-    #for record_section in [apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)], apical_sections[int(secnumber)]]:
-    for record_section in bglibcell.apicaltrunk(): #thick_apical_sections:
-        location = 0.5
-        print record_section.name()
-        source_section = thin_apical_sections.pop()
-        #source_segname = source_section.name() + "(" + str(location) + ")"
-        synapse = neuron.h.tmgExSyn(location, sec=source_section)
-        #synapse.Use = 0.02
-        # synapse.Use = 0.5
-        #synapse.Dep = 194
-        # synapse.Dep = 671
-        #synapse.Fac = 507
-        # synapse.Fac = 17
-        #if section in apical_sections and section.diam > .575:
-        # synapse.gmax = .0000002
-        #else:
-        #    synapse.gmax = .00000005
-        netstim = neuron.h.NetStim(sec=source_section)
-        stimfreq = 70
-        netstim.interval = 1000/stimfreq
-        netstim.number = 1
-        netstim.start = 300
-        netstim.noise = 0
-        connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=source_section)
-        connection.weight[0] = 1.0
-        sim.run(600)
-        time = bglibcell.getTime()
-        allsectionrecordings = bglibcell.getAllSectionsVoltageRecordings()
-        soma = [x for x in bglibcell.cell.getCell().somatic][0]
-        somavoltage = numpy.array(allsectionrecordings[soma.name()])
-        dendvoltage = numpy.array(allsectionrecordings[record_section.name()])
-        #pylab.plot(time, somavoltage, label="soma")
-        #pylab.plot(time, dendvoltage, label="dend")
-        #pylab.legend()
-        #pylab.show()
-        del connection
-
-        interval_indices = numpy.where((time > netstim.start) & (time < netstim.start+90))
-        max_soma = max(somavoltage[numpy.where((time > netstim.start) & (time < netstim.start+90))])
-        min_soma = numpy.min(somavoltage[interval_indices])
-        amp_soma = max_soma - min_soma
-        max_dend = numpy.max(dendvoltage[interval_indices])
-        min_dend = numpy.min(dendvoltage[interval_indices])
-        amp_dend = max_dend - min_dend
-        attenuation = amp_dend / amp_soma
-        attenuations.append(attenuation)
-        neuron.h.distance(sec=soma)
-        absdistance = neuron.h.distance(location, sec=record_section)
-        absdistances.append(absdistance)
-        if record_section in basal_sections:
-            sectiontypes.append("basal")
-            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
-        elif record_section in apical_sections:
-            sectiontypes.append("apical")
-            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
-        else:
-            sectiontypes.append("apical")
-            normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
-            print "Section is not in apical nor basal"
-            #exit(1)
-        normdistances.append(normdistance)
-
-
-    return normdistances, absdistances, attenuations, sectiontypes
-
-def calculateAllSSAttenuations(bglibcell):
-    sim = Simulation()
-    sim.addCell(bglibcell)
-
-    bglibcell.addAllSectionsVoltageRecordings()
-
-    basal_sections = [x for x in bglibcell.cell.getCell().basal]
-    apical_sections = [x for x in bglibcell.cell.getCell().apical]
-    dendritic_sections = basal_sections + apical_sections
-    normdistances = []
-    absdistances = []
-    attenuations = []
-    sectiontypes = []
-
-    for section in dendritic_sections:
-        for location in [0.5]:
-            segname = section.name() + "(" + str(location) + ")"
-            print segname
-            clamp = neuron.h.IClamp(0.5, sec=section)
-            clamp.dur = 300
-            clamp.delay = 150
-            clamp.amp = 0.01
-            sim.run(300)
-
-            time = bglibcell.getTime()
-            allsectionrecordings = bglibcell.getAllSectionsVoltageRecordings()
-            soma = [x for x in bglibcell.cell.getCell().somatic][0]
-            somavoltage = numpy.array(allsectionrecordings[soma.name()])
-            dendvoltage = numpy.array(allsectionrecordings[section.name()])
-
-            interval_indices = numpy.where((time > clamp.delay) & (time < clamp.delay+90))
-            max_soma = max(somavoltage[numpy.where((time > clamp.delay) & (time < clamp.delay+90))])
-            min_soma = numpy.min(somavoltage[interval_indices])
-            amp_soma = max_soma - min_soma
-            max_dend = numpy.max(dendvoltage[interval_indices])
-            min_dend = numpy.min(dendvoltage[interval_indices])
-            amp_dend = max_dend - min_dend
-            attenuation = amp_dend / amp_soma
-            attenuations.append(attenuation)
-            neuron.h.distance(sec=soma)
-            absdistance = neuron.h.distance(location, sec=section)
-            absdistances.append(absdistance)
-            if section in basal_sections:
-                sectiontypes.append("basal")
-                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("basal")
-            elif section in apical_sections:
-                sectiontypes.append("apical")
-                normdistance = absdistance/bglibcell.cell.getCell().getLongestBranch("apic")
-            else:
-                print "Section is not in apical nor basal"
-                exit(1)
-            normdistances.append(normdistance)
-
-
-    return normdistances, absdistances, attenuations, sectiontypes
-'''
 
 class PlotWindow:
     """Class the represents a plotting window"""
