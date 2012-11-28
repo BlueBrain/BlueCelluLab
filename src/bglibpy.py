@@ -5,7 +5,6 @@ Python library for running single cell bglib templates
 import sys
 import os
 import pickle
-
 import numpy
 import re
 import matplotlib as plt
@@ -14,12 +13,10 @@ import multiprocessing
 import math
 import itertools
 
-
 from tools import _me
 from tools import load_nrnmechanisms
 from tools import parse_complete_BlueConfig
 from tools import _parse_block_statement
-
 
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir+"/paths.config"
@@ -27,7 +24,6 @@ pathsconfig_filename = installdir+"/paths.config"
 if os.path.exists(pathsconfig_filename):
     pathsconfig = {line.strip().split("=")[0]: line.strip().split("=")[1] for
     line in open(pathsconfig_filename, "r")}
-    
 else:
     raise Exception("Sorry, can not find the file paths.config")
 
@@ -43,8 +39,6 @@ import bluepy
 
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
-
-# neuron.h.load_file("TargetManager.hoc")
 neuron.h.load_file("SerializedCell.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 

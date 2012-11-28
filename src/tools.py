@@ -3,6 +3,7 @@ Static tools for bglibpy
 '''
 
 import inspect
+import neuron
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 
@@ -11,7 +12,6 @@ def _me():
     function called  '''
     print 'Call -> from %s::%s' % (inspect.stack()[1][1],
     inspect.stack()[1][3])
-    
 
 def load_nrnmechanisms(libnrnmech_location):
     """Load another shared library with neuron mechanisms"""

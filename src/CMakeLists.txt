@@ -96,12 +96,12 @@ if (NOT BLUEPYPATH)
 endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
-set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/libnrnmech.so")      
+set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/bglibpy/libnrnmech.so")      
 
 configure_file(paths.config.in paths.config)
 
-install(FILES ${LIBNRNMECHS} DESTINATION lib/python/site-packages)
-install(FILES bglibpy.py DESTINATION lib/python/site-packages)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION lib/python/site-packages)
-install(FILES __init__.py DESTINATION lib/python/site-packages)
-install(FILES tools.py DESTINATION lib/python/site-packages)
+install(FILES ${LIBNRNMECHS} DESTINATION lib/python/site-packages/bglibpy)
+install(FILES bglibpy.py DESTINATION lib/python/site-packages/bglibpy)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION lib/python/site-packages/bglibpy)
+install(FILES __init__.py DESTINATION lib/python/site-packages/bglibpy)
+install(FILES tools.py DESTINATION lib/python/site-packages/bglibpy)
