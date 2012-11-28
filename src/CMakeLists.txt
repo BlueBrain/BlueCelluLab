@@ -92,7 +92,7 @@ if (NOT NRNPYTHONPATH)
 endif ()
 
 if (NOT BLUEPYPATH)
-    message(FATAL_ERROR "The user should set BluePy to a directory where the BluePy python module is installed")
+    message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
 endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
