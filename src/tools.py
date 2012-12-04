@@ -25,6 +25,8 @@ def parse_complete_BlueConfig(fName) :
         uber_hash[keyword] = {}
     line = bc.next()
 
+    block_number = 0
+
     while(line != '') :
         stripped_line = line.strip()
         if(stripped_line.startswith('#')) :
@@ -40,13 +42,10 @@ def parse_complete_BlueConfig(fName) :
         elif(stripped_line.split()[0].strip() in BLUECONFIG_KEYWORDS ) :
             key = stripped_line.split()[0].strip()
             value = stripped_line.split()[1].strip()
-            # print 'came accross key >',key,'<, value: >',value,'<'
-            # parse the entries in that block
             parsed_dict = _parse_block_statement(bc)
-            # add to the correct uber-dictionary
+            parsed_dict['block_number'] = block_number 
             uber_hash[key][value] = parsed_dict
-            # print 'came accross key >',key,'<, value: >',value,'<'
-            # print 'added the following dict:\n',parsed_dict
+            block_number = block_number + 1
             line = bc.next()
         else :
             line = bc.next()
@@ -58,7 +57,6 @@ def _parse_block_statement(file_object) :
     line = file_object.next().strip()
     ret_dict = {}
     while(not line.startswith('}')) :
-        # print '_parse_block_statement, line: >',line,'<'
         if(len(line) == 0 or line.startswith('#')) :
             line = file_object.next().strip()
         else :
@@ -69,8 +67,5 @@ def _parse_block_statement(file_object) :
                     pass
                 else :
                     ret_dict[key] = value
-                # print '_parse_block... stored [',key,']: >', value,'<'
             line = file_object.next().strip()
-        # raw_input('press ENTER')
-    # print 'line after the }, returning: ', ret_dict
     return ret_dict

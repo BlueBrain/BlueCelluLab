@@ -18,6 +18,8 @@ from tools import load_nrnmechanisms
 from tools import parse_complete_BlueConfig
 from tools import _parse_block_statement
 
+from ssim import SSim
+
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir+"/paths.config"
 
@@ -28,6 +30,7 @@ else:
     raise Exception("Sorry, can not find the file paths.config")
 
 os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
+print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
 sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
 import neuron
@@ -40,6 +43,7 @@ import bluepy
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedCell.hoc")
+neuron.h.load_file("TStim.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 def parse_paths_BlueConfig(fName) :
