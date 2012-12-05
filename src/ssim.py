@@ -48,6 +48,7 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat') :
     return xhashed
 
 
+
 class SSim(object) :
     def __init__(self,blueconfig_filename,dt=0.025) :
         """ Object dealing with BlueConfig configured Small Simulations

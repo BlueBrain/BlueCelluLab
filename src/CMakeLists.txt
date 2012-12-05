@@ -98,16 +98,15 @@ endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
-execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True).split(\"/lib/\")[-1];" OUTPUT_VARIABLE PYTHON_LIB_SHORTPATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True).split(\"/lib/\")[-1];" OUTPUT_VARIABLE PYTHON_LIB_SHORTPATH OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(DESTINATION_DIR "lib/${PYTHON_LIB_SHORTPATH}/bglibpy")
 
 set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/${DESTINATION_DIR}/libnrnmech.so")
 
 configure_file(paths.config.in paths.config)
 
+set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py)
+
 install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
-install(FILES bglibpy.py DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
-install(FILES __init__.py DESTINATION ${DESTINATION_DIR})
-install(FILES tools.py DESTINATION ${DESTINATION_DIR})
-install(FILES ssim.py DESTINATION ${DESTINATION_DIR})
+install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})
