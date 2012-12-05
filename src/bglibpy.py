@@ -4,7 +4,6 @@ Python library for running single cell bglib templates
 
 import sys
 import os
-import pickle
 import numpy
 import re
 import matplotlib as plt
@@ -13,15 +12,8 @@ import multiprocessing
 import math
 import itertools
 
-from tools import _me
-from tools import load_nrnmechanisms
-from tools import parse_complete_BlueConfig
-from tools import _parse_block_statement
-
-from ssim import SSim
-
 installdir = os.path.dirname(__file__)
-pathsconfig_filename = installdir+"/paths.config"
+pathsconfig_filename = installdir + "/paths.config"
 
 if os.path.exists(pathsconfig_filename):
     pathsconfig = dict((line.strip().split("=")[0], line.strip().split("=")[1]) for line in open(pathsconfig_filename, "r"))
@@ -31,15 +23,12 @@ else:
 os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
-sys.path = [pathsconfig["NRNPYTHONPATH"]]  + sys.path
+sys.path = [pathsconfig["NRNPYTHONPATH"]] + sys.path
 import neuron
 print "Imported neuron from %s" % neuron.__file__
 
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
 neuron.h.load_file("stdrun.hoc")
-
-sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
-import bluepy
 
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
@@ -47,243 +36,25 @@ neuron.h.load_file("SerializedCell.hoc")
 neuron.h.load_file("TStim.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
-def parse_paths_BlueConfig(fName) :
-    """ Parse the main paths defined in the BlueConfig file """
-    bc = open(fName,'r')
-    return_object = {}
-    for line in bc.readlines() :
-        stripped_line = line.strip()
-        if(stripped_line.startswith('Prefix')) :
-            return_object['prefix'] = stripped_line.split()[1]
-        elif(stripped_line.startswith('MorphologyPath')) :
-            return_object['morphology_path'] = stripped_line.split()[1]
-        elif(stripped_line.startswith('METypePath')) :
-            return_object['me_type_path'] = stripped_line.split()[1]
-        elif(stripped_line.startswith('CircuitPath')) :
-            return_object['circuit_path'] = stripped_line.split()[1]
-        elif(stripped_line.startswith('nrnPath')) :
-            return_object['nrn_path'] = stripped_line.split()[1]
-
-            return_object['main_path'] = fName[:-10] # stripped the "BlueConfig"
-    return return_object
-
-def parse_and_store_GID_spiketrains(path, fName='out.dat', store=False) :
-    """need to put  description"""
-    xhashed = {}
-    inFile = open(path + '/' + fName,'r')
-    inLine = inFile.readline()
-    inLine = inFile.readline() # avoid the trailing "/scatter"
-    counter = 0
-    all_gids = []
-    while(inLine != None) :
-        try :
-            # format: time gid
-            t, gid = inLine.split() # returns 2 strings
-            t = float(t)
-            igid = int(gid)
-            all_gids.append(igid)
-            if(igid in xhashed) :
-                xhashed[igid].append(t)
-            else :
-                xhashed[igid] = []
-                xhashed[igid].append(t)
-            counter = counter + 1
-            inLine = inFile.readline()
-        except Exception :
-            print 'no issue, most likely the last entry'
-            print 'current inLine: ', inLine
-            print 'current counter: ', counter
-            inLine = inFile.readline()
-            break
-
-    print 'read and stored all spikes. now going to write the output'
-    if not os.path.exists('presynaptic_temp'):
-        os.makedirs('presynaptic_temp')
-
-    if(store) :
-        for key in xhashed.keys() :
-            fN = 'presynaptic_temp/' +str(key) + '_spikes.dat'
-            #print 'fn >%s<' % fN
-            outF = open(fN,'w')
-            outF.write( '\t'.join(map(str, xhashed[key]))  )
-            outF.flush()
-            outF.close()
-    return xhashed
-
-def _get_template_name_of_gid(bg_dict, cell_gid) :
-    """need to put  description"""
-    ncs_file = open("%s/%s" % (bg_dict['Run']['Default']['nrnPath'],'start.ncs'))
-    template_name = None
-    for line in ncs_file.readlines() :
-        stripped_line = line.strip()
-
-        try:
-            if( int(stripped_line.split(' ')[0][1:]) == cell_gid) :
-                template_name = line.split()[4]
-                print stripped_line
-        except ValueError:
-            pass
-
-    return template_name
-
-def recreate_bare_gid(blue_config_filename, cell_gid):
-    """need to put  description"""
-    bg_dict = parse_complete_BlueConfig(blue_config_filename)
-    bp_simulation = bluepy.Simulation(blue_config_filename)
-
-    ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
-    if(template_name == None) :
-        _me()
-        print 'i could not find the template. terminating replay'
-        return
-
-    ''' fetch synapse details '''
-    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
-    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
-
-    ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
-
-    ''' construct the model neuron '''
-    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
-    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name, path_of_morphology)
-
-    ''' add the synapses to the model'''
-    counter = 0
-    synapse_distances = []
-    for syn_description in pre_datas :
-        spiketrain = []
-        if(counter == -1) : # a bit pointless, no: i never wantthe spiketrains here. so just remove the if statement
-            spiketrain = pre_spike_trains[int(syn_description[0])]
-        distance = model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0, nmda_ratio=0, test=0)
-        synapse_distances.append(distance)
-        counter = counter  +1
-    print 'added synapses: %i' % (counter)
-
-    return model, synapse_distances
-
-def recreate_one_gid(blue_config_filename, cell_gid, without_pre_spikes=False) :
-    """need to put  description"""
-    bg_dict = parse_complete_BlueConfig(blue_config_filename)
-    bp_simulation = bluepy.Simulation(blue_config_filename)
-
-    ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
-    if(template_name == None) :
-        _me()
-        print 'i could not find the template. terminating replay'
-        return
-
-    ''' fetch synapse details '''
-    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
-    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
-
-    ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
-
-    ''' construct the model neuron '''
-    full_template_name = bg_dict['Run']['Default']['METypePath']+'/'+template_name + '.hoc'
-    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name, path_of_morphology)
-
-    ''' add the synapses to the model'''
-    counter = 0
-    no_input_synapses = 0
-    for syn_description in pre_datas :
-        spiketrain = []
-        try :
-            if(without_pre_spikes) :
-                spiketrain = [] #pre_spike_trains[int(syn_description[0])]
-            else :
-                spiketrain = pre_spike_trains[int(syn_description[0])]
-            # fN = 'presynaptic_temp/' +str(pre_gid) + '_spikes.dat'
-            # spiketrain = list(scipy.loadtxt(fN))
-            # print 'spiketrain: ', spiketrain
-        except Exception:
-            no_input_synapses = no_input_synapses + 1
-            model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0.04, nmda_ratio=0.4, test=0)
-        counter = counter + 1
-    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter, no_input_synapses)
-
-    return model
-
-def imprecise_replay(blue_config_filename, cell_gid, t_stop=1000, dt=0.025):
-    """need to put  description"""
-    bg_dict = parse_complete_BlueConfig(blue_config_filename)
-    bp_simulation = bluepy.Simulation(blue_config_filename)
-
-    ''' fetch the template for this GID, stored in template_name '''
-    template_name = _get_template_name_of_gid(bg_dict, cell_gid)
-    if(template_name == None) :
-        _me()
-        print 'i could not find the template. terminating replay'
-        return
-
-    ''' fetch synapse details '''
-    #pre_gids = bp_simulation.circuit.get_presynaptic_gids(cell_gid)
-    pre_datas = bp_simulation.circuit.get_presynaptic_data(cell_gid)
-
-    ''' parse incoming spike data'''
-    pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'], 'out.dat', store=False)
-
-    ''' construct the model neuron '''
-    full_template_name = bg_dict['Run']['Default']['METypePath'] + '/' + template_name + '.hoc'
-    path_of_morphology =  bg_dict['Run']['Default']['MorphologyPath'] + '/ascii'
-    model = Cell(full_template_name, path_of_morphology)
-
-    ''' add the synapses to the model'''
-    counter = 0
-    no_input_synapses = 0
-    for syn_description in pre_datas :
-        spiketrain = []
-        try :
-            spiketrain = pre_spike_trains[int(syn_description[0])]
-            # fN = 'presynaptic_temp/' +str(pre_gid) + '_spikes.dat'
-            # spiketrain = list(scipy.loadtxt(fN))
-            # print 'spiketrain: ', spiketrain
-        except Exception:
-            no_input_synapses = no_input_synapses + 1
-        model.add_replay_synapse(syn_description, spiketrain, SID=counter, TGID=cell_gid, spontMiniRate=0.04, nmda_ratio=0.4, test=0)
-        counter = counter + 1
-    print 'processed %f synapses of which %f DO NOT receive a spiketrain' % (counter, no_input_synapses)
-
-    # THE FOLLOWING HAS TO BE SET HY HAND (at this moment)
-    model.add_replay_noise(cell_gid, 1.2 * model.getThreshold(), 0.001*model.getThreshold()/100.0, 0)
-    hypamp_i = 1.0 * model.getHypAmp() #cell.getCell().getThreshold()
-    model.addRamp(0, 10000, hypamp_i, hypamp_i, dt=0.025)
-
-    ''' RUN '''
-    simulation = Simulation()
-    simulation.addCell(model)
-    simulation.run(t_stop, cvode=False, dt=dt)
-    time = model.getTime()
-    voltage = model.getSomaVoltage()
-
-    pickle.dump([time, voltage], open(str(cell_gid)+'_imprecise_replay_'+str(t_stop)+'.pkl','w'))
-    return time, voltage
 
 class Cell:
     """Represents a bglib cell"""
-
     class persistent:
         """The objects that need to stay persistent in python"""
         objects = []
-
 
     def __init__(self, template_name, morphology_name):
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
-        self.cell = eval("neuron.h."+ cell_name +"(0, morphology_name)")
+        self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
         self.recordings = {}
         self.synapses = {}
         self.netstims = {}
         self.connections = {}
 
-        self.mechanisms = [] # BTN: all additional mechanism stored in one list. easy to delete...
+        self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
 
         self.synapse_number = 0
         self.syn_vecs = {}
@@ -292,10 +63,6 @@ class Cell:
         self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
-
-
-        #neuron.h('objref serialized')
-        #neuron.h.serialized = neuron.h.SerializedSections(self.cell.getCell())#CellRef)
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
         neuron.h.finitialize()
 
@@ -310,13 +77,12 @@ class Cell:
         self.cell_dendrograms = []
         self.plotWindows = []
 
-
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
         self.cell.re_init_rng()
         neuron.h.finitialize()
 
-    def get_section(self, raw_section_id) :
+    def get_section(self, raw_section_id):
         ''' use the serialized object to find your section'''
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
@@ -336,44 +102,40 @@ class Cell:
         debug_too_large = 0
         debug_too_small = 0
         # access section to compute the distance
-        if( neuron.h.section_orientation(sec=self.get_section(isec)) == 1) :
-            ipt = neuron.h.n3d(sec=self.get_section(isec)) -1 - ipt
+        if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
+            ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
 
-        if(ipt < neuron.h.n3d(sec=self.get_section(isec)) ) :
-            distance = (ipt+syn_offset)/L
-            if(distance >= 1.0) :
+        if ipt < neuron.h.n3d(sec=self.get_section(isec)):
+            distance = (ipt + syn_offset) / L
+            if distance >= 1.0:
                 distance = 1
                 debug_too_large = debug_too_large + 1
 
-        if( neuron.h.section_orientation(sec=self.get_section(isec)) == 1  ) :
+        if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance
 
-        if(distance <=0 ) :
+        if distance <= 0:
             distance = 0
             debug_too_small = debug_too_small + 1
 
-        if(test) :
+        if(test):
             print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
 
         return distance
-
 
     def getThreshold(self):
         """Get the spiking threshold of the cell"""
         return self.cell.getThreshold()
 
-
     def getHypAmp(self):
         """Get the current level necessary to bring the cell to -85 mV"""
         return self.cell.getHypAmp()
 
-
     def showDendDiam(self):
         """Show a dendrogram plot"""
         diamlist = [section.diam for section in self.apical]
-        pylab.hist(diamlist, bins=int((max(diamlist)-min(diamlist))/.1))
+        pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
         pylab.show()
-
 
     def addRecording(self, var_name):
         """Add a recording to the cell"""
@@ -388,14 +150,12 @@ class Cell:
         for var_name in var_names:
             self.addRecording(var_name)
 
-
     def addAllSectionsVoltageRecordings(self):
         """Add a voltage recording to every section of the cell"""
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
             self.addRecording(var_name)
-
 
     def getAllSectionsVoltageRecordings(self):
         """Get all the voltage recordings from all the sections"""
@@ -406,21 +166,20 @@ class Cell:
             allSectionVoltages[section.name()] = self.getRecording(var_name)
         return allSectionVoltages
 
-
     def getRecording(self, var_name):
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
     def add_replay_noise(self, gid, mean, variance, noise_seed, delay=0, dur=10000):
         """need to put  description"""
-        rand = neuron.h.Random(gid+noise_seed)
-        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)# self.get_section(0)) # assuming that section 0 is the soma
+        rand = neuron.h.Random(gid + noise_seed)
+        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)  # self.get_section(0)) # assuming that section 0 is the soma
         tstim.noise(delay, dur, mean, variance)
         self.mechanisms.append(rand)
         self.mechanisms.append(tstim)
 
     def add_replay_synapse(self, syn_description, spike_train, SID=1, TGID=1, baseSeed=0, weightScalar=1.0,
-            spontMiniRate=0.0, nmda_ratio=-66, e_gaba=-80, dt=0.025, test=False) :
+                           spontMiniRate=0.0, nmda_ratio=-66, e_gaba=-80, dt=0.025, test=False):
         ''' Adds synapses the way BGLib does is. Supposedly.'''
         #pre_gid = syn_description[0]
         delay = syn_description[1]
@@ -444,7 +203,7 @@ class Cell:
         self.syn_vecstims[SID].play(self.syn_vecs[SID], dt)
 
         location = self.location_to_point(syn_description, test=test)
-        distance =  neuron.h.distance(location, sec=self.get_section(post_sec_id))
+        distance = neuron.h.distance(location, sec=self.get_section(post_sec_id))
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/wiki/index.php/BlueBuilder_Specifications#NRN,'''
             ''' inhibitory synapse '''
@@ -454,7 +213,7 @@ class Cell:
             syn.e_GABAA = e_gaba
             syn.tau_d_GABAA = syn_DTC
             rng = neuron.h.Random()
-            rng.MCellRan4(SID *100000+100, TGID+250+baseSeed) # +0 is the baseSeed, what's baseSeed?
+            rng.MCellRan4(SID * 100000 + 100, TGID + 250 + baseSeed)  # +0 is the baseSeed, what's baseSeed?
             rng.lognormal(0.2, 0.1)
             syn.tau_r_GABAA = rng.repick()
         else:
@@ -464,13 +223,13 @@ class Cell:
             if (nmda_ratio != -66):
                 syn.NMDA_ratio = nmda_ratio
 
-        syn.Use = abs( syn_U )
-        syn.Dep = abs( syn_D )
-        syn.Fac = abs( syn_F )
+        syn.Use = abs(syn_U)
+        syn.Dep = abs(syn_D)
+        syn.Fac = abs(syn_F)
         syn.synapseID = SID
 
         rndd = neuron.h.Random()
-        rndd.MCellRan4(SID*100000+100, TGID+250+baseSeed )
+        rndd.MCellRan4(SID * 100000 + 100, TGID + 250 + baseSeed)
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
         self.mechanisms.append(rndd)
@@ -478,30 +237,30 @@ class Cell:
         # self.mechanisms.append(syn)
         self.syns[SID] = syn
 
-        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
+        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn * weightScalar)  # ...,threshold,delay,weight
 
         ''' add the *minis*: spontaneous synaptic events '''
-        if(spontMiniRate > 0.0) :
+        if(spontMiniRate > 0.0):
             self.ips[SID] = neuron.h.InhPoissonStim(location, sec=self.get_section(post_sec_id))
 
-            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID], self.syns[SID], -30, 0.1, gsyn*weightScalar) # delay=0.1, fixed in Connection.hoc
+            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID], self.syns[SID], -30, 0.1, gsyn * weightScalar)  # delay=0.1, fixed in Connection.hoc
 
             exprng = neuron.h.Random()
-            exprng.MCellRan4( SID*100000+200, TGID+250+baseSeed )
+            exprng.MCellRan4(SID * 100000 + 200, TGID + 250 + baseSeed)
             exprng.negexp(1)
             self.mechanisms.append(exprng)
             uniformrng = neuron.h.Random()
-            uniformrng.MCellRan4( SID*100000+300, TGID+250+baseSeed )
+            uniformrng.MCellRan4(SID * 100000 + 300, TGID + 250 + baseSeed)
             uniformrng.uniform(0.0, 1.0)
             self.mechanisms.append(uniformrng)
             self.ips[SID].setRNGs(exprng, uniformrng)
             tbins_vec = neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
             rate_vec = neuron.h.Vector(1)
-            if(spontMiniRate == 0) :
-                rate_vec.x[0] = spontMiniRate # hack to set ALL the spont mini rates to 0
-            else :
-                rate_vec.x[0] = spontMiniRate if(syn_type >=100) else  0.012 # according to Blueconfig, ConInh-uni rule
+            if(spontMiniRate == 0):
+                rate_vec.x[0] = spontMiniRate  # hack to set ALL the spont mini rates to 0
+            else:
+                rate_vec.x[0] = spontMiniRate if (syn_type >= 100) else 0.012  # according to Blueconfig, ConInh-uni rule
             self.mechanisms.append(tbins_vec)
             self.mechanisms.append(rate_vec)
             self.ips[SID].setTbins(tbins_vec)
@@ -518,7 +277,7 @@ class Cell:
 
         netstim = neuron.h.NetStim(sec=section)
         stimfreq = 70
-        netstim.interval = 1000/stimfreq
+        netstim.interval = 1000 / stimfreq
         netstim.number = 1
         netstim.start = delay
         netstim.noise = 0
@@ -528,18 +287,15 @@ class Cell:
         self.netstims[segname] = netstim
         self.connections[segname] = connection
 
-
     def locateBAPSite(self, seclistName, distance):
         """Return the location of the BAP site"""
         return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
-
 
     def removeSynapticStimulus(self, segname):
         """Removed a synaptic stimulus"""
         self.synapses[segname] = None
         self.netstims[segname] = None
         self.connections[segname] = None
-
 
     def addAllSynapses(self):
         """Add synapses to all dendritic sections"""
@@ -548,7 +304,6 @@ class Cell:
             self.addSynapticStimulus(section, 0)
             self.addSynapticStimulus(section, 0.5)
             self.addSynapticStimulus(section, 1)
-
 
     def injectCurrentWaveform(self, t_content, i_content):
         """Inject a current in the cell"""
@@ -567,7 +322,6 @@ class Cell:
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
 
-
     def get_childrensections(self, parentsection):
         """Get the children section of a neuron section"""
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
@@ -576,12 +330,10 @@ class Cell:
             children.append(neuron.h.SectionRef(sec=self.soma).child[index])
         return children
 
-
     def get_parentsection(self, childsection):
         """Get the parent section of a neuron section"""
         print self.soma
         return neuron.h.SectionRef(sec=childsection).parent
-
 
     def addAxialCurrentRecordings(self, section):
         """Create a recording that will contain all the axial current flowing in and out of the section"""
@@ -591,14 +343,12 @@ class Cell:
             self.addRecording(child)
         self.get_parentsection(section)
 
-
     def getAxialCurrentRecording(self, section):
         """Return the axial current recording"""
         secname = neuron.h.secname(sec=section)
         for child in self.get_childrensections(section):
             self.getRecording(secname)
             self.getRecording(child)
-
 
     def somatic_branches(self):
         """Show the index numbers """
@@ -616,7 +366,6 @@ class Cell:
                     print apicnumber, secnumber
                 else:
                     raise Exception("somaticbranches: No apic or dend found in section %s" % secname)
-
 
     def apical_trunk(self):
         """Return the apical trunk of the cell"""
@@ -638,13 +387,11 @@ class Cell:
                 apicaltrunk.append(child)
             return apicaltrunk
 
-
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
         """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
-        i_content = [((stop_level-start_level)/(stop_time-start_time))*(x-start_time)+start_level for x in t_content]
+        i_content = [((stop_level - start_level) / (stop_time - start_time)) * (x - start_time) + start_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)
-
 
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp"""
@@ -655,24 +402,20 @@ class Cell:
         vclamp.dur3 = 0
         self.persistent.objects.append(vclamp)
 
-
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
         """Add a sinusoidal current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
-        i_content = [amplitude*math.sin(freq*(x-start_time)*(2*math.pi))+mid_level for x in t_content]
+        i_content = [amplitude * math.sin(freq * (x - start_time) * (2 * math.pi)) + mid_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)
         return (t_content, i_content)
-
 
     def getTime(self):
         """Get the time vector"""
         return numpy.array(self.getRecording('neuron.h._ref_t'))
 
-
     def getSomaVoltage(self):
         """Get a vector of the soma voltage"""
         return numpy.array(self.getRecording('self.soma(0.5)._ref_v'))
-
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell"""
@@ -680,7 +423,6 @@ class Cell:
         for section in self.all:
             totalnseg += section.nseg
         return totalnseg
-
 
     def addPlotWindow(self, var_list, xlim=None, ylim=None, title=""):
         """Add a window to plot a variable"""
@@ -691,13 +433,11 @@ class Cell:
                 self.addRecording(var_name)
         self.plotWindows.append(PlotWindow(var_list, self, xlim, ylim, title))
 
-
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
         cell_dendrogram = dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
-
 
     def update(self):
         """Update all the windows"""
@@ -705,7 +445,6 @@ class Cell:
             window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
-
 
     def delete(self):
         """Delete the cell"""
@@ -721,6 +460,7 @@ class Cell:
     def __del__(self):
         self.delete()
 
+
 def calculate_inputresistance(template_name, morphology_name, current_delta=0.01):
     """Calculate the input resistance at rest of the cell"""
     rest_voltage = calculate_SS_voltage(template_name, morphology_name, 0.0)
@@ -728,7 +468,8 @@ def calculate_inputresistance(template_name, morphology_name, current_delta=0.01
 
     voltage_delta = step_voltage - rest_voltage
 
-    return voltage_delta/current_delta
+    return voltage_delta / current_delta
+
 
 def calculate_SS_voltage(template_name, morphology_name, step_level):
     """Calculate the steady state voltage at a certain current step"""
@@ -736,6 +477,7 @@ def calculate_SS_voltage(template_name, morphology_name, step_level):
     SS_voltage = pool.apply(calculate_SS_voltage_subprocess, [template_name, morphology_name, step_level])
     pool.terminate()
     return SS_voltage
+
 
 def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
     """Subprocess wrapper of calculate_SS_voltage"""
@@ -753,7 +495,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
 
 def search_hyp_current(template_name, morphology_name, hyp_voltage, start_current, stop_current):
     """Search current necessary to bring cell to -85 mV"""
-    med_current = start_current + abs(start_current-stop_current)/2
+    med_current = start_current + abs(start_current - stop_current) / 2
     new_hyp_voltage = calculate_SS_voltage(template_name, morphology_name, med_current)
     print "Detected voltage: ", new_hyp_voltage
     if abs(new_hyp_voltage - hyp_voltage) < .5:
@@ -795,9 +537,10 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_
 
     return spike_detected
 
+
 def search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, start_current, stop_current):
     """Search current necessary to reach threshold"""
-    med_current = start_current + abs(start_current-stop_current)/2
+    med_current = start_current + abs(start_current - stop_current) / 2
     spike_detected = detect_spike_step(template_name, morphology_name, hyp_level, inj_start, inj_stop, med_current)
     print "Spike threshold detection at: ", med_current, "nA", spike_detected
 
@@ -808,11 +551,14 @@ def search_threshold_current(template_name, morphology_name, hyp_level, inj_star
     elif not spike_detected:
         return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, med_current, stop_current)
 
+
 def detect_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop):
     """Search current necessary to reach threshold"""
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
+
 class PlotWindow:
+
     """Class the represents a plotting window"""
 
     def __init__(self, var_list, cell, xlim, ylim, title):
@@ -877,7 +623,6 @@ class dendrogram:
         self.dend_figure = pylab.figure(figsize=(20, 12))
         pylab.ioff()
 
-
         self.sections = sections
         neuron.h.finitialize()
 
@@ -885,8 +630,8 @@ class dendrogram:
         self.proot = PSection(self.hroot, None)
         self.psections = [self.proot] + self.proot.getAllPDescendants()
 
-        pylab.xlim([0, self.proot.treeWidth()+self.proot.ySpacing])
-        pylab.ylim([0, self.proot.treeHeight()+self.proot.xSpacing])
+        pylab.xlim([0, self.proot.treeWidth() + self.proot.ySpacing])
+        pylab.ylim([0, self.proot.treeHeight() + self.proot.xSpacing])
         pylab.gca().set_xticks([])
         pylab.gca().set_yticks([])
         pylab.gcf().subplots_adjust(top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
@@ -900,7 +645,7 @@ class dendrogram:
         pylab.clim(varbounds[0], varbounds[1])
 
         cbar = self.dend_figure.colorbar(cax, ticks=[varbounds[0], varbounds[1]])
-        cbar.ax.set_yticklabels(["%.2e"%(varbounds[0]), "%.2e"%(varbounds[1])])
+        cbar.ax.set_yticklabels(["%.2e" % (varbounds[0]), "%.2e" % (varbounds[1])])
 
         self.proot.drawTree(self.dend_figure, self.proot.ySpacing, self.proot.xSpacing, variable=variable, varbounds=varbounds)
         self.dend_figure.canvas.draw()
@@ -926,7 +671,9 @@ class dendrogram:
                 self.canvas.blit(self.ax.bbox)
                 self.drawCount = 50
             else:
+
                 self.drawCount = self.drawCount - 1
+
         return True
 
 
@@ -960,7 +707,7 @@ class PSection:
         """Setup draw of psection"""
         y_accum = 0
         for psegment in self.psegments:
-            psegment.setupDraw(figure, x + (self.maxsegdiam-psegment.diam)/2, y + y_accum, variable=variable, varbounds=varbounds)
+            psegment.setupDraw(figure, x + (self.maxsegdiam - psegment.diam) / 2, y + y_accum, variable=variable, varbounds=varbounds)
             y_accum += psegment.L
 
     def redraw(self):
@@ -993,11 +740,11 @@ class PSection:
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
         """Draw a dendritic tree"""
         self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
-        new_x = x # + self.L + self.xSpacing
+        new_x = x  # + self.L + self.xSpacing
         new_y = y + self.L + self.xSpacing
         for child in self.pchildren:
             child.drawTree(figure, new_x, new_y, variable=variable, varbounds=varbounds)
-            pylab.plot([x+self.diam/2, new_x+child.diam/2], [y+self.L, new_y], 'k')
+            pylab.plot([x + self.diam / 2, new_x + child.diam / 2], [y + self.L, new_y], 'k')
             new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
@@ -1044,12 +791,13 @@ class PSection:
                 pleaves += child.getAllPLeaves()
         return pleaves
 
+
 class PSegment:
     """A python representation of a segment"""
     def __init__(self, hsegment, parentsection):
         self.hsegment = hsegment
         self.parentsection = parentsection
-        self.L = self.parentsection.L/self.parentsection.hsection.nseg
+        self.L = self.parentsection.L / self.parentsection.hsection.nseg
         self.diam = self.hsegment.diam
 
         self.figure = None
@@ -1078,21 +826,22 @@ class PSegment:
         if self.plotvariable:
             plotvariable_value = self.getVariableValue(self.plotvariable)
             if not plotvariable_value is None:
-                self.patch.set_facecolor(self.color_map((plotvariable_value-self.varbounds[0])/(self.varbounds[1]-self.varbounds[0])))
+                self.patch.set_facecolor(self.color_map((plotvariable_value - self.varbounds[0]) / (self.varbounds[1] - self.varbounds[0])))
             else:
                 self.patch.set_facecolor(self.color_map(1.0))
                 self.patch.set_hatch("/")
             self.ax.draw_artist(self.patch)
 
-
     def getVariableValue(self, variable):
         """Get a variable value in a segment"""
         if variable is "v" or neuron.h.execute1("{%s.%s(%f)}" % (neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
-            return eval("self.hsegment."+variable)
+            return eval("self.hsegment." + variable)
         else:
             return None
 
+
 class Simulation:
+
     """Class that represents a neuron simulation"""
     def __init__(self, verbose_level=0):
         self.verbose_level = verbose_level
