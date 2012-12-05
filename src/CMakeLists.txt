@@ -97,13 +97,17 @@ if (NOT BLUEPYPATH)
 endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
-set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/bglibpy/libnrnmech.so")      
+
+execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True).split(\"/lib/\")[-1];" OUTPUT_VARIABLE PYTHON_LIB_SHORTPATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(DESTINATION_DIR "lib/${PYTHON_LIB_SHORTPATH}/bglibpy")
+
+set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/${DESTINATION_DIR}/libnrnmech.so")
 
 configure_file(paths.config.in paths.config)
 
-install(FILES ${LIBNRNMECHS} DESTINATION lib/python/site-packages/bglibpy)
-install(FILES bglibpy.py DESTINATION lib/python/site-packages/bglibpy)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION lib/python/site-packages/bglibpy)
-install(FILES __init__.py DESTINATION lib/python/site-packages/bglibpy)
-install(FILES tools.py DESTINATION lib/python/site-packages/bglibpy)
-install(FILES ssim.py DESTINATION lib/python/site-packages/bglibpy)
+install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
+install(FILES bglibpy.py DESTINATION ${DESTINATION_DIR})
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
+install(FILES __init__.py DESTINATION ${DESTINATION_DIR})
+install(FILES tools.py DESTINATION ${DESTINATION_DIR})
+install(FILES ssim.py DESTINATION ${DESTINATION_DIR})
