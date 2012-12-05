@@ -116,9 +116,11 @@ class SSim(object) :
             self.syn_ncs[gid] = {}
             self.ips[gid] = {}
             self.syn_mini_ncs[gid] = {}
-            self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
-            self._add_replay_stimuli(gid)
-            #self._charge_replay_synapses(gid,gids)
+
+            # self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
+            # self._add_replay_stimuli(gid)
+
+            # self._charge_replay_synapses(gid,gids)
             
     def _add_replay_stimuli(self,gid) :
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
@@ -160,6 +162,63 @@ class SSim(object) :
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
                     
+    def _add_single_synapse(self,gid,SID,syn_description,syn_parameters,synapse_level=0) :
+        pre_gid = int(syn_description[0])
+        delay = syn_description[1]
+        post_sec_id = syn_description[2]
+        gsyn = syn_description[8]
+        syn_U = syn_description[9]
+        syn_D = syn_description[10]
+        syn_F = syn_description[11]
+        syn_DTC = syn_description[12]
+        syn_type = syn_description[13]
+        location = self._location_to_point(gid,syn_description)            
+        if location == None :
+            print 'going to skip this synapse'
+            return -1
+            
+        distance =  bglibpy.\
+          neuron.h.distance(location,sec=self._get_section(gid,post_sec_id))
+
+        if(syn_type < 100):
+            ''' see: https://bbpteam.epfl.ch/\
+            wiki/index.php/BlueBuilder_Specifications#NRN,
+            inhibitory synapse 
+            '''
+            syn = bglibpy.neuron.h.\
+              ProbGABAAB_EMS(location, \
+                             sec=self._get_section(gid,post_sec_id))
+
+            if('e_GABAA' in syn_parameters['SynapseConfigure'].keys()) :
+                syn.e_GABAA = syn_parameters['SynapseConfigure']['e_GABAA']
+            syn.tau_d_GABAA = syn_DTC
+            rng = bglibpy.neuron.h.Random()
+            rng.MCellRan4(SID *100000+100, gid+250+self.base_seed) 
+            rng.lognormal(0.2, 0.1)
+            syn.tau_r_GABAA = rng.repick()
+        else:
+            ''' else we have excitatory synapse '''
+            syn = bglibpy.neuron.h.\
+              ProbAMPANMDA_EMS(location,sec=self._get_section(gid,post_sec_id))
+            syn.tau_d_AMPA = syn_DTC
+            if('NMDA_ratio' in syn_parameters['SynapseConfigure'].keys()) :
+                syn.NMDA_ratio = syn_parameters['SynapseConfigure']['NMDA_ratio']
+
+        syn.Use = abs( syn_U )
+        syn.Dep = abs( syn_D )
+        syn.Fac = abs( syn_F )
+        syn.synapseID = SID
+
+        rndd = bglibpy.neuron.h.Random()
+        rndd.MCellRan4(SID*100000+100, gid+250+self.base_seed )
+        rndd.uniform(0, 1)
+        syn.setRNG(rndd)
+        self.mechanisms[gid].append(rndd)
+
+        # self.mechanisms.append(syn)
+        self.syns[gid][SID] = syn
+        return 1
+
         
     def _add_replay_synapses(self,gid,gids,synapse_detail=0,\
                              test=False) :
@@ -195,6 +254,10 @@ class SSim(object) :
             syn_DTC = syn_description[12]
             syn_type = syn_description[13]
             location = self._location_to_point(gid,syn_description,test=test)            
+            if location == None :
+                print 'going to skip this synapse'
+                raw_input('Press ENTER')
+                continue
             distance =  bglibpy.\
               neuron.h.distance(location,sec=self._get_section(gid,post_sec_id))
 
@@ -380,7 +443,7 @@ class SSim(object) :
             distance = 1 - distance
 
         if(distance <=0 ) :
-            distance = 0
+            distance = None
             debug_too_small = debug_too_small + 1
 
         if(test) :
