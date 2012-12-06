@@ -64,7 +64,7 @@ class SSim(object) :
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try :
-            self.base_seed  = bc.entry_map['Default'].CONTENTS.basSeed
+            self.base_seed  = bc.entry_map['Default'].CONTENTS.baseSeed
         except :
             self.base_seed = 0 # in case the seed is not set, it's 0
             
@@ -85,8 +85,12 @@ class SSim(object) :
             3: As 2 but with minis and all, as well as the real pre-synaptic\
             spiketrains.
         """
-        path_of_morphology = self.bc.entry_map['Default'].CONTENTS.\
-          MorphologyPath+'/ascii'
+        bgc_morph_path = self.bc.entry_map['Default'].CONTENTS.MorphologyPath
+        # backwards compatible
+        if bgc_morph_path[-3:] == "/h5":
+            bgc_morph_path=bgc_morph_path[:-3]
+
+        path_of_morphology = bgc_morph_path+'/ascii'
 
         self.gids = gids
         self.templates = []
