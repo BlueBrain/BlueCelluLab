@@ -8,8 +8,8 @@ import bglibpy
 
 def main():
     """Main"""
-    cell = bglibpy.Cell("", "")
-    print cell
+    cell = bglibpy.Cell("test/cell_test/test_cell.hoc", "test/cell_test")
+    print "Loaded", cell, "OK"
 
 if __name__ == "__main__":
     main()
