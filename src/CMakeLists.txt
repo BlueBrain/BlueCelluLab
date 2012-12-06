@@ -98,7 +98,7 @@ endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
-execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True).split(\"/lib/\")[-1];" OUTPUT_VARIABLE PYTHON_LIB_SHORTPATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True).split(\"/lib/\")[-1];" OUTPUT_VARIABLE PYTHON_LIB_SHORTPATH OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(DESTINATION_DIR "lib/${PYTHON_LIB_SHORTPATH}/bglibpy")
 
 set(NRNMECH_PATH "${CMAKE_INSTALL_PREFIX}/${DESTINATION_DIR}/libnrnmech.so")
