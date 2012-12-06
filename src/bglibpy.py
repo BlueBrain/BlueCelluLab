@@ -32,7 +32,7 @@ neuron.h.load_file("stdrun.hoc")
 
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
-neuron.h.load_file("SerializedCell.hoc")
+neuron.h.load_file("TargetManager.hoc")
 neuron.h.load_file("TStim.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
