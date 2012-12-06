@@ -33,8 +33,10 @@ neuron.h.load_file("TStim.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 from cell import Cell
+'''
 from plotwindow import PlotWindow
 from dendrogram import Dendrogram
 from psection import PSection
 from psegment import PSegment
 from simulation import Simulation
+'''

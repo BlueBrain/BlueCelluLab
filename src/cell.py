@@ -2,8 +2,7 @@ import numpy
 import re
 import pylab
 import math
-import bglibpy
-from bglibpy import neuron
+import neuron
 
 
 class Cell:
@@ -400,11 +399,11 @@ class Cell:
         for var_name in var_list:
             if var_name not in self.recordings:
                 self.addRecording(var_name)
-        self.plotWindows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
+        self.plotWindows.append(plotwindow.PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
-        cell_dendrogram = bglibpy.dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
+        cell_dendrogram = dendrogram.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
 

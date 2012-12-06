@@ -1,9 +1,12 @@
+"""Class that represents a dendrogram window"""
+
 import pylab
-import bglibpy
 import numpy
+from src.psection import PSection
+import neuron
 
 
-class dendrogram:
+class Dendrogram:
     """Class that represent a dendrogram plot"""
     def __init__(self, sections, variable=None, active=False):
         pylab.ion()
@@ -11,10 +14,10 @@ class dendrogram:
         pylab.ioff()
 
         self.sections = sections
-        bglibpy.neuron.h.finitialize()
+        neuron.h.finitialize()
 
-        self.hroot = bglibpy.neuron.h.SectionRef(sec=self.sections[0]).root
-        self.proot = bglibpy.PSection(self.hroot, None)
+        self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
+        self.proot = PSection(self.hroot, None)
         self.psections = [self.proot] + self.proot.getAllPDescendants()
 
         pylab.xlim([0, self.proot.treeWidth() + self.proot.ySpacing])
@@ -49,8 +52,7 @@ class dendrogram:
 
         self.active = active
 
-
-def redraw(self):
+    def redraw(self):
         """Redraw the dendrogram"""
         if self.active:
             if not self.drawCount:
