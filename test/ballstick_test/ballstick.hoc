@@ -35,7 +35,10 @@ proc init() { local ind localobj strMorphName, strTmp, sf
 func getThreshold() { return 0.184062 }
 
 proc geom_nseg() {
-    CellRef.geom_nseg_fixed(40)
+    forsec CellRef.all {
+        nseg = 1
+    }
+    //CellRef.geom_nseg_fixed(40)
     CellRef.geom_nsec() //To count all sections
 }
 
@@ -44,7 +47,7 @@ obfunc getCell(){
 }
 
 proc delete_axon(){
-    CellRef.delete_axon()
+    //CellRef.delete_axon()
 }
 
 proc init_biophys() {
