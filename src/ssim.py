@@ -377,7 +377,7 @@ class SSim(object) :
     #         self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
 
     def _parse_connection_parameters(self,gid) :
-        """ Parse the BlueConfig to find out the NMDA_ratio for the synapse
+        """ Parse the BlueConfig to find out the NMDA_ratio, etc. for the synapse
         Parameters:
         ----------
         gid : gid of the post-synaptic cell
@@ -387,27 +387,30 @@ class SSim(object) :
         neurons = self.bc_simulation.circuit.mvddb.load_gids([gid])
         layer_of_gid = neurons[0].layer
         entries = self.bc_simulation.config.entries
-        all_targets = self.bc_simulation.circuit.TARGETS.available_targets()
+        all_targets = self.bc_simulation.TARGETS.available_targets()
         for entry in entries :
             if(entry.TYPE == 'Connection') :
                 ''' i assume desitnation is a "target"... '''
                 destination = entry.CONTENTS.Destination
                 if(destination in all_targets) :
-                    if(gid in self.bc_simulation.circuit.get_target(destination)):
+                    if(gid in self.bc_simulation.get_target(destination)):
                         ''' whatever specified in this block, is applied to gid '''
                         if('Weight' in entry.CONTENTS.keys) :
                             parameters['Weight'] = float(entry.CONTENTS.Weight)
-                            print 'found weight: ', entry.CONTENTS.Weight
+                            #print 'found weight: ', entry.CONTENTS.Weight
                         if('SpontMinis' in entry.CONTENTS.keys) :
                             parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
-                            print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
+                            #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
                         if('SynapseConfigure' in entry.CONTENTS.keys) :
                             conf = entry.CONTENTS.SynapseConfigure
-                            print 'conf: ', conf
+                            #print 'conf: ', conf
                             key = conf[3:].split()[0]
                             value = float(conf[3:].split()[2])
                             parameters['SynapseConfigure'].update({key:value})
-        print 'params:\n', parameters
+                else:
+                    raise ValueError, "Target '%s' not found in start.target or user.target" % destination
+
+        #print 'params:\n', parameters
         return parameters
 
 
