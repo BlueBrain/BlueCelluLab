@@ -1,7 +1,7 @@
 """Test script 2"""
 
 import sys
-sys.path.append("/home/vangeit/local/bglibpy/lib/python2.7/dist-packages")
+sys.path.append("/home/vangeit/local/bglibpy/lib/python2.7/site-packages")
 
 import bglibpy
 

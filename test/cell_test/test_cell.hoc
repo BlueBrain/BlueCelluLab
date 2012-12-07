@@ -21,6 +21,7 @@ proc init() { local ind localobj strMorphName, strTmp, sf
             CellRef = new Cell($1, strMorphName.s)
         }
     }
+    /*
     gmechdistribute = new TDistFunc()
     CellRef.setCCell(this)
     gid = CellRef.gid
@@ -29,6 +30,7 @@ proc init() { local ind localobj strMorphName, strTmp, sf
     insertChannel()
     init_biophys()
     biophys()
+    */
 }
 
 func getThreshold() { return 0.184062 }
