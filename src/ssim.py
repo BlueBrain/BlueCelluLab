@@ -166,11 +166,11 @@ class SSim(object) :
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
                     
-    def _add_single_synapse(self,gid,SID,syn_description,syn_parameters,synapse_level=0) :
+    def _add_single_synapse(self,gid,SID,syn_description,connection_modifiers,synapse_level=0) :
         pre_gid = int(syn_description[0])
         delay = syn_description[1]
         post_sec_id = syn_description[2]
-        gsyn = syn_description[8]
+        #gsyn = syn_description[8]
         syn_U = syn_description[9]
         syn_D = syn_description[10]
         syn_F = syn_description[11]
@@ -193,8 +193,6 @@ class SSim(object) :
               ProbGABAAB_EMS(location, \
                              sec=self._get_section(gid,post_sec_id))
 
-            if('e_GABAA' in syn_parameters['SynapseConfigure'].keys()) :
-                syn.e_GABAA = syn_parameters['SynapseConfigure']['e_GABAA']
             syn.tau_d_GABAA = syn_DTC
             rng = bglibpy.neuron.h.Random()
             rng.MCellRan4(SID *100000+100, gid+250+self.base_seed) 
@@ -205,8 +203,11 @@ class SSim(object) :
             syn = bglibpy.neuron.h.\
               ProbAMPANMDA_EMS(location,sec=self._get_section(gid,post_sec_id))
             syn.tau_d_AMPA = syn_DTC
-            if('NMDA_ratio' in syn_parameters['SynapseConfigure'].keys()) :
-                syn.NMDA_ratio = syn_parameters['SynapseConfigure']['NMDA_ratio']
+
+        # hoc exec synapse configure blocks
+        for cmd in connection_modifiers['SynapseConfigure']:
+            cmd = cmd.replace('%s', '\n%(syn)s')
+            bglibpy.neuron.h(cmd % {'syn': syn.hname()})
 
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
@@ -415,6 +416,52 @@ class SSim(object) :
 
 
 # parameters['SynapseConfiguration'].append(entry.CONTENTS.SynapseConfiguration)
+
+
+    def _evaluate_connection_parameters(self, pre_gid, post_gid) :
+        """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
+        Parameters:
+        ----------
+        gid : gid of the post-synaptic cell
+        """
+        parameters = {}
+        #neurons = self.bc_simulation.circuit.mvddb.load_gids([gid])
+        #layer_of_gid = neurons[0].layer
+        entries = self.bc_simulation.config.typed_entries("Connection")
+        all_targets = self.bc_simulation.TARGETS.available_targets()
+        for entry in entries:
+            src = entry.CONTENTS.Source
+            dest = entry.CONTENTS.Destination
+
+            # TODO: this check should be done once up front for all connection blocks
+            # and thus moved out of here
+            if (dest not in all_targets):
+                raise ValueError, "Connection '%s' Destination target '%s' not found in start.target or user.target" % (entry.NAME, dest)
+            if (src not in all_targets):
+                raise ValueError, "Connection '%s' Source target '%s' not found in start.target or user.target" % (entry.NAME, src)
+
+            if (pre_gid in self.bc_simulation.get_target(src) and post_gid in self.bc_simulation.get_target(dest)):
+                ''' whatever specified in this block, is applied to gid '''
+                if('Weight' in entry.CONTENTS.keys) :
+                    parameters['Weight'] = float(entry.CONTENTS.Weight)
+                    #print 'found weight: ', entry.CONTENTS.Weight
+                if('SpontMinis' in entry.CONTENTS.keys) :
+                    parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
+                    #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
+                if('SynapseConfigure' in entry.CONTENTS.keys) :
+                    conf = entry.CONTENTS.SynapseConfigure
+                    # collect list of applicable configure blocks to be applied with a "hoc exec" statement
+                    parameters.setdefault('SynapseConfigure', []).append(conf)
+                if('Delay' in entry.CONTENTS.keys):
+                    import warnings
+                    warnings.warn("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+
+        #print 'params:\n', parameters
+        return parameters
+
+
+# parameters['SynapseConfiguration'].append(entry.CONTENTS.SynapseConfiguration)
+
         
     def _get_section(self, gid,raw_section_id) :
         ''' use the serialized object to find your section'''
