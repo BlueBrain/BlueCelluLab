@@ -1,0 +1,24 @@
+Target Cell Mosaic
+{
+  Cell1 Cell2
+}
+
+Target Cell Excitatory
+{
+  Cell1
+}
+
+Target Cell Inhibitory
+{
+  Cell2
+}
+
+Target Cell Cell1
+{
+  a1
+}
+
+Target Cell Cell2
+{
+  a2
+}
