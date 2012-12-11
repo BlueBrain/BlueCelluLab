@@ -194,7 +194,8 @@ plt.plot(t,v_a2,label='bglib, dt=0.025')
 ''' Ben's PSP amplitude code '''
 sys.path+=['/home/ebmuller/src/bbp-user-ebmuller/experiments/synapse_psp_validation']
 import psp
-psp, g, dropped_count, v,t = psp.assess_psp_with_replay_synapses("BlueConfig",1,2,None,-75.0,50.0,200.0,1.0,1)
+# shift epsp occurance back by 1.0ms (synaptic delay in circuit)
+psp, g, dropped_count, v,t = psp.assess_psp_with_replay_synapses("BlueConfig",1,2,None,-75.0,SYN_ACTIVATION_T-1.0,200.0,1.0,1)
 plt.plot(t,v,label='ssim')
 
 
