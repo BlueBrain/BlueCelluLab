@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import bglibpy
+import bluepy
 
 import sys
 sys.path.append('/home/torben/sandbox/willem/DendriteApprox/')
@@ -16,16 +17,16 @@ T_STOP = 100
 V_INIT = -75
 DT = 0.025
 
-SYN_DECAY = 0.1
+SYN_DECAY = 2.0
 SYN_E = 0
 SYN_ACTIVATION_T = 50
 SYN_DELAY = 0.025
-SYN_G = 0.05
+SYN_G = 0.001
 SYN_LOC = 1.0
 
 surface = lambda r, h: 2*np.pi*r*h
 
-cell = bglibpy.Cell("test/ballstick_test/ballstick.hoc", "test/ballstick_test")
+cell = bglibpy.Cell("ballstick.hoc", "./")
 soma_L,soma_D, soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area\
   (0.5, sec=cell.soma)
 print 'SOMA L=%f, diam=%f,surf=%f' % (soma_L,soma_D,soma_A)
@@ -104,7 +105,7 @@ plt.plot(hines_t,hines_v,label='hines, derived')
 ''' 3: Pseudo/Semi-Analytical (Willem)'''
 
 ''' write config file for Willem '''
-f_name = 'test/ballstick_test/bs.cfg'
+f_name = 'bs.cfg'
 outF = open(f_name,'w')
 outF.write('[neuron]\n')
 outF.write('CM: %f\n' % (CM))
@@ -149,8 +150,8 @@ del(ns)
 del(nc)
 
 syn = bglibpy.neuron.h.ProbAMPANMDA_EMS(SYN_LOC,sec=cell.basal[0])
-syn.tau_r_AMPA = 0.1#0.025
-syn.tau_r_NMDA = 0.1#0.025
+syn.tau_r_AMPA = 0.1
+syn.tau_r_NMDA = 0.1
 syn.tau_d_AMPA = SYN_DECAY
 syn.tau_d_NMDA = SYN_DECAY
 syn.NMDA_ratio = 0
@@ -168,6 +169,15 @@ nc= bglibpy.neuron.h.NetCon(ns,syn,0,SYN_DELAY,SYN_G)
 # werner_t = cell.getTime()
 # werner_v = cell.getSomaVoltage()
 # plt.plot(werner_t,werner_v,'+',label='werner2')
+
+''' Eilif's BGLIB'''
+s = bluepy.Simulation("BlueConfig")
+# excitatory cell with an incoming inhibitory synapse 
+#v_a1 = s.reports.soma.time_series(1)
+# inhibitory cell with an incoming excitatory synapse 
+v_a2 = s.reports.soma.time_series(2)
+t = s.reports.soma.time_range- 401 + SYN_ACTIVATION_T
+plt.plot(t,v_a2,label='Eilif')
 
 plt.legend(loc=0)
 plt.show()
