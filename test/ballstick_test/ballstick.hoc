@@ -35,7 +35,10 @@ proc init() { local ind localobj strMorphName, strTmp, sf
 func getThreshold() { return 0.184062 }
 
 proc geom_nseg() {
-    forsec CellRef.all {
+    forsec CellRef.basal {
+        nseg = 200
+    }
+    forsec CellRef.somatic {
         nseg = 1
     }
     //CellRef.geom_nseg_fixed(40)
