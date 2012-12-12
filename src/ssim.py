@@ -36,17 +36,7 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat') :
             break
 
     print 'read and stored all spikes. now going to write the output'
-    # if not os.path.exists('presynaptic_temp'): os.makedirs('presynaptic_temp')
-
-    # for key in xhashed.keys() :
-    #     fN = 'presynaptic_temp/' +str(key) + '_spikes.dat'
-    #     #print 'fn >%s<' % fN
-    #     outF = open(fN,'w')
-    #     outF.write( '\t'.join(map(str, xhashed[key]))  )
-    #     outF.flush()
-    #     outF.close()
     return xhashed
-
 
 class SSim(object) :
     def __init__(self,blueconfig_filename,dt=0.025) :
@@ -63,12 +53,18 @@ class SSim(object) :
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try :
-            self.base_seed  = bc.entry_map['Default'].CONTENTS.baseSeed
-        except :
+            self.base_seed  = self.bc.entry_map['Default'].CONTENTS.baseSeed
+        except AttributeError:
             self.base_seed = 0 # in case the seed is not set, it's 0
-            
 
-    def instantiate_gids(self,gids,synapse_detail=0) :
+        self.connection_entries = self.bc_simulation.config.typed_entries("Connection")
+        self.all_targets = self.bc_simulation.TARGETS.available_targets()                        
+        self.all_targets_dict = {}
+        # if pre_gid in self.all_targets_dict[src]: #self.bc_simulation.get_target(src)
+        for target in self.all_targets :
+            self.all_targets_dict[target] = self.bc_simulation.get_target(target)
+
+    def instantiate_gids(self,gids,synapse_detail) :
         """ Instantiate a list of GIDs
 
         Parameters
@@ -112,6 +108,7 @@ class SSim(object) :
            
             temp_cell = bglibpy.Cell(full_template_name_of_gid,\
                                      path_of_morphology)
+            ''' Setting up some internals / administration for later use '''
             self.cells[gid] = temp_cell
             self.mechanisms[gid] = []
             self.syns[gid] = {}
@@ -123,8 +120,36 @@ class SSim(object) :
 
             # self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
             # self._add_replay_stimuli(gid)
-
             # self._charge_replay_synapses(gid,gids)
+
+            if synapse_detail > 0 :
+                # syn_parameters = self._parse_connection_parameters(gid)
+                pre_datas = self.bc_simulation.circuit.\
+                  get_presynaptic_data(gid)
+                for syn_description, SID in zip(pre_datas, \
+                                               range(len(pre_datas))) :
+                    syn_parameters = self._evaluate_connection_parameters(syn_description[0],gid)
+                    self.add_single_synapse(gid,SID,syn_description, \
+                                            syn_parameters)
+                print 'syn_parameters: ', syn_parameters
+
+            if synapse_detail > 1 : 
+                ''' 2 or higher: add minis '''
+                pass
+
+            if synapse_detail >3:
+                ''' 3 or higher: charge the synapses'''
+                self.charge_replay_synapses()
+                
+            
+
+    def setup_replay(self,gid) :
+        syn_parameters = self._parse_connection_parameters(post_gid)
+        pre_datas = ssim.bc_simulation.get_presynaptic_data(post_gid)
+
+
+    def charge_replay_synapses():
+        pass
             
     def _add_replay_stimuli(self,gid) :
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
@@ -166,7 +191,7 @@ class SSim(object) :
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
                     
-    def _add_single_synapse(self,gid,SID,syn_description,connection_modifiers,synapse_level=0) :
+    def add_single_synapse(self,gid,SID,syn_description,connection_modifiers,synapse_level=0) :
         pre_gid = int(syn_description[0])
         delay = syn_description[1]
         post_sec_id = syn_description[2]
@@ -176,9 +201,11 @@ class SSim(object) :
         syn_F = syn_description[11]
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
+
+        ''' --- TODO: what happens with -1 in location_to_point --- '''
         location = self._location_to_point(gid,syn_description)            
         if location == None :
-            print 'going to skip this synapse'
+            print 'add_single_synapse: going to skip this synapse'
             return -1
             
         distance =  bglibpy.\
@@ -375,8 +402,31 @@ class SSim(object) :
     #         self.syn_vecstims[gid][SID] = t_vec_stim
     #         self.syn_vecstims[gid][SID].play(self.syn_vecs[gid][SID], self.dt)
 
-    #         self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
+    #         self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.syns[gid][SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
 
+    def charge_replay_synapses(self,gid,gids) :
+        """ Connect pre-synaptic spikes
+        Parameters:
+        ----------
+        """
+        # fetch the synapse description
+        pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
+
+        # parse the synapse parameters
+        syn_parameters = self._parse_connection_parameters(gid)
+        
+        for syn_description,SID in zip(pre_datas,range(len(pre_datas))) :
+            spike_train = [] # fetch with bluepy
+            spike_train = sorted(np.random.random_integers(low=0,high=1000,size=10))
+            t_vec = bglibpy.neuron.h.Vector(spike_train)
+            t_vec_stim = bglibpy.neuron.h.VecStim()
+            self.syn_vecs[gid][SID] = t_vec
+            self.syn_vecstims[gid][SID] = t_vec_stim
+            self.syn_vecstims[gid][SID].play(self.syn_vecs[gid][SID], self.dt)
+
+            self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.syns[gid][SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
+
+    
     def _parse_connection_parameters(self,gid) :
         """ Parse the BlueConfig to find out the NMDA_ratio, etc. for the synapse
         Parameters:
@@ -405,7 +455,8 @@ class SSim(object) :
                         if('SynapseConfigure' in entry.CONTENTS.keys) :
                             conf = entry.CONTENTS.SynapseConfigure
                             #print 'conf: ', conf
-                            key = conf[3:].split()[0]
+                            #key = conf[3:].split()[0]
+                            key = conf.split()[0]
                             value = float(conf[3:].split()[2])
                             parameters['SynapseConfigure'].update({key:value})
                 else:
@@ -425,40 +476,39 @@ class SSim(object) :
         gid : gid of the post-synaptic cell
         """
         parameters = {}
-        #neurons = self.bc_simulation.circuit.mvddb.load_gids([gid])
-        #layer_of_gid = neurons[0].layer
-        entries = self.bc_simulation.config.typed_entries("Connection")
-        all_targets = self.bc_simulation.TARGETS.available_targets()
-        for entry in entries:
+
+        for entry in self.connection_entries:
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
             # TODO: this check should be done once up front for all connection blocks
             # and thus moved out of here
-            if (dest not in all_targets):
-                raise ValueError, "Connection '%s' Destination target '%s' not found in start.target or user.target" % (entry.NAME, dest)
-            if (src not in all_targets):
-                raise ValueError, "Connection '%s' Source target '%s' not found in start.target or user.target" % (entry.NAME, src)
 
-            if (pre_gid in self.bc_simulation.get_target(src) and post_gid in self.bc_simulation.get_target(dest)):
-                ''' whatever specified in this block, is applied to gid '''
-                if('Weight' in entry.CONTENTS.keys) :
-                    parameters['Weight'] = float(entry.CONTENTS.Weight)
-                    #print 'found weight: ', entry.CONTENTS.Weight
-                if('SpontMinis' in entry.CONTENTS.keys) :
-                    parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
-                    #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
-                if('SynapseConfigure' in entry.CONTENTS.keys) :
-                    conf = entry.CONTENTS.SynapseConfigure
-                    # collect list of applicable configure blocks to be applied with a "hoc exec" statement
-                    parameters.setdefault('SynapseConfigure', []).append(conf)
-                if('Delay' in entry.CONTENTS.keys):
-                    import warnings
-                    warnings.warn("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+            # if (dest not in all_targets):
+            #     raise ValueError, "Connection '%s' Destination target '%s' not found in start.target or user.target" % (entry.NAME, dest)
+            # if (src not in all_targets):
+            #     raise ValueError, "Connection '%s' Source target '%s' not found in start.target or user.target" % (entry.NAME, src)
+
+            if pre_gid in self.all_targets_dict[src]: #self.bc_simulation.get_target(src) :
+                if post_gid in self.all_targets_dict[dest]:#self.bc_simulation.get_target(dest):
+                    ''' whatever specified in this block, is applied to gid '''
+                    if('Weight' in entry.CONTENTS.keys) :
+                        parameters['Weight'] = float(entry.CONTENTS.Weight)
+                        #print 'found weight: ', entry.CONTENTS.Weight
+                    if('SpontMinis' in entry.CONTENTS.keys) :
+                        parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
+                        #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
+                    if('SynapseConfigure' in entry.CONTENTS.keys) :
+                        conf = entry.CONTENTS.SynapseConfigure
+                        # collect list of applicable configure blocks to be applied with a "hoc exec" statement
+                        parameters.setdefault('SynapseConfigure', []).append(conf)
+                    if('Delay' in entry.CONTENTS.keys):
+                        import warnings
+                        warnings.warn("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
 
         #print 'params:\n', parameters
         return parameters
-
+        
 
 # parameters['SynapseConfiguration'].append(entry.CONTENTS.SynapseConfiguration)
 
