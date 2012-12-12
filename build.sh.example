@@ -12,3 +12,4 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=$HOME/local/bglibpy
 make
 make install
+ctest -VV
