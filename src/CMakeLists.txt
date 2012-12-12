@@ -1,5 +1,3 @@
-find_package(PythonLibs REQUIRED)
-
 ###
 # LIBNRN
 ###
