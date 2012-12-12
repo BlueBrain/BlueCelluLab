@@ -1,0 +1,362 @@
+Run Default
+{
+	Date    22:11:12
+	Time    14:27:09
+          svnPath https://bbpteam.epfl.ch/svn/bluebrain
+	Version    1094 
+           Prefix /bgscratch/bbp/release/02.04.12
+   MorphologyPath /bgscratch/bbp/morphologies/31.05.12
+       METypePath   /bgscratch/bbp/CCells/b24.07.12
+
+
+      CircuitPath /bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/1x7_0/merged_circuit
+          nrnPath /bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/1x7_0/merged_circuit/ncsFunctionalAllRecipePathways
+  NumSynapseFiles 8192
+
+	CurrentDir $path
+      OutputRoot $path
+      TargetFile $path/user.target
+
+      	RunMode WholeCell
+    CircuitTarget MyCells
+         Duration 1000
+               Dt 0.025
+
+	 baseSeed 12345
+}
+
+
+Report soma
+{
+        Target MyCells
+        Type compartment
+        ReportOn v
+        Unit mV
+        Format Bin
+        Dt 0.1
+        StartTime 0
+        EndTime 20000
+}
+
+
+
+Stimulus ThresholdExc
+{
+
+              Mode Current
+           Pattern Noise
+       MeanPercent 120
+          Variance 0.001
+             Delay 0.000000
+          Duration 20000.000000
+}
+
+Stimulus ThresholdInh
+{
+
+              Mode Current
+           Pattern Noise
+       MeanPercent 75
+          Variance 0.001
+             Delay 0.000000
+          Duration 20000.000000
+}
+
+
+
+
+
+#StimulusInject ThresholdIntoExc
+{
+        Stimulus ThresholdExc
+        Target Excitatory
+}
+
+#StimulusInject ThresholdIntoInh
+{
+        Stimulus ThresholdInh
+        Target Inhibitory
+}
+
+Stimulus ThresholdRemove
+{
+
+              Mode Current
+           Pattern Noise
+       MeanPercent -400.0
+          Variance 0.001
+             Delay 0.000000
+          Duration 20000.000000
+}
+
+#StimulusInject ThresholdRemoveIntoHoldCells
+{
+        Stimulus ThresholdRemove
+        Target HoldCells
+}
+
+
+Stimulus hypamp
+{
+        Mode Current
+  Pattern Hyperpolarizing
+        Delay 0.0
+  Duration 20000.0
+}
+
+#StimulusInject hypamp_mosaic
+{
+        Stimulus hypamp
+        Target Mosaic
+}
+
+#Report I_Ca
+{
+        Target AllCompartments_mc2
+          Type Summation
+      ReportOn ica
+          Unit nA
+        Format Bin
+            Dt 0.1
+     StartTime 0
+       EndTime 2000
+}
+
+#Report I_NonSpecific
+{
+        Target AllCompartments_mc2
+          Type Summation
+      ReportOn i_pas ihcn_Ih ihcn_hcn3 icsa_csa
+          Unit nA
+        Format Bin
+            Dt 0.1
+     StartTime 0
+       EndTime 2000
+}
+
+#Report I_NMDA
+{
+       Target AllCompartments_mc2
+         Type Summation
+     ReportOn ProbAMPANMDA_EMS.i_NMDA
+         Unit nA
+       Format Bin
+           Dt 0.1
+    StartTime 0
+      EndTime 2000
+}
+
+#Report I_AMPA
+{
+       Target AllCompartments_mc2
+         Type Summation
+     ReportOn ProbAMPANMDA_EMS.i_AMPA
+         Unit nA
+       Format Bin
+           Dt 0.1
+    StartTime 0
+      EndTime 2000
+}
+
+#Report I_GABA
+{
+       Target AllCompartments_mc2
+         Type Summation
+     ReportOn ProbGABAA_EMS.i
+         Unit nA
+       Format Bin
+           Dt 0.1
+    StartTime 0
+      EndTime 2000
+}
+
+Connection ConL6Exc-Uni
+{
+        Source Excitatory
+        Destination Layer6
+        Weight 2.35
+#        SpontMinis 0.04
+}
+
+Connection ConL5Exc-Uni
+{
+        Source Excitatory
+        Destination Layer5
+        Weight 2.35
+#        SpontMinis 0.067
+}
+
+Connection ConL4Exc-Uni
+{
+        Source Excitatory
+        Destination Layer4
+        Weight 2.35
+#        SpontMinis 0.072
+}
+
+Connection ConL3Exc-Uni
+{
+        Source Excitatory
+        Destination Layer3
+        Weight 2.35
+#        SpontMinis 0.122
+}
+
+Connection ConL2Exc-Uni
+{
+        Source Excitatory
+        Destination Layer2
+        Weight 2.35
+#        SpontMinis 0.26
+}
+
+Connection ConL1Exc-Uni
+{
+        Source Excitatory
+        Destination Layer1
+        Weight 2.35
+#        SpontMinis 0.63
+}
+
+
+
+Connection ConInh_not_LBC_NBC-Uni
+{
+        Source Inh_not_LBC_NBC
+        Destination Mosaic
+        Weight 2.0
+#	SpontMinis 0.012
+	SynapseConfigure %s.e_GABAA = -80.0
+}
+
+Connection ConLBC_NBC-Uni
+{
+        Source LBC_NBC
+        Destination Mosaic
+        Weight 0.67
+#	SpontMinis 0.012
+	SynapseConfigure %s.e_GABAA = -80.0
+}
+
+Connection scheme_minus2
+{       
+              Source Excitatory
+         Destination Excitatory
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.4
+}
+
+Connection scheme_minus1
+{       
+              Source Excitatory
+         Destination Inhibitory
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.8
+}
+
+Connection scheme5
+{       
+              Source L5_TTPC1
+         Destination L5_TTPC1
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.71
+}
+
+Connection scheme6
+{       
+              Source L5_TTPC2
+         Destination L5_TTPC2
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.71
+}
+
+Connection scheme7
+{       
+              Source L5_TTPC1
+         Destination L5_TTPC2
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.71
+}
+
+Connection scheme8
+{       
+              Source L5_TTPC2
+         Destination L5_TTPC1
+              Weight 1.0
+    SynapseConfigure %s.NMDA_ratio = 0.71
+}
+
+Connection NMDA_Override_L4-L4
+{
+        Source Layer4Excitatory
+        Destination Layer4Excitatory
+        Weight 1.0
+        SynapseConfigure %s.NMDA_ratio = 0.86
+
+}
+
+Connection NMDA_Override_L4-L23
+{
+        Source L4_SS
+        Destination L23_PC
+        Weight 1.0
+        SynapseConfigure %s.NMDA_ratio = 0.5
+
+}
+
+Connection scheme1b
+{       
+              Source Layer1
+         Destination Excitatory
+              Weight 1.0
+    SynapseConfigure %s.GABAB_ratio = 0.75
+}
+
+Connection scheme2b
+{       
+              Source L23_NGC
+         Destination Excitatory
+              Weight 1.0
+    SynapseConfigure %s.GABAB_ratio = 0.75
+}
+
+Connection OldExh
+{       
+              Source Excitatory
+         Destination Mosaic
+              Weight 2.35
+}
+
+Connection OldInh
+{       
+              Source Inh_not_LBC_NBC
+         Destination Mosaic
+              Weight 2.0
+}
+
+Connection OldInh
+{       
+              Source LBC_NBC
+         Destination Mosaic
+              Weight 0.67
+}
+
+Stimulus spikeReplay
+{
+        Mode Current
+        Delay 0
+        Duration 20000
+        Pattern SynapseReplay
+        SpikeFile replay.dat
+
+}
+
+StimulusInject spikeReplayIntoMosaic
+{
+        Stimulus spikeReplay
+        Target MyCells
+}
+
+
+
+

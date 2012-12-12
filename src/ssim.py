@@ -49,7 +49,7 @@ def parse_and_store_GID_spiketrains(path,fName='out.dat') :
 
 
 class SSim(object) :
-    def __init__(self,blueconfig_filename,dt=0.025) :
+    def __init__(self,blueconfig_filename, dt=0.025, record_dt=None) :
         """ Object dealing with BlueConfig configured Small Simulations
 
         To relieve from an empty stomach, eat spam and eggs
@@ -59,6 +59,7 @@ class SSim(object) :
         blueconfig_filename : Absolute filename of the Blueconfig to be used
         """        
         self.dt = dt
+        self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
@@ -111,7 +112,7 @@ class SSim(object) :
             print 'full_template_name_of_gid: ', full_template_name_of_gid
            
             temp_cell = bglibpy.Cell(full_template_name_of_gid,\
-                                     path_of_morphology)
+                                     path_of_morphology, self.record_dt)
             self.cells[gid] = temp_cell
             self.mechanisms[gid] = []
             self.syns[gid] = {}

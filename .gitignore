@@ -1,2 +1,5 @@
 build
-build.sh
+*~
+*.log
+*.log.*
+*.pyc
