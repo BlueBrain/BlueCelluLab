@@ -12,7 +12,7 @@ class Cell:
         """The objects that need to stay persistent in python"""
         objects = []
 
-    def __init__(self, template_name, morphology_name):
+    def __init__(self, template_name, morphology_name, gid=0):
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
@@ -22,6 +22,7 @@ class Cell:
         self.synapses = {}
         self.netstims = {}
         self.connections = {}
+        self.cell.getCell().gid = gid
 
         self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
 
@@ -49,7 +50,6 @@ class Cell:
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
         self.cell.re_init_rng()
-        neuron.h.finitialize()
 
     def get_section(self, raw_section_id):
         ''' use the serialized object to find your section'''

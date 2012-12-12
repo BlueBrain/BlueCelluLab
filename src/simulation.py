@@ -6,19 +6,23 @@ class Simulation:
     def __init__(self, verbose_level=0):
         self.verbose_level = verbose_level
         self.cells = []
-        neuron.h.celsius = 34
-        #self.steps_per_ms = 1
 
     def addCell(self, new_cell):
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True, v_init=-65, dt=0.025):
+    def run(self, maxtime, cvode=True, celsius=-34, v_init=-65, dt=0.025):
         """Run the simulation"""
+        neuron.h.celsius = 34
         neuron.h.tstop = 0.000001
-        #print "dt=", neuron.h.dt
         neuron.h.dt = dt
         neuron.h.v_init = v_init
+
+        for cell in self.cells:
+            try:
+                cell.re_init_rng()
+            except AttributeError:
+                pass
 
         if cvode:
             neuron.h('{cvode_active(1)}')
@@ -30,7 +34,7 @@ class Simulation:
         try:
             neuron.h.run()
         except Exception, e:
-            print 'The Interneuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+            print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
         self.continuerun(maxtime)
 
@@ -44,7 +48,7 @@ class Simulation:
             try:
                 neuron.h.step()
             except Exception, e:
-                print 'The Interneuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+                print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
                 break
 
     def __del__(self):

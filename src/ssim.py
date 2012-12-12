@@ -107,7 +107,7 @@ class SSim(object) :
             print 'full_template_name_of_gid: ', full_template_name_of_gid
 
             temp_cell = bglibpy.Cell(full_template_name_of_gid,\
-                                     path_of_morphology)
+                                     path_of_morphology, gid=gid)
             ''' Setting up some internals / administration for later use '''
             self.cells[gid] = temp_cell
             self.mechanisms[gid] = []
@@ -554,9 +554,10 @@ class SSim(object) :
 
 
     def simulate(self,t_stop=100,v_init=-65,celsius=34) :
-        bglibpy.neuron.h.celsius = celsius
-        bglibpy.neuron.h.finitialize(v_init)
-        bglibpy.neuron.run(t_stop)
+        sim = bglibpy.Simulation()
+        for gid in self.gids:
+            sim.addCell(self.cells[gid])
+        sim.run(t_stop, cvode=False, dt=0.025, celsius=celsius, v_init=v_init)
 
     def get_voltage_traces(self) :
         vm = {}
