@@ -1,0 +1,40 @@
+The ballstick circuit
+=====================
+
+Two cells: "a1", "a2"
+
+a1:
+
+Excitatory cell which makes one synapse on a2 150 um from the soma
+Synapse parameters: gsyn=1nS, udf=(0.5,650,10), dtc=2.0
+
+
+a2:
+
+Inhibitory cell which makes one synapse on a2 100 um from the soma
+Synapse parameters: gsyn=1nS, udf=(0.5,650,10), dtc=10.0
+
+See write_nrn_h5.py (which generates the nrn.h5) for more details.
+
+ballstick circuit simulation
+============================
+
+BlueConfig
+
+Overrides various synapse properties (e.g. for exc syns:tau_r_AMPA=0.001, NMDA_ratio=0.0, Use=1.0, see BlueConfig)
+
+Replay spike from a1 @ 400ms 
+(spike occurs at synapse of a2 @ 401ms due to synaptic delay of 1ms)
+
+Replay spike from a2 @ 450ms 
+(spike occurs at synapse of a1 @ 451ms due to synaptic delay of 1ms)
+
+Running simulation with bglib
+=============================
+
+On vizcluster
+
+module load hdf5/1.6.9-rhel6-x86_64-gcc4.4.5-customized reportinglib/rhel6-mvapich2-psm-x86_64-dev neuronYale/rhel6-mvapich2-psm-x86_64-shared-dev bglib/rhel6-mvapich2-psm-x86_64-shared-dev
+sh run_and_postprocess_bglib.sh
+
+

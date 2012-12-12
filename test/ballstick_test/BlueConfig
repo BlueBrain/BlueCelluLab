@@ -41,15 +41,15 @@ Report soma
         EndTime 20000
 }
 
-Connection
+Connection excOverride
 {
   Source Excitatory
   Destination Mosaic
   Weight 1.0
-  SynapseConfigure %s.Use=1 %s.tau_r_AMPA=0.1 %s.NMDA_ratio=0.0
+  SynapseConfigure %s.Use=1 %s.tau_r_AMPA=0.001 %s.NMDA_ratio=0.0
 }
 
-Connection
+Connection inhOverride
 {
   Source Inhibitory
   Destination Mosaic
