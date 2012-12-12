@@ -20,4 +20,11 @@ else()
   set(VERSION_ABI ${VERSION_MAJOR}${VERSION_MINOR})
 endif()
 
+execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}');"
+    OUTPUT_VARIABLE PYTHON_PACKAGE_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(DESTINATION_DIR "${PYTHON_PACKAGE_INSTALL_DIR}/bglibpy")
+
 add_subdirectory(src)
+
+enable_testing()
+add_subdirectory(test)

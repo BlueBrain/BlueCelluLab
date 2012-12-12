@@ -94,13 +94,18 @@ class Cell:
 
     @tools.deprecated
     def getThreshold(self):
-        get_threshold()
+        self.get_threshold()
 
     def get_threshold(self):
         """Get the spiking threshold of the cell"""
         return self.cell.getThreshold()
 
+    @tools.deprecated
     def getHypAmp(self):
+        """Get the current level necessary to bring the cell to -85 mV"""
+        return self.get_hypamp()
+
+    def get_hypamp(self):
         """Get the current level necessary to bring the cell to -85 mV"""
         return self.cell.getHypAmp()
 

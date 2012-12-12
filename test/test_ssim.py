@@ -1,6 +1,3 @@
-import sys
-sys.path.append("/home/vangeit/local/bglibpy/lib/python2.7/site-packages")
-
 import nose.tools as nt
 import numpy as np
 import bglibpy.ssim

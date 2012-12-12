@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import nose.tools as nt
-
-import sys
-sys.path.append("/home/vangeit/local/bglibpy/lib/python2.7/site-packages")
-
+import math
 import bglibpy
 
 class TestCellBaseClass(object):
@@ -23,7 +20,7 @@ class TestCellBaseClass(object):
         nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
 
     def test_get_threshold(self):
-        nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
+        nt.assert_true(math.fabs(self.cell.get_threshold() - 0.184062) < 0.00001)
 
     def test_get_hypamp(self):
-        nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
+        nt.assert_true(math.fabs(self.cell.get_hypamp() - -0.070557) < 0.00001)
