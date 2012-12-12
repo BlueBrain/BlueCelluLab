@@ -106,7 +106,7 @@ set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
 
 configure_file(paths.config.in paths.config)
 
-set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py)
+set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py)
 
 install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})

@@ -2,8 +2,9 @@ import numpy
 import re
 import pylab
 import math
-import neuron
-
+import bglibpy
+import tools
+from bglibpy.importer import neuron
 
 class Cell:
     """Represents a bglib cell"""
@@ -91,7 +92,11 @@ class Cell:
 
         return distance
 
+    @tools.deprecated
     def getThreshold(self):
+        get_threshold()
+
+    def get_threshold(self):
         """Get the spiking threshold of the cell"""
         return self.cell.getThreshold()
 

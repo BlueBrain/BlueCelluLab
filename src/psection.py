@@ -1,6 +1,5 @@
 import pylab
 import bglibpy
-from bglibpy import neuron
 
 
 class PSection:

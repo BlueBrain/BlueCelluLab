@@ -1,5 +1,4 @@
-from bglibpy import neuron
-
+from bglibpy.importer import neuron
 
 class Simulation:
 

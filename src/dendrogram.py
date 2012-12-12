@@ -2,8 +2,7 @@
 
 import pylab
 import numpy
-from src.psection import PSection
-import neuron
+import bglibpy
 
 
 class Dendrogram:
