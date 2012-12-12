@@ -1,0 +1,12 @@
+../ballstick_test
+/unknown/
+Neurons Loaded
+ballstick 0 0 0 0 0 0 0.0 0.0 0.0 0.0 ballstick
+ballstick 0 0 0 0 1 0 0.0 50.0 0.0 0.0 ballstick
+MiniColumnsPosition
+0.0 0.0 0.0
+MorphTypes
+L1_BS_EXC PYR EXC
+L1_BS_INH INT INH
+ElectroTypes
+PAS
