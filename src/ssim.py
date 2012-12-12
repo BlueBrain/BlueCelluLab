@@ -58,30 +58,30 @@ class SSim(object) :
         Paramters
         ---------
         blueconfig_filename : Absolute filename of the Blueconfig to be used
-        """        
+        """
         self.dt = dt
         self.blueconfig_filename = blueconfig_filename
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try :
-            self.base_seed  = bc.entry_map['Default'].CONTENTS.baseSeed
+            self.base_seed  = self.bc.entry_map['Default'].CONTENTS.baseSeed
         except :
             self.base_seed = 0 # in case the seed is not set, it's 0
-            
+
 
     def instantiate_gids(self,gids,synapse_detail=0) :
         """ Instantiate a list of GIDs
 
         Parameters
         ----------
-        gids : list of GIDs. Must be a list; even in case of instantiation of\ 
+        gids : list of GIDs. Must be a list; even in case of instantiation of\
         a single GID
         synapse_detail : Level of detail; if chosen, all settings are taken\
          from the "large" cortical simulation. Possible values:
             0: To be defined...
             1: Add synapse of the correct type at the simulated locations.\
             Preserves only the location and the type
-            2: As one but with all settings as in the "large" simulation 
+            2: As one but with all settings as in the "large" simulation
             3: As 2 but with minis and all, as well as the real pre-synaptic\
             spiketrains.
         """
@@ -102,7 +102,7 @@ class SSim(object) :
         self.syn_ncs = {}
         self.ips = {}
         self.syn_mini_ncs = {}
-        
+
         for gid in self.gids :
             print 'setting up gid=%i' % (gid)
             ''' Fetch the template for this GID '''
@@ -110,7 +110,7 @@ class SSim(object) :
             full_template_name_of_gid = self.bc.entry_map['Default'].CONTENTS.\
               METypePath+'/'+template_name_of_gid+'.hoc'
             print 'full_template_name_of_gid: ', full_template_name_of_gid
-           
+
             temp_cell = bglibpy.Cell(full_template_name_of_gid,\
                                      path_of_morphology)
             self.cells[gid] = temp_cell
@@ -126,7 +126,7 @@ class SSim(object) :
             # self._add_replay_stimuli(gid)
 
             # self._charge_replay_synapses(gid,gids)
-            
+
     def _add_replay_stimuli(self,gid) :
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
 
@@ -147,13 +147,13 @@ class SSim(object) :
                     if stimulus.CONTENTS.Pattern == 'Noise' :
                         self._add_replay_noise(gid,stimulus)
                     else :
-                        self._add_replay_injection(gid,stimulus)                            
-        
+                        self._add_replay_injection(gid,stimulus)
+
     def _add_replay_injection(self,gid,stimulus) :
         hypamp_i = 1.0 * self.cells[gid].getHypAmp()
         self.cells[gid].addRamp(0,10000,hypamp_i,hypamp_i,dt=self.dt)
         print 'hypamp injected<--------'
-                        
+
     def _add_replay_noise(self,gid,stimulus) :
         noise_seed = 0
         delay= float(stimulus.CONTENTS.Delay)
@@ -166,7 +166,7 @@ class SSim(object) :
         self.mechanisms[gid].append(rand)
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
-                    
+
     def _add_single_synapse(self,gid,SID,syn_description,connection_modifiers,synapse_level=0) :
         pre_gid = int(syn_description[0])
         delay = syn_description[1]
@@ -177,18 +177,18 @@ class SSim(object) :
         syn_F = syn_description[11]
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
-        location = self._location_to_point(gid,syn_description)            
+        location = self._location_to_point(gid,syn_description)
         if location == None :
             print 'going to skip this synapse'
             return -1
-            
+
         distance =  bglibpy.\
           neuron.h.distance(location,sec=self._get_section(gid,post_sec_id))
 
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/\
             wiki/index.php/BlueBuilder_Specifications#NRN,
-            inhibitory synapse 
+            inhibitory synapse
             '''
             syn = bglibpy.neuron.h.\
               ProbGABAAB_EMS(location, \
@@ -196,7 +196,7 @@ class SSim(object) :
 
             syn.tau_d_GABAA = syn_DTC
             rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(SID *100000+100, gid+250+self.base_seed) 
+            rng.MCellRan4(SID *100000+100, gid+250+self.base_seed)
             rng.lognormal(0.2, 0.1)
             syn.tau_r_GABAA = rng.repick()
         else:
@@ -225,7 +225,7 @@ class SSim(object) :
         self.syns[gid][SID] = syn
         return 1
 
-        
+
     def _add_replay_synapses(self,gid,gids,synapse_detail=0,\
                              test=False) :
         """ Add to a post-synaptic cell as in the "large" cortical model. \
@@ -245,7 +245,7 @@ class SSim(object) :
         # fetch the presynaptic spiketrains
         #pre_spike_trains = parse_and_store_GID_spiketrains(bg_dict['Run']['Default']['OutputRoot'],'out.dat')
         pre_spike_trains = parse_and_store_GID_spiketrains(self.bc.entry_map['Default'].CONTENTS.OutputRoot,'out.dat')
-        
+
         # add the synapses to the model
         for syn_description,SID in zip(pre_datas,range(len(pre_datas))) :
             pre_gid = int(syn_description[0])
@@ -259,7 +259,7 @@ class SSim(object) :
             syn_F = syn_description[11]
             syn_DTC = syn_description[12]
             syn_type = syn_description[13]
-            location = self._location_to_point(gid,syn_description,test=test)            
+            location = self._location_to_point(gid,syn_description,test=test)
             if location == None :
                 print 'going to skip this synapse'
                 raw_input('Press ENTER')
@@ -270,7 +270,7 @@ class SSim(object) :
             if(syn_type < 100):
                 ''' see: https://bbpteam.epfl.ch/\
                 wiki/index.php/BlueBuilder_Specifications#NRN,
-                inhibitory synapse 
+                inhibitory synapse
                 '''
                 syn = bglibpy.neuron.h.\
                   ProbGABAAB_EMS(location, \
@@ -280,7 +280,7 @@ class SSim(object) :
                     syn.e_GABAA = syn_parameters['SynapseConfigure']['e_GABAA']
                 syn.tau_d_GABAA = syn_DTC
                 rng = bglibpy.neuron.h.Random()
-                rng.MCellRan4(SID *100000+100, gid+250+self.base_seed) 
+                rng.MCellRan4(SID *100000+100, gid+250+self.base_seed)
                 rng.lognormal(0.2, 0.1)
                 syn.tau_r_GABAA = rng.repick()
             else:
@@ -318,7 +318,7 @@ class SSim(object) :
             self.syn_vecs[gid][SID] = t_vec
             self.syn_vecstims[gid][SID] = t_vec_stim
             self.syn_vecstims[gid][SID].play(self.syn_vecs[gid][SID], self.dt)
-            
+
             if('Weight' in syn_parameters) :
                 weight_scalar = syn_parameters['Weight']
             else :
@@ -327,7 +327,7 @@ class SSim(object) :
             self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.syns[gid][SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
 
             if('SpontMinis' in syn_parameters) :
-                spont_minis = syn_parameters['SpontMinis']        
+                spont_minis = syn_parameters['SpontMinis']
             else :
                 spont_minis = 0.0
 
@@ -354,7 +354,7 @@ class SSim(object) :
                 self.mechanisms[gid].append(rate_vec)
                 self.ips[gid][SID].setTbins(tbins_vec)
                 self.ips[gid][SID].setRate(rate_vec)
-                    
+
 
     # def _charge_replay_synapses(self,gid,gids) :
     #     """ Connect pre-synaptic spikes
@@ -366,7 +366,7 @@ class SSim(object) :
 
     #     # parse the synapse parameters
     #     syn_parameters = self._parse_connection_parameters(gid)
-        
+
     #     for syn_description,SID in zip(pre_datas,range(len(pre_datas))) :
     #         spike_train = [] # fetch with bluepy
     #         spike_train = sorted(np.random.random_integers(low=0,high=1000,size=10))
@@ -386,7 +386,7 @@ class SSim(object) :
         """
         parameters = {}
         parameters['SynapseConfigure'] = {}
-        neurons = self.bc_simulation.circuit.mvddb.load_gids([gid])
+        neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
         layer_of_gid = neurons[0].layer
         entries = self.bc_simulation.config.entries
         all_targets = self.bc_simulation.TARGETS.available_targets()
@@ -463,11 +463,11 @@ class SSim(object) :
 
 # parameters['SynapseConfiguration'].append(entry.CONTENTS.SynapseConfiguration)
 
-        
+
     def _get_section(self, gid,raw_section_id) :
         ''' use the serialized object to find your section'''
         return self.cells[gid].serialized.isec2sec[int(raw_section_id)].sec
-        
+
     def _location_to_point(self, gid, syn_description, test=False):
         """need to put  description"""
         #pre_gid =  syn_description[0]
@@ -505,8 +505,8 @@ class SSim(object) :
             print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
 
         return distance
-        
-            
+
+
     def simulate(self,t_stop=100,v_init=-65,celsius=34) :
         bglibpy.neuron.h.celsius = celsius
         bglibpy.neuron.h.finitialize(v_init)
@@ -520,7 +520,7 @@ class SSim(object) :
 
     def get_time(self) :
         return self.cells[self.gids[0]].getTime()
-            
+
 
 
     """
@@ -529,7 +529,7 @@ class SSim(object) :
     def _fetch_template_name(self,gid) :
         # ncs_file = open(self.bc.entry_map['Default'].CONTENTS.nrnPath +\
         #                 '/start.ncs')
-        # for line in ncs_file.readlines() : 
+        # for line in ncs_file.readlines() :
         #     stripped_line = line.strip()
         #     #print 'stripped line >%s<' % (stripped_line)
         #     #print stripped_line.split()
@@ -544,7 +544,7 @@ class SSim(object) :
         #     except:
         #         pass #print 'something went wrong, line: ', stripped_line
         # print 'parsed name: >', template_name,'<'
-        neurons = self.bc_simulation.circuit.mvddb.load_gids([gid])
+        neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
         template_name2 = str(neurons[0].METype)
         print 'parsed nam2: >', template_name2,'<'
         return template_name2
