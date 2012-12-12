@@ -6,6 +6,7 @@ import inspect
 import neuron
 import multiprocessing
 import bglibpy
+from bglibpy.importer import neuron
 import numpy
 import warnings
 
