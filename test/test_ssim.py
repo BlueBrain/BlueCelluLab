@@ -44,7 +44,7 @@ def test_add_single_synapse_SynapseConfigure():
     connection_modifiers = {'SynapseConfigure': ['%s.e_GABAA = -80.5 %s.e_GABAB = -101.0', '%s.tau_d_GABAA = 10.0 %s.tau_r_GABAA = 1.0', '%s.e_GABAA = -80.6'], 'Weight':2.0}
     ssim.add_single_synapse(gid,sid,syn_params,connection_modifiers)
 
-    assert ssim.syns[gid][sid].e_GABAA==-80.6
-    assert ssim.syns[gid][sid].e_GABAB==-101.0
-    assert ssim.syns[gid][sid].tau_d_GABAA==10.0
-    assert ssim.syns[gid][sid].tau_r_GABAA==1.0
+    assert ssim.cells[gid].syns[sid].e_GABAA==-80.6
+    assert ssim.cells[gid].syns[sid].e_GABAB==-101.0
+    assert ssim.cells[gid].syns[sid].tau_d_GABAA==10.0
+    assert ssim.cells[gid].syns[sid].tau_r_GABAA==1.0

@@ -92,7 +92,7 @@ class SSim(object) :
         self.templates = []
         self.cells = {}
         self.mechanisms = {}
-        self.syns = {}
+        #self.syns = {}
         self.syn_vecs = {}
         self.syn_vecstims = {}
         self.syn_ncs = {}
@@ -111,7 +111,7 @@ class SSim(object) :
                                      path_of_morphology, gid=gid, record_dt=self.record_dt)
             self.cells[gid] = temp_cell
             self.mechanisms[gid] = []
-            self.syns[gid] = {}
+            #self.syns[gid] = {}
             self.syn_vecs[gid] = {}
             self.syn_vecstims[gid] = {}
             self.syn_ncs[gid] = {}
@@ -190,7 +190,7 @@ class SSim(object) :
         print '----------->noise injected<--------'
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers, synapse_level=0):
-        self.syns[gid][sid] = self.cells[gid].add_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
+        self.cells[gid].add_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
 
     def _add_replay_synapses(self,gid,gids,synapse_detail=0,\
                              test=False) :
@@ -290,7 +290,7 @@ class SSim(object) :
             else :
                 weight_scalar = 1.0
 
-            self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.syns[gid][SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
+            self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.cells[gid].syns[SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
 
             if('SpontMinis' in syn_parameters) :
                 spont_minis = syn_parameters['SpontMinis']
@@ -301,7 +301,7 @@ class SSim(object) :
             if(spont_minis > 0.0) :
                 self.ips[gid][SID] = bglibpy.neuron.h.InhPoissonStim(location, sec=self.cells[gid].get_section(post_sec_id))
 
-                self.syn_mini_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.ips[gid][SID], self.syns[gid][SID], -30, 0.1, gsyn*weight_scalar) # delay=0.1, fixed in Connection.hoc
+                self.syn_mini_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.ips[gid][SID], self.cells[gid].syns[SID], -30, 0.1, gsyn*weight_scalar) # delay=0.1, fixed in Connection.hoc
 
                 exprng = bglibpy.neuron.h.Random()
                 exprng.MCellRan4( SID*100000+200, gid+250+self.base_seed )
@@ -364,7 +364,7 @@ class SSim(object) :
             self.syn_vecstims[gid][SID] = t_vec_stim
             self.syn_vecstims[gid][SID].play(self.syn_vecs[gid][SID], self.dt)
 
-            self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.syns[gid][SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
+            self.syn_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.syn_vecstims[gid][SID], self.cells[gid].syns[SID], -30, delay, gsyn*weightScalar) # ...,threshold,delay,weight
 
 
     def _parse_connection_parameters(self,gid) :

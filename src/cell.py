@@ -27,13 +27,13 @@ class Cell:
 
         self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
 
-        self.synapse_number = 0
-        self.syn_vecs = {}
-        self.syn_vecstims = {}
-        self.synapses = {}
-        self.syn_netcons = {}
-        self.ips = {}
-        self.syn_mini_netcons = {}
+        #self.synapse_number = 0
+        #self.syn_vecs = {}
+        #self.syn_vecstims = {}
+        self.syns = {}
+        #self.syn_netcons = {}
+        #self.ips = {}
+        #self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
         neuron.h.finitialize()
 
@@ -134,8 +134,8 @@ class Cell:
         rand = neuron.h.Random(gid + noise_seed)
         tstim = neuron.h.TStim(0.5, rand, sec=self.soma)  # self.get_section(0)) # assuming that section 0 is the soma
         tstim.noise(delay, dur, mean, variance)
-        self.mechanisms.append(rand)
-        self.mechanisms.append(tstim)
+        self.persistent.objects.append(rand)
+        self.persistent.objects.append(tstim)
 
     def add_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
         pre_gid = int(syn_description[0])
@@ -196,7 +196,7 @@ class Cell:
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
         self.persistent.objects.append(rndd)
-        self.synapses[sid] = syn
+        self.syns[sid] = syn
 
         return syn
 
@@ -392,9 +392,9 @@ class Cell:
                 self.cell.getCell().clear()
         #for window in self.plotWindows:
         #    window.process.join()
-        ''' BTN, clear mechanisms as well '''
-        self.mechanisms = []
-        del(self.mechanisms)
+        for object in self.persistent.objects:
+            del(object)
+        #del(self.persistent.objects)
 
     def __del__(self):
         self.delete()
