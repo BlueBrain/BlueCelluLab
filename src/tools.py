@@ -3,7 +3,7 @@ Static tools for bglibpy
 '''
 
 import inspect
-import neuron
+from bglibpy.importer import neuron
 import multiprocessing
 import bglibpy
 from bglibpy.importer import neuron

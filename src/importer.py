@@ -1,9 +1,6 @@
 import sys
 import os
 import numpy
-#import matplotlib as plt
-#import pylab
-
 
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir + "/paths.config"
@@ -16,6 +13,7 @@ else:
 os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
+sys.path = [pathsconfig["NRNPYTHONPATH"]] + sys.path
 import neuron
 print "Imported neuron from %s" % neuron.__file__
 
