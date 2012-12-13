@@ -1,8 +1,8 @@
 import sys
 import os
 import numpy
-import matplotlib as plt
-import pylab
+#import matplotlib as plt
+#import pylab
 
 
 installdir = os.path.dirname(__file__)

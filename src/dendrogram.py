@@ -1,6 +1,5 @@
 """Class that represents a dendrogram window"""
 
-import pylab
 import numpy
 import bglibpy
 
@@ -8,6 +7,7 @@ import bglibpy
 class Dendrogram:
     """Class that represent a dendrogram plot"""
     def __init__(self, sections, variable=None, active=False):
+        import pylab
         pylab.ion()
         self.dend_figure = pylab.figure(figsize=(20, 12))
         pylab.ioff()

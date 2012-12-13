@@ -1,4 +1,3 @@
-import pylab
 import bglibpy
 
 
@@ -64,6 +63,7 @@ class PSection:
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
         """Draw a dendritic tree"""
+        import pylab
         self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
         new_x = x  # + self.L + self.xSpacing
         new_y = y + self.L + self.xSpacing

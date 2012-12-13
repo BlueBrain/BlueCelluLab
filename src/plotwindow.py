@@ -1,12 +1,11 @@
-import pylab
 import itertools
-
 
 class PlotWindow:
 
     """Class the represents a plotting window"""
 
     def __init__(self, var_list, cell, xlim, ylim, title):
+        import pylab
         self.cell = cell
         self.var_list = var_list
         pylab.ion()
