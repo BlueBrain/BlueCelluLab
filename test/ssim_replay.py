@@ -6,7 +6,7 @@ import bluepy
 import neuron
 
 gids = [118583]#,118586 [107457]# 
-t_stop=100
+t_stop=500
 
 def test_compare_main_sim_vs_bglibpy_ssim() :
     ''' Replay a neuron with bglibpy.ssim.SSim and compare to the data from \
@@ -14,7 +14,7 @@ def test_compare_main_sim_vs_bglibpy_ssim() :
 
     blue_config_filename = '/bgscratch/bbp/release/23.07.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig'
     bc_sim = bglibpy.ssim.SSim(blue_config_filename)
-    bc_sim.instantiate_gids(gids,synapse_detail=1)
+    bc_sim.instantiate_gids(gids,synapse_detail=3,full=True)
 
     bc_sim.simulate(t_stop=t_stop)
     t = bc_sim.get_time()
@@ -35,3 +35,8 @@ def test_compare_main_sim_vs_bglibpy_ssim() :
     raw_input('Test finished. Press ENTER')
     import sys
     sys.exit(0)
+
+    assert False == True
+
+# for testing purposes only
+test_compare_main_sim_vs_bglibpy_ssim()
