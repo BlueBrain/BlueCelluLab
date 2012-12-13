@@ -23,13 +23,14 @@ class Cell:
         self.netstims = {}
         self.connections = {}
         self.cell.getCell().gid = gid
+        self.gid = self.cell.getCell().gid
 
         self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
 
         self.synapse_number = 0
         self.syn_vecs = {}
         self.syn_vecstims = {}
-        self.syns = {}
+        self.synapses = {}
         self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
@@ -46,6 +47,9 @@ class Cell:
         self.addRecordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'])
         self.cell_dendrograms = []
         self.plotWindows = []
+
+        self.hypamp = self.cell.getHypAmp()
+        self.threshold = self.cell.getThreshold()
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
@@ -94,20 +98,12 @@ class Cell:
 
     @tools.deprecated
     def getThreshold(self):
-        self.get_threshold()
-
-    def get_threshold(self):
-        """Get the spiking threshold of the cell"""
-        return self.cell.getThreshold()
+        self.cell.threshold
 
     @tools.deprecated
     def getHypAmp(self):
         """Get the current level necessary to bring the cell to -85 mV"""
-        return self.get_hypamp()
-
-    def get_hypamp(self):
-        """Get the current level necessary to bring the cell to -85 mV"""
-        return self.cell.getHypAmp()
+        return self.cell.hypamp
 
     def showDendDiam(self):
         """Show a dendrogram plot"""
@@ -115,10 +111,12 @@ class Cell:
         pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
         pylab.show()
 
+    @tools.deprecated
     def addRecording(self, var_name):
+        return self.add_recording(var_name)
+
+    def add_recording(self, var_name):
         """Add a recording to the cell"""
-        #soma = [x for x in self.cell.getCell().somatic][0]
-        #soma = soma
         recording = neuron.h.Vector()
         recording.record(eval(var_name))
         self.recordings[var_name] = recording
@@ -155,6 +153,106 @@ class Cell:
         tstim.noise(delay, dur, mean, variance)
         self.mechanisms.append(rand)
         self.mechanisms.append(tstim)
+
+    def _location_to_point(self, syn_description, test=False):
+        """need to put  description"""
+        #pre_gid =  syn_description[0]
+        post_sec_id = syn_description[2]
+        isec = post_sec_id
+        post_seg_id = syn_description[3]
+        ipt = post_seg_id
+        post_seg_distance = syn_description[4]
+        syn_offset = post_seg_distance
+
+        curr_sec = self.get_section(post_sec_id)
+        L = curr_sec.L
+
+        debug_too_large = 0
+        debug_too_small = 0
+        # access section to compute the distance
+        if(bglibpy. neuron.h.section_orientation(sec=self.get_section(isec)) == 1) :
+            ipt = bglibpy.neuron.h.n3d(sec=self.get_section(isec)) -1 - ipt
+
+        distance = -1
+        if(ipt < bglibpy.neuron.h.n3d(sec=self.get_section(isec)) ) :
+            distance = ( bglibpy.neuron.h.arc3d(ipt,sec=self.get_section(isec))+syn_offset)/L
+            if(distance >= 1.0) :
+                distance = 1.0
+                debug_too_large = debug_too_large + 1
+
+        if( bglibpy.neuron.h.section_orientation(sec=self.get_section(isec)) == 1  ) :
+            distance = 1 - distance
+
+        if(distance <=0 ) :
+            distance = None
+            debug_too_small = debug_too_small + 1
+
+        if(test) :
+            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
+
+        return distance
+
+    def add_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
+        pre_gid = int(syn_description[0])
+        delay = syn_description[1]
+        post_sec_id = syn_description[2]
+        #gsyn = syn_description[8]
+        syn_U = syn_description[9]
+        syn_D = syn_description[10]
+        syn_F = syn_description[11]
+        syn_DTC = syn_description[12]
+        syn_type = syn_description[13]
+        ''' --- TODO: what happens with -1 in location_to_point --- '''
+        location = self._location_to_point(syn_description)
+        if location == None :
+            print 'add_single_synapse: going to skip this synapse'
+            return -1
+
+        distance =  bglibpy.\
+          neuron.h.distance(location,sec=self.get_section(post_sec_id))
+
+        if(syn_type < 100):
+            ''' see: https://bbpteam.epfl.ch/\
+            wiki/index.php/BlueBuilder_Specifications#NRN,
+            inhibitory synapse
+            '''
+            syn = bglibpy.neuron.h.\
+              ProbGABAAB_EMS(location, \
+                             sec=self.get_section(post_sec_id))
+
+            syn.tau_d_GABAA = syn_DTC
+            rng = bglibpy.neuron.h.Random()
+            rng.MCellRan4(sid *100000+100, self.gid + 250 + base_seed)
+            rng.lognormal(0.2, 0.1)
+            syn.tau_r_GABAA = rng.repick()
+        else:
+            ''' else we have excitatory synapse '''
+            syn = bglibpy.neuron.h.\
+              ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
+            syn.tau_d_AMPA = syn_DTC
+
+        # hoc exec synapse configure blocks
+        for cmd in connection_modifiers['SynapseConfigure']:
+            cmd = cmd.replace('%s', '\n%(syn)s')
+            bglibpy.neuron.h(cmd % {'syn': syn.hname()})
+
+        syn.Use = abs( syn_U )
+        syn.Dep = abs( syn_D )
+        syn.Fac = abs( syn_F )
+        syn.synapseID = sid
+
+        rndd = bglibpy.neuron.h.Random()
+        rndd.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed )
+        rndd.uniform(0, 1)
+        syn.setRNG(rndd)
+        self.persistent.objects.append(rndd)
+        self.synapses[sid] = syn
+
+        return syn
+
+    def get_section(self, raw_section_id) :
+        ''' use the serialized object to find your section'''
+        return self.serialized.isec2sec[int(raw_section_id)].sec
 
     def add_replay_synapse(self, syn_description, spike_train, SID=1, TGID=1, baseSeed=0, weightScalar=1.0,
                            spontMiniRate=0.0, nmda_ratio=-66, e_gaba=-80, dt=0.025, test=False):

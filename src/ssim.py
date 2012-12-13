@@ -172,7 +172,7 @@ class SSim(object) :
                         self._add_replay_injection(gid,stimulus)
 
     def _add_replay_injection(self,gid,stimulus) :
-        hypamp_i = 1.0 * self.cells[gid].getHypAmp()
+        hypamp_i = 1.0 * self.cells[gid].hypamp
         self.cells[gid].addRamp(0,10000,hypamp_i,hypamp_i,dt=self.dt)
         print 'hypamp injected<--------'
 
@@ -180,8 +180,8 @@ class SSim(object) :
         noise_seed = 0
         delay= float(stimulus.CONTENTS.Delay)
         dur= float(stimulus.CONTENTS.Duration)
-        mean= float(stimulus.CONTENTS.MeanPercent)/100.0 * self.cells[gid].getThreshold()
-        variance= float(stimulus.CONTENTS.Variance) * self.cells[gid].getThreshold()
+        mean= float(stimulus.CONTENTS.MeanPercent)/100.0 * self.cells[gid].threshold
+        variance= float(stimulus.CONTENTS.Variance) * self.cells[gid].threshold
         rand = bglibpy.neuron.h.Random(gid+noise_seed)
         tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.cells[gid].soma)
         tstim.noise(delay, dur, mean, variance)
@@ -189,65 +189,8 @@ class SSim(object) :
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
 
-    def add_single_synapse(self,gid,SID,syn_description,connection_modifiers,synapse_level=0) :
-        pre_gid = int(syn_description[0])
-        delay = syn_description[1]
-        post_sec_id = syn_description[2]
-        #gsyn = syn_description[8]
-        syn_U = syn_description[9]
-        syn_D = syn_description[10]
-        syn_F = syn_description[11]
-        syn_DTC = syn_description[12]
-        syn_type = syn_description[13]
-        ''' --- TODO: what happens with -1 in location_to_point --- '''
-        location = self._location_to_point(gid,syn_description)
-        if location == None :
-            print 'add_single_synapse: going to skip this synapse'
-            return -1
-
-        distance =  bglibpy.\
-          neuron.h.distance(location,sec=self._get_section(gid,post_sec_id))
-
-        if(syn_type < 100):
-            ''' see: https://bbpteam.epfl.ch/\
-            wiki/index.php/BlueBuilder_Specifications#NRN,
-            inhibitory synapse
-            '''
-            syn = bglibpy.neuron.h.\
-              ProbGABAAB_EMS(location, \
-                             sec=self._get_section(gid,post_sec_id))
-
-            syn.tau_d_GABAA = syn_DTC
-            rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(SID *100000+100, gid+250+self.base_seed)
-            rng.lognormal(0.2, 0.1)
-            syn.tau_r_GABAA = rng.repick()
-        else:
-            ''' else we have excitatory synapse '''
-            syn = bglibpy.neuron.h.\
-              ProbAMPANMDA_EMS(location,sec=self._get_section(gid,post_sec_id))
-            syn.tau_d_AMPA = syn_DTC
-
-        # hoc exec synapse configure blocks
-        for cmd in connection_modifiers['SynapseConfigure']:
-            cmd = cmd.replace('%s', '\n%(syn)s')
-            bglibpy.neuron.h(cmd % {'syn': syn.hname()})
-
-        syn.Use = abs( syn_U )
-        syn.Dep = abs( syn_D )
-        syn.Fac = abs( syn_F )
-        syn.synapseID = SID
-
-        rndd = bglibpy.neuron.h.Random()
-        rndd.MCellRan4(SID*100000+100, gid+250+self.base_seed )
-        rndd.uniform(0, 1)
-        syn.setRNG(rndd)
-        self.mechanisms[gid].append(rndd)
-
-        # self.mechanisms.append(syn)
-        self.syns[gid][SID] = syn
-        return 1
-
+    def add_single_synapse(self, gid, sid, syn_description, connection_modifiers, synapse_level=0):
+        self.syns[gid][sid] = self.cells[gid].add_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
 
     def _add_replay_synapses(self,gid,gids,synapse_detail=0,\
                              test=False) :
@@ -288,7 +231,7 @@ class SSim(object) :
                 raw_input('Press ENTER')
                 continue
             distance =  bglibpy.\
-              neuron.h.distance(location,sec=self._get_section(gid,post_sec_id))
+              neuron.h.distance(location,sec=self.cells[gid].get_section(post_sec_id))
 
             if(syn_type < 100):
                 ''' see: https://bbpteam.epfl.ch/\
@@ -297,7 +240,7 @@ class SSim(object) :
                 '''
                 syn = bglibpy.neuron.h.\
                   ProbGABAAB_EMS(location, \
-                                 sec=self._get_section(gid,post_sec_id))
+                                 sec=self.cells[gid].get_section(post_sec_id))
 
                 if('e_GABAA' in syn_parameters['SynapseConfigure'].keys()) :
                     syn.e_GABAA = syn_parameters['SynapseConfigure']['e_GABAA']
@@ -309,7 +252,7 @@ class SSim(object) :
             else:
                 ''' else we have excitatory synapse '''
                 syn = bglibpy.neuron.h.\
-                  ProbAMPANMDA_EMS(location,sec=self._get_section(gid,post_sec_id))
+                  ProbAMPANMDA_EMS(location,sec=self.cells[gid].get_section(post_sec_id))
                 syn.tau_d_AMPA = syn_DTC
                 if('NMDA_ratio' in syn_parameters['SynapseConfigure'].keys()) :
                     syn.NMDA_ratio = syn_parameters['SynapseConfigure']['NMDA_ratio']
@@ -356,7 +299,7 @@ class SSim(object) :
 
             ''' add the *minis*: spontaneous synaptic events '''
             if(spont_minis > 0.0) :
-                self.ips[gid][SID] = bglibpy.neuron.h.InhPoissonStim(location, sec=self._get_section(gid,post_sec_id))
+                self.ips[gid][SID] = bglibpy.neuron.h.InhPoissonStim(location, sec=self.cells[gid].get_section(post_sec_id))
 
                 self.syn_mini_ncs[gid][SID] = bglibpy.neuron.h.NetCon(self.ips[gid][SID], self.syns[gid][SID], -30, 0.1, gsyn*weight_scalar) # delay=0.1, fixed in Connection.hoc
 
@@ -512,7 +455,7 @@ class SSim(object) :
 
     def _get_section(self, gid,raw_section_id) :
         ''' use the serialized object to find your section'''
-        return self.cells[gid].serialized.isec2sec[int(raw_section_id)].sec
+        return self.cells[gid].get_section(raw_section_id)
 
     def _location_to_point(self, gid, syn_description, test=False):
         """need to put  description"""
@@ -524,23 +467,23 @@ class SSim(object) :
         post_seg_distance = syn_description[4]
         syn_offset = post_seg_distance
 
-        curr_sec = self._get_section(gid,post_sec_id)
+        curr_sec = self.cells[gid].get_section(post_sec_id)
         L = curr_sec.L
 
         debug_too_large = 0
         debug_too_small = 0
         # access section to compute the distance
-        if(bglibpy. neuron.h.section_orientation(sec=self._get_section(gid,isec)) == 1) :
-            ipt = bglibpy.neuron.h.n3d(sec=self._get_section(gid,isec)) -1 - ipt
+        if(bglibpy. neuron.h.section_orientation(sec=self.cells[gid].get_section(isec)) == 1) :
+            ipt = bglibpy.neuron.h.n3d(sec=self.cells[gid].get_section(isec)) -1 - ipt
 
         distance = -1
-        if(ipt < bglibpy.neuron.h.n3d(sec=self._get_section(gid,isec)) ) :
-            distance = ( bglibpy.neuron.h.arc3d(ipt,sec=self._get_section(gid,isec))+syn_offset)/L
+        if(ipt < bglibpy.neuron.h.n3d(sec=self.cells[gid].get_section(isec)) ) :
+            distance = ( bglibpy.neuron.h.arc3d(ipt,sec=self.cells[gid].get_section(isec))+syn_offset)/L
             if(distance >= 1.0) :
                 distance = 1.0
                 debug_too_large = debug_too_large + 1
 
-        if( bglibpy.neuron.h.section_orientation(sec=self._get_section(gid,isec)) == 1  ) :
+        if( bglibpy.neuron.h.section_orientation(sec=self.cells[gid].get_section(gid,isec)) == 1  ) :
             distance = 1 - distance
 
         if(distance <=0 ) :
