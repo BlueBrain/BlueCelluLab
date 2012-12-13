@@ -1,6 +1,5 @@
 import numpy
 import re
-import pylab
 import math
 import bglibpy
 import tools
@@ -91,6 +90,7 @@ class Cell:
 
     def showDendDiam(self):
         """Show a dendrogram plot"""
+        import pylab
         diamlist = [section.diam for section in self.apical]
         pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
         pylab.show()
