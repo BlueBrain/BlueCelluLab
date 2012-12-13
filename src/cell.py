@@ -89,24 +89,11 @@ class Cell:
 
         return distance
 
-    @tools.deprecated
-    def getThreshold(self):
-        self.cell.threshold
-
-    @tools.deprecated
-    def getHypAmp(self):
-        """Get the current level necessary to bring the cell to -85 mV"""
-        return self.cell.hypamp
-
     def showDendDiam(self):
         """Show a dendrogram plot"""
         diamlist = [section.diam for section in self.apical]
         pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
         pylab.show()
-
-    @tools.deprecated
-    def addRecording(self, var_name):
-        return self.add_recording(var_name)
 
     def add_recording(self, var_name):
         """Add a recording to the cell"""
@@ -114,10 +101,10 @@ class Cell:
         recording.record(eval(var_name))
         self.recordings[var_name] = recording
 
-    def addRecordings(self, var_names):
+    def add_recordings(self, var_names):
         """Add a set of recordings to the cell"""
         for var_name in var_names:
-            self.addRecording(var_name)
+            self.add_recording(var_name)
 
     def addAllSectionsVoltageRecordings(self):
         """Add a voltage recording to every section of the cell"""
@@ -233,16 +220,19 @@ class Cell:
         self.netstims[segname] = netstim
         self.connections[segname] = connection
 
+    @tools.deprecated
     def locateBAPSite(self, seclistName, distance):
         """Return the location of the BAP site"""
         return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
 
+    @tools.deprecated
     def removeSynapticStimulus(self, segname):
         """Removed a synaptic stimulus"""
         self.synapses[segname] = None
         self.netstims[segname] = None
         self.connections[segname] = None
 
+    @tools.deprecated
     def addAllSynapses(self):
         """Add synapses to all dendritic sections"""
         dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
@@ -405,3 +395,21 @@ class Cell:
 
     def __del__(self):
         self.delete()
+
+
+    @tools.deprecated
+    def getThreshold(self):
+        self.cell.threshold
+
+    @tools.deprecated
+    def getHypAmp(self):
+        """Get the current level necessary to bring the cell to -85 mV"""
+        return self.cell.hypamp
+
+    @tools.deprecated
+    def addRecording(self, var_name):
+        return self.add_recording(var_name)
+
+    @tools.deprecated
+    def addRecordings(self, var_names):
+        return self.add_recording(var_name)
