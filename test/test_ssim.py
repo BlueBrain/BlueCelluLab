@@ -3,6 +3,7 @@ import numpy as np
 import bglibpy.ssim
 
 def test_evaluate_connection_parameters():
+    """ Check that Connection block parsers yield expected output"""
     ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
     #/bgscratch/bbp/release/23.07.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
     s = ssim.bc_simulation
@@ -11,6 +12,9 @@ def test_evaluate_connection_parameters():
     pre_gid, post_gid = list(ssim.bc_simulation.get_target("L5_TTPC1"))[:2]
 
     params = ssim._evaluate_connection_parameters(pre_gid, post_gid)
+
+    # checking a few sanity cases
+
     assert params=={'SpontMinis': 0.067000000000000004, 'SynapseConfigure': ['%s.NMDA_ratio = 0.4', '%s.NMDA_ratio = 0.71'], 'Weight': 2.3500000000000001}
     #assert params=={'SpontMinis': 0.067000000000000004, 'SynapseConfigure': ['%s.NMDA_ratio = 0.4', '%s.NMDA_ratio = 0.71'], 'Weight': 1.0}
 

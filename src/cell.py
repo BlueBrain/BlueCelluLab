@@ -12,7 +12,7 @@ class Cell:
         """The objects that need to stay persistent in python"""
         objects = []
 
-    def __init__(self, template_name, morphology_name, gid=0):
+    def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
@@ -44,7 +44,7 @@ class Cell:
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
 
-        self.addRecordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'])
+        self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
         self.plotWindows = []
 
@@ -95,16 +95,19 @@ class Cell:
         pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
         pylab.show()
 
-    def add_recording(self, var_name):
+    def add_recording(self, var_name, dt=None):
         """Add a recording to the cell"""
         recording = neuron.h.Vector()
-        recording.record(eval(var_name))
+        if dt:
+            recording.record(eval(var_name),dt)
+        else:
+            recording.record(eval(var_name))
         self.recordings[var_name] = recording
 
-    def add_recordings(self, var_names):
+    def add_recordings(self, var_names, dt=None):
         """Add a set of recordings to the cell"""
         for var_name in var_names:
-            self.add_recording(var_name)
+            self.add_recording(var_name, dt)
 
     def addAllSectionsVoltageRecordings(self):
         """Add a voltage recording to every section of the cell"""
