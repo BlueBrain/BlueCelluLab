@@ -217,15 +217,15 @@ class SSim(object) :
             pre_gid = int(syn_description[0])
             delay = syn_description[1]
             post_sec_id = syn_description[2]
-            #post_seg_id = syn_description[3]
-            #post_seg_distance = syn_description[4]
+            post_seg_id = syn_description[3]
+            post_seg_distance = syn_description[4]
             gsyn = syn_description[8]
             syn_U = syn_description[9]
             syn_D = syn_description[10]
             syn_F = syn_description[11]
             syn_DTC = syn_description[12]
             syn_type = syn_description[13]
-            location = self._location_to_point(gid,syn_description,test=test)
+            location = self.cells[gid].synlocation_to_segx(post_sec_id, post_seg_id, post_seg_distance, test=test)
             if location == None :
                 print 'going to skip this synapse'
                 raw_input('Press ENTER')
@@ -456,45 +456,6 @@ class SSim(object) :
     def _get_section(self, gid,raw_section_id) :
         ''' use the serialized object to find your section'''
         return self.cells[gid].get_section(raw_section_id)
-
-    def _location_to_point(self, gid, syn_description, test=False):
-        """need to put  description"""
-        #pre_gid =  syn_description[0]
-        post_sec_id = syn_description[2]
-        isec = post_sec_id
-        post_seg_id = syn_description[3]
-        ipt = post_seg_id
-        post_seg_distance = syn_description[4]
-        syn_offset = post_seg_distance
-
-        curr_sec = self.cells[gid].get_section(post_sec_id)
-        L = curr_sec.L
-
-        debug_too_large = 0
-        debug_too_small = 0
-        # access section to compute the distance
-        if(bglibpy. neuron.h.section_orientation(sec=self.cells[gid].get_section(isec)) == 1) :
-            ipt = bglibpy.neuron.h.n3d(sec=self.cells[gid].get_section(isec)) -1 - ipt
-
-        distance = -1
-        if(ipt < bglibpy.neuron.h.n3d(sec=self.cells[gid].get_section(isec)) ) :
-            distance = ( bglibpy.neuron.h.arc3d(ipt,sec=self.cells[gid].get_section(isec))+syn_offset)/L
-            if(distance >= 1.0) :
-                distance = 1.0
-                debug_too_large = debug_too_large + 1
-
-        if( bglibpy.neuron.h.section_orientation(sec=self.cells[gid].get_section(gid,isec)) == 1  ) :
-            distance = 1 - distance
-
-        if(distance <=0 ) :
-            distance = None
-            debug_too_small = debug_too_small + 1
-
-        if(test) :
-            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
-
-        return distance
-
 
     def simulate(self,t_stop=100,v_init=-65,celsius=34) :
         sim = bglibpy.Simulation()

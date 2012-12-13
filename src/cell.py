@@ -59,17 +59,10 @@ class Cell:
         ''' use the serialized object to find your section'''
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def location_to_point(self, syn_description, test=False):
+    def synlocation_to_segx(self, isec, ipt, syn_offset, test=False):
         """need to put  description"""
-        #pre_gid =  syn_description[0]
-        post_sec_id = syn_description[2]
-        isec = post_sec_id
-        post_seg_id = syn_description[3]
-        ipt = post_seg_id
-        post_seg_distance = syn_description[4]
-        syn_offset = post_seg_distance
 
-        curr_sec = self.get_section(post_sec_id)
+        curr_sec = self.get_section(isec)
         L = curr_sec.L
 
         debug_too_large = 0
@@ -154,48 +147,15 @@ class Cell:
         self.mechanisms.append(rand)
         self.mechanisms.append(tstim)
 
-    def _location_to_point(self, syn_description, test=False):
-        """need to put  description"""
-        #pre_gid =  syn_description[0]
+    def add_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
+        pre_gid = int(syn_description[0])
+        delay = syn_description[1]
         post_sec_id = syn_description[2]
         isec = post_sec_id
         post_seg_id = syn_description[3]
         ipt = post_seg_id
         post_seg_distance = syn_description[4]
         syn_offset = post_seg_distance
-
-        curr_sec = self.get_section(post_sec_id)
-        L = curr_sec.L
-
-        debug_too_large = 0
-        debug_too_small = 0
-        # access section to compute the distance
-        if(bglibpy. neuron.h.section_orientation(sec=self.get_section(isec)) == 1) :
-            ipt = bglibpy.neuron.h.n3d(sec=self.get_section(isec)) -1 - ipt
-
-        distance = -1
-        if(ipt < bglibpy.neuron.h.n3d(sec=self.get_section(isec)) ) :
-            distance = ( bglibpy.neuron.h.arc3d(ipt,sec=self.get_section(isec))+syn_offset)/L
-            if(distance >= 1.0) :
-                distance = 1.0
-                debug_too_large = debug_too_large + 1
-
-        if( bglibpy.neuron.h.section_orientation(sec=self.get_section(isec)) == 1  ) :
-            distance = 1 - distance
-
-        if(distance <=0 ) :
-            distance = None
-            debug_too_small = debug_too_small + 1
-
-        if(test) :
-            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
-
-        return distance
-
-    def add_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
-        pre_gid = int(syn_description[0])
-        delay = syn_description[1]
-        post_sec_id = syn_description[2]
         #gsyn = syn_description[8]
         syn_U = syn_description[9]
         syn_D = syn_description[10]
@@ -203,7 +163,7 @@ class Cell:
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
         ''' --- TODO: what happens with -1 in location_to_point --- '''
-        location = self._location_to_point(syn_description)
+        location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location == None :
             print 'add_single_synapse: going to skip this synapse'
             return -1
@@ -253,96 +213,6 @@ class Cell:
     def get_section(self, raw_section_id) :
         ''' use the serialized object to find your section'''
         return self.serialized.isec2sec[int(raw_section_id)].sec
-
-    def add_replay_synapse(self, syn_description, spike_train, SID=1, TGID=1, baseSeed=0, weightScalar=1.0,
-                           spontMiniRate=0.0, nmda_ratio=-66, e_gaba=-80, dt=0.025, test=False):
-        ''' Adds synapses the way BGLib does is. Supposedly.'''
-        #pre_gid = syn_description[0]
-        delay = syn_description[1]
-        post_sec_id = syn_description[2]
-        #post_seg_id = syn_description[3]
-        #post_seg_distance = syn_description[4]
-        gsyn = syn_description[8]
-        syn_U = syn_description[9]
-        syn_D = syn_description[10]
-        syn_F = syn_description[11]
-        syn_DTC = syn_description[12]
-        syn_type = syn_description[13]
-        #syn_pre_m_type = syn_description[14]
-        #syn_ASE = syn_description[17]
-
-        ''' set up the vecevent thing '''
-        t_vec = neuron.h.Vector(spike_train)
-        t_vec_stim = neuron.h.VecStim()
-        self.syn_vecs[SID] = t_vec
-        self.syn_vecstims[SID] = t_vec_stim
-        self.syn_vecstims[SID].play(self.syn_vecs[SID], dt)
-
-        location = self.location_to_point(syn_description, test=test)
-        distance = neuron.h.distance(location, sec=self.get_section(post_sec_id))
-        if(syn_type < 100):
-            ''' see: https://bbpteam.epfl.ch/wiki/index.php/BlueBuilder_Specifications#NRN,'''
-            ''' inhibitory synapse '''
-            if(test):
-                print 'Inserting synapse in %i(%f)' % (post_sec_id, location)
-            syn = neuron.h.ProbGABAAB_EMS(location, sec=self.get_section(post_sec_id))
-            syn.e_GABAA = e_gaba
-            syn.tau_d_GABAA = syn_DTC
-            rng = neuron.h.Random()
-            rng.MCellRan4(SID * 100000 + 100, TGID + 250 + baseSeed)  # +0 is the baseSeed, what's baseSeed?
-            rng.lognormal(0.2, 0.1)
-            syn.tau_r_GABAA = rng.repick()
-        else:
-            ''' else we have excitatory synapse '''
-            syn = neuron.h.ProbAMPANMDA_EMS(location, sec=self.get_section(post_sec_id))
-            syn.tau_d_AMPA = syn_DTC
-            if (nmda_ratio != -66):
-                syn.NMDA_ratio = nmda_ratio
-
-        syn.Use = abs(syn_U)
-        syn.Dep = abs(syn_D)
-        syn.Fac = abs(syn_F)
-        syn.synapseID = SID
-
-        rndd = neuron.h.Random()
-        rndd.MCellRan4(SID * 100000 + 100, TGID + 250 + baseSeed)
-        rndd.uniform(0, 1)
-        syn.setRNG(rndd)
-        self.mechanisms.append(rndd)
-
-        # self.mechanisms.append(syn)
-        self.syns[SID] = syn
-
-        self.syn_netcons[SID] = neuron.h.NetCon(self.syn_vecstims[SID], self.syns[SID], -30, delay, gsyn * weightScalar)  # ...,threshold,delay,weight
-
-        ''' add the *minis*: spontaneous synaptic events '''
-        if(spontMiniRate > 0.0):
-            self.ips[SID] = neuron.h.InhPoissonStim(location, sec=self.get_section(post_sec_id))
-
-            self.syn_mini_netcons[SID] = neuron.h.NetCon(self.ips[SID], self.syns[SID], -30, 0.1, gsyn * weightScalar)  # delay=0.1, fixed in Connection.hoc
-
-            exprng = neuron.h.Random()
-            exprng.MCellRan4(SID * 100000 + 200, TGID + 250 + baseSeed)
-            exprng.negexp(1)
-            self.mechanisms.append(exprng)
-            uniformrng = neuron.h.Random()
-            uniformrng.MCellRan4(SID * 100000 + 300, TGID + 250 + baseSeed)
-            uniformrng.uniform(0.0, 1.0)
-            self.mechanisms.append(uniformrng)
-            self.ips[SID].setRNGs(exprng, uniformrng)
-            tbins_vec = neuron.h.Vector(1)
-            tbins_vec.x[0] = 0.0
-            rate_vec = neuron.h.Vector(1)
-            if(spontMiniRate == 0):
-                rate_vec.x[0] = spontMiniRate  # hack to set ALL the spont mini rates to 0
-            else:
-                rate_vec.x[0] = spontMiniRate if (syn_type >= 100) else 0.012  # according to Blueconfig, ConInh-uni rule
-            self.mechanisms.append(tbins_vec)
-            self.mechanisms.append(rate_vec)
-            self.ips[SID].setTbins(tbins_vec)
-            self.ips[SID].setRate(rate_vec)
-
-        return distance
 
     def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
         """Add a synaptic stimulus to a certain section"""
