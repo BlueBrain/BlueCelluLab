@@ -190,7 +190,7 @@ class SSim(object) :
         print '----------->noise injected<--------'
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers, synapse_level=0):
-        self.cells[gid].add_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
+        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
 
     def _add_replay_synapses(self,gid,gids,synapse_detail=0,\
                              test=False) :

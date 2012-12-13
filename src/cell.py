@@ -137,7 +137,7 @@ class Cell:
         self.persistent.objects.append(rand)
         self.persistent.objects.append(tstim)
 
-    def add_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
+    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
         pre_gid = int(syn_description[0])
         delay = syn_description[1]
         post_sec_id = syn_description[2]
