@@ -30,7 +30,7 @@ def test_add_single_synapse_SynapseConfigure():
     ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
 
     gid = list(ssim.bc_simulation.get_target("L5_MC"))[0]
-    ssim.instantiate_gids([gid])
+    ssim.instantiate_gids([gid], 3)
     pre_datas = ssim.bc_simulation.circuit.get_presynaptic_data(gid)
     # get second inh synapse (first fails)
     inh_synapses = np.nonzero(pre_datas[:,13]<100)
@@ -38,7 +38,7 @@ def test_add_single_synapse_SynapseConfigure():
     syn_params = pre_datas[sid,:]
     pre_gid = syn_params[0]
     connection_modifiers = {'SynapseConfigure': ['%s.e_GABAA = -80.5 %s.e_GABAB = -101.0', '%s.tau_d_GABAA = 10.0 %s.tau_r_GABAA = 1.0', '%s.e_GABAA = -80.6'], 'Weight':2.0}
-    ssim._add_single_synapse(gid,sid,syn_params,connection_modifiers)
+    ssim.add_single_synapse(gid,sid,syn_params,connection_modifiers)
 
     assert ssim.syns[gid][sid].e_GABAA==-80.6
     assert ssim.syns[gid][sid].e_GABAB==-101.0
