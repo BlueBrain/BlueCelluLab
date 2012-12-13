@@ -11,9 +11,9 @@ class Simulation:
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True, celsius=-34, v_init=-65, dt=0.025):
+    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
         """Run the simulation"""
-        neuron.h.celsius = 34
+        neuron.h.celsius = celsius
         neuron.h.tstop = 0.000001
         neuron.h.dt = dt
         neuron.h.v_init = v_init
