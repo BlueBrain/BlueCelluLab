@@ -70,6 +70,7 @@ class Cell:
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
 
+        distance = -1
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
             distance = (ipt + syn_offset) / L
             if distance >= 1.0:
@@ -371,7 +372,7 @@ class Cell:
 
     @tools.deprecated
     def getRecording(self, var_name):
-        return get_recording(self, var_name)
+        return self.get_recording(var_name)
 
     @tools.deprecated
     def addAllSectionsVoltageRecordings(self):
