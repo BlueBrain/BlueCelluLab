@@ -172,23 +172,21 @@ class SSim(object) :
                         self._add_replay_injection(gid,stimulus)
         
     def _add_replay_injection(self,gid,stimulus) :
-        hypamp_i = 1.0 * self.cells[gid].hypamp
-        self.cells[gid].addRamp(0,10000,hypamp_i,hypamp_i,dt=self.dt)
-        print 'hypamp injected<--------'
+        hypamp_i = self.cells[gid].hypamp
+        self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
 
-    def _add_replay_noise(self,gid,stimulus) :
+    def _add_replay_noise(self,gid,stimulus):
         noise_seed = 0
-        delay= float(stimulus.CONTENTS.Delay)
-        dur= float(stimulus.CONTENTS.Duration)
-        mean= float(stimulus.CONTENTS.MeanPercent)/100.0 * self.cells[gid].threshold
-        variance= float(stimulus.CONTENTS.Variance) * self.cells[gid].threshold
+        delay = float(stimulus.CONTENTS.Delay)
+        dur = float(stimulus.CONTENTS.Duration)
+        mean = float(stimulus.CONTENTS.MeanPercent)/100.0 * self.cells[gid].threshold
+        variance = float(stimulus.CONTENTS.Variance)/100.0 * self.cells[gid].threshold
         rand = bglibpy.neuron.h.Random(gid+noise_seed)
         tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.cells[gid].soma)
         tstim.noise(delay, dur, mean, variance)
         self.mechanisms[gid].append(rand)
         self.mechanisms[gid].append(tstim)
-        print '----------->noise injected<--------'
-        
+
     def add_replay_minis(self,gid,SID,syn_description,syn_parameters) :
         gsyn = syn_description[8]
         post_sec_id = syn_description[2]

@@ -24,8 +24,6 @@ class Cell:
         self.cell.getCell().gid = gid
         self.gid = self.cell.getCell().gid
 
-        self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
-
         self.synapse_number = 0
         self.syn_vecs = {}
         self.syn_vecstims = {}
@@ -110,14 +108,14 @@ class Cell:
         for var_name in var_names:
             self.add_recording(var_name, dt)
 
-    def addAllSectionsVoltageRecordings(self):
+    def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell"""
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
             self.addRecording(var_name)
 
-    def getAllSectionsVoltageRecordings(self):
+    def get_allsections_voltagerecordings(self):
         """Get all the voltage recordings from all the sections"""
         allSectionVoltages = {}
         all_sections = self.cell.getCell().all
@@ -126,7 +124,7 @@ class Cell:
             allSectionVoltages[section.name()] = self.getRecording(var_name)
         return allSectionVoltages
 
-    def getRecording(self, var_name):
+    def get_recording(self, var_name):
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
@@ -205,62 +203,9 @@ class Cell:
         ''' use the serialized object to find your section'''
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
-        """Add a synaptic stimulus to a certain section"""
-        segname = section.name() + "(" + str(location) + ")"
-        synapse = neuron.h.tmgExSyn(location, sec=section)
-        synapse.Use = 0.5
-        synapse.Fac = 21
-
-        netstim = neuron.h.NetStim(sec=section)
-        stimfreq = 70
-        netstim.interval = 1000 / stimfreq
-        netstim.number = 1
-        netstim.start = delay
-        netstim.noise = 0
-        connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
-        connection.weight[0] = 1.0
-        self.synapses[segname] = synapse
-        self.netstims[segname] = netstim
-        self.connections[segname] = connection
-
-    @tools.deprecated
-    def locateBAPSite(self, seclistName, distance):
+    def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
-        return [x for x in self.cell.getCell().locateBAPSite(seclistName, distance)]
-
-    @tools.deprecated
-    def removeSynapticStimulus(self, segname):
-        """Removed a synaptic stimulus"""
-        self.synapses[segname] = None
-        self.netstims[segname] = None
-        self.connections[segname] = None
-
-    @tools.deprecated
-    def addAllSynapses(self):
-        """Add synapses to all dendritic sections"""
-        dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
-        for section in dendritic_sections:
-            self.addSynapticStimulus(section, 0)
-            self.addSynapticStimulus(section, 0.5)
-            self.addSynapticStimulus(section, 1)
-
-    def injectCurrentWaveform(self, t_content, i_content):
-        """Inject a current in the cell"""
-        start_time = t_content[0]
-        stop_time = t_content[-1]
-        time = neuron.h.Vector()
-        currents = neuron.h.Vector()
-        time = time.from_python(t_content)
-        currents = currents.from_python(i_content)
-
-        pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
-        self.persistent.objects.append(pulse)
-        self.persistent.objects.append(time)
-        self.persistent.objects.append(currents)
-        setattr(pulse, 'del', start_time)
-        pulse.dur = stop_time - start_time
-        currents.play(pulse._ref_amp, time)
+        return [x for x in self.cell.getCell().locateBAPSite(seclist_name, distance)]
 
     def get_childrensections(self, parentsection):
         """Get the children section of a neuron section"""
@@ -401,6 +346,11 @@ class Cell:
         self.delete()
 
 
+
+    """
+    Deprecated functions
+    """
+
     @tools.deprecated
     def getThreshold(self):
         self.cell.threshold
@@ -417,8 +367,6 @@ class Cell:
     @tools.deprecated
     def addRecordings(self, var_names):
         return self.add_recording(var_name)
-<<<<<<< HEAD
-=======
 
     @tools.deprecated
     def getRecording(self, var_name):
@@ -489,4 +437,3 @@ class Cell:
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
 
->>>>>>> 3dd8591... Fixed a bug concerning distance that was not initialize in location_to_point
