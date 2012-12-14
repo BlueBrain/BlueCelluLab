@@ -24,8 +24,6 @@ class Cell:
         self.cell.getCell().gid = gid
         self.gid = self.cell.getCell().gid
 
-        self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
-
         self.synapse_number = 0
         self.syn_vecs = {}
         self.syn_vecstims = {}
