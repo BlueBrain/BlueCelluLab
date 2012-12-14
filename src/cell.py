@@ -26,7 +26,13 @@ class Cell:
 
         self.mechanisms = []  # BTN: all additional mechanism stored in one list. easy to delete...
 
+        self.synapse_number = 0
+        self.syn_vecs = {}
+        self.syn_vecstims = {}
         self.syns = {}
+        self.syn_netcons = {}
+        self.ips = {}
+        self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
         neuron.h.finitialize()
 
