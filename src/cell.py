@@ -70,6 +70,7 @@ class Cell:
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
 
+        distance = -1
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
             distance = (ipt + syn_offset) / L
             if distance >= 1.0:
@@ -416,3 +417,76 @@ class Cell:
     @tools.deprecated
     def addRecordings(self, var_names):
         return self.add_recording(var_name)
+<<<<<<< HEAD
+=======
+
+    @tools.deprecated
+    def getRecording(self, var_name):
+        return self.get_recording(var_name)
+
+    @tools.deprecated
+    def addAllSectionsVoltageRecordings(self):
+        self.add_allsections_voltagerecordings()
+
+    @tools.deprecated
+    def getAllSectionsVoltageRecordings(self):
+        self.get_allsections_voltagerecordings()
+
+    @tools.deprecated
+    def locateBAPSite(self, seclistName, distance):
+        return locate_BAPsite(seclistName, distance)
+
+    @tools.deprecated
+    def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
+        """Add a synaptic stimulus to a certain section"""
+        segname = section.name() + "(" + str(location) + ")"
+        synapse = neuron.h.tmgExSyn(location, sec=section)
+        synapse.Use = 0.5
+        synapse.Fac = 21
+
+        netstim = neuron.h.NetStim(sec=section)
+        stimfreq = 70
+        netstim.interval = 1000 / stimfreq
+        netstim.number = 1
+        netstim.start = delay
+        netstim.noise = 0
+        connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
+        connection.weight[0] = 1.0
+        self.synapses[segname] = synapse
+        self.netstims[segname] = netstim
+        self.connections[segname] = connection
+
+    @tools.deprecated
+    def removeSynapticStimulus(self, segname):
+        """Removed a synaptic stimulus"""
+        self.synapses[segname] = None
+        self.netstims[segname] = None
+        self.connections[segname] = None
+
+    @tools.deprecated
+    def addAllSynapses(self):
+        """Add synapses to all dendritic sections"""
+        dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
+        for section in dendritic_sections:
+            self.addSynapticStimulus(section, 0)
+            self.addSynapticStimulus(section, 0.5)
+            self.addSynapticStimulus(section, 1)
+
+    def injectCurrentWaveform(self, t_content, i_content):
+        """Inject a current in the cell"""
+        start_time = t_content[0]
+        stop_time = t_content[-1]
+        time = neuron.h.Vector()
+        currents = neuron.h.Vector()
+        time = time.from_python(t_content)
+        currents = currents.from_python(i_content)
+
+        pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
+        self.persistent.objects.append(pulse)
+        self.persistent.objects.append(time)
+        self.persistent.objects.append(currents)
+        setattr(pulse, 'del', start_time)
+        pulse.dur = stop_time - start_time
+        currents.play(pulse._ref_amp, time)
+
+>>>>>>> 3dd8591... Fixed a bug concerning distance that was not initialize in location_to_point
