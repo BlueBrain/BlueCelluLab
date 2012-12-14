@@ -170,7 +170,7 @@ class SSim(object) :
                         self._add_replay_noise(gid,stimulus)
                     else :
                         self._add_replay_injection(gid,stimulus)
-        
+
     def _add_replay_injection(self,gid,stimulus) :
         hypamp_i = 1.0 * self.cells[gid].hypamp
         self.cells[gid].addRamp(0,10000,hypamp_i,hypamp_i,dt=self.dt)
@@ -188,7 +188,7 @@ class SSim(object) :
         self.mechanisms[gid].append(rand)
         self.mechanisms[gid].append(tstim)
         print '----------->noise injected<--------'
-        
+
     def add_replay_minis(self,gid,SID,syn_description,syn_parameters) :
         gsyn = syn_description[8]
         post_sec_id = syn_description[2]
@@ -196,13 +196,13 @@ class SSim(object) :
         post_seg_distance = syn_description[4]
         location = self.cells[gid].\
           synlocation_to_segx(post_sec_id, post_seg_id, \
-                              post_seg_distance, test=False) 
+                              post_seg_distance, test=False)
         ''' TODO: False'''
         if('Weight' in syn_parameters) :
             weight_scalar = syn_parameters['Weight']
         else :
             weight_scalar = 1.0
-        
+
         if('SpontMinis' in syn_parameters) :
             spont_minis = syn_parameters['SpontMinis']
         else :
@@ -244,7 +244,7 @@ class SSim(object) :
         #post_seg_id = syn_description[3]
         #post_seg_distance = syn_description[4]
         gsyn = syn_description[8]
-        
+
         spike_train = [] # fetch with bluepy
         no_pre_spikes = 0
         try :
@@ -264,7 +264,7 @@ class SSim(object) :
             weight_scalar = 1.0
 
         self.cells[gid].syn_netcons[SID] = bglibpy.neuron.h.NetCon(self.cells[gid].syn_vecstims[SID], self.cells[gid].syns[SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
-        
+
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers, synapse_level=0):
         self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
 
