@@ -4,3 +4,4 @@ build.sh
 *.log
 *.log.*
 *.pyc
+.bglib*
