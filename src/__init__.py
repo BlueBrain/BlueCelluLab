@@ -9,3 +9,4 @@ from psegment import PSegment
 from simulation import Simulation
 from importer import *
 from tools import *
+from ssim import SSim
