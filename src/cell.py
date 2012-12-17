@@ -1,9 +1,12 @@
+"""Class that represents a cell in BGLibPy"""
+
 import numpy
 import re
 import math
 import bglibpy
-import tools
+from bglibpy import tools
 from bglibpy.importer import neuron
+
 
 class Cell:
     """Represents a bglib cell"""
@@ -40,7 +43,6 @@ class Cell:
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
-
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
         self.plotWindows = []
@@ -98,7 +100,7 @@ class Cell:
         """Add a recording to the cell"""
         recording = neuron.h.Vector()
         if dt:
-            recording.record(eval(var_name),dt)
+            recording.record(eval(var_name), dt)
         else:
             recording.record(eval(var_name))
         self.recordings[var_name] = recording
@@ -131,14 +133,15 @@ class Cell:
     def add_replay_noise(self, gid, mean, variance, noise_seed, delay=0, dur=10000):
         """need to put  description"""
         rand = neuron.h.Random(gid + noise_seed)
-        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)  # self.get_section(0)) # assuming that section 0 is the soma
+        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)
         tstim.noise(delay, dur, mean, variance)
         self.persistent.objects.append(rand)
         self.persistent.objects.append(tstim)
 
     def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
-        pre_gid = int(syn_description[0])
-        delay = syn_description[1]
+        """Add synapse based on the syn_description to the cell"""
+        #pre_gid = int(syn_description[0])
+        #delay = syn_description[1]
         post_sec_id = syn_description[2]
         isec = post_sec_id
         post_seg_id = syn_description[3]
@@ -151,14 +154,11 @@ class Cell:
         syn_F = syn_description[11]
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
-        ''' --- TODO: what happens with -1 in location_to_point --- '''
+        #''' --- todo: what happens with -1 in location_to_point --- '''
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
-        if location == None :
-            print 'add_single_synapse: going to skip this synapse'
+        if location is None :
+            print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
             return -1
-
-        distance =  bglibpy.\
-          neuron.h.distance(location,sec=self.get_section(post_sec_id))
 
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/\
@@ -198,10 +198,6 @@ class Cell:
         self.syns[sid] = syn
 
         return syn
-
-    def get_section(self, raw_section_id) :
-        ''' use the serialized object to find your section'''
-        return self.serialized.isec2sec[int(raw_section_id)].sec
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
@@ -316,11 +312,11 @@ class Cell:
         for var_name in var_list:
             if var_name not in self.recordings:
                 self.addRecording(var_name)
-        self.plotWindows.append(plotwindow.PlotWindow(var_list, self, xlim, ylim, title))
+        self.plotWindows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
-        cell_dendrogram = dendrogram.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
+        cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
 
@@ -338,9 +334,8 @@ class Cell:
                 self.cell.getCell().clear()
         #for window in self.plotWindows:
         #    window.process.join()
-        for object in self.persistent.objects:
-            del(object)
-        #del(self.persistent.objects)
+        for persistent_object in self.persistent.objects:
+            del(persistent_object)
 
     def __del__(self):
         self.delete()
@@ -353,7 +348,8 @@ class Cell:
 
     @tools.deprecated
     def getThreshold(self):
-        self.cell.threshold
+        """Get the threshold current of the cell, warning: this is measured from hypamp"""
+        return self.cell.threshold
 
     @tools.deprecated
     def getHypAmp(self):
@@ -362,27 +358,33 @@ class Cell:
 
     @tools.deprecated
     def addRecording(self, var_name):
+        """Deprecated add_recording"""
         return self.add_recording(var_name)
 
     @tools.deprecated
     def addRecordings(self, var_names):
-        return self.add_recording(var_name)
+        """Deprecated add_recordings"""
+        return self.add_recordings(var_names)
 
     @tools.deprecated
     def getRecording(self, var_name):
+        """Deprecated get_recording"""
         return self.get_recording(var_name)
 
     @tools.deprecated
     def addAllSectionsVoltageRecordings(self):
+        """Deprecated"""
         self.add_allsections_voltagerecordings()
 
     @tools.deprecated
     def getAllSectionsVoltageRecordings(self):
-        self.get_allsections_voltagerecordings()
+        """Deprecated"""
+        return self.get_allsections_voltagerecordings()
 
     @tools.deprecated
     def locateBAPSite(self, seclistName, distance):
-        return locate_BAPsite(seclistName, distance)
+        """Deprecated"""
+        return self.locate_bapsite(seclistName, distance)
 
     @tools.deprecated
     def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):

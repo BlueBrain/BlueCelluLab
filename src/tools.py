@@ -15,6 +15,7 @@ BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connectio
 def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
     def rep_func(*args, **kwargs):
+        """Replacement function"""
         warnings.warn("Call to deprecated function {}.".format(func.__name__),
                       category=DeprecationWarning)
         return func(*args, **kwargs)
