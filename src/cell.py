@@ -10,9 +10,6 @@ from bglibpy.importer import neuron
 
 class Cell:
     """Represents a bglib cell"""
-    class persistent:
-        """The objects that need to stay persistent in python"""
-        objects = []
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
         neuron.h.load_file(template_name)
@@ -20,6 +17,8 @@ class Cell:
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+        self.morphology_name = morphology_name
+        self.template_name = template_name
         self.recordings = {}
         self.synapses = {}
         self.netstims = {}
@@ -45,10 +44,12 @@ class Cell:
         self.all = [x for x in self.cell.getCell().all]
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
-        self.plotWindows = []
+        self.plot_windows = []
 
         self.hypamp = self.cell.getHypAmp()
         self.threshold = self.cell.getThreshold()
+
+        self.persistent = []
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
@@ -62,7 +63,7 @@ class Cell:
         """need to put  description"""
 
         curr_sec = self.get_section(isec)
-        L = curr_sec.L
+        length = curr_sec.L
 
         debug_too_large = 0
         debug_too_small = 0
@@ -72,7 +73,7 @@ class Cell:
 
         distance = -1
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
-            distance = (ipt + syn_offset) / L
+            distance = (ipt + syn_offset) / length
             if distance >= 1.0:
                 distance = 1
                 debug_too_large = debug_too_large + 1
@@ -135,10 +136,10 @@ class Cell:
         rand = neuron.h.Random(gid + noise_seed)
         tstim = neuron.h.TStim(0.5, rand, sec=self.soma)
         tstim.noise(delay, dur, mean, variance)
-        self.persistent.objects.append(rand)
-        self.persistent.objects.append(tstim)
+        self.persistent.append(rand)
+        self.persistent.append(tstim)
 
-    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
+    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
         """Add synapse based on the syn_description to the cell"""
         #pre_gid = int(syn_description[0])
         #delay = syn_description[1]
@@ -194,7 +195,7 @@ class Cell:
         rndd.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed )
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
-        self.persistent.objects.append(rndd)
+        self.persistent.append(rndd)
         self.syns[sid] = syn
 
         return syn
@@ -265,7 +266,7 @@ class Cell:
                     if child.diam > maxdiam:
                         currentsection = child
                         maxdiam = child.diam
-                apicaltrunk.append(child)
+                        apicaltrunk.append(child)
             return apicaltrunk
 
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
@@ -281,7 +282,7 @@ class Cell:
         vclamp.dur1 = stop_time
         vclamp.dur2 = 0
         vclamp.dur3 = 0
-        self.persistent.objects.append(vclamp)
+        self.persistent.append(vclamp)
 
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
         """Add a sinusoidal current injection"""
@@ -312,7 +313,7 @@ class Cell:
         for var_name in var_list:
             if var_name not in self.recordings:
                 self.addRecording(var_name)
-        self.plotWindows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
+        self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
@@ -322,7 +323,7 @@ class Cell:
 
     def update(self):
         """Update all the windows"""
-        for window in self.plotWindows:
+        for window in self.plot_windows:
             window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
@@ -332,9 +333,9 @@ class Cell:
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
-        #for window in self.plotWindows:
+        #for window in self.plot_windows:
         #    window.process.join()
-        for persistent_object in self.persistent.objects:
+        for persistent_object in self.persistent:
             del(persistent_object)
 
     def __del__(self):
@@ -387,7 +388,7 @@ class Cell:
         return self.locate_bapsite(seclistName, distance)
 
     @tools.deprecated
-    def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
+    def addSynapticStimulus(self, section, location, delay=150):
         """Add a synaptic stimulus to a certain section"""
         segname = section.name() + "(" + str(location) + ")"
         synapse = neuron.h.tmgExSyn(location, sec=section)
@@ -432,9 +433,9 @@ class Cell:
         currents = currents.from_python(i_content)
 
         pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
-        self.persistent.objects.append(pulse)
-        self.persistent.objects.append(time)
-        self.persistent.objects.append(currents)
+        self.persistent.append(pulse)
+        self.persistent.append(time)
+        self.persistent.append(currents)
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
