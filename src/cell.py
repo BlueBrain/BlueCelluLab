@@ -235,9 +235,10 @@ class Cell:
               InhPoissonStim(location, \
                              sec=self.get_section(post_sec_id))
 
+            delay = 0.1
             self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
               NetCon(self.ips[sid], self.syns[sid], \
-                     -30, 0.1,gsyn*weight_scalar)#0.1, fixed in Connection.hoc
+                     -30, delay, gsyn*weight_scalar)
 
             exprng = bglibpy.neuron.h.Random()
             exprng.MCellRan4( sid*100000+200, self.gid+250+base_seed )
