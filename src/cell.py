@@ -491,9 +491,9 @@ class Cell:
         currents = currents.from_python(i_content)
 
         pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
-        self.persistent.append(pulse)
-        self.persistent.append(time)
-        self.persistent.append(currents)
+        self.persistent.objects.append(pulse)
+        self.persistent.objects.append(time)
+        self.persistent.objects.append(currents)
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
