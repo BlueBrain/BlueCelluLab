@@ -5,38 +5,21 @@
 
 from bglibpy import bluepy
 import bglibpy
+import collections
 
-def parse_and_store_GID_spiketrains(path, fName='out.dat'):
+def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     """Parse and store the gid spiketrains"""
-    xhashed = {}
-    inFile = open(path + '/' + fName,'r')
-    inLine = inFile.readline()
-    inLine = inFile.readline() # avoid the trailing "/scatter"
-    counter = 0
-    all_gids = []
-    while(inLine != None):
-        try:
-            # format: time gid
-            t, gid = inLine.split() # returns 2 strings
-            t = float(t)
-            igid = int(gid)
-            all_gids.append(igid)
-            if(igid in xhashed):
-                xhashed[igid].append(t)
-            else:
-                xhashed[igid] = []
-                xhashed[igid].append(t)
-            counter = counter + 1
-            inLine = inFile.readline()
-        except Exception:
-            print 'no issue, most likely the last entry'
-            print 'current inLine: ', inLine
-            print 'current counter: ', counter
-            inLine = inFile.readline()
-            break
 
-    print 'read and stored all spikes. now going to write the output'
-    return xhashed
+    gid_spiketimes_dict = collections.defaultdict(list)
+    outdat_name = path + '/' + outdat_name
+    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
+    # last newline
+    for line in open(outdat_name).read().split("\n")[1:-1]:
+        gid = int(line.split()[1])
+        spiketime = float(line.split()[0])
+        gid_spiketimes_dict[gid].append(spiketime)
+
+    return gid_spiketimes_dict
 
 class SSim(object):
     """SSim class"""
@@ -155,9 +138,9 @@ class SSim(object):
                                                 pre_spike_trains)
             print 'syn_parameters: ', syn_parameters
 
-        if full:
-            ''' Also add the injections / stimulations as in the cortical model '''
-            self._add_replay_stimuli(gid)
+            if full:
+                ''' Also add the injections / stimulations as in the cortical model '''
+                self._add_replay_stimuli(gid)
 
 
     def _add_replay_stimuli(self, gid):
@@ -262,7 +245,7 @@ class SSim(object):
         no_pre_spikes = 0
         try:
             spike_train = pre_spike_trains[pre_gid]
-        except Exception: #todo: be more specific with the exception
+        except KeyError:
             no_pre_spikes = no_pre_spikes + 1
         print 'no_pre_spikes: ', no_pre_spikes
         t_vec = bglibpy.neuron.h.Vector(spike_train)
@@ -278,9 +261,9 @@ class SSim(object):
 
         self.cells[gid].syn_netcons[SID] = bglibpy.neuron.h.NetCon(self.cells[gid].syn_vecstims[SID], self.cells[gid].syns[SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
 
-    def add_single_synapse(self, gid, sid, syn_description, connection_modifiers, synapse_level=0):
+    def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
-        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed, synapse_level=0)
+        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
