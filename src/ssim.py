@@ -115,25 +115,24 @@ class SSim(object):
 
             # self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
             # self._add_replay_stimuli(gid)
-            # self._charge_replay_synapses(gid,gids)
+            # self._charge_replay_synapse(gid,gids)
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
             pre_spike_trains = \
                       parse_and_store_GID_spiketrains(\
                         self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                         'out.dat')
-            for syn_description, SID in zip(pre_datas, \
-                                           range(len(pre_datas))):
+            for sid, syn_description in enumerate(pre_datas):
                 syn_parameters = self.\
                   _evaluate_connection_parameters(syn_description[0],gid)
                 if synapse_detail > 0:
-                    self.add_single_synapse(gid, SID, syn_description, \
+                    self.add_single_synapse(gid, sid, syn_description, \
                                             syn_parameters)
                 if synapse_detail > 1:
-                    self.add_replay_minis(gid, SID, syn_description, \
+                    self.add_replay_minis(gid, sid, syn_description, \
                                           syn_parameters)
                 if synapse_detail > 2:
-                    self.charge_replay_synapses(gid, SID, syn_description, \
+                    self.charge_replay_synapse(gid, sid, syn_description, \
                                                 syn_parameters, \
                                                 pre_spike_trains)
             print 'syn_parameters: ', syn_parameters
@@ -151,6 +150,7 @@ class SSim(object):
         gid: gid of the simulated cell
         """
         # check in which StimulusInjects the gid is a target
+        noise_seed = 0 # Every noise stimulus gets a new seed
         for entry in self.bc.entries:
             if entry.TYPE == 'StimulusInject':
                 destination = entry.CONTENTS.Target
@@ -161,29 +161,25 @@ class SSim(object):
                     stimulus = self.bc.entry_map[stimulus_name]
                     print 'found stimulus: ', stimulus
                     if stimulus.CONTENTS.Pattern == 'Noise':
-                        self._add_replay_noise(gid, stimulus)
+                        self._add_replay_noise(gid, stimulus, noise_seed=noise_seed)
+                        noise_seed += 1
+                    elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
+                        self._add_replay_hypamp_injection(gid, stimulus)
                     else:
-                        self._add_replay_injection(gid, stimulus)
+                        print "Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern
+                        exit(1)
 
-    def _add_replay_injection(self, gid, stimulus):
+    def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
-        hypamp_i = self.cells[gid].hypamp
-        self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
+        #hypamp_i = self.cells[gid].hypamp
+        #self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Delay)+float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
+        self.cells[gid].add_replay_hypamp(stimulus)
 
-    def _add_replay_noise(self, gid, stimulus):
+    def _add_replay_noise(self, gid, stimulus, noise_seed=0):
         """Add noise injection from the replay"""
-        noise_seed = 0
-        delay = float(stimulus.CONTENTS.Delay)
-        dur = float(stimulus.CONTENTS.Duration)
-        mean = float(stimulus.CONTENTS.MeanPercent)/100.0 * self.cells[gid].threshold
-        variance = float(stimulus.CONTENTS.Variance)/100.0 * self.cells[gid].threshold
-        rand = bglibpy.neuron.h.Random(gid+noise_seed)
-        tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.cells[gid].soma)
-        tstim.noise(delay, dur, mean, variance)
-        self.mechanisms[gid].append(rand)
-        self.mechanisms[gid].append(tstim)
+        self.cells[gid].add_replay_noise(stimulus, noise_seed=noise_seed)
 
-    def add_replay_minis(self, gid, SID, syn_description, syn_parameters):
+    def add_replay_minis(self, gid, sid, syn_description, syn_parameters):
         """Add minis from the replay"""
         gsyn = syn_description[8]
         post_sec_id = syn_description[2]
@@ -205,34 +201,34 @@ class SSim(object):
 
         ''' add the *minis*: spontaneous synaptic events '''
         if spont_minis > 0.0:
-            print 'adding minis!'
-            self.cells[gid].ips[SID] = bglibpy.neuron.h.\
+            #print 'adding minis!'
+            self.cells[gid].ips[sid] = bglibpy.neuron.h.\
               InhPoissonStim(location, \
                              sec=self.cells[gid].get_section(post_sec_id))
 
-            self.cells[gid].syn_mini_netcons[SID] = bglibpy.neuron.h.\
-              NetCon(self.cells[gid].ips[SID], self.cells[gid].syns[SID], \
+            self.cells[gid].syn_mini_netcons[sid] = bglibpy.neuron.h.\
+              NetCon(self.cells[gid].ips[sid], self.cells[gid].syns[sid], \
                      -30, 0.1,gsyn*weight_scalar)#0.1, fixed in Connection.hoc
 
             exprng = bglibpy.neuron.h.Random()
-            exprng.MCellRan4( SID*100000+200, gid+250+self.base_seed )
+            exprng.MCellRan4( sid*100000+200, gid+250+self.base_seed )
             exprng.negexp(1)
             self.mechanisms[gid].append(exprng)
             uniformrng = bglibpy.neuron.h.Random()
-            uniformrng.MCellRan4( SID*100000+300, gid+250+self.base_seed )
+            uniformrng.MCellRan4( sid*100000+300, gid+250+self.base_seed )
             uniformrng.uniform(0.0, 1.0)
             self.mechanisms[gid].append(uniformrng)
-            self.cells[gid].ips[SID].setRNGs(exprng, uniformrng)
+            self.cells[gid].ips[sid].setRNGs(exprng, uniformrng)
             tbins_vec = bglibpy.neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
             rate_vec = bglibpy.neuron.h.Vector(1)
             rate_vec.x[0] = spont_minis
             self.mechanisms[gid].append(tbins_vec)
             self.mechanisms[gid].append(rate_vec)
-            self.cells[gid].ips[SID].setTbins(tbins_vec)
-            self.cells[gid].ips[SID].setRate(rate_vec)
+            self.cells[gid].ips[sid].setTbins(tbins_vec)
+            self.cells[gid].ips[sid].setRate(rate_vec)
 
-    def charge_replay_synapses(self, gid, SID, syn_description, syn_parameters, pre_spike_trains):
+    def charge_replay_synapse(self, gid, sid, syn_description, syn_parameters, pre_spike_trains):
         """Put the pre-spike-trains on the synapses"""
         pre_gid = int(syn_description[0])
         delay = syn_description[1]
@@ -247,19 +243,19 @@ class SSim(object):
             spike_train = pre_spike_trains[pre_gid]
         except KeyError:
             no_pre_spikes = no_pre_spikes + 1
-        print 'no_pre_spikes: ', no_pre_spikes
+        #print 'no_pre_spikes: ', no_pre_spikes
         t_vec = bglibpy.neuron.h.Vector(spike_train)
         t_vec_stim = bglibpy.neuron.h.VecStim()
-        self.cells[gid].syn_vecs[SID] = t_vec
-        self.cells[gid].syn_vecstims[SID] = t_vec_stim
-        self.cells[gid].syn_vecstims[SID].play(self.cells[gid].syn_vecs[SID], self.dt)
+        self.cells[gid].syn_vecs[sid] = t_vec
+        self.cells[gid].syn_vecstims[sid] = t_vec_stim
+        self.cells[gid].syn_vecstims[sid].play(self.cells[gid].syn_vecs[sid], self.dt)
 
         if('Weight' in syn_parameters):
             weight_scalar = syn_parameters['Weight']
         else:
             weight_scalar = 1.0
 
-        self.cells[gid].syn_netcons[SID] = bglibpy.neuron.h.NetCon(self.cells[gid].syn_vecstims[SID], self.cells[gid].syns[SID], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
+        self.cells[gid].syn_netcons[sid] = bglibpy.neuron.h.NetCon(self.cells[gid].syn_vecstims[sid], self.cells[gid].syns[sid], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
@@ -333,5 +329,5 @@ class SSim(object):
         """Get the template name of a gid"""
         neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
         template_name2 = str(neurons[0].METype)
-        print 'parsed nam2: >', template_name2,'<'
+        #print 'parsed nam2: >', template_name2,'<'
         return template_name2

@@ -131,11 +131,20 @@ class Cell:
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
-    def add_replay_noise(self, gid, mean, variance, noise_seed, delay=0, dur=10000):
+    def add_replay_hypamp(self, stimulus):
+        """Inject hypamp for the replay"""
+        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
+        tstim.pulse( float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), self.hypamp)
+        self.persistent.append(tstim)
+
+    def add_replay_noise(self, stimulus, noise_seed=0):
         """need to put  description"""
-        rand = neuron.h.Random(gid + noise_seed)
-        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)
-        tstim.noise(delay, dur, mean, variance)
+        #todo: setting noise_seed to 0 is WRONG, noise_seed should increase with every connection block
+        mean = float(stimulus.CONTENTS.MeanPercent)/100.0 * self.threshold
+        variance = float(stimulus.CONTENTS.Variance)/100.0 * self.threshold
+        rand = bglibpy.neuron.h.Random(self.gid + noise_seed)
+        tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.soma)
+        tstim.noise(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), mean, variance)
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
