@@ -53,12 +53,6 @@ class SSim(object):
         self.gids = []
         self.templates = []
         self.cells = {}
-        self.mechanisms = {}
-        self.syn_vecs = {}
-        self.syn_vecstims = {}
-        self.syn_ncs = {}
-        self.ips = {}
-        self.syn_mini_ncs = {}
 
     def instantiate_gids(self, gids, synapse_detail, full=True):
         """ Instantiate a list of GIDs
@@ -86,12 +80,6 @@ class SSim(object):
         self.gids = gids
         self.templates = []
         self.cells = {}
-        self.mechanisms = {}
-        self.syn_vecs = {}
-        self.syn_vecstims = {}
-        self.syn_ncs = {}
-        self.ips = {}
-        self.syn_mini_ncs = {}
 
         for gid in self.gids:
             print 'setting up gid=%i' % (gid)
@@ -105,13 +93,6 @@ class SSim(object):
                                      path_of_morphology, gid=gid, \
                                      record_dt=self.record_dt)
             self.cells[gid] = temp_cell
-            self.mechanisms[gid] = []
-            #self.syns[gid] = {}
-            self.syn_vecs[gid] = {}
-            self.syn_vecstims[gid] = {}
-            self.syn_ncs[gid] = {}
-            self.ips[gid] = {}
-            self.syn_mini_ncs[gid] = {}
 
             # self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
             # self._add_replay_stimuli(gid)
@@ -181,52 +162,7 @@ class SSim(object):
 
     def add_replay_minis(self, gid, sid, syn_description, syn_parameters):
         """Add minis from the replay"""
-        gsyn = syn_description[8]
-        post_sec_id = syn_description[2]
-        post_seg_id = syn_description[3]
-        post_seg_distance = syn_description[4]
-        location = self.cells[gid].\
-          synlocation_to_segx(post_sec_id, post_seg_id, \
-                              post_seg_distance, test=False)
-        ''' todo: False'''
-        if('Weight' in syn_parameters):
-            weight_scalar = syn_parameters['Weight']
-        else:
-            weight_scalar = 1.0
-
-        if('SpontMinis' in syn_parameters):
-            spont_minis = syn_parameters['SpontMinis']
-        else:
-            spont_minis = 0.0
-
-        ''' add the *minis*: spontaneous synaptic events '''
-        if spont_minis > 0.0:
-            #print 'adding minis!'
-            self.cells[gid].ips[sid] = bglibpy.neuron.h.\
-              InhPoissonStim(location, \
-                             sec=self.cells[gid].get_section(post_sec_id))
-
-            self.cells[gid].syn_mini_netcons[sid] = bglibpy.neuron.h.\
-              NetCon(self.cells[gid].ips[sid], self.cells[gid].syns[sid], \
-                     -30, 0.1,gsyn*weight_scalar)#0.1, fixed in Connection.hoc
-
-            exprng = bglibpy.neuron.h.Random()
-            exprng.MCellRan4( sid*100000+200, gid+250+self.base_seed )
-            exprng.negexp(1)
-            self.mechanisms[gid].append(exprng)
-            uniformrng = bglibpy.neuron.h.Random()
-            uniformrng.MCellRan4( sid*100000+300, gid+250+self.base_seed )
-            uniformrng.uniform(0.0, 1.0)
-            self.mechanisms[gid].append(uniformrng)
-            self.cells[gid].ips[sid].setRNGs(exprng, uniformrng)
-            tbins_vec = bglibpy.neuron.h.Vector(1)
-            tbins_vec.x[0] = 0.0
-            rate_vec = bglibpy.neuron.h.Vector(1)
-            rate_vec.x[0] = spont_minis
-            self.mechanisms[gid].append(tbins_vec)
-            self.mechanisms[gid].append(rate_vec)
-            self.cells[gid].ips[sid].setTbins(tbins_vec)
-            self.cells[gid].ips[sid].setRate(rate_vec)
+        self.cells[gid].add_replay_minis(sid, syn_description, syn_parameters, self.base_seed)
 
     def charge_replay_synapse(self, gid, sid, syn_description, syn_parameters, pre_spike_trains):
         """Put the pre-spike-trains on the synapses"""

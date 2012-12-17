@@ -209,6 +209,54 @@ class Cell:
 
         return syn
 
+    def add_replay_minis(self, sid, syn_description, syn_parameters, base_seed):
+        """Add minis from the replay"""
+        gsyn = syn_description[8]
+        post_sec_id = syn_description[2]
+        post_seg_id = syn_description[3]
+        post_seg_distance = syn_description[4]
+        location = self.\
+          synlocation_to_segx(post_sec_id, post_seg_id, \
+                              post_seg_distance, test=False)
+        ''' todo: False'''
+        if('Weight' in syn_parameters):
+            weight_scalar = syn_parameters['Weight']
+        else:
+            weight_scalar = 1.0
+
+        if('SpontMinis' in syn_parameters):
+            spont_minis_rate = syn_parameters['SpontMinis']
+        else:
+            spont_minis_rate = 0.0
+
+        ''' add the *minis*: spontaneous synaptic events '''
+        if spont_minis_rate > 0.0:
+            self.ips[sid] = bglibpy.neuron.h.\
+              InhPoissonStim(location, \
+                             sec=self.get_section(post_sec_id))
+
+            self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
+              NetCon(self.ips[sid], self.syns[sid], \
+                     -30, 0.1,gsyn*weight_scalar)#0.1, fixed in Connection.hoc
+
+            exprng = bglibpy.neuron.h.Random()
+            exprng.MCellRan4( sid*100000+200, self.gid+250+base_seed )
+            exprng.negexp(1)
+            self.persistent.append(exprng)
+            uniformrng = bglibpy.neuron.h.Random()
+            uniformrng.MCellRan4( sid*100000+300, self.gid+250+base_seed )
+            uniformrng.uniform(0.0, 1.0)
+            self.persistent.append(uniformrng)
+            self.ips[sid].setRNGs(exprng, uniformrng)
+            tbins_vec = bglibpy.neuron.h.Vector(1)
+            tbins_vec.x[0] = 0.0
+            rate_vec = bglibpy.neuron.h.Vector(1)
+            rate_vec.x[0] = spont_minis_rate
+            self.persistent.append(tbins_vec)
+            self.persistent.append(rate_vec)
+            self.ips[sid].setTbins(tbins_vec)
+            self.ips[sid].setRate(rate_vec)
+
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
         return [x for x in self.cell.getCell().locateBAPSite(seclist_name, distance)]
