@@ -116,7 +116,7 @@ class SSim(object):
                     self.charge_replay_synapse(gid, sid, syn_description, \
                                                 connection_parameters, \
                                                 pre_spike_trains)
-            print 'connection_parameters: ', connection_parameters
+            #print 'connection_parameters: ', connection_parameters
 
             if full:
                 ''' Also add the injections / stimulations as in the cortical model '''

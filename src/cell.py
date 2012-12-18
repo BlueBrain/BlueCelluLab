@@ -62,6 +62,9 @@ class Cell:
     def synlocation_to_segx(self, isec, ipt, syn_offset, test=False):
         """need to put  description"""
 
+        if syn_offset < 0.0:
+            syn_offset = 0.0
+
         curr_sec = self.get_section(isec)
         length = curr_sec.L
 
@@ -70,10 +73,11 @@ class Cell:
         # access section to compute the distance
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
+            syn_offset = -syn_offset
 
         distance = -1
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
-            distance = (ipt + syn_offset) / length
+            distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
             if distance >= 1.0:
                 distance = 1
                 debug_too_large = debug_too_large + 1
@@ -81,14 +85,16 @@ class Cell:
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance
 
-        if distance <= 0:
-            distance = 0
-            debug_too_small = debug_too_small + 1
-
-        if(test):
+        if (test):
             print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
 
-        return distance
+        if distance < 0:
+            debug_too_small = debug_too_small + 1
+            print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
+            #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
+            return 0
+        else:
+            return distance
 
     def showDendDiam(self):
         """Show a dendrogram plot"""
@@ -168,7 +174,7 @@ class Cell:
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None :
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
-            return -1
+            return None
 
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/\
@@ -181,7 +187,7 @@ class Cell:
 
             syn.tau_d_GABAA = syn_DTC
             rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(sid *100000+100, self.gid + 250 + base_seed)
+            rng.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed)
             rng.lognormal(0.2, 0.1)
             syn.tau_r_GABAA = rng.repick()
         else:
@@ -193,21 +199,20 @@ class Cell:
         # hoc exec synapse configure blocks
         for cmd in connection_modifiers['SynapseConfigure']:
             cmd = cmd.replace('%s', '\n%(syn)s')
+            #print cmd % {'syn': syn.hname()}
             bglibpy.neuron.h(cmd % {'syn': syn.hname()})
 
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
         syn.Fac = abs( syn_F )
-        syn.synapseID = sid
 
         rndd = bglibpy.neuron.h.Random()
         rndd.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed )
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
+        syn.synapseID = sid
         self.persistent.append(rndd)
         self.syns[sid] = syn
-
-        return syn
 
     def add_replay_minis(self, sid, syn_description, syn_parameters, base_seed):
         """Add minis from the replay"""
