@@ -27,8 +27,8 @@ class Cell:
         self.gid = self.cell.getCell().gid
 
         self.synapse_number = 0
-        self.syn_vecs = {}
-        self.syn_vecstims = {}
+        self.pre_spiketrains = {}
+        #self.syn_vecstims = {}
         self.syns = {}
         self.syn_netcons = {}
         self.ips = {}
@@ -262,6 +262,25 @@ class Cell:
             self.persistent.append(rate_vec)
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
+
+    def charge_replay_synapse(self, sid, syn_description, syn_parameters, pre_spiketrain, stim_dt=None):
+        """Put the replay spiketrains from out.dat on the synapses"""
+        delay = syn_description[1]
+        gsyn = syn_description[8]
+
+        self.pre_spiketrains[sid] = pre_spiketrain
+        t_vec = bglibpy.neuron.h.Vector(pre_spiketrain)
+        vecstim = bglibpy.neuron.h.VecStim()
+        vecstim.play(t_vec, stim_dt)
+
+        if('Weight' in syn_parameters):
+            weight_scalar = syn_parameters['Weight']
+        else:
+            weight_scalar = 1.0
+
+        self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, gsyn*weight_scalar) # ...,threshold,delay
+        self.persistent.append(t_vec)
+        self.persistent.append(vecstim)
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""

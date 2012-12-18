@@ -167,31 +167,11 @@ class SSim(object):
     def charge_replay_synapse(self, gid, sid, syn_description, syn_parameters, pre_spike_trains):
         """Put the pre-spike-trains on the synapses"""
         pre_gid = int(syn_description[0])
-        delay = syn_description[1]
-        #post_sec_id = syn_description[2]
-        #post_seg_id = syn_description[3]
-        #post_seg_distance = syn_description[4]
-        gsyn = syn_description[8]
-
-        spike_train = [] # fetch with bluepy
-        no_pre_spikes = 0
-        try:
-            spike_train = pre_spike_trains[pre_gid]
-        except KeyError:
-            no_pre_spikes = no_pre_spikes + 1
-        #print 'no_pre_spikes: ', no_pre_spikes
-        t_vec = bglibpy.neuron.h.Vector(spike_train)
-        t_vec_stim = bglibpy.neuron.h.VecStim()
-        self.cells[gid].syn_vecs[sid] = t_vec
-        self.cells[gid].syn_vecstims[sid] = t_vec_stim
-        self.cells[gid].syn_vecstims[sid].play(self.cells[gid].syn_vecs[sid], self.dt)
-
-        if('Weight' in syn_parameters):
-            weight_scalar = syn_parameters['Weight']
+        spike_train = pre_spike_trains.setdefault(pre_gid, None)
+        if spike_train:
+            self.cells[gid].charge_replay_synapse(sid, syn_description, syn_parameters, spike_train, stim_dt=self.dt)
         else:
-            weight_scalar = 1.0
-
-        self.cells[gid].syn_netcons[sid] = bglibpy.neuron.h.NetCon(self.cells[gid].syn_vecstims[sid], self.cells[gid].syns[sid], -30, delay, gsyn*weight_scalar) # ...,threshold,delay,weight
+            print "Warning: presynaptic gid %d has no spikes, no netcon created" % pre_gid
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
