@@ -104,19 +104,19 @@ class SSim(object):
                         self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                         'out.dat')
             for sid, syn_description in enumerate(pre_datas):
-                syn_parameters = self.\
+                connection_parameters = self.\
                   _evaluate_connection_parameters(syn_description[0],gid)
                 if synapse_detail > 0:
                     self.add_single_synapse(gid, sid, syn_description, \
-                                            syn_parameters)
+                                            connection_parameters)
                 if synapse_detail > 1:
                     self.add_replay_minis(gid, sid, syn_description, \
-                                          syn_parameters)
+                                          connection_parameters)
                 if synapse_detail > 2:
                     self.charge_replay_synapse(gid, sid, syn_description, \
-                                                syn_parameters, \
+                                                connection_parameters, \
                                                 pre_spike_trains)
-            print 'syn_parameters: ', syn_parameters
+            print 'connection_parameters: ', connection_parameters
 
             if full:
                 ''' Also add the injections / stimulations as in the cortical model '''
