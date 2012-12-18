@@ -378,13 +378,13 @@ class Cell:
         self.injectCurrentWaveform(t_content, i_content)
         return (t_content, i_content)
 
-    def getTime(self):
+    def get_time(self):
         """Get the time vector"""
-        return numpy.array(self.getRecording('neuron.h._ref_t'))
+        return numpy.array(self.get_recording('neuron.h._ref_t'))
 
-    def getSomaVoltage(self):
+    def get_soma_voltage(self):
         """Get a vector of the soma voltage"""
-        return numpy.array(self.getRecording('self.soma(0.5)._ref_v'))
+        return numpy.array(self.get_recording('self.soma(0.5)._ref_v'))
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell"""
@@ -526,4 +526,14 @@ class Cell:
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
+
+    @tools.deprecated
+    def getTime(self):
+        """Get the time vector"""
+        return self.get_time()
+
+    @tools.deprecated
+    def getSomaVoltage(self):
+        """Get a vector of the soma voltage"""
+        return self.get_soma_voltage()
 

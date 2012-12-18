@@ -135,7 +135,7 @@ class SSim(object):
         for entry in self.bc.entries:
             if entry.TYPE == 'StimulusInject':
                 destination = entry.CONTENTS.Target
-                gids_of_target = self.bc_simulation.circuit.get_target(destination)
+                gids_of_target = self.bc_simulation.get_target(destination)
                 if gid in gids_of_target:
                     # retrieve the stimulus to apply
                     stimulus_name = entry.CONTENTS.Stimulus
@@ -228,12 +228,12 @@ class SSim(object):
         """Get the voltage traces from all the cells as a dictionary based on gid"""
         vm = {}
         for gid in self.gids:
-            vm[gid] = self.cells[gid].getSomaVoltage()
+            vm[gid] = self.cells[gid].get_soma_voltage()
         return vm
 
     def get_time(self):
         """Get the time vector for the recordings"""
-        return self.cells[self.gids[0]].getTime()
+        return self.cells[self.gids[0]].get_time()
 
 
 
