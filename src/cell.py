@@ -144,13 +144,18 @@ class Cell:
         self.persistent.append(tstim)
 
     def add_replay_noise(self, stimulus, noise_seed=0):
-        """need to put  description"""
-        #todo: setting noise_seed to 0 is WRONG, noise_seed should increase with every connection block
-        mean = float(stimulus.CONTENTS.MeanPercent)/100.0 * self.threshold
-        variance = float(stimulus.CONTENTS.Variance)/100.0 * self.threshold
-        rand = bglibpy.neuron.h.Random(self.gid + noise_seed)
-        tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.soma)
-        tstim.noise(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), mean, variance)
+        """Add a replay noise stimulus"""
+        mean = (float(stimulus.CONTENTS.MeanPercent) * self.threshold)/100.0
+        variance = (float(stimulus.CONTENTS.Variance) * self.threshold)/100.0
+        delay = float(stimulus.CONTENTS.Delay)
+        duration = float(stimulus.CONTENTS.Duration)
+        self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration, self.gid + noise_seed)
+
+    def add_noise_step(self, section, segx, mean, variance, delay, duration, seed):
+        """Inject a step current with noise on top"""
+        rand = bglibpy.neuron.h.Random(seed)
+        tstim = bglibpy.neuron.h.TStim(segx, rand, sec=section)
+        tstim.noise(delay, duration, mean, variance)
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
@@ -164,7 +169,7 @@ class Cell:
         ipt = post_seg_id
         post_seg_distance = syn_description[4]
         syn_offset = post_seg_distance
-        #gsyn = syn_description[8]
+        #weight = syn_description[8]
         syn_U = syn_description[9]
         syn_D = syn_description[10]
         syn_F = syn_description[11]
@@ -214,9 +219,9 @@ class Cell:
         self.persistent.append(rndd)
         self.syns[sid] = syn
 
-    def add_replay_minis(self, sid, syn_description, syn_parameters, base_seed):
+    def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""
-        gsyn = syn_description[8]
+        weight = syn_description[8]
         post_sec_id = syn_description[2]
         post_seg_id = syn_description[3]
         post_seg_distance = syn_description[4]
@@ -224,13 +229,13 @@ class Cell:
           synlocation_to_segx(post_sec_id, post_seg_id, \
                               post_seg_distance, test=False)
         ''' todo: False'''
-        if('Weight' in syn_parameters):
-            weight_scalar = syn_parameters['Weight']
+        if('Weight' in connection_parameters):
+            weight_scalar = connection_parameters['Weight']
         else:
             weight_scalar = 1.0
 
-        if('SpontMinis' in syn_parameters):
-            spont_minis_rate = syn_parameters['SpontMinis']
+        if('SpontMinis' in connection_parameters):
+            spont_minis_rate = connection_parameters['SpontMinis']
         else:
             spont_minis_rate = 0.0
 
@@ -243,14 +248,14 @@ class Cell:
             delay = 0.1
             self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
               NetCon(self.ips[sid], self.syns[sid], \
-                     -30, delay, gsyn*weight_scalar)
+                     -30, delay, weight*weight_scalar)
 
             exprng = bglibpy.neuron.h.Random()
-            exprng.MCellRan4( sid*100000+200, self.gid+250+base_seed )
+            exprng.MCellRan4( sid * 100000 + 200, self.gid + 250 + base_seed )
             exprng.negexp(1)
             self.persistent.append(exprng)
             uniformrng = bglibpy.neuron.h.Random()
-            uniformrng.MCellRan4( sid*100000+300, self.gid+250+base_seed )
+            uniformrng.MCellRan4( sid * 100000 + 300, self.gid + 250 + base_seed )
             uniformrng.uniform(0.0, 1.0)
             self.persistent.append(uniformrng)
             self.ips[sid].setRNGs(exprng, uniformrng)
@@ -263,22 +268,22 @@ class Cell:
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
 
-    def charge_replay_synapse(self, sid, syn_description, syn_parameters, pre_spiketrain, stim_dt=None):
+    def charge_replay_synapse(self, sid, syn_description, connection_parameters, pre_spiketrain, stim_dt=None):
         """Put the replay spiketrains from out.dat on the synapses"""
         delay = syn_description[1]
-        gsyn = syn_description[8]
+        weight = syn_description[8]
 
         self.pre_spiketrains[sid] = pre_spiketrain
         t_vec = bglibpy.neuron.h.Vector(pre_spiketrain)
         vecstim = bglibpy.neuron.h.VecStim()
         vecstim.play(t_vec, stim_dt)
 
-        if('Weight' in syn_parameters):
-            weight_scalar = syn_parameters['Weight']
+        if('Weight' in connection_parameters):
+            weight_scalar = connection_parameters['Weight']
         else:
             weight_scalar = 1.0
 
-        self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, gsyn*weight_scalar) # ...,threshold,delay
+        self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, weight*weight_scalar) # ...,threshold,delay
         self.persistent.append(t_vec)
         self.persistent.append(vecstim)
 

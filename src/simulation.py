@@ -1,3 +1,6 @@
+"""Simulation class of BGLibPy"""
+
+import sys
 from bglibpy.importer import neuron
 
 class Simulation:
@@ -11,10 +14,10 @@ class Simulation:
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
+    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025, ):
         """Run the simulation"""
         neuron.h.celsius = celsius
-        neuron.h.tstop = 0.000001
+        neuron.h.tstop = maxtime
         neuron.h.dt = dt
         neuron.h.v_init = v_init
 
@@ -22,7 +25,7 @@ class Simulation:
             try:
                 cell.re_init_rng()
             except AttributeError:
-                pass
+                sys.exc_clear()
 
         if cvode:
             neuron.h('{cvode_active(1)}')
@@ -31,12 +34,12 @@ class Simulation:
 
         neuron.h.finitialize()
 
-        try:
-            neuron.h.run()
-        except Exception, e:
-            print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+        #try:
+        neuron.h.run()
+        #except Exception, e:
+        #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
-        self.continuerun(maxtime)
+        #self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
         """Continue a running simulation"""
@@ -45,11 +48,11 @@ class Simulation:
                 cell.update()
             if self.verbose_level >= 1:
                 print str(neuron.h.t) + " ms"
-            try:
-                neuron.h.step()
-            except Exception, e:
-                print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
-                break
+            #try:
+            neuron.h.step()
+            #except Exception, e:
+            #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+            #    break
 
     def __del__(self):
         pass
