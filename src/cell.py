@@ -1,15 +1,15 @@
+"""Class that represents a cell in BGLibPy"""
+
 import numpy
 import re
 import math
 import bglibpy
-import tools
+from bglibpy import tools
 from bglibpy.importer import neuron
+
 
 class Cell:
     """Represents a bglib cell"""
-    class persistent:
-        """The objects that need to stay persistent in python"""
-        objects = []
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
         neuron.h.load_file(template_name)
@@ -17,6 +17,8 @@ class Cell:
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+        self.morphology_name = morphology_name
+        self.template_name = template_name
         self.recordings = {}
         self.synapses = {}
         self.netstims = {}
@@ -25,8 +27,8 @@ class Cell:
         self.gid = self.cell.getCell().gid
 
         self.synapse_number = 0
-        self.syn_vecs = {}
-        self.syn_vecstims = {}
+        self.pre_spiketrains = {}
+        #self.syn_vecstims = {}
         self.syns = {}
         self.syn_netcons = {}
         self.ips = {}
@@ -40,13 +42,14 @@ class Cell:
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
-
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
-        self.plotWindows = []
+        self.plot_windows = []
 
         self.hypamp = self.cell.getHypAmp()
         self.threshold = self.cell.getThreshold()
+
+        self.persistent = []
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
@@ -59,18 +62,22 @@ class Cell:
     def synlocation_to_segx(self, isec, ipt, syn_offset, test=False):
         """need to put  description"""
 
+        if syn_offset < 0.0:
+            syn_offset = 0.0
+
         curr_sec = self.get_section(isec)
-        L = curr_sec.L
+        length = curr_sec.L
 
         debug_too_large = 0
         debug_too_small = 0
         # access section to compute the distance
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
+            syn_offset = -syn_offset
 
         distance = -1
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
-            distance = (ipt + syn_offset) / L
+            distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
             if distance >= 1.0:
                 distance = 1
                 debug_too_large = debug_too_large + 1
@@ -78,14 +85,16 @@ class Cell:
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance
 
-        if distance <= 0:
-            distance = 0
-            debug_too_small = debug_too_small + 1
-
-        if(test):
+        if (test):
             print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
 
-        return distance
+        if distance < 0:
+            debug_too_small = debug_too_small + 1
+            print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
+            #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
+            return 0
+        else:
+            return distance
 
     def showDendDiam(self):
         """Show a dendrogram plot"""
@@ -98,7 +107,7 @@ class Cell:
         """Add a recording to the cell"""
         recording = neuron.h.Vector()
         if dt:
-            recording.record(eval(var_name),dt)
+            recording.record(eval(var_name), dt)
         else:
             recording.record(eval(var_name))
         self.recordings[var_name] = recording
@@ -128,17 +137,27 @@ class Cell:
         """Get recorded values"""
         return self.recordings[var_name].to_python()
 
-    def add_replay_noise(self, gid, mean, variance, noise_seed, delay=0, dur=10000):
-        """need to put  description"""
-        rand = neuron.h.Random(gid + noise_seed)
-        tstim = neuron.h.TStim(0.5, rand, sec=self.soma)  # self.get_section(0)) # assuming that section 0 is the soma
-        tstim.noise(delay, dur, mean, variance)
-        self.persistent.objects.append(rand)
-        self.persistent.objects.append(tstim)
+    def add_replay_hypamp(self, stimulus):
+        """Inject hypamp for the replay"""
+        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
+        tstim.pulse( float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), self.hypamp)
+        self.persistent.append(tstim)
 
-    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed, synapse_level=0):
-        pre_gid = int(syn_description[0])
-        delay = syn_description[1]
+    def add_replay_noise(self, stimulus, noise_seed=0):
+        """need to put  description"""
+        #todo: setting noise_seed to 0 is WRONG, noise_seed should increase with every connection block
+        mean = float(stimulus.CONTENTS.MeanPercent)/100.0 * self.threshold
+        variance = float(stimulus.CONTENTS.Variance)/100.0 * self.threshold
+        rand = bglibpy.neuron.h.Random(self.gid + noise_seed)
+        tstim = bglibpy.neuron.h.TStim(0.5, rand, sec=self.soma)
+        tstim.noise(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), mean, variance)
+        self.persistent.append(rand)
+        self.persistent.append(tstim)
+
+    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
+        """Add synapse based on the syn_description to the cell"""
+        #pre_gid = int(syn_description[0])
+        #delay = syn_description[1]
         post_sec_id = syn_description[2]
         isec = post_sec_id
         post_seg_id = syn_description[3]
@@ -151,14 +170,11 @@ class Cell:
         syn_F = syn_description[11]
         syn_DTC = syn_description[12]
         syn_type = syn_description[13]
-        ''' --- TODO: what happens with -1 in location_to_point --- '''
+        #''' --- todo: what happens with -1 in location_to_point --- '''
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
-        if location == None :
-            print 'add_single_synapse: going to skip this synapse'
-            return -1
-
-        distance =  bglibpy.\
-          neuron.h.distance(location,sec=self.get_section(post_sec_id))
+        if location is None :
+            print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
+            return None
 
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/\
@@ -171,7 +187,7 @@ class Cell:
 
             syn.tau_d_GABAA = syn_DTC
             rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(sid *100000+100, self.gid + 250 + base_seed)
+            rng.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed)
             rng.lognormal(0.2, 0.1)
             syn.tau_r_GABAA = rng.repick()
         else:
@@ -183,25 +199,88 @@ class Cell:
         # hoc exec synapse configure blocks
         for cmd in connection_modifiers['SynapseConfigure']:
             cmd = cmd.replace('%s', '\n%(syn)s')
+            #print cmd % {'syn': syn.hname()}
             bglibpy.neuron.h(cmd % {'syn': syn.hname()})
 
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
         syn.Fac = abs( syn_F )
-        syn.synapseID = sid
 
         rndd = bglibpy.neuron.h.Random()
         rndd.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed )
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
-        self.persistent.objects.append(rndd)
+        syn.synapseID = sid
+        self.persistent.append(rndd)
         self.syns[sid] = syn
 
-        return syn
+    def add_replay_minis(self, sid, syn_description, syn_parameters, base_seed):
+        """Add minis from the replay"""
+        gsyn = syn_description[8]
+        post_sec_id = syn_description[2]
+        post_seg_id = syn_description[3]
+        post_seg_distance = syn_description[4]
+        location = self.\
+          synlocation_to_segx(post_sec_id, post_seg_id, \
+                              post_seg_distance, test=False)
+        ''' todo: False'''
+        if('Weight' in syn_parameters):
+            weight_scalar = syn_parameters['Weight']
+        else:
+            weight_scalar = 1.0
 
-    def get_section(self, raw_section_id) :
-        ''' use the serialized object to find your section'''
-        return self.serialized.isec2sec[int(raw_section_id)].sec
+        if('SpontMinis' in syn_parameters):
+            spont_minis_rate = syn_parameters['SpontMinis']
+        else:
+            spont_minis_rate = 0.0
+
+        ''' add the *minis*: spontaneous synaptic events '''
+        if spont_minis_rate > 0.0:
+            self.ips[sid] = bglibpy.neuron.h.\
+              InhPoissonStim(location, \
+                             sec=self.get_section(post_sec_id))
+
+            delay = 0.1
+            self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
+              NetCon(self.ips[sid], self.syns[sid], \
+                     -30, delay, gsyn*weight_scalar)
+
+            exprng = bglibpy.neuron.h.Random()
+            exprng.MCellRan4( sid*100000+200, self.gid+250+base_seed )
+            exprng.negexp(1)
+            self.persistent.append(exprng)
+            uniformrng = bglibpy.neuron.h.Random()
+            uniformrng.MCellRan4( sid*100000+300, self.gid+250+base_seed )
+            uniformrng.uniform(0.0, 1.0)
+            self.persistent.append(uniformrng)
+            self.ips[sid].setRNGs(exprng, uniformrng)
+            tbins_vec = bglibpy.neuron.h.Vector(1)
+            tbins_vec.x[0] = 0.0
+            rate_vec = bglibpy.neuron.h.Vector(1)
+            rate_vec.x[0] = spont_minis_rate
+            self.persistent.append(tbins_vec)
+            self.persistent.append(rate_vec)
+            self.ips[sid].setTbins(tbins_vec)
+            self.ips[sid].setRate(rate_vec)
+
+    def charge_replay_synapse(self, sid, syn_description, syn_parameters, pre_spiketrain, stim_dt=None):
+        """Put the replay spiketrains from out.dat on the synapses"""
+        delay = syn_description[1]
+        gsyn = syn_description[8]
+
+        self.pre_spiketrains[sid] = pre_spiketrain
+        t_vec = bglibpy.neuron.h.Vector(pre_spiketrain)
+        vecstim = bglibpy.neuron.h.VecStim()
+        vecstim.play(t_vec, stim_dt)
+
+        if('Weight' in syn_parameters):
+            weight_scalar = syn_parameters['Weight']
+        else:
+            weight_scalar = 1.0
+
+        self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, gsyn*weight_scalar) # ...,threshold,delay
+        self.persistent.append(t_vec)
+        self.persistent.append(vecstim)
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
@@ -269,7 +348,7 @@ class Cell:
                     if child.diam > maxdiam:
                         currentsection = child
                         maxdiam = child.diam
-                apicaltrunk.append(child)
+                        apicaltrunk.append(child)
             return apicaltrunk
 
     def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
@@ -285,7 +364,7 @@ class Cell:
         vclamp.dur1 = stop_time
         vclamp.dur2 = 0
         vclamp.dur3 = 0
-        self.persistent.objects.append(vclamp)
+        self.persistent.append(vclamp)
 
     def addSineCurrentInject(self, start_time, stop_time, freq, amplitude, mid_level, dt=1.0):
         """Add a sinusoidal current injection"""
@@ -316,17 +395,17 @@ class Cell:
         for var_name in var_list:
             if var_name not in self.recordings:
                 self.addRecording(var_name)
-        self.plotWindows.append(plotwindow.PlotWindow(var_list, self, xlim, ylim, title))
+        self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
-        cell_dendrogram = dendrogram.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
+        cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
 
     def update(self):
         """Update all the windows"""
-        for window in self.plotWindows:
+        for window in self.plot_windows:
             window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
@@ -336,11 +415,10 @@ class Cell:
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
-        #for window in self.plotWindows:
+        #for window in self.plot_windows:
         #    window.process.join()
-        for object in self.persistent.objects:
-            del(object)
-        #del(self.persistent.objects)
+        for persistent_object in self.persistent:
+            del(persistent_object)
 
     def __del__(self):
         self.delete()
@@ -353,7 +431,8 @@ class Cell:
 
     @tools.deprecated
     def getThreshold(self):
-        self.cell.threshold
+        """Get the threshold current of the cell, warning: this is measured from hypamp"""
+        return self.cell.threshold
 
     @tools.deprecated
     def getHypAmp(self):
@@ -362,30 +441,36 @@ class Cell:
 
     @tools.deprecated
     def addRecording(self, var_name):
+        """Deprecated add_recording"""
         return self.add_recording(var_name)
 
     @tools.deprecated
     def addRecordings(self, var_names):
-        return self.add_recording(var_name)
+        """Deprecated add_recordings"""
+        return self.add_recordings(var_names)
 
     @tools.deprecated
     def getRecording(self, var_name):
+        """Deprecated get_recording"""
         return self.get_recording(var_name)
 
     @tools.deprecated
     def addAllSectionsVoltageRecordings(self):
+        """Deprecated"""
         self.add_allsections_voltagerecordings()
 
     @tools.deprecated
     def getAllSectionsVoltageRecordings(self):
-        self.get_allsections_voltagerecordings()
+        """Deprecated"""
+        return self.get_allsections_voltagerecordings()
 
     @tools.deprecated
     def locateBAPSite(self, seclistName, distance):
-        return locate_BAPsite(seclistName, distance)
+        """Deprecated"""
+        return self.locate_bapsite(seclistName, distance)
 
     @tools.deprecated
-    def addSynapticStimulus(self, section, location, delay=150, gmax=.000000002):
+    def addSynapticStimulus(self, section, location, delay=150):
         """Add a synaptic stimulus to a certain section"""
         segname = section.name() + "(" + str(location) + ")"
         synapse = neuron.h.tmgExSyn(location, sec=section)
