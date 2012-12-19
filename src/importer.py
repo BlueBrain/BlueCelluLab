@@ -1,3 +1,5 @@
+"""Main importer of BGLibPy"""
+
 import sys
 import os
 import numpy
@@ -22,7 +24,7 @@ neuron.h.load_file("stdrun.hoc")
 
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
-neuron.h.load_file("SerializedCell.hoc")
+neuron.h.load_file("SerializedSections.hoc")
 neuron.h.load_file("TStim.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
