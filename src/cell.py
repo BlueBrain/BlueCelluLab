@@ -12,6 +12,8 @@ class Cell:
     """Represents a bglib cell"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
+        self.persistent = []
+
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
@@ -46,10 +48,15 @@ class Cell:
         self.cell_dendrograms = []
         self.plot_windows = []
 
-        self.hypamp = self.cell.getHypAmp()
-        self.threshold = self.cell.getThreshold()
+        try:
+            self.hypamp = self.cell.getHypAmp()
+        except AttributeError:
+            self.hypamp = None
+        try:
+            self.threshold = self.cell.getThreshold()
+        except AttributeError:
+            self.threshold = None
 
-        self.persistent = []
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels"""
@@ -520,9 +527,9 @@ class Cell:
         currents = currents.from_python(i_content)
 
         pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
-        self.persistent.objects.append(pulse)
-        self.persistent.objects.append(time)
-        self.persistent.objects.append(currents)
+        self.persistent.append(pulse)
+        self.persistent.append(time)
+        self.persistent.append(currents)
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
