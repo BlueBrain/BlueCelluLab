@@ -33,13 +33,14 @@ class Simulation:
             neuron.h('{cvode_active(0)}')
 
         neuron.h.finitialize()
+        neuron.h.stdinit()
 
         #try:
-        neuron.h.run()
+        #    neuron.h.run()
         #except Exception, e:
         #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
-        #self.continuerun(maxtime)
+        self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
         """Continue a running simulation"""
