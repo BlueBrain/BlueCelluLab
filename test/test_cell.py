@@ -7,7 +7,7 @@ import bglibpy
 
 class TestCellBaseClass(object):
     def setup(self):
-        self.cell = bglibpy.Cell("test_cell/test_cell.hoc", "test_cell")
+        self.cell = bglibpy.Cell("cell_example1/test_cell.hoc", "cell_example1")
         nt.assert_true(isinstance(self.cell, bglibpy.Cell))
 
     def teardown(self):
