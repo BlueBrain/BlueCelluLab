@@ -406,7 +406,7 @@ class Cell:
         ylim = [-100, 100] if ylim is None else ylim
         for var_name in var_list:
             if var_name not in self.recordings:
-                self.addRecording(var_name)
+                self.add_recording(var_name)
         self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
 
     def showDendrogram(self, variable=None, active=False):

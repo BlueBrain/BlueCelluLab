@@ -10,7 +10,7 @@ class PlotWindow:
         self.var_list = var_list
         pylab.ion()
         self.figure = pylab.figure(figsize=(10, 10))
-        pylab.ioff()
+        #pylab.ioff()
 
         self.ax = self.figure.gca()
         self.canvas = self.ax.figure.canvas
@@ -26,11 +26,11 @@ class PlotWindow:
 
         linenumber = 0
         for var_name in self.var_list:
-            recording = self.cell.getRecording(var_name)
+            recording = self.cell.get_recording(var_name)
             if recording:
-                time = self.cell.getTime()
+                time = self.cell.get_time()
             else:
-                time = self.cell.getTime()[1:]
+                time = self.cell.get_time()[1:]
 
             #print dir(pylab.gca()._get_lines)
             #print pylab.gca()._get_lines.color_cycle
@@ -48,9 +48,9 @@ class PlotWindow:
     def redraw(self):
         """Redraw the plot window"""
         if not self.drawCount:
-            time = self.cell.getTime()
+            time = self.cell.get_time()
             for var_name in self.var_list:
-                voltage = self.cell.getRecording(var_name)
+                voltage = self.cell.get_recording(var_name)
                 self.line[var_name].set_data(time, voltage)
                 self.ax.draw_artist(self.line[var_name])
             self.canvas.blit(self.ax.bbox)
