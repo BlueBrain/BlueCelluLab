@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Represents a python version of Neuron Section (for drawing)
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
+
 import bglibpy
 
 
@@ -7,9 +18,10 @@ class PSection:
         self.L = hsection.L
         self.diam = hsection.diam
         self.hsection = hsection
-        self.name = neuron.h.secname(sec=hsection)
+        self.name = bglibpy.neuron.h.secname(sec=hsection)
         self.pparent = pparent
-        self.hchildren = [neuron.h.SectionRef(sec=self.hsection).child[index] for index in range(0, int(neuron.h.SectionRef(sec=self.hsection).nchild()))]
+        self.hchildren = [bglibpy.neuron.h.SectionRef(sec=self.hsection).child[index]
+                for index in range(0, int(bglibpy.neuron.h.SectionRef(sec=self.hsection).nchild()))]
         self.pchildren = []
         for hchild in self.hchildren:
             self.pchildren.append(PSection(hchild, self))

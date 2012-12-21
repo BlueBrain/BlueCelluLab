@@ -1,4 +1,13 @@
-"""Class that represents a cell in BGLibPy"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Class that represents a cell in BGLibPy
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 import numpy
 import re

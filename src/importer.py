@@ -1,4 +1,12 @@
-"""Main importer of BGLibPy"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Main importer of BGLibPy
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 import sys
 import os

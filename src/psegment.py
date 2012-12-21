@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Represent a Neuron Segment in Python (for drawing)
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
+
 import bglibpy
 import matplotlib as plt
 
@@ -22,15 +33,15 @@ class PSegment:
 
 
 def setupDraw(self, figure, x, y, variable=None, varbounds=None):
-        """Set up the drawing of a segment"""
-        self.figure = figure
-        self.plotvariable = variable
-        self.varbounds = varbounds
-        self.ax = self.figure.gca()
-        self.figX = x
-        self.figY = y
-        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="white", edgecolor="black")
-        self.ax.add_patch(self.patch)
+    """Set up the drawing of a segment"""
+    self.figure = figure
+    self.plotvariable = variable
+    self.varbounds = varbounds
+    self.ax = self.figure.gca()
+    self.figX = x
+    self.figY = y
+    self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="white", edgecolor="black")
+    self.ax.add_patch(self.patch)
 
 
 def redraw(self):
@@ -46,8 +57,8 @@ def redraw(self):
 
 
 def getVariableValue(self, variable):
-        """Get a variable value in a segment"""
-        if variable is "v" or bglibpy.neuron.h.execute1("{%s.%s(%f)}" % (bglibpy.neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
-            return eval("self.hsegment." + variable)
-        else:
-            return None
+    """Get a variable value in a segment"""
+    if variable is "v" or bglibpy.neuron.h.execute1("{%s.%s(%f)}" % (bglibpy.neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
+        return eval("self.hsegment." + variable)
+    else:
+        return None

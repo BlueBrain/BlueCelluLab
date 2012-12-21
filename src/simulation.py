@@ -1,4 +1,12 @@
-"""Simulation class of BGLibPy"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Simulation class of BGLibPy
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 import sys
 from bglibpy.importer import neuron
