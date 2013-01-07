@@ -209,10 +209,11 @@ class Cell:
             syn.tau_d_AMPA = syn_DTC
 
         # hoc exec synapse configure blocks
-        for cmd in connection_modifiers['SynapseConfigure']:
-            cmd = cmd.replace('%s', '\n%(syn)s')
-            #print cmd % {'syn': syn.hname()}
-            bglibpy.neuron.h(cmd % {'syn': syn.hname()})
+        if 'SynapseConfigure' in connection_modifiers:
+            for cmd in connection_modifiers['SynapseConfigure']:
+                cmd = cmd.replace('%s', '\n%(syn)s')
+                #print cmd % {'syn': syn.hname()}
+                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
 
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
@@ -242,12 +243,8 @@ class Cell:
             weight_scalar = 1.0
 
         if('SpontMinis' in connection_parameters):
+            ''' add the *minis*: spontaneous synaptic events '''
             spont_minis_rate = connection_parameters['SpontMinis']
-        else:
-            spont_minis_rate = 0.0
-
-        ''' add the *minis*: spontaneous synaptic events '''
-        if spont_minis_rate > 0.0:
             self.ips[sid] = bglibpy.neuron.h.\
               InhPoissonStim(location, \
                              sec=self.get_section(post_sec_id))
@@ -258,11 +255,15 @@ class Cell:
                      -30, delay, weight*weight_scalar)
 
             exprng = bglibpy.neuron.h.Random()
-            exprng.MCellRan4( sid * 100000 + 200, self.gid + 250 + base_seed )
+            exp_seed1 = sid * 100000 + 200
+            exp_seed2 = self.gid + 250 + base_seed
+            exprng.MCellRan4( exp_seed1, exp_seed2 )
             exprng.negexp(1)
             self.persistent.append(exprng)
             uniformrng = bglibpy.neuron.h.Random()
-            uniformrng.MCellRan4( sid * 100000 + 300, self.gid + 250 + base_seed )
+            uniform_seed1 = sid * 100000 + 300
+            uniform_seed2 = self.gid + 250 + base_seed
+            uniformrng.MCellRan4( uniform_seed1, uniform_seed2 )
             uniformrng.uniform(0.0, 1.0)
             self.persistent.append(uniformrng)
             self.ips[sid].setRNGs(exprng, uniformrng)
@@ -274,6 +275,7 @@ class Cell:
             self.persistent.append(rate_vec)
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
+            print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, uniform_seed1, uniform_seed2)
 
     def charge_replay_synapse(self, sid, syn_description, connection_parameters, pre_spiketrain, stim_dt=None):
         """Put the replay spiketrains from out.dat on the synapses"""
