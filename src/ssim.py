@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Class that represent can load BGLib BlueConfig, and instantiate the simulation"""
+"""Class that represent can load BGLib BlueConfig, and instantiate the simulation
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 from bglibpy import bluepy
 import bglibpy

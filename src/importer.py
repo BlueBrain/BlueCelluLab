@@ -1,4 +1,12 @@
-"""Main importer of BGLibPy"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Main importer of BGLibPy
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 import sys
 import os
@@ -8,7 +16,9 @@ installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir + "/paths.config"
 
 if os.path.exists(pathsconfig_filename):
-    pathsconfig = dict((line.strip().split("=")[0], line.strip().split("=")[1]) for line in open(pathsconfig_filename, "r"))
+    pathsconfig_file = open(pathsconfig_filename, "r")
+    pathsconfig = dict((line.strip().split("=")[0], line.strip().split("=")[1]) for line in pathsconfig_file)
+    pathsconfig_file.close()
 else:
     raise Exception("Sorry, can not find the file paths.config")
 

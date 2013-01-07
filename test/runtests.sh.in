@@ -1,4 +1,5 @@
+#!/bin/sh
+
 export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
 cd @CMAKE_CURRENT_SOURCE_DIR@
 nosetests -v
-#nosetests -v test_psp_bglib
