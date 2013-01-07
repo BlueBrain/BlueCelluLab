@@ -11,10 +11,10 @@ def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     """Parse and store the gid spiketrains"""
 
     gid_spiketimes_dict = collections.defaultdict(list)
-    outdat_name = path + '/' + outdat_name
+    full_outdat_name = "%s/%s" % (path, outdat_name)
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
-    for line in open(outdat_name).read().split("\n")[1:-1]:
+    for line in open(full_outdat_name).read().split("\n")[1:-1]:
         gid = int(line.split()[1])
         spiketime = float(line.split()[0])
         gid_spiketimes_dict[gid].append(spiketime)
