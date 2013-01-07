@@ -170,8 +170,8 @@ class SSim(object):
         spike_train = pre_spike_trains.setdefault(pre_gid, None)
         if spike_train:
             self.cells[gid].charge_replay_synapse(sid, syn_description, syn_parameters, spike_train, stim_dt=self.dt)
-        else:
-            print "Warning: presynaptic gid %d has no spikes, no netcon created" % pre_gid
+        #else:
+        #    print "Warning: presynaptic gid %d has no spikes, no netcon created" % pre_gid
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
