@@ -14,7 +14,7 @@ Run Default
   NumSynapseFiles 8192
 
 	CurrentDir    /home/vangeit/src/BGLibPy/test/wernertests/bglibrun
-      OutputRoot /home/vangeit/src/BGLibPy/test/wernertests/bglibrun/output
+      OutputRoot /bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/syn_fix/e120_i75
       TargetFile /home/vangeit/src/BGLibPy/test/wernertests/bglibrun/user.target
 
       	RunMode LoadBalance
@@ -50,20 +50,20 @@ Report soma
 }
 
 
-Stimulus spikeReplay
-{
-        Mode Current
-        Delay 0
-        Duration 100
-        Pattern SynapseReplay
-        SpikeFile /bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/out.dat
-}
+#Stimulus spikeReplay
+#{
+#        Mode Current
+#        Delay 0
+#        Duration 100
+#        Pattern SynapseReplay
+#        SpikeFile /bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/out.dat
+#}
 
-StimulusInject spikeReplayIntooneCell
-{
-        Stimulus spikeReplay
-        Target oneCell
-}
+#StimulusInject spikeReplayIntooneCell
+#{
+#        Stimulus spikeReplay
+#        Target oneCell
+#}
 
 Connection ConL6Exc-Uni
 {
@@ -235,10 +235,3 @@ Connection OldInh
          Destination Mosaic
               Weight 0.67
 }
-
-
-
-
-
-
-?

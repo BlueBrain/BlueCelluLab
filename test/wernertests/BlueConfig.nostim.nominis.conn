@@ -14,7 +14,7 @@ Run Default
   NumSynapseFiles 8192
 
 	CurrentDir    /home/vangeit/src/BGLibPy/test/wernertests/bglibrun
-      OutputRoot /home/vangeit/src/BGLibPy/test/wernertests/bglibrun/output
+      OutputRoot /bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/syn_fix/e120_i75
       TargetFile /home/vangeit/src/BGLibPy/test/wernertests/bglibrun/user.target
 
       	RunMode LoadBalance
@@ -47,90 +47,6 @@ Report soma
         Dt 0.1
         StartTime 0
         EndTime 20000
-}
-
-
-Stimulus spikeReplay
-{
-        Mode Current
-        Delay 0
-        Duration 100
-        Pattern SynapseReplay
-        SpikeFile /bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/out.dat
-}
-
-StimulusInject spikeReplayIntooneCell
-{
-        Stimulus spikeReplay
-        Target oneCell
-}
-
-Connection ConL6Exc-Uni
-{
-        Source Excitatory
-        Destination Layer6
-        Weight 2.35
-        SpontMinis 0.04
-}
-
-Connection ConL5Exc-Uni
-{
-        Source Excitatory
-        Destination Layer5
-        Weight 2.35
-        SpontMinis 0.067
-}
-
-Connection ConL4Exc-Uni
-{
-        Source Excitatory
-        Destination Layer4
-        Weight 2.35
-        SpontMinis 0.072
-}
-
-Connection ConL3Exc-Uni
-{
-        Source Excitatory
-        Destination Layer3
-        Weight 2.35
-        SpontMinis 0.122
-}
-
-Connection ConL2Exc-Uni
-{
-        Source Excitatory
-        Destination Layer2
-        Weight 2.35
-        SpontMinis 0.26
-}
-
-Connection ConL1Exc-Uni
-{
-        Source Excitatory
-        Destination Layer1
-        Weight 2.35
-        SpontMinis 0.63
-}
-
-
-
-Connection ConInh_not_LBC_NBC-Uni
-{
-        Source Inh_not_LBC_NBC
-        Destination Mosaic
-        Weight 2.0
-	SpontMinis 0.012
-	SynapseConfigure %s.e_GABAA = -80.0
-}
-
-Connection ConLBC_NBC-Uni
-{
-        Source LBC_NBC
-        Destination Mosaic
-        Weight 0.67
-	SpontMinis 0.012
-	SynapseConfigure %s.e_GABAA = -80.0
 }
 
 Connection scheme_minus2
@@ -235,10 +151,3 @@ Connection OldInh
          Destination Mosaic
               Weight 0.67
 }
-
-
-
-
-
-
-?
