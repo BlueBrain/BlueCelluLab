@@ -21,3 +21,19 @@ class TestCellBaseClass(object):
 
     def test_get_section(self):
         nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
+
+    def test_add_recording(self):
+        varname = 'self.apical[1](0.5)._ref_v'
+        self.cell.add_recording(varname)
+        nt.assert_true(varname in self.cell.recordings)
+
+    def test_add_recordings(self):
+        varnames = ['self.axonal[0](0.25)._ref_v', 'self.soma(0.5)._ref_v', 'self.apical[1](0.5)._ref_v']
+        self.cell.add_recordings(varnames)
+        for varname in varnames:
+                nt.assert_true(varname in self.cell.recordings)
+
+    def test_add_allsections_voltagerecordings(self):
+        varname = 'neuron.h.Cell[0].apic[10](0.5)._ref_v'
+        self.cell.add_allsections_voltagerecordings()
+        nt.assert_true(varname in self.cell.recordings)
