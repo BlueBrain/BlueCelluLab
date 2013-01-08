@@ -10,8 +10,6 @@ Represent a Neuron Segment in Python (for drawing)
 """
 
 import bglibpy
-import matplotlib as plt
-
 
 class PSegment:
     """A python representation of a segment"""
@@ -34,6 +32,8 @@ class PSegment:
 
 def setupDraw(self, figure, x, y, variable=None, varbounds=None):
     """Set up the drawing of a segment"""
+    import matplotlib as plt
+
     self.figure = figure
     self.plotvariable = variable
     self.varbounds = varbounds

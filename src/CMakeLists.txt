@@ -15,35 +15,39 @@ else (BGP)
 endif (BGP)
 
 if (NOT NRNPATH)
-   if (BBPLINSRV1)
-      set(NRNPATH /opt/simulators/pneuron/11.05.10/nrnmpi)
-   elseif (BBPSG1)
-      set(NRNPATH /home/vangeit/local/nrnnoiv)
-   elseif (BGP)
-      set(NRNPATH /bgscratch/bbp/simulators/pneuron/11.05.10/nrnmpi)
-   elseif (BBPLINSRV2)
-     set(NRNPATH /home/vangeit/local/nrnnoiv)
-   elseif (BBPNATTY)
-     set(NRNPATH /home/courcol/local/natty/nrnnoiv)
-   elseif (BBPONEIRIC)
-     set(NRNPATH /home/courcol/local/oneiric/nrnnoiv)
-   elseif (BBPRHEL5)
-     set(NRNPATH /home/vangeit/local/rhel5/nrnnoiv)
+   if (BBPSANTIAGO)
+     set(NRNPATH /home/vangeit/local/santiago/nrnbglibpy)
    else ()
       message(FATAL_ERROR "The user should set -DNRNPATH= to a directory containing a Neuron installation compiled with the linux_nrnmech=yes option
         OR define the machine name, like with -DBBPLINSRV1=1 or -DBBPSG1=1 or -DBGP=1 or -DBBPLINSRV2=1 or -DBBPNATTY=1 or -DBBPONEIRIC=1")
    endif()
 endif()
 
-set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
+if (NOT NRNPYTHONPATH)
+    if (BBPSANTIAGO)
+        set(NRNPYTHONPATH /home/vangeit/local/santiago/nrnbglibpy/lib64/python2.6/site-packages)
+    else ()
+        message(FATAL_ERROR "The user should set NRNPYTHONPATH to a directory where the Neuron python module is installed")
+    endif()
+endif ()
 
-###
-# MODLIB
-###
+set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
 
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
 endif ()
+
+if (NOT HOCLIBPATH)
+    message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
+endif ()
+
+if (NOT BLUEPYPATH)
+    message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
+endif ()
+
+###
+# MODLIB
+###
 
 set(MODLIBBUILDPATH "${CMAKE_CURRENT_BINARY_DIR}/modlib")
 file(MAKE_DIRECTORY ${MODLIBBUILDPATH})
@@ -81,18 +85,6 @@ endif()
 set(LIBNRNMECHS "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so.0.0.0" )
 add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECHS})
 add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
-
-if (NOT HOCLIBPATH)
-    message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
-endif ()
-
-if (NOT NRNPYTHONPATH)
-    message(FATAL_ERROR "The user should set NRNPYTHON to a directory where the Neuron python module is installed")
-endif ()
-
-if (NOT BLUEPYPATH)
-    message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
-endif ()
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
