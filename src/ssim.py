@@ -87,21 +87,16 @@ class SSim(object):
         self.cells = {}
 
         for gid in self.gids:
-            print 'setting up gid=%i' % (gid)
             ''' Fetch the template for this GID '''
             template_name_of_gid = self._fetch_template_name(gid)
             full_template_name_of_gid = self.bc.entry_map['Default'].CONTENTS.\
               METypePath+'/'+template_name_of_gid+'.hoc'
-            print 'full_template_name_of_gid: ', full_template_name_of_gid
+            print 'Added gid %d from template %s' % (gid, full_template_name_of_gid)
 
             temp_cell = bglibpy.Cell(full_template_name_of_gid, \
                                      path_of_morphology, gid=gid, \
                                      record_dt=self.record_dt)
             self.cells[gid] = temp_cell
-
-            # self._add_replay_synapses(gid,gids,synapse_detail=synapse_detail)
-            # self._add_replay_stimuli(gid)
-            # self._charge_replay_synapse(gid,gids)
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
             pre_spike_trains = \
@@ -121,11 +116,18 @@ class SSim(object):
                     self.charge_replay_synapse(gid, sid, syn_description, \
                                                 connection_parameters, \
                                                 pre_spike_trains)
-            #print 'connection_parameters: ', connection_parameters
+
+            if synapse_detail > 0:
+                print "Added synapses for gid %d" % gid
+            if synapse_detail > 1:
+                print "Added minis for gid %d" % gid
+            if synapse_detail > 2:
+                print "Added presynaptic spiketrains for gid %d" % gid
 
             if full:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
+                print "Added stimuli for gid %d" % gid
 
 
     def _add_replay_stimuli(self, gid):
@@ -145,7 +147,7 @@ class SSim(object):
                     # retrieve the stimulus to apply
                     stimulus_name = entry.CONTENTS.Stimulus
                     stimulus = self.bc.entry_map[stimulus_name]
-                    print 'found stimulus: ', stimulus
+                    #print 'found stimulus: ', stimulus
                     if stimulus.CONTENTS.Pattern == 'Noise':
                         self._add_replay_noise(gid, stimulus, noise_seed=noise_seed)
                         noise_seed += 1

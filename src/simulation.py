@@ -48,11 +48,14 @@ class Simulation:
         """
 
         #neuron.h.finitialize()
+        print 'Running a simulation until %f ms ...' % maxtime
+
         try:
             neuron.h.run()
         except Exception, e:
             print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
+        print 'Finished simulation'
         #self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
