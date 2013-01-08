@@ -3,7 +3,7 @@ import numpy as np
 import bglibpy.ssim
 
 def test_evaluate_connection_parameters():
-    """ Check that Connection block parsers yield expected output"""
+    """Check if Connection block parsers yield expected output"""
     ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
     #/bgscratch/bbp/release/23.07.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
     s = ssim.bc_simulation
@@ -31,6 +31,7 @@ def test_evaluate_connection_parameters():
     assert params=={'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0', '%s.GABAB_ratio = 0.75'], 'Weight': 2.0}
 
 def test_add_single_synapse_SynapseConfigure():
+    """Check if SynapseConfigure works correctly"""
     ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
 
     gid = list(ssim.bc_simulation.get_target("L5_MC"))[0]

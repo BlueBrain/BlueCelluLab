@@ -10,8 +10,8 @@ import pylab
 gid = 96517
 tstop = 1000
 
-#ssim_replay = bglibpy.SSim('/home/vangeit/src/BGLibPy/test/wernertests/bglibrun/BlueConfig', record_dt=0.1)
-#pylab.plot(ssim_replay.bc_simulation.reports.soma.time_range, ssim_replay.bc_simulation.reports.soma.time_series(gid), '-', label="HOC BGLIB Viz")
+ssim_replay = bglibpy.SSim('/home/vangeit/src/BGLibPy/test/wernertests/bglibrun/BlueConfig', record_dt=0.1)
+pylab.plot(ssim_replay.bc_simulation.reports.soma.time_range, ssim_replay.bc_simulation.reports.soma.time_series(gid), 'o-', label="HOC BGLIB Viz")
 
 ssim = bglibpy.SSim('BlueConfig', record_dt=0.1)
 ssim.instantiate_gids([gid], 3)
@@ -23,7 +23,7 @@ pylab.plot(time, voltage, 'o-', label="Py BGLIB Viz")
 #pylab.plot(time, ssim.bc_simulation.reports.soma.time_series(gid)[:len(time)], 'o-')
 
 ssim_bg = bglibpy.SSim('/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig', record_dt=0.1)
-pylab.plot(ssim_bg.bc_simulation.reports.soma.time_range, ssim_bg.bc_simulation.reports.soma.time_series(gid), '-', label="HOCBlueGene")
+pylab.plot(ssim_bg.bc_simulation.reports.soma.time_range, ssim_bg.bc_simulation.reports.soma.time_series(gid), 'o-', label="HOCBlueGene")
 pylab.legend()
 
 """

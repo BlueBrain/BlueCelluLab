@@ -11,6 +11,7 @@ sys.path+=['/home/ebmuller/src/bbp-user-ebmuller/experiments/synapse_psp_validat
 import psp as psplib
 import multiprocessing as mp
 import pickle
+from bluepy.extractor import CircuitExtractor
 
 def chunks(l, n):
     """ Yield successive n-sized chunks from l.
@@ -20,7 +21,7 @@ def chunks(l, n):
 
 
 class BGlibSim(object):
-    def __init__(self, pre_gid, post_gid, t_stim=[400.0], dir=None):
+    def __init__(self, pre_gid, post_gid, t_stim=[400.0], dir=None, circuit_path = "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/1x7_0/merged_circuit/CircuitConfig"):
         """ pre, post gids of neuron pair to simulate 
         whereby spikes from pre_gid (t_stim, list) are replayed on synapes on post_gid""" 
 
@@ -30,14 +31,21 @@ class BGlibSim(object):
         self.pre_gid = pre_gid
         self.post_gid = post_gid
         self.t_stim = t_stim
+        self.circuit_path = circuit_path
 
         # populate the sim dir 
+        self.write_extracted_circuit()
         self.write_replay_spikes()
         self.write_blueconfig()
         self.write_usertarget()
         # copy run script
         shutil.copy(os.path.join("sim_files","run.sh"), self.dir)
         shutil.copy(os.path.join("sim_files","init.hoc"), self.dir)
+
+    def write_extracted_circuit(self):
+        self.local_circuit_path = os.path.join(self.dir, "circuit")
+        e = CircuitExtractor(bluepy.Circuit(self.circuit_path), [self.pre_gid, self.post_gid])
+        e.extract_and_write(self.local_circuit_path)
 
     def write_replay_spikes(self):
         """ write spike times for pre_gid to replay.dat in the tempdir allocated for this sim """
@@ -54,6 +62,7 @@ class BGlibSim(object):
         
         t = Template(file=in_path)
         t.path = self.dir
+        t.circuit_path = self.local_circuit_path
         print >>f, str(t)
 
     def write_usertarget(self):
@@ -123,7 +132,7 @@ def sample_mtype_pathway_rms(circuit_path, pre_mtype, post_mtype):
 
     t_stim = [400.0, 450.0, 500, 550.0]
     #sim1 = BGlibSim(pre_gid, post_gid, t_stim, dir = "./.bglibeyQY6k")
-    sim1 = BGlibSim(pre_gid, post_gid, t_stim)
+    sim1 = BGlibSim(pre_gid, post_gid, t_stim, circuit_path = circuit_path)
     sim1.run()
     try:
         v1,t1 = sim1.get_vt()
@@ -137,12 +146,12 @@ def sample_mtype_pathway_rms(circuit_path, pre_mtype, post_mtype):
     return rms(v1,v2[:-1])
 
 
-def playing_around():
+def playing_around(circuit_path = "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/1x7_0/merged_circuit/CircuitConfig"):
 
     pre_gid, post_gid = 108101, 107463
 
     t_stim = [400.0, 450.0, 500, 550.0]
-    sim1 = BGlibSim(pre_gid, post_gid, t_stim, dir = "./.bglibeyQY6k")
+    sim1 = BGlibSim(pre_gid, post_gid, t_stim, circuit_path = circuit_path )
     #sim1 = BGlibSim(pre_gid, post_gid, t_stim)
     #sim1.run()
     v1,t1 = sim1.get_vt()
