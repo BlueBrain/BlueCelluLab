@@ -5,7 +5,7 @@ sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.pa
 
 import bglibpy
 import pylab
-import numpy
+#import numpy
 
 gid = 96517
 tstop = 1000
@@ -35,5 +35,3 @@ for sid in pre_spiketrains:
 """
 
 pylab.show()
-
-
