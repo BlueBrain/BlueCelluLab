@@ -40,15 +40,20 @@ class Simulation:
         else:
             neuron.h('{cvode_active(0)}')
 
-        neuron.h.finitialize()
-        neuron.h.stdinit()
+        """
+        WARNING: Be 'very' careful when you change something below.
 
-        #try:
-        #    neuron.h.run()
-        #except Exception, e:
-        #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+        This can easily break the BGLib replay, since the way things are initialized heavily influence the random number generator
+        e.g. finitialize() + step() != run()
+        """
 
-        self.continuerun(maxtime)
+        #neuron.h.finitialize()
+        try:
+            neuron.h.run()
+        except Exception, e:
+            print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+
+        #self.continuerun(maxtime)
 
     def continuerun(self, maxtime):
         """Continue a running simulation"""

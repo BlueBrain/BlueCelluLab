@@ -267,7 +267,7 @@ class Cell:
             exp_seed1 = sid * 100000 + 200
             exp_seed2 = self.gid + 250 + base_seed
             exprng.MCellRan4( exp_seed1, exp_seed2 )
-            exprng.negexp(1)
+            exprng.negexp(1.0)
             self.persistent.append(exprng)
             uniformrng = bglibpy.neuron.h.Random()
             uniform_seed1 = sid * 100000 + 300
