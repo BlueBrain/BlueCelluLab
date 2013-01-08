@@ -21,31 +21,48 @@ class Cell:
     """Represents a bglib cell"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
+        """ Constructor
+
+        Parameters
+        ----------
+        template_name: full path to BGLib template to be loaded
+        morphology_name: morphologyname passed to the BGLib template
+            When the argument ends '.asc', that specific morph will be loaded
+            otherwise this argument is interpreted as the directory containing
+            the morphologies
+        gid: the gid of the instantiated cell (default: 0)
+        record_dt: force a different timestep for the recordings (default: None)
+        """
+
+        #Persistent objects, like clamps, that exist as long as the object exists
         self.persistent = []
 
+        #Load the template
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+
         self.morphology_name = morphology_name
         self.template_name = template_name
-        self.recordings = {}
-        self.synapses = {}
-        self.netstims = {}
-        self.connections = {}
-        self.cell.getCell().gid = gid
-        self.gid = self.cell.getCell().gid
 
-        self.synapse_number = 0
+        #Set the gid of the cell
+        self.cell.getCell().gid = gid
+        self.gid = gid
+
+        self.recordings = {} #Recordings in this cell
+        self.synapses = {} #Synapses on this cell
+        self.netstims = {} #Netstims connected to this cell
+        self.connections = {} #Outside connections to this cell
+
         self.pre_spiketrains = {}
-        #self.syn_vecstims = {}
         self.syns = {}
         self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
-        neuron.h.finitialize()
+        #neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         self.somatic = [x for x in self.cell.getCell().somatic]
@@ -72,11 +89,31 @@ class Cell:
         self.cell.re_init_rng()
 
     def get_section(self, raw_section_id):
-        ''' use the serialized object to find your section'''
+        """Use the serialized object to find your section
+
+        Parameters
+        ----------
+        raw_section_id: section id
+
+        Returns
+        -------
+        A nrnSection object of to the requested section
+        """
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def synlocation_to_segx(self, isec, ipt, syn_offset, test=False):
-        """need to put  description"""
+    def synlocation_to_segx(self, isec, ipt, syn_offset):
+        """Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
+
+        Parameters
+        ----------
+        isec: section id
+        ipt: ipt
+        syn_offset: synaptic offset
+
+        Returns
+        -------
+        An x coordinate on section with secid, where the synapse can be placed
+        """
 
         if syn_offset < 0.0:
             syn_offset = 0.0
@@ -84,8 +121,6 @@ class Cell:
         curr_sec = self.get_section(isec)
         length = curr_sec.L
 
-        debug_too_large = 0
-        debug_too_small = 0
         # access section to compute the distance
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
@@ -96,16 +131,11 @@ class Cell:
             distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
             if distance >= 1.0:
                 distance = 1
-                debug_too_large = debug_too_large + 1
 
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance
 
-        if (test):
-            print 'location_to_point:: %i <=0 and %i >= 1' % (debug_too_small, debug_too_large)
-
         if distance < 0:
-            debug_too_small = debug_too_small + 1
             print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
             #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
             return 0
@@ -244,7 +274,7 @@ class Cell:
         post_seg_distance = syn_description[4]
         location = self.\
           synlocation_to_segx(post_sec_id, post_seg_id, \
-                              post_seg_distance, test=False)
+                              post_seg_distance)
         ''' todo: False'''
         if('Weight' in connection_parameters):
             weight_scalar = connection_parameters['Weight']
