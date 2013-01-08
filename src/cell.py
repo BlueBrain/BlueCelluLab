@@ -142,13 +142,6 @@ class Cell:
         else:
             return distance
 
-    def showDendDiam(self):
-        """Show a dendrogram plot"""
-        import pylab
-        diamlist = [section.diam for section in self.apical]
-        pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
-        pylab.show()
-
     def add_recording(self, var_name, dt=None):
         """Add a recording to the cell"""
         recording = neuron.h.Vector()
@@ -168,7 +161,7 @@ class Cell:
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
-            self.addRecording(var_name)
+            self.add_recording(var_name)
 
     def get_allsections_voltagerecordings(self):
         """Get all the voltage recordings from all the sections"""
@@ -477,6 +470,12 @@ class Cell:
         self.delete()
 
 
+    def showDendDiam(self):
+        """Show a dendrogram plot"""
+        import pylab
+        diamlist = [section.diam for section in self.apical]
+        pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
+        pylab.show()
 
     """
     Deprecated functions
