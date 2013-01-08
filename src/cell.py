@@ -284,7 +284,7 @@ class Cell:
             self.persistent.append(rate_vec)
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
-            print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, uniform_seed1, uniform_seed2)
+            #print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, uniform_seed1, uniform_seed2)
 
     def charge_replay_synapse(self, sid, syn_description, connection_parameters, pre_spiketrain, stim_dt=None):
         """Put the replay spiketrains from out.dat on the synapses"""
