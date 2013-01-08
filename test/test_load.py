@@ -4,4 +4,5 @@
 import nose.tools as nt
 
 def test_moduleload():
+    """Test the loading of the bglibpy module"""
     import bglibpy
