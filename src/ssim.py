@@ -11,18 +11,25 @@
 from bglibpy import bluepy
 import bglibpy
 import collections
+import os
 
 def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     """Parse and store the gid spiketrains"""
 
     gid_spiketimes_dict = collections.defaultdict(list)
     full_outdat_name = "%s/%s" % (path, outdat_name)
+
+    if os.path.exists(full_outdat_name):
+        full_outdat_file = open(full_outdat_name, "r")
+    else:
+        raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
-    for line in open(full_outdat_name).read().split("\n")[1:-1]:
+    for line in full_outdat_file.read().split("\n")[1:-1]:
         gid = int(line.split()[1])
         spiketime = float(line.split()[0])
         gid_spiketimes_dict[gid].append(spiketime)
+    full_outdat_file.close()
 
     return gid_spiketimes_dict
 
@@ -251,6 +258,9 @@ class SSim(object):
     def _fetch_template_name(self, gid):
         """Get the template name of a gid"""
         neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
-        template_name2 = str(neurons[0].METype)
-        #print 'parsed nam2: >', template_name2,'<'
-        return template_name2
+        if neurons[0]:
+                template_name = str(neurons[0].METype)
+        else:
+            raise Exception("Gid %d not found in circuit" % gid)
+
+        return template_name
