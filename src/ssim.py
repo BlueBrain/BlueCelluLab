@@ -235,7 +235,7 @@ class SSim(object):
         #print 'params:\n', parameters
         return parameters
 
-    def simulate(self, t_stop=100, v_init=-65, celsius=34):
+    def run(self, t_stop=100, v_init=-65, celsius=34):
         """Simulate the SSim"""
         sim = bglibpy.Simulation()
         for gid in self.gids:

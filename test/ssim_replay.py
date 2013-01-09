@@ -5,7 +5,7 @@ import bglibpy.ssim
 import bluepy
 import neuron
 
-gids = [118583]#,118586 [107457]# 
+gids = [118583]#,118586 [107457]#
 t_stop=500
 
 def test_compare_main_sim_vs_bglibpy_ssim() :
@@ -16,7 +16,7 @@ def test_compare_main_sim_vs_bglibpy_ssim() :
     bc_sim = bglibpy.ssim.SSim(blue_config_filename)
     bc_sim.instantiate_gids(gids,synapse_detail=3,full=True)
 
-    bc_sim.simulate(t_stop=t_stop)
+    bc_sim.run(t_stop=t_stop)
     t = bc_sim.get_time()
     vs = bc_sim.get_voltage_traces()
     for gid in gids :
