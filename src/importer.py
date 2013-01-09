@@ -40,3 +40,5 @@ neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy
+print "Imported bluepy from %s" % bluepy.__file__
+
