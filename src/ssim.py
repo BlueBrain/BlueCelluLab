@@ -51,7 +51,7 @@ class SSim(object):
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try:
-            self.base_seed  = self.bc.entry_map['Default'].CONTENTS.baseSeed
+            self.base_seed  = int(self.bc.entry_map['Default'].CONTENTS.baseSeed)
         except AttributeError:
             self.base_seed = 0 # in case the seed is not set, it's 0
 
@@ -106,31 +106,35 @@ class SSim(object):
             self.cells[gid] = temp_cell
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
-            pre_spike_trains = \
-                      parse_and_store_GID_spiketrains(\
-                        self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                        'out.dat')
-            for sid, syn_description in enumerate(pre_datas):
-                connection_parameters = self.\
-                  _evaluate_connection_parameters(syn_description[0],gid)
+            # Check if there are any presynaptic cells, otherwise skip adding
+            # synapses
+            if pre_datas is None:
+                print "No presynaptic cells found for gid %d, no synapses added" % gid
+            else:
+                pre_spike_trains = \
+                          parse_and_store_GID_spiketrains(\
+                            self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                            'out.dat')
+                for sid, syn_description in enumerate(pre_datas):
+                    connection_parameters = self.\
+                      _evaluate_connection_parameters(syn_description[0],gid)
+                    if synapse_detail > 0:
+                        self.add_single_synapse(gid, sid, syn_description, \
+                                                connection_parameters)
+                    if synapse_detail > 1:
+                        self.add_replay_minis(gid, sid, syn_description, \
+                                              connection_parameters)
+                    if synapse_detail > 2:
+                        self.charge_replay_synapse(gid, sid, syn_description, \
+                                                    connection_parameters, \
+                                                    pre_spike_trains)
+
                 if synapse_detail > 0:
-                    self.add_single_synapse(gid, sid, syn_description, \
-                                            connection_parameters)
+                    print "Added synapses for gid %d" % gid
                 if synapse_detail > 1:
-                    self.add_replay_minis(gid, sid, syn_description, \
-                                          connection_parameters)
+                    print "Added minis for gid %d" % gid
                 if synapse_detail > 2:
-                    self.charge_replay_synapse(gid, sid, syn_description, \
-                                                connection_parameters, \
-                                                pre_spike_trains)
-
-            if synapse_detail > 0:
-                print "Added synapses for gid %d" % gid
-            if synapse_detail > 1:
-                print "Added minis for gid %d" % gid
-            if synapse_detail > 2:
-                print "Added presynaptic spiketrains for gid %d" % gid
-
+                    print "Added presynaptic spiketrains for gid %d" % gid
             if full:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
