@@ -37,7 +37,7 @@ newcircuit = bluepy.Circuit(newcircuit_config)
 blueconfig_template = open("BlueConfig.template").read()
 
 #todo: this thing has to set the prefix, metypepath etc
-newblueconfig_content = blueconfig_template.format(circuit_path= os.path.abspath(newcircuit_dir), path= os.path.abspath(tempdir))
+newblueconfig_content = blueconfig_template.format(circuit_path= newcircuit_dir, path= tempdir)
 
 newblueconfig = os.path.join(tempdir, "BlueConfig")
 newblueconfig_file = open(newblueconfig, "w")
@@ -50,8 +50,15 @@ usertarget_file.close()
 
 outdat = os.path.join(outputdir, "out.dat")
 outdat_file = open(outdat, "w")
+outdat_file.write("/scatter\n")
+outdat_file.write("25.0 2\n")
+outdat_file.write("50.0 2\n")
 outdat_file.close()
 
 ssim = bglibpy.SSim(newblueconfig)
 ssim.instantiate_gids([1], 3)
 ssim.run(100)
+
+import pylab
+pylab.plot(ssim.get_time(), ssim.get_voltage_traces()[1])
+pylab.show()

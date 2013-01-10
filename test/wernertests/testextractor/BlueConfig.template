@@ -10,13 +10,11 @@ Run Default
 
       CircuitPath {circuit_path}
           nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
-  NumSynapseFiles 8192
 
         CurrentDir {path}
       OutputRoot {path}/output
       TargetFile {path}/user.target
 
-        RunMode WholeCell
     CircuitTarget Mosaic
          Duration 1000
                Dt 0.025

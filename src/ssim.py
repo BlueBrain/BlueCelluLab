@@ -263,7 +263,7 @@ class SSim(object):
         """Get the template name of a gid"""
         neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
         if neurons[0]:
-                template_name = str(neurons[0].METype)
+            template_name = str(neurons[0].METype)
         else:
             raise Exception("Gid %d not found in circuit" % gid)
 
