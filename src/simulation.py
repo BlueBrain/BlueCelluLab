@@ -22,11 +22,16 @@ class Simulation:
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
-    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025, ):
+    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
         """Run the simulation"""
         neuron.h.celsius = celsius
         neuron.h.tstop = maxtime
-        neuron.h.dt = dt
+
+        if cvode:
+            neuron.h('{cvode_active(1)}')
+        else:
+            neuron.h('{cvode_active(0)}')
+
         neuron.h.v_init = v_init
 
         for cell in self.cells:
@@ -35,10 +40,8 @@ class Simulation:
             except AttributeError:
                 sys.exc_clear()
 
-        if cvode:
-            neuron.h('{cvode_active(1)}')
-        else:
-            neuron.h('{cvode_active(0)}')
+        neuron.h.dt = dt
+        neuron.h.steps_per_ms = 1.0/dt
 
         """
         WARNING: Be 'very' careful when you change something below.
@@ -50,10 +53,10 @@ class Simulation:
         #neuron.h.finitialize()
         print 'Running a simulation until %f ms ...' % maxtime
 
-        try:
-            neuron.h.run()
-        except Exception, e:
-            print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+        #try:
+        neuron.h.run()
+        #except Exception, e:
+        #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
         print 'Finished simulation'
         #self.continuerun(maxtime)
