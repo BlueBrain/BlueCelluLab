@@ -51,7 +51,7 @@ class SSim(object):
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try:
-            self.base_seed  = int(self.bc.entry_map['Default'].CONTENTS.baseSeed)
+            self.base_seed  = int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
         except AttributeError:
             self.base_seed = 0 # in case the seed is not set, it's 0
 
@@ -164,6 +164,8 @@ class SSim(object):
                         noise_seed += 1
                     elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
                         self._add_replay_hypamp_injection(gid, stimulus)
+                    elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
+                        print "Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern
                     else:
                         print "Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern
                         exit(1)
@@ -235,12 +237,12 @@ class SSim(object):
         #print 'params:\n', parameters
         return parameters
 
-    def run(self, t_stop=100, v_init=-65, celsius=34):
+    def run(self, t_stop=100, v_init=-65, celsius=34, dt=0.025):
         """Simulate the SSim"""
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.addCell(self.cells[gid])
-        sim.run(t_stop, cvode=False, dt=0.025, celsius=celsius, v_init=v_init)
+        sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init)
 
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary based on gid"""
