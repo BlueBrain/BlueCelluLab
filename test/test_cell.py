@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Unit tests for Cell.py"""
+
 import nose.tools as nt
 import math
 import bglibpy
 
-class TestCellBaseClass(object):
+class TestCellBaseClass1(object):
+    """First Cell test class"""
     def setup(self):
+        """Setup"""
         self.cell = bglibpy.Cell("cell_example1/test_cell.hoc", "cell_example1")
         nt.assert_true(isinstance(self.cell, bglibpy.Cell))
 
     def teardown(self):
+        """Teardown"""
         del self.cell
 
     def test_fields(self):
@@ -35,7 +40,7 @@ class TestCellBaseClass(object):
         varnames = ['self.axonal[0](0.25)._ref_v', 'self.soma(0.5)._ref_v', 'self.apical[1](0.5)._ref_v']
         self.cell.add_recordings(varnames)
         for varname in varnames:
-                nt.assert_true(varname in self.cell.recordings)
+            nt.assert_true(varname in self.cell.recordings)
 
     def test_add_allsections_voltagerecordings(self):
         """Test cell.add_allsections_voltagerecordings"""
