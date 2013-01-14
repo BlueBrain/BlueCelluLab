@@ -146,6 +146,8 @@ class Cell:
         """Add a recording to the cell"""
         recording = neuron.h.Vector()
         if dt:
+            #This float_epsilon stuff is some magic from M. Hines to make the time points fall exactly on the dts
+            #recording.record(eval(var_name), (1.0+neuron.h.float_epsilon)/(1.0/dt))
             recording.record(eval(var_name), dt)
         else:
             recording.record(eval(var_name))
