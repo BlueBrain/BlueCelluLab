@@ -4,12 +4,22 @@ import nose.tools as nt
 import numpy as np
 import bglibpy.ssim
 
-class TestSSimBaseClass1(object):
+#class TestSSimBaseClass_twocell(object):
+#    """First class to test SSim"""
+#    def setup(self):
+#        """Setup"""
+#        self.ssim = bglibpy.ssim.SSim("circuit_twocell_example1/")
+#        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+#    def teardown(self):
+#        """Teardown"""
+#        del self.ssim
+
+class TestSSimBaseClass_full(object):
     """First class to test SSim"""
     def setup(self):
         """Setup"""
         self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
-        #self.bc_simulation = self.ssim.bc_simulation
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):

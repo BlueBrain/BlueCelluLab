@@ -2,24 +2,8 @@
 
 import sys
 sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
-import tempfile
 import bglibpy
-from bglibpy import bluepy
-import bluepy.extractor
 import os
-
-def create_extracted_circuit(old_circuitname, output_path):
-    "..."
-    circuit = bluepy.Circuit(old_circuitname)
-
-    #gids = circuit.mvddb.select_gids(bluepy.targets.mvddb.Neuron.hyperColumn==2, bluepy.targets.mvddb.MType.name=="L5_TTPC1")[:2]
-    # [76477, 76478]
-    gids = [76477]
-
-    gids += [215690]
-
-    extracted = bluepy.extractor.CircuitExtractor(circuit, gids)
-    extracted.extract_and_write(output_path, keep_empty_targets=False)
 
 def create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=None, dt=None, record_dt=None):
     """..."""
@@ -64,12 +48,6 @@ def main():
     with open("run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()
 
-    tempdir = tempfile.mkdtemp(dir="tmp")
-    print tempdir
-
-    old_circuitname = "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
-
-    create_extracted_circuit(old_circuitname, "./Circuit")
     create_extracted_simulation(".", blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
@@ -88,7 +66,7 @@ def main():
     #import numpy
     #pylab.plot(numpy.diff(ssim_bglibpy.get_time()), 'o')
     pylab.legend()
-    print "Simulation directory: %s" % tempdir
+    #print "Simulation directory: %s" % tempdir
     pylab.show()
 
 if __name__ == "__main__":

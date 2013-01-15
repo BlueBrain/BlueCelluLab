@@ -11,7 +11,7 @@ class TestCellBaseClass1(object):
     """First Cell test class"""
     def setup(self):
         """Setup"""
-        self.cell = bglibpy.Cell("cell_example1/test_cell.hoc", "cell_example1")
+        self.cell = bglibpy.Cell("examples/cell_example1/test_cell.hoc", "examples/cell_example1")
         nt.assert_true(isinstance(self.cell, bglibpy.Cell))
 
     def teardown(self):
