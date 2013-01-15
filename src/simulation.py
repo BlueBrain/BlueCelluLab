@@ -10,6 +10,7 @@
 
 import sys
 from bglibpy.importer import neuron
+from bglibpy import printv
 
 class Simulation:
 
@@ -51,14 +52,14 @@ class Simulation:
         """
 
         #neuron.h.finitialize()
-        print 'Running a simulation until %f ms ...' % maxtime
+        printv('Running a simulation until %f ms ...' % maxtime, 1)
 
         #try:
         neuron.h.run()
         #except Exception, e:
         #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
 
-        print 'Finished simulation'
+        printv('Finished simulation', 1)
         #self.continuerun(maxtime)
 
     def continuerun(self, maxtime):

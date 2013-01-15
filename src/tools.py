@@ -11,6 +11,7 @@ import numpy
 import warnings
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
+VERBOSE_LEVEL = 0
 
 def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
@@ -23,6 +24,11 @@ def deprecated(func):
     rep_func.__doc__ = func.__doc__
     rep_func.__dict__.update(func.__dict__)
     return rep_func
+
+def printv(message, verbose_level):
+    """Print the message depending on the verbose level"""
+    if verbose_level <= bglibpy.VERBOSE_LEVEL:
+        print message
 
 def _me():
     '''Used for debgugging. Reads the stack and provides info about which
