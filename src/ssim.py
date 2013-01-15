@@ -12,6 +12,8 @@ from bglibpy import bluepy
 import bglibpy
 import collections
 import os
+from bglibpy import printv
+from bglibpy import printv_err
 
 def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     """Parse and store the gid spiketrains"""
@@ -98,7 +100,7 @@ class SSim(object):
             template_name_of_gid = self._fetch_template_name(gid)
             full_template_name_of_gid = self.bc.entry_map['Default'].CONTENTS.\
               METypePath+'/'+template_name_of_gid+'.hoc'
-            print 'Added gid %d from template %s' % (gid, full_template_name_of_gid)
+            printv('Added gid %d from template %s' % (gid, full_template_name_of_gid), 1)
 
             temp_cell = bglibpy.Cell(full_template_name_of_gid, \
                                      path_of_morphology, gid=gid, \
@@ -109,7 +111,7 @@ class SSim(object):
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
             if pre_datas is None:
-                print "No presynaptic cells found for gid %d, no synapses added" % gid
+                printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
             else:
                 pre_spike_trains = \
                           parse_and_store_GID_spiketrains(\
@@ -130,15 +132,15 @@ class SSim(object):
                                                     pre_spike_trains)
 
                 if synapse_detail > 0:
-                    print "Added synapses for gid %d" % gid
+                    printv("Added synapses for gid %d" % gid, 1)
                 if synapse_detail > 1:
-                    print "Added minis for gid %d" % gid
+                    printv("Added minis for gid %d" % gid, 1)
                 if synapse_detail > 2:
-                    print "Added presynaptic spiketrains for gid %d" % gid
+                    print("Added presynaptic spiketrains for gid %d" % gid, 1)
             if full:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
-                print "Added stimuli for gid %d" % gid
+                printv("Added stimuli for gid %d" % gid, 1)
 
 
     def _add_replay_stimuli(self, gid):
@@ -165,9 +167,9 @@ class SSim(object):
                     elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
                         self._add_replay_hypamp_injection(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
-                        print "Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern
+                        printv("Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern, 1)
                     else:
-                        print "Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern
+                        printv_err("Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern, 1)
                         exit(1)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):

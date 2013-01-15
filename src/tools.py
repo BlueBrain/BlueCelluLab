@@ -2,6 +2,7 @@
 Static tools for bglibpy
 '''
 
+import sys
 import inspect
 from bglibpy.importer import neuron
 import multiprocessing
@@ -29,6 +30,11 @@ def printv(message, verbose_level):
     """Print the message depending on the verbose level"""
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
         print message
+
+def printv_err(message, verbose_level):
+    """Print the message depending on the verbose level"""
+    if verbose_level <= bglibpy.VERBOSE_LEVEL:
+        print >> sys.stderr,  message
 
 def _me():
     '''Used for debgugging. Reads the stack and provides info about which
