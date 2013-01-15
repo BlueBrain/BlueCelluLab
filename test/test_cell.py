@@ -25,6 +25,15 @@ class TestCellBaseClass1(object):
         nt.assert_true(math.fabs(self.cell.threshold - 0.184062) < 0.00001)
         nt.assert_true(math.fabs(self.cell.hypamp - -0.070557) < 0.00001)
 
+    def test_addRecording(self):
+        """Test if addRecording gives deprecation warning"""
+        import warnings
+        warnings.simplefilter('default')
+        varname = 'self.apical[1](0.5)._ref_v'
+        with warnings.catch_warnings(record=True) as w:
+            self.cell.addRecording(varname)
+            nt.assert_true(len(filter(lambda i: issubclass(i.category, DeprecationWarning), w)) > 0)
+
     def test_get_section(self):
         """Test cell.get_section"""
         nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
