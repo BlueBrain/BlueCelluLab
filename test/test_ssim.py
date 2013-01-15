@@ -1,22 +1,45 @@
 """Unit tests for SSim"""
 
+# pylint: disable=E1101,W0201
+
 import nose.tools as nt
-import numpy as np
+import numpy
 import bglibpy.ssim
+import os
 
-#class TestSSimBaseClass_twocell(object):
-#    """First class to test SSim"""
-#    def setup(self):
-#        """Setup"""
-#        self.ssim = bglibpy.ssim.SSim("circuit_twocell_example1/")
-#        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+class TestSSimBaseClass_twocell(object):
+    """Class to test SSim with two cell circuit"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_empty")
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglibpy.instantiate_gids([1], 3)
+        self.ssim_bglibpy.run()
 
-#    def teardown(self):
-#        """Teardown"""
-#        del self.ssim
+    def test_compare_traces(self):
+        """Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
+
+        #time_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_range
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib, 1000))
+
+        #time_bglibpy = self.ssim_bglibpy.get_time()
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        print rms_error
+        nt.assert_true(rms_error < 1.0)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
 
 class TestSSimBaseClass_full(object):
-    """First class to test SSim"""
+    """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
         self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
@@ -57,7 +80,7 @@ class TestSSimBaseClass_full(object):
         self.ssim.instantiate_gids([gid], 3)
         pre_datas = self.ssim.bc_simulation.circuit.get_presynaptic_data(gid)
         # get second inh synapse (first fails)
-        inh_synapses = np.nonzero(pre_datas[:, 13] < 100)
+        inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
         sid = inh_synapses[0][1]
         syn_params = pre_datas[sid, :]
         #pre_gid = syn_params[0]

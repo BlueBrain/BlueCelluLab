@@ -8,12 +8,12 @@ Run Default
    MorphologyPath /bgscratch/bbp/morphologies/31.05.12
        METypePath /bgscratch/bbp/CCells/b24.07.12
 
-      CircuitPath examples/circuit_twocell_example1
-          nrnPath examples/circuit_twocell_example1/ncsFunctionalAllRecipePathways
+      CircuitPath ../circuit_twocell_example1
+          nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
 
-        CurrentDir examples/sim_twocell_empty
-      OutputRoot examples/sim_twocell_empty/output
-      TargetFile examples/sim_twocell_empty/user.target
+        CurrentDir ../sim_twocell_empty
+      OutputRoot ../sim_twocell_empty/output
+      TargetFile ../sim_twocell_empty/user.target
 
     CircuitTarget mc2_Layer5
          Duration 100
@@ -40,7 +40,7 @@ Stimulus spikeReplay
         Delay 0
         Duration 100
         Pattern SynapseReplay
-        SpikeFile output/out.dat
+        SpikeFile output/out.dat.original
 }      
 
 StimulusInject spikeReplayIntooneCell

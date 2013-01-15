@@ -40,7 +40,7 @@ Stimulus spikeReplay
         Delay 0
         Duration 100
         Pattern SynapseReplay
-        SpikeFile output/out.dat
+        SpikeFile output/out.dat.original
 }}      
 
 StimulusInject spikeReplayIntooneCell
