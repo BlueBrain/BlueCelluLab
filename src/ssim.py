@@ -237,8 +237,13 @@ class SSim(object):
         #print 'params:\n', parameters
         return parameters
 
-    def run(self, t_stop=100, v_init=-65, celsius=34, dt=0.025):
+    def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""
+        if t_stop is None:
+            t_stop = self.bc.entry_map['Default'].CONTENTS.Duration
+        if dt is None:
+            dt = self.bc.entry_map['Default'].CONTENTS.Dt
+
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.addCell(self.cells[gid])
