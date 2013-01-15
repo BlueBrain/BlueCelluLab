@@ -35,7 +35,7 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     outdat = os.path.join(outputdir, "out.dat.original")
     outdat_file = open(outdat, "w")
     outdat_file.write("/scatter\n")
-    outdat_file.write("5015.0 2\n")
+    outdat_file.write("15.0 2\n")
     outdat_file.close()
 
     import subprocess
@@ -50,6 +50,9 @@ def main():
     record_dt = 0.1
 
     print 'Create a test simulation with just two cells and no extra blocks in the BlueConfig'
+
+    import create_circuit_twocell_example1
+    create_circuit_twocell_example1.main()
 
     output_path = "../../examples/sim_twocell_empty"
     #if len(sys.argv) == 2:

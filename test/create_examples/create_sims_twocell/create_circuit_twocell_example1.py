@@ -27,16 +27,10 @@ def main():
     print 'Create a test circuit with just two cells from %s' \
                         % "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
 
-    if len(sys.argv) == 2:
-        output_path = sys.argv[1]
-    else:
-        print "Need to specify an output directory as first argument (will be created if it doesn't exist)"
-        exit(1)
-
+    output_path = "../../examples/circuit_twocell_example1/"
     old_circuitname = "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
 
     create_extracted_circuit(old_circuitname, output_path)
 
 if __name__ == "__main__":
     main()
-
