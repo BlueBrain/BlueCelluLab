@@ -23,13 +23,12 @@ class TestSSimBaseClass_twocell(object):
 
         #time_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_range
         voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
-        nt.assert_equal(len(voltage_bglib, 1000))
+        nt.assert_equal(len(voltage_bglib), 1000)
 
         #time_bglibpy = self.ssim_bglibpy.get_time()
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
-        print rms_error
         nt.assert_true(rms_error < 1.0)
 
     def teardown(self):
