@@ -240,9 +240,9 @@ class SSim(object):
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""
         if t_stop is None:
-            t_stop = self.bc.entry_map['Default'].CONTENTS.Duration
+            t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
         if dt is None:
-            dt = self.bc.entry_map['Default'].CONTENTS.Dt
+            dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
