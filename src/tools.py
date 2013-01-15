@@ -16,7 +16,7 @@ def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
     def rep_func(*args, **kwargs):
         """Replacement function"""
-        warnings.warn("Call to deprecated function {}.".format(func.__name__),
+        warnings.warn("Call to deprecated function {%s}." % func.__name__,
                       category=DeprecationWarning)
         return func(*args, **kwargs)
     rep_func.__name__ = func.__name__
