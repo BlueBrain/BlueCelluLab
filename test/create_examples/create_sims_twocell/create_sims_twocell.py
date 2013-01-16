@@ -7,7 +7,7 @@ sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.pa
 import bglibpy
 import os
 
-def create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=None, dt=None, record_dt=None):
+def create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=None, dt=None, record_dt=None, fill_outdat=False):
     """..."""
 
     outputdir = os.path.join(output_path, "output")
@@ -38,8 +38,9 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
 
     outdat = os.path.join(outputdir, "out.dat.original")
     outdat_file = open(outdat, "w")
-    outdat_file.write("/scatter\n")
-    outdat_file.write("1115.0 2\n")
+    if fill_outdat:
+        outdat_file.write("/scatter\n")
+        outdat_file.write("15.0 2\n")
     outdat_file.close()
 
     import subprocess
@@ -68,17 +69,21 @@ def main():
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
-
     output_path = "../../examples/sim_twocell_noisestim"
     with open("BlueConfig.noisestim.template") as blueconfig_templatefile:
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
+    output_path = "../../examples/sim_twocell_replay"
+    with open("BlueConfig.replay.template") as blueconfig_templatefile:
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    os.chdir("../../examples/sim_twocell_noisestim")
+
+    os.chdir("../../examples/sim_twocell_replay")
 
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
-    ssim_bglibpy.instantiate_gids([1], 0, add_stimuli=True)
+    ssim_bglibpy.instantiate_gids([1], 1, add_stimuli=True, add_replay=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
