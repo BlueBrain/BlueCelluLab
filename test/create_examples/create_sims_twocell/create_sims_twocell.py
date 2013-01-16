@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Test the BluePy extractor"""
 
 import sys
@@ -9,13 +11,14 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     """..."""
 
     outputdir = os.path.join(output_path, "output")
+    # pylint: disable=W0704
     try:
         os.makedirs(outputdir)
     except OSError:
         pass
 
     #todo: this thing has to set the prefix, metypepath etc
-    newblueconfig_content = blueconfig_template.format(circuit_path="../circuit_twocell_example1", path="../sim_twocell_empty", tstop=tstop, dt=dt, record_dt=record_dt)
+    newblueconfig_content = blueconfig_template.format(circuit_path="../circuit_twocell_example1", path="./", tstop=tstop, dt=dt, record_dt=record_dt)
 
     newblueconfig = os.path.join(output_path, "BlueConfig")
     with open(newblueconfig, "w") as newblueconfig_file:
@@ -30,16 +33,19 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     usertarget_file = open(usertarget, "w")
     usertarget_file.close()
 
-    os.chdir("../../examples/sim_twocell_empty")
+    old_cwd = os.getcwd()
+    os.chdir(output_path)
 
     outdat = os.path.join(outputdir, "out.dat.original")
     outdat_file = open(outdat, "w")
     outdat_file.write("/scatter\n")
-    outdat_file.write("15.0 2\n")
+    outdat_file.write("1115.0 2\n")
     outdat_file.close()
 
     import subprocess
     subprocess.call("run.sh")
+
+    os.chdir(old_cwd)
 
 def main():
     """Main"""
@@ -54,37 +60,39 @@ def main():
     import create_circuit_twocell_example1
     create_circuit_twocell_example1.main()
 
-    output_path = "../../examples/sim_twocell_empty"
-    #if len(sys.argv) == 2:
-    #    output_path = sys.argv[1]
-    #else:
-    #    print "Need to specify an output directory as first argument (will be created if it doesn't exist)"
-    #    exit(1)
-
-    with open("BlueConfig.template") as blueconfig_templatefile:
-        blueconfig_template = blueconfig_templatefile.read()
-
     with open("run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()
 
-    create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
+    output_path = "../../examples/sim_twocell_empty"
+    with open("BlueConfig.empty.template") as blueconfig_templatefile:
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
+
+
+    output_path = "../../examples/sim_twocell_noisestim"
+    with open("BlueConfig.noisestim.template") as blueconfig_templatefile:
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
+
+
+    os.chdir("../../examples/sim_twocell_noisestim")
 
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
-    ssim_bglibpy.instantiate_gids([1], 3)
+    ssim_bglibpy.instantiate_gids([1], 0, add_stimuli=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
 
     import pylab
-    pylab.ion()
+    #pylab.ion()
     pylab.figure()
     time_bglibpy = ssim_bglibpy.get_time()
     voltage_bglibpy = ssim_bglibpy.get_voltage_traces()[1]
     pylab.plot(time_bglibpy, voltage_bglibpy, 'b-', label="BGLibPy")
     pylab.plot(ssim_bglib.bc_simulation.reports.soma.time_range, ssim_bglib.bc_simulation.reports.soma.time_series(1), 'r-', label="BGLib")
     pylab.legend()
-    pylab.draw()
-    raw_input()
+    pylab.show()
+    #raw_input()
 
 if __name__ == "__main__":
     main()

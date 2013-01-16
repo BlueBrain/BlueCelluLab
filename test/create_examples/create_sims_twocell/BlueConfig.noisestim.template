@@ -1,0 +1,66 @@
+Run Default
+{{
+        Date    22:11:12
+        Time    14:27:09
+          svnPath https://bbpteam.epfl.ch/svn/bluebrain
+          Version 1094
+           Prefix /bgscratch/bbp/release/02.04.12
+   MorphologyPath /bgscratch/bbp/morphologies/31.05.12
+       METypePath /bgscratch/bbp/CCells/b24.07.12
+
+      CircuitPath {circuit_path}
+          nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
+
+        CurrentDir {path}
+      OutputRoot {path}/output
+      TargetFile {path}/user.target
+
+    CircuitTarget mc2_Layer5
+         Duration {tstop}
+               Dt {dt}
+
+         BaseSeed 12345
+}}
+
+Report soma
+{{
+        Target Mosaic
+        Type compartment
+        ReportOn v
+        Unit mV
+        Format Bin
+        Dt {record_dt}
+        StartTime 0
+        EndTime 20000
+}}
+
+Stimulus ThresholdExc
+{{
+
+              Mode Current
+           Pattern Noise
+       MeanPercent 120
+          Variance 1.0
+             Delay 0.000000
+          Duration 20000.000000
+}}
+
+StimulusInject ThresholdIntoExc
+{{
+        Stimulus ThresholdExc
+        Target Excitatory
+}}
+
+Stimulus hypamp
+{{
+        Mode Current
+  Pattern Hyperpolarizing
+        Delay 0.0
+  Duration 20000.0
+}}
+
+StimulusInject hypamp_mosaic
+{{
+        Stimulus hypamp
+        Target Mosaic
+}} 

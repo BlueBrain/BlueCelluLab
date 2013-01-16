@@ -1,5 +1,5 @@
 Run Default
-{
+{{
         Date    22:11:12
         Time    14:27:09
           svnPath https://bbpteam.epfl.ch/svn/bluebrain
@@ -8,28 +8,28 @@ Run Default
    MorphologyPath /bgscratch/bbp/morphologies/31.05.12
        METypePath /bgscratch/bbp/CCells/b24.07.12
 
-      CircuitPath ../circuit_twocell_example1
-          nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+      CircuitPath {circuit_path}
+          nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
 
-        CurrentDir ./
-      OutputRoot .//output
-      TargetFile .//user.target
+        CurrentDir {path}
+      OutputRoot {path}/output
+      TargetFile {path}/user.target
 
     CircuitTarget mc2_Layer5
-         Duration 100
-               Dt 0.025
+         Duration {tstop}
+               Dt {dt}
 
          BaseSeed 12345
-}
+}}
 
 Report soma
-{
+{{
         Target Mosaic
         Type compartment
         ReportOn v
         Unit mV
         Format Bin
-        Dt 0.1
+        Dt {record_dt}
         StartTime 0
         EndTime 20000
-}
+}}

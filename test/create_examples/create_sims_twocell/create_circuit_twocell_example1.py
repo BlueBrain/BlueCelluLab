@@ -6,6 +6,7 @@ import sys
 sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 from bglibpy import bluepy
 import bluepy.extractor
+import shutil
 
 def create_extracted_circuit(old_circuitname, output_path):
     "..."
@@ -28,6 +29,7 @@ def main():
                         % "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
 
     output_path = "../../examples/circuit_twocell_example1/"
+    shutil.rmtree(output_path)
     old_circuitname = "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
 
     create_extracted_circuit(old_circuitname, output_path)
