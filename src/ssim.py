@@ -68,21 +68,22 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
-    def instantiate_gids(self, gids, synapse_detail, full=True):
+    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False):
         """ Instantiate a list of GIDs
 
         Parameters
         ----------
-        gids: list of GIDs. Must be a list; even in case of instantiation of\
+        gids: list of GIDs. Must be a list; even in case of instantiation of
         a single GID
-        synapse_detail: Level of detail; if chosen, all settings are taken\
+        synapse_detail: Level of detail; if chosen, all settings are taken
          from the "large" cortical simulation. Possible values:
-            0: To be defined...
-            1: Add synapse of the correct type at the simulated locations.\
-            Preserves only the location and the type
-            2: As one but with all settings as in the "large" simulation
-            3: As 2 but with minis and all, as well as the real pre-synaptic\
-            spiketrains.
+            0: No synapses
+            1: Add synapse of the correct type at the simulated locations
+               with all settings as in the "large" simulation
+            2: As 1 but with minis
+        add_replay: Add presynaptic spiketrains from the large simulation
+            throws an exception if this is set when synapse_detail < 1
+        add_stimuli: Add the same stimuli as in the large simulation
         """
         bgc_morph_path = self.bc.entry_map['Default'].CONTENTS.MorphologyPath
         # backwards compatible
@@ -113,10 +114,6 @@ class SSim(object):
             if pre_datas is None:
                 printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
             else:
-                pre_spike_trains = \
-                          parse_and_store_GID_spiketrains(\
-                            self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                            'out.dat')
                 for sid, syn_description in enumerate(pre_datas):
                     connection_parameters = self.\
                       _evaluate_connection_parameters(syn_description[0],gid)
@@ -126,18 +123,27 @@ class SSim(object):
                     if synapse_detail > 1:
                         self.add_replay_minis(gid, sid, syn_description, \
                                               connection_parameters)
-                    if synapse_detail > 2:
+                    if add_replay:
+                        if synapse_detail < 1:
+                            raise Exception("Cannot add replay stimulus if synapse_detail < 1")
+
+                        pre_spike_trains = \
+                                parse_and_store_GID_spiketrains(\
+                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                                    'out.dat')
+
                         self.charge_replay_synapse(gid, sid, syn_description, \
-                                                    connection_parameters, \
-                                                    pre_spike_trains)
+                                                connection_parameters, \
+                                                pre_spike_trains)
 
                 if synapse_detail > 0:
                     printv("Added synapses for gid %d" % gid, 1)
                 if synapse_detail > 1:
                     printv("Added minis for gid %d" % gid, 1)
-                if synapse_detail > 2:
+                if add_replay:
                     printv("Added presynaptic spiketrains for gid %d" % gid, 1)
-            if full:
+
+            if add_stimuli:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
                 printv("Added stimuli for gid %d" % gid, 1)
