@@ -7,7 +7,6 @@ Introduction
 ------------
 
 BGLibPy is a scientist targeted streamlined interface to BGLib. 
-It provides two
 
 Dependencies
 ------------
@@ -40,6 +39,8 @@ and execute 'make test'. If you want to have more verbosity, you can type
 
 Releasing
 ---------
+
+TODO 
 
 In this example we will release ``v0.3.0``.
 
@@ -82,9 +83,9 @@ Changelog
 Authors and Contributors
 ------------------------
 
+* Werner Van Geit
 * Ben Torbien Nielsen
 * Eilif Muller
-* Werner Van Geit
 
 Copyright
 ---------
