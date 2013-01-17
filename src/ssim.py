@@ -21,17 +21,15 @@ def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     gid_spiketimes_dict = collections.defaultdict(list)
     full_outdat_name = "%s/%s" % (path, outdat_name)
 
-    if os.path.exists(full_outdat_name):
-        full_outdat_file = open(full_outdat_name, "r")
-    else:
+    if not os.path.exists(full_outdat_name):
         raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
-    for line in full_outdat_file.read().split("\n")[1:-1]:
-        gid = int(line.split()[1])
-        spiketime = float(line.split()[0])
-        gid_spiketimes_dict[gid].append(spiketime)
-    full_outdat_file.close()
+    with open(full_outdat_name, "r") as full_outdat_file:
+        for line in full_outdat_file.read().split("\n")[1:-1]:
+            gid = int(line.split(" ")[1])
+            spiketime = float(line.split(" ")[0])
+            gid_spiketimes_dict[gid].append(spiketime)
 
     return gid_spiketimes_dict
 
