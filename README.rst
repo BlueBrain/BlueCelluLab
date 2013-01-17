@@ -30,7 +30,6 @@ Building
 * There is an example build script provided called 'build.sh.example'
 * Copy this script to 'build.sh'
 * Edit this script so that it points to the write directories on your system
-* (TODO)
 
 Testing
 -------
