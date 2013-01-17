@@ -137,7 +137,6 @@ class Cell:
 
         if distance < 0:
             print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
-            #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
             return 0
         else:
             return distance
@@ -256,7 +255,6 @@ class Cell:
         if 'SynapseConfigure' in connection_modifiers:
             for cmd in connection_modifiers['SynapseConfigure']:
                 cmd = cmd.replace('%s', '\n%(syn)s')
-                print cmd % {'syn': syn.hname()}
                 bglibpy.neuron.h(cmd % {'syn': syn.hname()})
 
         self.persistent.append(rndd)

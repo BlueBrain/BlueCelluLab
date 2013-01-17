@@ -19,7 +19,7 @@ class TestSSimBaseClass_twocell_empty(object):
         self.ssim_bglibpy.run()
 
     def test_compare_traces(self):
-        """Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
 
         #time_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_range
         voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
@@ -131,7 +131,7 @@ class TestSSimBaseClass_full(object):
         del self.ssim
 
     def test_evaluate_connection_parameters(self):
-        """Check if Connection block parsers yield expected output"""
+        """SSim: Check if Connection block parsers yield expected output"""
 
         # check a TTPC1 pair
         pre_gid, post_gid = list(self.ssim.bc_simulation.get_target("L5_TTPC1"))[:2]
@@ -156,7 +156,7 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(params, {'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0', '%s.GABAB_ratio = 0.75'], 'Weight': 2.0})
 
     def test_add_single_synapse_SynapseConfigure(self):
-        """Check if SynapseConfigure works correctly"""
+        """SSim: Check if SynapseConfigure works correctly"""
         gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
         self.ssim.instantiate_gids([gid], synapse_detail=0)
         pre_datas = self.ssim.bc_simulation.circuit.get_presynaptic_data(gid)

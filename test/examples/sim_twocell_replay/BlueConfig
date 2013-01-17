@@ -19,7 +19,6 @@ Run Default
          Duration 100
                Dt 0.025
 
-         BaseSeed 12345
 }
 
 Report soma
@@ -47,4 +46,12 @@ StimulusInject spikeReplayIntooneCell
 {
         Stimulus spikeReplay
         Target Mosaic
+}
+
+Connection changeUse
+{    
+              Source Excitatory
+         Destination Excitatory
+              Weight 1.0
+    SynapseConfigure %s.Dep = 1.0
 }
