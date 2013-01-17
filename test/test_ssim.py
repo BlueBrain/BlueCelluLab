@@ -78,6 +78,47 @@ class TestSSimBaseClass_twocell_replay(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+class TestSSimBaseClass_twocell_minis_replay(object):
+    """Class to test SSim with two cell circuit"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_minis_replay")
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy.run()
+
+        self.ssim_bglibpy_withoutminis = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy_withoutminis.instantiate_gids([1], synapse_detail=1, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy_withoutminis.run()
+
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit and spike replay and minis"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib), 1000)
+
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 1.0)
+
+    def test_disable_replay(self):
+        """SSim: Check if disabling the minis creates a different result"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        voltage_bglibpy_withoutminis = self.ssim_bglibpy_withoutminis.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy_withoutminis-voltage_bglib)**2))
+        nt.assert_true(rms_error > 1.0)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy_withoutminis
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
 class TestSSimBaseClass_twocell_noisestim(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
