@@ -201,7 +201,10 @@ class Cell:
         self.persistent.append(tstim)
 
     def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
-        """Add synapse based on the syn_description to the cell"""
+        """Add synapse based on the syn_description to the cell 
+        
+        This operation can fail.  Returns True on success, otherwise False.
+        """
         #pre_gid = int(syn_description[0])
         #delay = syn_description[1]
         post_sec_id = syn_description[2]
@@ -220,7 +223,7 @@ class Cell:
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None :
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
-            return None
+            return False
 
         if(syn_type < 100):
             ''' see: https://bbpteam.epfl.ch/\
@@ -260,6 +263,7 @@ class Cell:
         syn.synapseID = sid
         self.persistent.append(rndd)
         self.syns[sid] = syn
+        return True
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""

@@ -75,7 +75,7 @@ class SSim(object):
         a single GID
         synapse_detail: Level of detail; if chosen, all settings are taken\
          from the "large" cortical simulation. Possible values:
-            0: To be defined...
+            0: Don't add synapses.
             1: Add synapse of the correct type at the simulated locations.\
             Preserves only the location and the type
             2: As one but with all settings as in the "large" simulation
@@ -110,11 +110,9 @@ class SSim(object):
             # synapses
             if pre_datas is None:
                 print "No presynaptic cells found for gid %d, no synapses added" % gid
+            elif synapse_detail == 0:
+                pass
             else:
-                pre_spike_trains = \
-                          parse_and_store_GID_spiketrains(\
-                            self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                            'out.dat')
                 for sid, syn_description in enumerate(pre_datas):
                     connection_parameters = self.\
                       _evaluate_connection_parameters(syn_description[0],gid)
@@ -125,6 +123,10 @@ class SSim(object):
                         self.add_replay_minis(gid, sid, syn_description, \
                                               connection_parameters)
                     if synapse_detail > 2:
+                        pre_spike_trains = \
+                                  parse_and_store_GID_spiketrains(\
+                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                                    'out.dat')
                         self.charge_replay_synapse(gid, sid, syn_description, \
                                                     connection_parameters, \
                                                     pre_spike_trains)
@@ -195,7 +197,7 @@ class SSim(object):
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
-        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
