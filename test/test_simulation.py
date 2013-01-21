@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# pylint: disable=E1101,W0201
+
 """Nosetest for the Cell class"""
 
 import nose.tools as nt
-#import math
 import bglibpy
 
 class TestCellBaseClass(object):
@@ -27,5 +28,5 @@ class TestCellBaseClass(object):
         del self.sim
 
     def test_run(self):
-        """Run the simulation for 100 ms"""
+        """Simulation: Run the simulation for 100 ms"""
         self.sim.run(100)

@@ -140,7 +140,6 @@ class Cell:
 
         if distance < 0:
             print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
-            #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
             return 0
         else:
             return distance
@@ -245,13 +244,6 @@ class Cell:
               ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
             syn.tau_d_AMPA = syn_DTC
 
-        # hoc exec synapse configure blocks
-        if 'SynapseConfigure' in connection_modifiers:
-            for cmd in connection_modifiers['SynapseConfigure']:
-                cmd = cmd.replace('%s', '\n%(syn)s')
-                #print cmd % {'syn': syn.hname()}
-                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
-
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
         syn.Fac = abs( syn_F )
@@ -261,6 +253,13 @@ class Cell:
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
         syn.synapseID = sid
+
+        # hoc exec synapse configure blocks
+        if 'SynapseConfigure' in connection_modifiers:
+            for cmd in connection_modifiers['SynapseConfigure']:
+                cmd = cmd.replace('%s', '\n%(syn)s')
+                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
+
         self.persistent.append(rndd)
         self.syns[sid] = syn
 

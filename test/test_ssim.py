@@ -19,7 +19,7 @@ class TestSSimBaseClass_twocell_empty(object):
         self.ssim_bglibpy.run()
 
     def test_compare_traces(self):
-        """Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
 
         #time_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_range
         voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
@@ -78,6 +78,75 @@ class TestSSimBaseClass_twocell_replay(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+class TestSSimBaseClass_twocell_all(object):
+    """Class to test SSim with two cell circuit"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_all")
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy.run()
+
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit and spike replay, minis and noisy stimulus"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib), 1000)
+
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 1.0)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
+class TestSSimBaseClass_twocell_minis_replay(object):
+    """Class to test SSim with two cell circuit"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_minis_replay")
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy.run()
+
+        self.ssim_bglibpy_withoutminis = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy_withoutminis.instantiate_gids([1], synapse_detail=1, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy_withoutminis.run()
+
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit and spike replay and minis"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib), 1000)
+
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 1.0)
+
+    def test_disable_minis(self):
+        """SSim: Check if disabling the minis creates a different result"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        voltage_bglibpy_withoutminis = self.ssim_bglibpy_withoutminis.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy_withoutminis-voltage_bglib)**2))
+        nt.assert_true(rms_error > 1.0)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy_withoutminis
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
 class TestSSimBaseClass_twocell_noisestim(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -131,7 +200,7 @@ class TestSSimBaseClass_full(object):
         del self.ssim
 
     def test_evaluate_connection_parameters(self):
-        """Check if Connection block parsers yield expected output"""
+        """SSim: Check if Connection block parsers yield expected output"""
 
         # check a TTPC1 pair
         pre_gid, post_gid = list(self.ssim.bc_simulation.get_target("L5_TTPC1"))[:2]
@@ -156,7 +225,7 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(params, {'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0', '%s.GABAB_ratio = 0.75'], 'Weight': 2.0})
 
     def test_add_single_synapse_SynapseConfigure(self):
-        """Check if SynapseConfigure works correctly"""
+        """SSim: Check if SynapseConfigure works correctly"""
         gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
         self.ssim.instantiate_gids([gid], synapse_detail=0)
         pre_datas = self.ssim.bc_simulation.circuit.get_presynaptic_data(gid)

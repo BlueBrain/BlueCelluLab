@@ -17,7 +17,6 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     except OSError:
         pass
 
-    #todo: this thing has to set the prefix, metypepath etc
     newblueconfig_content = blueconfig_template.format(circuit_path="../circuit_twocell_example1", path="./", tstop=tstop, dt=dt, record_dt=record_dt)
 
     newblueconfig = os.path.join(output_path, "BlueConfig")
@@ -27,6 +26,7 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     newrunsh = os.path.join(output_path, "run.sh")
     with open(newrunsh, "w") as newrunsh_file:
         newrunsh_file.write(runsh_template)
+
     os.chmod(newrunsh, 0755)
 
     usertarget = os.path.join(output_path, "user.target")
@@ -38,9 +38,16 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
 
     outdat = os.path.join(outputdir, "out.dat.original")
     outdat_file = open(outdat, "w")
+    outdat_file.write("/scatter\n")
     if fill_outdat:
-        outdat_file.write("/scatter\n")
         outdat_file.write("15.0 2\n")
+        outdat_file.write("30.0 2\n")
+        outdat_file.write("45.0 2\n")
+        outdat_file.write("60.0 2\n")
+        outdat_file.write("75.0 2\n")
+        outdat_file.write("90.0 2\n")
+    #Add a large value, because BGLib cannot handle an empty out.dat
+    outdat_file.write("5000000.0 2\n")
     outdat_file.close()
 
     import subprocess
@@ -64,32 +71,40 @@ def main():
     with open("run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()
 
-    output_path = "../../examples/sim_twocell_empty"
     with open("BlueConfig.empty.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_empty"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
-    output_path = "../../examples/sim_twocell_noisestim"
     with open("BlueConfig.noisestim.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_noisestim"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
-    output_path = "../../examples/sim_twocell_replay"
     with open("BlueConfig.replay.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_replay"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
+    with open("BlueConfig.minis.replay.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_minis_replay"
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    os.chdir("../../examples/sim_twocell_replay")
+    with open("BlueConfig.all.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_all"
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
+
+    os.chdir("../../examples/sim_twocell_all")
 
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
-    ssim_bglibpy.instantiate_gids([1], 1, add_stimuli=True, add_replay=True)
+    ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
 
     import pylab
-    #pylab.ion()
     pylab.figure()
     time_bglibpy = ssim_bglibpy.get_time()
     voltage_bglibpy = ssim_bglibpy.get_voltage_traces()[1]
@@ -97,7 +112,6 @@ def main():
     pylab.plot(ssim_bglib.bc_simulation.reports.soma.time_range, ssim_bglib.bc_simulation.reports.soma.time_series(1), 'r-', label="BGLib")
     pylab.legend()
     pylab.show()
-    #raw_input()
 
 if __name__ == "__main__":
     main()

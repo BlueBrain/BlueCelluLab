@@ -54,4 +54,5 @@ Connection changeUse
          Destination Excitatory
               Weight 1.0
     SynapseConfigure %s.Dep = 1.0
+          SpontMinis 100.0
 }
