@@ -26,6 +26,12 @@ class TestCellBaseClass1(object):
         nt.assert_true(isinstance(self.cell.axonal[0], bglibpy.neuron.nrn.Section))
         nt.assert_true(math.fabs(self.cell.threshold - 0.184062) < 0.00001)
         nt.assert_true(math.fabs(self.cell.hypamp - -0.070557) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.soma.diam - 13.78082) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.soma.L - 19.21902) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.basal[2].diam - 0.595686) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.basal[2].L - 178.96164) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001)
+        nt.assert_true(math.fabs(self.cell.apical[10].L -  23.73195) < 0.00001)
 
     def test_addRecording(self):
         """Cell: Test if addRecording gives deprecation warning"""
