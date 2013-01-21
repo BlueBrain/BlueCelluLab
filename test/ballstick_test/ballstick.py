@@ -40,7 +40,7 @@ class Params:
         self.dend0_L, self.dend0_D, self.dend0_A  = cell.basal[0].L, cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0])
         self.dend0_NSEG = cell.basal[0].nseg
 
-        #print 'DENDRITE L=%f, diam=%f,surf=%f' % (dend0_L, dend0_D, dend0_A)
+        print 'DENDRITE L=%f, diam=%f,surf=%f' % (self.dend0_L, self.dend0_D, self.dend0_A)
 
         ''' I assume uniform passive properties shared by the soma and dendrites '''
         self.CM = cell.soma.cm
@@ -94,6 +94,8 @@ def run_pyneuron(soma_l, soma_d, params) :
 
     bglibpy.neuron.h.finitialize(params.V_INIT)
     bglibpy.neuron.h.dt = params.DT
+    print "PyNeuron: Soma L=%f, diam=%f, area=%f" % (soma.L, soma.diam, bglibpy.neuron.h.area(0.5, sec=soma))
+    print "PyNeuron: Dend L=%f, diam=%f, area=%f" % (dend.L, dend.diam, bglibpy.neuron.h.area(0.5, sec=dend))
     bglibpy.neuron.run(params.T_STOP)
 
     voltage = numpy.array(v_vec)
@@ -141,7 +143,7 @@ def run_pyneuron_with_template(params):
 
 def run_bglibpy(params):
     """Run ballstick with BGLibPy"""
-    cell = bglibpy.Cell("ballstick.hoc", "./")
+    cell = bglibpy.Cell("ballstick.hoc", "./ballstick.asc")
     syn = bglibpy.neuron.h.ExpSyn(params.SYN_LOC, sec=cell.basal[0])
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
@@ -154,6 +156,8 @@ def run_bglibpy(params):
 
     sim = bglibpy.Simulation()
     sim.addCell(cell)
+    print "BGLibPy: Soma L=%f, diam=%f, area=%f" % (cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma))
+    print "BGLibPy: Dend L=%f, diam=%f, area=%f" % (cell.basal[0].L, cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0]))
     sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
     bglibpy_t = cell.get_time()
     bglibpy_v = cell.get_soma_voltage()
