@@ -43,6 +43,10 @@ class Cell:
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+        self.soma = [x for x in self.cell.getCell().somatic][0]
+        """WARNING: this finitialize 'must' be here, otherwhise the diameters
+        of the loaded morph are wrong"""
+        neuron.h.finitialize()
 
         self.morphology_name = morphology_name
         self.template_name = template_name
@@ -62,7 +66,6 @@ class Cell:
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
-        #neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         self.somatic = [x for x in self.cell.getCell().somatic]
