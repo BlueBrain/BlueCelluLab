@@ -205,7 +205,7 @@ def run_analytic(params):
 
 
 def test_expsyn_pyneuron_vs_bglibpy(graph=False):
-    """Test ballstick with expsyn between pyneuron and bglibpy"""
+    """Ballstick: Test ballstick with expsyn between pyneuron and bglibpy"""
     '''
     The real stuff, part I
     Run the ball-and-stick model by 1. PyNEURON, 2. bglibpy, 3. analytic
@@ -251,6 +251,17 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
         pylab.legend(loc=0)
         pylab.show()
 
+def test_ballstick_load():
+    """Ballstick: Test if dimensions of ballstick load correctly"""
+    params = Params()
+
+    cell = bglibpy.Cell(params.templatefile, params.morphfile)
+    nt.assert_true(abs(cell.soma.L - 19.6) < 0.001)
+    nt.assert_true(abs(cell.soma.diam - 10.229) < 0.001)
+    nt.assert_true(abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001)
+    nt.assert_true(abs(cell.basal[0].L - 200.0) < 0.001)
+    nt.assert_true(abs(cell.basal[0].diam - 3.0) < 0.001)
+    nt.assert_true(abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001)
 
 def main():
     """main"""
