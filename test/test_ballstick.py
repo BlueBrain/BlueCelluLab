@@ -5,9 +5,9 @@ Models simulated in N disticnt ways, all shoudl
 
 # pylint: disable=E1101,W0201
 
-import sys
+#import sys
 #sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
-sys.path = ["/home/vangeit/src/BGLibPy/test/ballstick_circuit_test"]+ sys.path
+#sys.path = ["/home/vangeit/src/BGLibPy/test/ballstick_circuit_test"]+ sys.path
 
 import bglibpy
 import numpy
