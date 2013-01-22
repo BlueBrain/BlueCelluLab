@@ -61,6 +61,9 @@ class TestCellBaseClass1(object):
 
     def test_add_allsections_voltagerecordings(self):
         """Cell: Test cell.add_allsections_voltagerecordings"""
-        varname = 'neuron.h.Cell[0].apic[10](0.5)._ref_v'
         self.cell.add_allsections_voltagerecordings()
-        nt.assert_true(varname in self.cell.recordings)
+
+        all_sections = self.cell.cell.getCell().all
+        for section in all_sections:
+            varname = 'neuron.h.%s(0.5)._ref_v' % section.name()
+            nt.assert_true(varname in self.cell.recordings)
