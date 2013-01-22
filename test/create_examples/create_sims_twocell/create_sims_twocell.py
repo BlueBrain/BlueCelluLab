@@ -40,18 +40,19 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     outdat_file = open(outdat, "w")
     outdat_file.write("/scatter\n")
     if fill_outdat:
-        outdat_file.write("15.0 2\n")
-        outdat_file.write("30.0 2\n")
-        outdat_file.write("45.0 2\n")
-        outdat_file.write("60.0 2\n")
-        outdat_file.write("75.0 2\n")
-        outdat_file.write("90.0 2\n")
+        outdat_file.write("15.0\t2\n")
+        outdat_file.write("30.0\t2\n")
+        outdat_file.write("45.0\t2\n")
+        outdat_file.write("60.0\t2\n")
+        outdat_file.write("75.0\t2\n")
+        outdat_file.write("90.0\t2\n")
     #Add a large value, because BGLib cannot handle an empty out.dat
-    outdat_file.write("5000000.0 2\n")
+    outdat_file.write("5000000.0\t2\n")
     outdat_file.close()
 
     import subprocess
-    subprocess.call("run.sh")
+    print os.getcwd()
+    subprocess.call("./run.sh")
 
     os.chdir(old_cwd)
 
