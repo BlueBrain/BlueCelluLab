@@ -27,10 +27,10 @@ def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     # last newline
     with open(full_outdat_name, "r") as full_outdat_file:
         for line in full_outdat_file.read().split("\n")[1:-1]:
-            gid = int(line.split(" ")[1])
-            spiketime = float(line.split(" ")[0])
+            splits = line.split("\t")
+            gid = int(splits[1])#int(line.split("\t")[1])
+            spiketime = float(splits[0])#float(line.split("\t")[0])
             gid_spiketimes_dict[gid].append(spiketime)
-
     return gid_spiketimes_dict
 
 class SSim(object):
@@ -107,6 +107,12 @@ class SSim(object):
             self.cells[gid] = temp_cell
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
+
+            if add_replay :
+                pre_spike_trains = parse_and_store_GID_spiketrains(\
+                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                                    'out.dat')
+            
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
             if pre_datas is None:
@@ -125,11 +131,7 @@ class SSim(object):
                         if synapse_detail < 1:
                             raise Exception("Cannot add replay stimulus if synapse_detail < 1")
 
-                        pre_spike_trains = \
-                                parse_and_store_GID_spiketrains(\
-                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                                    'out.dat')
-
+                        
                         self.charge_replay_synapse(gid, sid, syn_description, \
                                                 connection_parameters, \
                                                 pre_spike_trains)
