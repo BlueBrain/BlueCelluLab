@@ -28,8 +28,8 @@ def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     with open(full_outdat_name, "r") as full_outdat_file:
         for line in full_outdat_file.read().split("\n")[1:-1]:
             splits = line.split("\t")
-            gid = int(splits[1])#int(line.split("\t")[1])
-            spiketime = float(splits[0])#float(line.split("\t")[0])
+            gid = int(splits[1])
+            spiketime = float(splits[0])
             gid_spiketimes_dict[gid].append(spiketime)
     return gid_spiketimes_dict
 

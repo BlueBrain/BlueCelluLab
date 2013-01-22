@@ -4,8 +4,8 @@ Run Default
   MorphologyPath /bgscratch/bbp/morphologies/31.05.12/h5
   METypePath /bgscratch/bbp/CCells/b24.07.12/
   MeshPath /bgscratch/bbp/meshes/08.05.09/mesh
-  CircuitPath /home/vangeit/src/BGLibPy/test/examples/circuit_twocell_example1
-  nrnPath /home/vangeit/src/BGLibPy/test/examples/circuit_twocell_example1/ncsFunctionalAllRecipePathways
+  CircuitPath ../circuit_twocell_example1
+  nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
   TargetFile /bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/default_user.target
   BioName SomatosensoryCxS1-v4.lowerCellDensity.r151
   CentralHyperColumn 2
