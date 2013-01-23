@@ -3,4 +3,4 @@
 export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
 cd @CMAKE_CURRENT_SOURCE_DIR@
 #-v: verbose -x: exit at first error -s: don't redirect stdout
-nosetests -v -x -s test_ssim
+nosetests -v -x -s
