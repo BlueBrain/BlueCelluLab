@@ -34,7 +34,7 @@ class Simulation:
             neuron.h.cvode_active(1)
         else:
             if cvode_old_status:
-                printv("WARNING: cvode was activated outside of Simulation, temporarily disabling it in run() because cvode=True was set", 1)
+                printv("WARNING: cvode was activated outside of Simulation, temporarily disabling it in run() because cvode=True was set", 2)
             neuron.h.cvode_active(0)
 
         neuron.h.v_init = v_init
@@ -64,7 +64,10 @@ class Simulation:
         except Exception, e:
             printv_err('The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e), 1)
         finally:
+            if cvode_old_status:
+                printv("WARNING: cvode was activated outside of Simulation, this might make it impossible to load templates with stochastic channels", 2)
             neuron.h.cvode_active(cvode_old_status)
+
 
         printv('Finished simulation', 1)
 
