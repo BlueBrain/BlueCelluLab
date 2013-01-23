@@ -104,6 +104,17 @@ class Cell:
         """
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
+    def execute_neuronconfigure(self, expression):
+        """Execute a statement from a BlueConfig NeuronConfigure block"""
+        for section in self.all:
+            sec_expression = expression.replace('%s', neuron.h.secname(sec=section))
+            if '%g' in expression:
+                for segment in section:
+                    seg_expression = sec_expression.replace('%g', segment.x)
+                    bglibpy.neuron.h('execute1(%s, 0)' % seg_expression)
+            else:
+                bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
+
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
 
@@ -129,11 +140,11 @@ class Cell:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
             syn_offset = -syn_offset
 
-        distance = -1
+        distance = 0.5
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
             distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
             if distance >= 1.0:
-                distance = 1
+                distance = 1.0
 
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance

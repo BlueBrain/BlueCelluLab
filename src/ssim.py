@@ -66,6 +66,13 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
+        self.neuronconfigure_entries = self.bc_simulation.config.typed_entries("NeuronConfigure")
+        self.neuronconfigure_expressions = {}
+        for entry in self.neuronconfigure_entries:
+            for gid in self.all_targets_dict[entry.CONTENTS.Target]:
+                conf = entry.CONTENTS.Configure
+                self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
+
     def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False):
         """ Instantiate a list of GIDs
 
@@ -101,10 +108,13 @@ class SSim(object):
               METypePath+'/'+template_name_of_gid+'.hoc'
             printv('Added gid %d from template %s' % (gid, full_template_name_of_gid), 1)
 
-            temp_cell = bglibpy.Cell(full_template_name_of_gid, \
+            self.cells[gid] = bglibpy.Cell(full_template_name_of_gid, \
                                      path_of_morphology, gid=gid, \
                                      record_dt=self.record_dt)
-            self.cells[gid] = temp_cell
+
+            if gid in self.neuronconfigure_expressions:
+                for expression in self.neuronconfigure_expressions[gid]:
+                    self.cells[gid].execute_neuronconfigure(expression)
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
 
@@ -112,7 +122,7 @@ class SSim(object):
                 pre_spike_trains = parse_and_store_GID_spiketrains(\
                                     self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                                     'out.dat')
-            
+
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
             if pre_datas is None:
@@ -133,7 +143,7 @@ class SSim(object):
                         if synapse_detail < 1:
                             raise Exception("Cannot add replay stimulus if synapse_detail < 1")
 
-                        
+
                         self.charge_replay_synapse(gid, sid, syn_description, \
                                                 connection_parameters, \
                                                 pre_spike_trains)

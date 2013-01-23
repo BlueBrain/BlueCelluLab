@@ -187,12 +187,13 @@ class TestSSimBaseClass_twocell_noisestim(object):
         del self.ssim_bglibpy
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
-
 class TestSSimBaseClass_full(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig")
+
+        #self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -210,7 +211,7 @@ class TestSSimBaseClass_full(object):
         # checking a few sanity cases
 
         nt.assert_equal(params, {'SpontMinis': 0.067000000000000004,
-            'SynapseConfigure': ['%s.NMDA_ratio = 0.4', '%s.NMDA_ratio = 0.71'], 'Weight': 2.3500000000000001})
+            'SynapseConfigure': ['%s.NMDA_ratio = 0.4 %s.mg = 0.5', '%s.NMDA_ratio = 0.71'], 'Weight': 2.3500000000000001})
 
         pre_gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
         params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid)
@@ -241,3 +242,68 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(self.ssim.cells[gid].syns[sid].e_GABAB, -101.0)
         nt.assert_equal(self.ssim.cells[gid].syns[sid].tau_d_GABAA, 10.0)
         nt.assert_equal(self.ssim.cells[gid].syns[sid].tau_r_GABAA, 1.0)
+
+class TestSSimBaseClass_full_run(object):
+    """Class to test SSim with full circuit"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a full replay of a simulation run on BG/P gives the same output trace as on BG/P"""
+        gid = 116386
+        self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
+        self.ssim.run(500)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        nt.assert_equal(len(time_bglibpy), 5000)
+        nt.assert_equal(len(voltage_bglibpy), 5000)
+        #time_bglib = self.ssim.bc_simulation.reports.soma.time_range[:len(time_bglibpy)]
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
+
+        #import pylab
+        #pylab.plot(time_bglibpy, voltage_bglibpy)
+        #pylab.plot(time_bglib, voltage_bglib)
+        #pylab.show()
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 1.0)
+
+class TestSSimBaseClass_full_neuronconfigure(object):
+    """Class to test SSim with full circuit that uses neuronconfigure"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a full replay of a simulation with neuronconfigure blocks run on BG/P gives the same output trace as on BG/P"""
+        gid = 116386
+        self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
+        self.ssim.run(500)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        nt.assert_equal(len(time_bglibpy), 5000)
+        nt.assert_equal(len(voltage_bglibpy), 5000)
+        #time_bglib = self.ssim.bc_simulation.reports.soma.time_range[:len(time_bglibpy)]
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
+
+        #import pylab
+        #pylab.plot(time_bglibpy, voltage_bglibpy)
+        #pylab.plot(time_bglib, voltage_bglib)
+        #pylab.show()
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 0.01)
+
