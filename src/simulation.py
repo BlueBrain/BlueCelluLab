@@ -11,6 +11,7 @@
 import sys
 from bglibpy.importer import neuron
 from bglibpy import printv
+from bglibpy import printv_err
 
 class Simulation:
 
@@ -28,10 +29,13 @@ class Simulation:
         neuron.h.celsius = celsius
         neuron.h.tstop = maxtime
 
+        cvode_old_status = neuron.h.cvode_active()
         if cvode:
-            neuron.h('{cvode_active(1)}')
+            neuron.h.cvode_active(1)
         else:
-            neuron.h('{cvode_active(0)}')
+            if cvode_old_status:
+                printv("WARNING: cvode was activated outside of Simulation, temporarily disabling it in run() because cvode=True was set", 1)
+            neuron.h.cvode_active(0)
 
         neuron.h.v_init = v_init
 
@@ -54,23 +58,27 @@ class Simulation:
         #neuron.h.finitialize()
         printv('Running a simulation until %f ms ...' % maxtime, 1)
 
-        #try:
-        neuron.h.run()
-        #except Exception, e:
-        #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
+        #pylint: disable=W0703
+        try:
+            neuron.h.run()
+        except Exception, e:
+            printv_err('The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e), 1)
+        finally:
+            neuron.h.cvode_active(cvode_old_status)
 
         printv('Finished simulation', 1)
+
         #self.continuerun(maxtime)
 
-    def continuerun(self, maxtime):
-        """Continue a running simulation"""
-        while neuron.h.t < maxtime:
-            for cell in self.cells:
-                cell.update()
-            if self.verbose_level >= 1:
-                print str(neuron.h.t) + " ms"
+    #def continuerun(self, maxtime):
+    #    """Continue a running simulation"""
+    #    while neuron.h.t < maxtime:
+    #        for cell in self.cells:
+    #            cell.update()
+    #        if self.verbose_level >= 1:
+    #            print str(neuron.h.t) + " ms"
             #try:
-            neuron.h.step()
+    #        neuron.h.step()
             #except Exception, e:
             #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
             #    break
