@@ -34,21 +34,6 @@ Report soma
         EndTime 20000
 }}
 
-Stimulus spikeReplay
-{{
-        Mode Current
-        Delay 0
-        Duration 100
-        Pattern SynapseReplay
-        SpikeFile output/out.dat
-}}      
-
-StimulusInject spikeReplayIntooneCell
-{{
-        Stimulus spikeReplay
-        Target Mosaic
-}}
-
 Stimulus ThresholdExc
 {{
 
@@ -79,11 +64,3 @@ StimulusInject hypamp_mosaic
         Stimulus hypamp
         Target Mosaic
 }} 
-
-Connection scheme_minus2
-{{
-              Source Excitatory
-         Destination Excitatory
-              Weight 1.0
-    SynapseConfigure %s.NMDA_ratio = 0.4
-}}          

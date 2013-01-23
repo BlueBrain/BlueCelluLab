@@ -2,6 +2,7 @@
 Static tools for bglibpy
 '''
 
+import sys
 import inspect
 from bglibpy.importer import neuron
 import multiprocessing
@@ -11,6 +12,7 @@ import numpy
 import warnings
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
+VERBOSE_LEVEL = 0
 
 def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
@@ -23,6 +25,16 @@ def deprecated(func):
     rep_func.__doc__ = func.__doc__
     rep_func.__dict__.update(func.__dict__)
     return rep_func
+
+def printv(message, verbose_level):
+    """Print the message depending on the verbose level"""
+    if verbose_level <= bglibpy.VERBOSE_LEVEL:
+        print message
+
+def printv_err(message, verbose_level):
+    """Print the message depending on the verbose level"""
+    if verbose_level <= bglibpy.VERBOSE_LEVEL:
+        print >> sys.stderr,  message
 
 def _me():
     '''Used for debgugging. Reads the stack and provides info about which
@@ -113,13 +125,23 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
     cell = bglibpy.Cell(template_name, morphology_name)
     cell.addRamp(500, 5000, step_level, step_level, dt=1.0)
     simulation = bglibpy.Simulation()
-    simulation.run(1000)
-    time = cell.getTime()
-    voltage = cell.getSomaVoltage()
+    simulation.run(1000, cvode=template_accepts_cvode(template_name))
+    time = cell.get_time()
+    voltage = cell.get_soma_voltage()
     SS_voltage = numpy.mean(voltage[numpy.where((time < 1000) & (time > 800))])
     cell.delete()
 
     return SS_voltage
+
+def template_accepts_cvode(template_name):
+    """Return True if template_name can be run with cvode"""
+    with open(template_name, "r") as template_file:
+        template_content = template_file.read()
+    if "StochKv" in template_content:
+        accepts_cvode = False
+    else:
+        accepts_cvode = True
+    return accepts_cvode
 
 
 def search_hyp_current(template_name, morphology_name, hyp_voltage, start_current, stop_current):
@@ -154,7 +176,7 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_
     cell.addRamp(0, 5000, hyp_level, hyp_level, dt=1.0)
     cell.addRamp(inj_start, inj_stop, step_level, step_level, dt=1.0)
     simulation = bglibpy.Simulation()
-    simulation.run(int(inj_stop))
+    simulation.run(int(inj_stop), cvode=template_accepts_cvode(template_name))
 
     time = cell.getTime()
     voltage = cell.getSomaVoltage()

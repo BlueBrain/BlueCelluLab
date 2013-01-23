@@ -12,6 +12,8 @@ from bglibpy import bluepy
 import bglibpy
 import collections
 import os
+from bglibpy import printv
+from bglibpy import printv_err
 
 def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     """Parse and store the gid spiketrains"""
@@ -19,18 +21,16 @@ def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
     gid_spiketimes_dict = collections.defaultdict(list)
     full_outdat_name = "%s/%s" % (path, outdat_name)
 
-    if os.path.exists(full_outdat_name):
-        full_outdat_file = open(full_outdat_name, "r")
-    else:
+    if not os.path.exists(full_outdat_name):
         raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
-    for line in full_outdat_file.read().split("\n")[1:-1]:
-        gid = int(line.split()[1])
-        spiketime = float(line.split()[0])
-        gid_spiketimes_dict[gid].append(spiketime)
-    full_outdat_file.close()
-
+    with open(full_outdat_name, "r") as full_outdat_file:
+        for line in full_outdat_file.read().split("\n")[1:-1]:
+            splits = line.split("\t")
+            gid = int(splits[1])
+            spiketime = float(splits[0])
+            gid_spiketimes_dict[gid].append(spiketime)
     return gid_spiketimes_dict
 
 class SSim(object):
@@ -66,21 +66,22 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
-    def instantiate_gids(self, gids, synapse_detail, full=True):
+    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False):
         """ Instantiate a list of GIDs
 
         Parameters
         ----------
-        gids: list of GIDs. Must be a list; even in case of instantiation of\
+        gids: list of GIDs. Must be a list; even in case of instantiation of
         a single GID
-        synapse_detail: Level of detail; if chosen, all settings are taken\
+        synapse_detail: Level of detail; if chosen, all settings are taken
          from the "large" cortical simulation. Possible values:
-            0: Don't add synapses.
-            1: Add synapse of the correct type at the simulated locations.\
-            Preserves only the location and the type
-            2: As one but with all settings as in the "large" simulation
-            3: As 2 but with minis and all, as well as the real pre-synaptic\
-            spiketrains.
+            0: No synapses
+            1: Add synapse of the correct type at the simulated locations
+               with all settings as in the "large" simulation
+            2: As 1 but with minis
+        add_replay: Add presynaptic spiketrains from the large simulation
+            throws an exception if this is set when synapse_detail < 1
+        add_stimuli: Add the same stimuli as in the large simulation
         """
         bgc_morph_path = self.bc.entry_map['Default'].CONTENTS.MorphologyPath
         # backwards compatible
@@ -98,7 +99,7 @@ class SSim(object):
             template_name_of_gid = self._fetch_template_name(gid)
             full_template_name_of_gid = self.bc.entry_map['Default'].CONTENTS.\
               METypePath+'/'+template_name_of_gid+'.hoc'
-            print 'Added gid %d from template %s' % (gid, full_template_name_of_gid)
+            printv('Added gid %d from template %s' % (gid, full_template_name_of_gid), 1)
 
             temp_cell = bglibpy.Cell(full_template_name_of_gid, \
                                      path_of_morphology, gid=gid, \
@@ -106,10 +107,16 @@ class SSim(object):
             self.cells[gid] = temp_cell
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
+
+            if add_replay :
+                pre_spike_trains = parse_and_store_GID_spiketrains(\
+                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                                    'out.dat')
+            
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
             if pre_datas is None:
-                print "No presynaptic cells found for gid %d, no synapses added" % gid
+                printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
             elif synapse_detail == 0:
                 pass
             else:
@@ -122,25 +129,26 @@ class SSim(object):
                     if synapse_detail > 1:
                         self.add_replay_minis(gid, sid, syn_description, \
                                               connection_parameters)
-                    if synapse_detail > 2:
-                        pre_spike_trains = \
-                                  parse_and_store_GID_spiketrains(\
-                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                                    'out.dat')
+                    if add_replay:
+                        if synapse_detail < 1:
+                            raise Exception("Cannot add replay stimulus if synapse_detail < 1")
+
+                        
                         self.charge_replay_synapse(gid, sid, syn_description, \
-                                                    connection_parameters, \
-                                                    pre_spike_trains)
+                                                connection_parameters, \
+                                                pre_spike_trains)
 
                 if synapse_detail > 0:
-                    print "Added synapses for gid %d" % gid
+                    printv("Added synapses for gid %d" % gid, 1)
                 if synapse_detail > 1:
-                    print "Added minis for gid %d" % gid
-                if synapse_detail > 2:
-                    print "Added presynaptic spiketrains for gid %d" % gid
-            if full:
+                    printv("Added minis for gid %d" % gid, 1)
+                if add_replay:
+                    printv("Added presynaptic spiketrains for gid %d" % gid, 1)
+
+            if add_stimuli:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
-                print "Added stimuli for gid %d" % gid
+                printv("Added stimuli for gid %d" % gid, 1)
 
 
     def _add_replay_stimuli(self, gid):
@@ -167,9 +175,9 @@ class SSim(object):
                     elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
                         self._add_replay_hypamp_injection(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
-                        print "Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern
+                        printv("Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern, 1)
                     else:
-                        print "Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern
+                        printv_err("Found stimulus with pattern %s, not supported" % stimulus.CONTENTS.Pattern, 1)
                         exit(1)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
@@ -239,8 +247,13 @@ class SSim(object):
         #print 'params:\n', parameters
         return parameters
 
-    def run(self, t_stop=100, v_init=-65, celsius=34, dt=0.025):
+    def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""
+        if t_stop is None:
+            t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
+        if dt is None:
+            dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
+
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.addCell(self.cells[gid])

@@ -43,6 +43,10 @@ class Cell:
         match = re.search("begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+        self.soma = [x for x in self.cell.getCell().somatic][0]
+        """WARNING: this finitialize 'must' be here, otherwhise the diameters
+        of the loaded morph are wrong"""
+        neuron.h.finitialize()
 
         self.morphology_name = morphology_name
         self.template_name = template_name
@@ -62,7 +66,6 @@ class Cell:
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
-        #neuron.h.finitialize()
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         self.somatic = [x for x in self.cell.getCell().somatic]
@@ -137,7 +140,6 @@ class Cell:
 
         if distance < 0:
             print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
-            #print "WARNING: %f %f " % (neuron.h.n3d(sec=self.get_section(isec)), distance)
             return 0
         else:
             return distance
@@ -245,13 +247,6 @@ class Cell:
               ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
             syn.tau_d_AMPA = syn_DTC
 
-        # hoc exec synapse configure blocks
-        if 'SynapseConfigure' in connection_modifiers:
-            for cmd in connection_modifiers['SynapseConfigure']:
-                cmd = cmd.replace('%s', '\n%(syn)s')
-                #print cmd % {'syn': syn.hname()}
-                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
-
         syn.Use = abs( syn_U )
         syn.Dep = abs( syn_D )
         syn.Fac = abs( syn_F )
@@ -261,6 +256,13 @@ class Cell:
         rndd.uniform(0, 1)
         syn.setRNG(rndd)
         syn.synapseID = sid
+
+        # hoc exec synapse configure blocks
+        if 'SynapseConfigure' in connection_modifiers:
+            for cmd in connection_modifiers['SynapseConfigure']:
+                cmd = cmd.replace('%s', '\n%(syn)s')
+                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
+
         self.persistent.append(rndd)
         self.syns[sid] = syn
         return True

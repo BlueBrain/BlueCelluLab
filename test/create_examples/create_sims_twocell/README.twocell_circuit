@@ -1,0 +1,42 @@
+The two_cell circuit
+=====================
+
+Two cells: "a1", "a2"
+
+a1:
+
+Excitatory L5 cell
+
+
+a2:
+
+Excitatory L6 cell
+
+
+
+two_cell circuit simulation
+============================
+
+BlueConfig.empty.template:
+BlueConfig with only header, no stimuli or replay
+
+BlueConfig.noisestim.template:
+BlueConfig with only noisy stimulus and hypamp
+
+BlueConfig.replay.template:
+BlueConfig with only spike replay
+
+BlueConfig.minis.replay.template:
+BlueConfig with only spike replay and minis enabled
+
+BlueConfig.all.template
+BlueConfig with all the above enabled
+
+
+Creating the two_cell circuit and simulations in the test directory
+===================================================================
+
+Login to the viz cluster
+Change the working directory to the directory that contains the create_sims_twocell.py script
+Adapt to sys.path in the script to point to your installation of BGLib
+Execute "python create_sims_twocell.py"
