@@ -129,11 +129,11 @@ class Cell:
             ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
             syn_offset = -syn_offset
 
-        distance = -1
+        distance = 0.5
         if ipt < neuron.h.n3d(sec=self.get_section(isec)):
             distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
             if distance >= 1.0:
-                distance = 1
+                distance = 1.0
 
         if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
             distance = 1 - distance
