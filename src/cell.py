@@ -107,7 +107,13 @@ class Cell:
     def execute_neuronconfigure(self, expression):
         """Execute a statement from a BlueConfig NeuronConfigure block"""
         for section in self.all:
-            bglibpy.neuron.h("execute1(%s, 0)" % (expression % neuron.h.secname(sec=section)))
+            sec_expression = expression.replace('%s', neuron.h.secname(sec=section))
+            if '%g' in expression:
+                for segment in section:
+                    seg_expression = sec_expression.replace('%g', segment.x)
+                    bglibpy.neuron.h('execute1(%s, 0)' % seg_expression)
+            else:
+                bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
 
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
