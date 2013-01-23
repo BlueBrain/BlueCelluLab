@@ -247,7 +247,6 @@ class TestSSimBaseClass_full_run(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-
         self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
                 record_dt=0.1)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
@@ -274,5 +273,37 @@ class TestSSimBaseClass_full_run(object):
         #pylab.show()
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
-        nt.assert_true(rms_error < 2.0)
+        nt.assert_true(rms_error < 1.0)
+
+class TestSSimBaseClass_full_neuronconfigure(object):
+    """Class to test SSim with full circuit that uses neuronconfigure"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a full replay of a simulation with neuronconfigure blocks run on BG/P gives the same output trace as on BG/P"""
+        gid = 116386
+        self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
+        self.ssim.run(500)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        nt.assert_equal(len(time_bglibpy), 5000)
+        nt.assert_equal(len(voltage_bglibpy), 5000)
+        #time_bglib = self.ssim.bc_simulation.reports.soma.time_range[:len(time_bglibpy)]
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
+
+        #import pylab
+        #pylab.plot(time_bglibpy, voltage_bglibpy)
+        #pylab.plot(time_bglib, voltage_bglib)
+        #pylab.show()
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 0.01)
 

@@ -104,6 +104,11 @@ class Cell:
         """
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
+    def execute_neuronconfigure(self, expression):
+        """Execute a statement from a BlueConfig NeuronConfigure block"""
+        for section in self.all:
+            bglibpy.neuron.h("execute1(%s, 0)" % (expression % neuron.h.secname(sec=section)))
+
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
 
