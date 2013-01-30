@@ -81,6 +81,7 @@ class Cell:
             self.hypamp = self.cell.getHypAmp()
         except AttributeError:
             self.hypamp = None
+
         try:
             self.threshold = self.cell.getThreshold()
         except AttributeError:
@@ -384,7 +385,6 @@ class Cell:
                 if "dend" in secname:
                     dendnumber = int(secname.split("dend")[1].split("[")[1].split("]")[0])
                     secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + dendnumber)
-                    print dendnumber, secnumber
                 elif "apic" in secname:
                     apicnumber = int(secname.split("apic")[1].split("[")[1].split("]")[0])
                     secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + self.cell.getCell().nSecBasal + apicnumber)

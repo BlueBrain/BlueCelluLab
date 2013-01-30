@@ -12,6 +12,7 @@ import sys
 from bglibpy.importer import neuron
 from bglibpy import printv
 from bglibpy import printv_err
+from bglibpy import tools
 
 class Simulation:
 
@@ -20,7 +21,7 @@ class Simulation:
         self.verbose_level = verbose_level
         self.cells = []
 
-    def addCell(self, new_cell):
+    def add_cell(self, new_cell):
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
@@ -88,3 +89,9 @@ class Simulation:
 
     def __del__(self):
         pass
+
+    @tools.deprecated
+    def addCell(self, new_cell):
+        """Add a cell to a simulation"""
+        self.add_cell(new_cell)
+
