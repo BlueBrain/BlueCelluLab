@@ -13,6 +13,7 @@ import numpy
 import re
 import math
 import bglibpy
+import os
 from bglibpy import tools
 from bglibpy.importer import neuron
 
@@ -36,6 +37,9 @@ class Cell:
 
         #Persistent objects, like clamps, that exist as long as the object exists
         self.persistent = []
+
+        if not os.path.exists(template_name):
+            raise Exception("Couldn't find template file [%s]" % template_name)
 
         #Load the template
         neuron.h.load_file(template_name)
