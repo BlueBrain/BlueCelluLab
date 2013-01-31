@@ -1,10 +1,18 @@
-"""Class that represents a dendrogram window"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Class that represents a dendrogram window
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
 
 import numpy
-import bglibpy
+from bglibpy import neuron
+from .psection import PSection
 
-
-class Dendrogram:
+class Dendrogram(object):
     """Class that represent a dendrogram plot"""
     def __init__(self, sections, variable=None, active=False):
         import pylab

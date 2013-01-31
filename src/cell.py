@@ -18,7 +18,7 @@ from bglibpy import tools
 from bglibpy.importer import neuron
 
 
-class Cell:
+class Cell(object):
     """Represents a bglib cell"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):

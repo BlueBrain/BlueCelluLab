@@ -14,7 +14,7 @@ from bglibpy import printv
 from bglibpy import printv_err
 from bglibpy import tools
 
-class Simulation:
+class Simulation(object):
 
     """Class that represents a neuron simulation"""
     def __init__(self, verbose_level=0):

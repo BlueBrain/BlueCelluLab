@@ -11,9 +11,11 @@ Represent a Neuron Segment in Python (for drawing)
 
 import bglibpy
 
-class PSegment:
+class PSegment(object):
     """A python representation of a segment"""
     def __init__(self, hsegment, parentsection):
+        import matplotlib as plt
+
         self.hsegment = hsegment
         self.parentsection = parentsection
         self.L = self.parentsection.L / self.parentsection.hsection.nseg
