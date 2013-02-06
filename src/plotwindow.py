@@ -1,6 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Class that represents a plot window in BGLibPy
+
+@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
+         Do not distribute without further notice.
+
+"""
+
 import itertools
 
-class PlotWindow:
+class PlotWindow(object):
 
     """Class the represents a plotting window"""
 

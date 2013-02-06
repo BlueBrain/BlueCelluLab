@@ -13,11 +13,12 @@ import numpy
 import re
 import math
 import bglibpy
+import os
 from bglibpy import tools
 from bglibpy.importer import neuron
 
 
-class Cell:
+class Cell(object):
     """Represents a bglib cell"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
@@ -36,6 +37,9 @@ class Cell:
 
         #Persistent objects, like clamps, that exist as long as the object exists
         self.persistent = []
+
+        if not os.path.exists(template_name):
+            raise Exception("Couldn't find template file [%s]" % template_name)
 
         #Load the template
         neuron.h.load_file(template_name)
@@ -81,6 +85,7 @@ class Cell:
             self.hypamp = self.cell.getHypAmp()
         except AttributeError:
             self.hypamp = None
+
         try:
             self.threshold = self.cell.getThreshold()
         except AttributeError:
@@ -392,7 +397,6 @@ class Cell:
                 if "dend" in secname:
                     dendnumber = int(secname.split("dend")[1].split("[")[1].split("]")[0])
                     secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + dendnumber)
-                    print dendnumber, secnumber
                 elif "apic" in secname:
                     apicnumber = int(secname.split("apic")[1].split("[")[1].split("]")[0])
                     secnumber = int(self.cell.getCell().nSecAxonalOrig + self.cell.getCell().nSecSoma + self.cell.getCell().nSecBasal + apicnumber)

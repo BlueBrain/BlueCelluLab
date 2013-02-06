@@ -12,7 +12,7 @@ Represents a python version of Neuron Section (for drawing)
 import bglibpy
 
 
-class PSection:
+class PSection(object):
     """Class that represents a cell section"""
     def __init__(self, hsection, pparent):
         self.L = hsection.L
@@ -72,6 +72,13 @@ class PSection:
                 varbounds[1] = max(varbounds[1], child_varbounds[1]) if varbounds[1] else child_varbounds[1]
 
         return varbounds
+
+    def getAllPDescendants(self):
+        """Return all the psection that are descendants of this psection"""
+        pdescendants = [x for x in self.pchildren]
+        for child in self.pchildren:
+            pdescendants += child.getAllPDescendants()
+        return pdescendants
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
         """Draw a dendritic tree"""
