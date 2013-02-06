@@ -104,9 +104,13 @@ class Cell:
         """
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def execute_neuronconfigure(self, expression):
+    def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block"""
-        for section in self.all:
+        sections_map = {'axonal': self.axonal, 'basal':self.basal, 'apical':self.apical, 'somatic': self.somatic,
+                        'dendritic': self.basal+self.apical+self.somatic, 
+                        None:self.all}
+
+        for section in sections_map[sections]:
             sec_expression = expression.replace('%s', neuron.h.secname(sec=section))
             if '%g' in expression:
                 for segment in section:
