@@ -4,21 +4,21 @@ Models simulated in N disticnt ways, all shoudl
 """
 
 import numpy as np
-import numpy.testing
+#import numpy.testing
 import matplotlib.pyplot as plt
 
-import sys
-sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
+#import sys
+#sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 
 import bglibpy
-from bglibpy import bluepy
-import bluepy
+#from bglibpy import bluepy
+#import bluepy
 
 #sys.path.append('/home/torben/sandbox/willem/DendriteApprox/')
 from greensFunctionCalculator import *
 
 '''Due to some path difficulties with BlueConfig, change directory'''
-import os
+#import os
 #os.chdir('test/ballstick_test')
 
 T_STOP = 200

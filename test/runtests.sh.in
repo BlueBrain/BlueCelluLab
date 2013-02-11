@@ -1,6 +1,8 @@
 #!/bin/sh
 
 export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
-cd @CMAKE_CURRENT_SOURCE_DIR@
-#-v: verbose -x: exit at first error -s: don't redirect stdout
+cd @CMAKE_CURRENT_BINARY_DIR@
 nosetests -v -x -s
+cd @CMAKE_CURRENT_SOURCE_DIR@
+nosetests -v -x -s
+#-v: verbose -x: exit at first error -s: don't redirect stdout

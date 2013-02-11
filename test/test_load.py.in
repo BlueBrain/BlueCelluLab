@@ -10,4 +10,6 @@ import nose.tools as nt
 def test_moduleload():
     """BGLibPy: Test the loading of the bglibpy module"""
     import bglibpy
-    nt.assert_not_equal(bglibpy.__file__, "")
+    #with open("installpath.txt") as path_file:
+    #    path = path_file.readline()
+    nt.assert_equal(bglibpy.__file__, "@DESTINATION_DIR@/__init__.pyc")
