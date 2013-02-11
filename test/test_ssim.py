@@ -125,9 +125,17 @@ class TestSSimBaseClass_twocell_synapseid(object):
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
 
+        os.chdir("../sim_twocell_all")
+        ssim_bglib_all = bglibpy.SSim("BlueConfig")
+        voltage_bglib_all = ssim_bglib_all.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib_all), 1000)
+
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
-        print rms_error
         nt.assert_true(rms_error < .5)
+
+        rms_error_all = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib_all)**2))
+
+        nt.assert_true(rms_error_all > 10.0)
 
     def teardown(self):
         """Teardown"""
