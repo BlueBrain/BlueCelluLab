@@ -1,7 +1,7 @@
 """Test script 2"""
 
-import sys
-sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
+#import sys
+#sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 import bglibpy
 
 
