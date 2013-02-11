@@ -106,6 +106,35 @@ class TestSSimBaseClass_twocell_all(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+class TestSSimBaseClass_twocell_synapseid(object):
+    """Class to test SSim with two cell circuit"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_synapseid")
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
+        self.ssim_bglibpy.run()
+
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit and spike replay, minis, noisy stimulus and SynapseID"""
+        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
+        nt.assert_equal(len(voltage_bglib), 1000)
+
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        print rms_error
+        nt.assert_true(rms_error < .5)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
 class TestSSimBaseClass_twocell_minis_replay(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -187,6 +216,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
         del self.ssim_bglibpy
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
+
 class TestSSimBaseClass_full(object):
     """Class to test SSim with full circuit"""
     def setup(self):
@@ -205,25 +235,29 @@ class TestSSimBaseClass_full(object):
 
         # check a TTPC1 pair
         pre_gid, post_gid = list(self.ssim.bc_simulation.get_target("L5_TTPC1"))[:2]
+        syn_type = list(self.ssim.bc_simulation.get_target("L5_TTPC1"))[13]
 
-        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid)
+        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid, syn_type)
 
         # checking a few sanity cases
 
-        nt.assert_equal(params, {'SpontMinis': 0.067000000000000004,
+        nt.assert_equal(params, {'SpontMinis': 0.067000000000000004, 'add_synapse': True,
             'SynapseConfigure': ['%s.NMDA_ratio = 0.4 %s.mg = 0.5', '%s.NMDA_ratio = 0.71'], 'Weight': 2.3500000000000001})
 
         pre_gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
-        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid)
-        nt.assert_equal(params, {'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0'], 'Weight': 2.0})
+        syn_type = list(self.ssim.bc_simulation.get_target("L5_MC"))[13]
+        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid, syn_type)
+        nt.assert_equal(params, {'SpontMinis': 0.012, 'add_synapse': True, 'SynapseConfigure': ['%s.e_GABAA = -80.0'], 'Weight': 2.0})
 
         pre_gid = list(self.ssim.bc_simulation.get_target("L5_LBC"))[0]
-        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid)
-        nt.assert_equal(params, {'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0'], 'Weight': 0.67000000000000004})
+        syn_type = list(self.ssim.bc_simulation.get_target("L5_LBC"))[13]
+        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid, syn_type)
+        nt.assert_equal(params, {'SpontMinis': 0.012, 'add_synapse': True, 'SynapseConfigure': ['%s.e_GABAA = -80.0'], 'Weight': 0.67000000000000004})
 
         pre_gid = list(self.ssim.bc_simulation.get_target("L1_HAC"))[0]
-        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid)
-        nt.assert_equal(params, {'SpontMinis': 0.012, 'SynapseConfigure': ['%s.e_GABAA = -80.0', '%s.GABAB_ratio = 0.75'], 'Weight': 2.0})
+        syn_type = list(self.ssim.bc_simulation.get_target("L1_HAC"))[13]
+        params = self.ssim._evaluate_connection_parameters(pre_gid, post_gid, syn_type)
+        nt.assert_equal(params, {'SpontMinis': 0.012, 'add_synapse': True, 'SynapseConfigure': ['%s.e_GABAA = -80.0', '%s.GABAB_ratio = 0.75'], 'Weight': 2.0})
 
     def test_add_single_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
