@@ -131,15 +131,24 @@ class SSim(object):
                 for sid, syn_description in enumerate(pre_datas):
                     connection_parameters = self.\
                       _evaluate_connection_parameters(syn_description[0],gid)
+                    syn_type = syn_description[13]
                     if synapse_detail > 0:
-                        self.add_single_synapse(gid, sid, syn_description, \
+                        add_synapse = True
+                        if "SynapseID" in connection_parameters:
+                            if syn_type == connection_parameters["SynapseID"]:
+                                add_synapse = True
+                            else:
+                                add_synapse = False
+
+                        if add_synapse:
+                            self.add_single_synapse(gid, sid, syn_description, \
                                                 connection_parameters)
                     if synapse_detail > 1:
                         self.add_replay_minis(gid, sid, syn_description, \
                                               connection_parameters)
                     if add_replay:
                         if synapse_detail < 1:
-                            raise Exception("Cannot add replay stimulus if synapse_detail < 1")
+                            raise Exception("SSim: Cannot add replay stimulus if synapse_detail < 1")
 
 
                         self.charge_replay_synapse(gid, sid, syn_description, \
@@ -227,32 +236,23 @@ class SSim(object):
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
-            # todo: this check should be done once up front for all connection blocks
-            # and thus moved out of here
-
-            # if (dest not in all_targets):
-            #     raise ValueError, "Connection '%s' Destination target '%s' not found in start.target or user.target" % (entry.NAME, dest)
-            # if (src not in all_targets):
-            #     raise ValueError, "Connection '%s' Source target '%s' not found in start.target or user.target" % (entry.NAME, src)
-
-            if pre_gid in self.all_targets_dict[src]: #self.bc_simulation.get_target(src):
-                if post_gid in self.all_targets_dict[dest]:#self.bc_simulation.get_target(dest):
+            if pre_gid in self.all_targets_dict[src]:
+                if post_gid in self.all_targets_dict[dest]:
                     ''' whatever specified in this block, is applied to gid '''
-                    if('Weight' in entry.CONTENTS.keys):
+                    if 'Weight' in entry.CONTENTS.keys:
                         parameters['Weight'] = float(entry.CONTENTS.Weight)
-                        #print 'found weight: ', entry.CONTENTS.Weight
-                    if('SpontMinis' in entry.CONTENTS.keys):
+                    if 'SpontMinis' in entry.CONTENTS.keys:
                         parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
-                        #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
-                    if('SynapseConfigure' in entry.CONTENTS.keys):
+                    if 'SynapseConfigure' in entry.CONTENTS.keys:
                         conf = entry.CONTENTS.SynapseConfigure
                         # collect list of applicable configure blocks to be applied with a "hoc exec" statement
                         parameters.setdefault('SynapseConfigure', []).append(conf)
-                    if('Delay' in entry.CONTENTS.keys):
-                        import warnings
-                        warnings.warn("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+                    if 'Delay' in entry.CONTENTS.keys:
+                        #import warnings
+                        raise Exception("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+                    if 'SynapseID' in entry.CONTENTS.keys:
+                        parameters['SynapseID'] = int(entry.CONTENTS.SynapseID)
 
-        #print 'params:\n', parameters
         return parameters
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):

@@ -240,7 +240,7 @@ class Cell(object):
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
             return None
 
-        if(syn_type < 100):
+        if syn_type < 100:
             ''' see: https://bbpteam.epfl.ch/\
             wiki/index.php/BlueBuilder_Specifications#NRN,
             inhibitory synapse
