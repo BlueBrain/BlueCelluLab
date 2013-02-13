@@ -257,6 +257,12 @@ class SSim(object):
         #print 'params:\n', parameters
         return parameters
 
+    def initialize_synapses(self):
+        """ Resets the state of all synapses of all cells to initial values """
+        for cell in self.cells.itervalues():
+            cell.initialize_synapses()
+
+
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""
         if t_stop is None:
