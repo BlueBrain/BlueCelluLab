@@ -87,6 +87,7 @@ Connection changeUse
               Weight 1.0
     SynapseConfigure %s.Dep = 1.0
           SpontMinis 100.0
+           SynapseID 119
 }
 
 Connection scheme_minus2
@@ -95,10 +96,5 @@ Connection scheme_minus2
          Destination Excitatory
               Weight 1.0
     SynapseConfigure %s.NMDA_ratio = 0.4
-}
-
-NeuronConfigure ek
-{
-              Target Excitatory
-           Configure %s.ek = -65
+           SynapseID 113
 }          

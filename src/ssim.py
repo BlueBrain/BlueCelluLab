@@ -131,22 +131,25 @@ class SSim(object):
                 pass
             else:
                 for sid, syn_description in enumerate(pre_datas):
+                    syn_type = syn_description[13]
+
                     connection_parameters = self.\
-                      _evaluate_connection_parameters(syn_description[0],gid)
-                    if synapse_detail > 0:
-                        self.add_single_synapse(gid, sid, syn_description, \
+                      _evaluate_connection_parameters(syn_description[0], gid, syn_type)
+
+                    if connection_parameters["add_synapse"]:
+                        if synapse_detail > 0:
+                            self.add_single_synapse(gid, sid, syn_description, \
+                                                    connection_parameters)
+                        if synapse_detail > 1:
+                            self.add_replay_minis(gid, sid, syn_description, \
                                                 connection_parameters)
-                    if synapse_detail > 1:
-                        self.add_replay_minis(gid, sid, syn_description, \
-                                              connection_parameters)
-                    if add_replay:
-                        if synapse_detail < 1:
-                            raise Exception("Cannot add replay stimulus if synapse_detail < 1")
+                        if add_replay:
+                            if synapse_detail < 1:
+                                raise Exception("SSim: Cannot add replay stimulus if synapse_detail < 1")
 
-
-                        self.charge_replay_synapse(gid, sid, syn_description, \
-                                                connection_parameters, \
-                                                pre_spike_trains)
+                            self.charge_replay_synapse(gid, sid, syn_description, \
+                                                    connection_parameters, \
+                                                    pre_spike_trains)
 
                 if synapse_detail > 0:
                     printv("Added synapses for gid %d" % gid, 1)
@@ -217,44 +220,49 @@ class SSim(object):
         """Add a replay synapse on the cell"""
         return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
 
-    def _evaluate_connection_parameters(self, pre_gid, post_gid):
+    def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
         Parameters:
         ----------
         gid: gid of the post-synaptic cell
         """
         parameters = {}
+        parameters['add_synapse'] = False
+        spontminis_set = False
 
         for entry in self.connection_entries:
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
-            # todo: this check should be done once up front for all connection blocks
-            # and thus moved out of here
-
-            # if (dest not in all_targets):
-            #     raise ValueError, "Connection '%s' Destination target '%s' not found in start.target or user.target" % (entry.NAME, dest)
-            # if (src not in all_targets):
-            #     raise ValueError, "Connection '%s' Source target '%s' not found in start.target or user.target" % (entry.NAME, src)
-
-            if pre_gid in self.all_targets_dict[src]: #self.bc_simulation.get_target(src):
-                if post_gid in self.all_targets_dict[dest]:#self.bc_simulation.get_target(dest):
+            if pre_gid in self.all_targets_dict[src]:
+                if post_gid in self.all_targets_dict[dest]:
                     ''' whatever specified in this block, is applied to gid '''
-                    if('Weight' in entry.CONTENTS.keys):
-                        parameters['Weight'] = float(entry.CONTENTS.Weight)
-                        #print 'found weight: ', entry.CONTENTS.Weight
-                    if('SpontMinis' in entry.CONTENTS.keys):
-                        parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
-                        #print 'found SpontMinis: ', entry.CONTENTS.SpontMinis
-                    if('SynapseConfigure' in entry.CONTENTS.keys):
-                        conf = entry.CONTENTS.SynapseConfigure
-                        # collect list of applicable configure blocks to be applied with a "hoc exec" statement
-                        parameters.setdefault('SynapseConfigure', []).append(conf)
-                    if('Delay' in entry.CONTENTS.keys):
-                        import warnings
-                        warnings.warn("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+                    apply_parameters = True
 
-        #print 'params:\n', parameters
+                    if 'SynapseID' in entry.CONTENTS.keys:
+                        if int(entry.CONTENTS.SynapseID) != syn_type:
+                            apply_parameters = False
+
+                    if apply_parameters:
+                        parameters['add_synapse'] = True
+                        if 'Weight' in entry.CONTENTS.keys:
+                            parameters['Weight'] = float(entry.CONTENTS.Weight)
+                        if not spontminis_set:
+                            if 'SpontMinis' in entry.CONTENTS.keys:
+                                parameters['SpontMinis'] = float(entry.CONTENTS.SpontMinis)
+                                spontminis_set = True
+                            else:
+                                parameters['SpontMinis'] = 0.0
+                                spontminis_set = True
+
+                        if 'SynapseConfigure' in entry.CONTENTS.keys:
+                            conf = entry.CONTENTS.SynapseConfigure
+                            # collect list of applicable configure blocks to be applied with a "hoc exec" statement
+                            parameters.setdefault('SynapseConfigure', []).append(conf)
+                        if 'Delay' in entry.CONTENTS.keys:
+                            #import warnings
+                            raise Exception("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
+
         return parameters
 
     def initialize_synapses(self):

@@ -102,7 +102,12 @@ def main():
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    os.chdir("../../examples/sim_twocell_neuronconfigure")
+    with open("BlueConfig.synapseid.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_synapseid"
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
+
+    os.chdir("../../examples/sim_twocell_synapseid")
 
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
     ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
