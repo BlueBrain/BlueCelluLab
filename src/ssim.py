@@ -252,6 +252,9 @@ class SSim(object):
                             else:
                                 parameters['SpontMinis'] = 0.0
                                 spontminis_set = True
+                        elif 'SpontMinis' in entry.CONTENTS.keys:
+                            import warnings
+                            warnings.warn("Connection '%s': SpontMinis was already set in previous block, IGNORING" % entry.NAME)
 
                         if 'SynapseConfigure' in entry.CONTENTS.keys:
                             conf = entry.CONTENTS.SynapseConfigure
@@ -272,7 +275,7 @@ class SSim(object):
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
-            sim.addCell(self.cells[gid])
+            sim.add_cell(self.cells[gid])
         sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init)
 
     def get_voltage_traces(self):

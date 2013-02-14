@@ -163,7 +163,7 @@ def run_bglibpy(params):
     nc = bglibpy.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
     sim = bglibpy.Simulation()
-    sim.addCell(cell)
+    sim.add_cell(cell)
     #print "BGLibPy: Soma L=%f, diam=%f, area=%f" % (cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma))
     #print "BGLibPy: Dend L=%f, diam=%f, area=%f" % (cell.basal[0].L, cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0]))
     sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
