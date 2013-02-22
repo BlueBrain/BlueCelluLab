@@ -5,6 +5,10 @@
 import sys
 sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 import bglibpy
+
+sys.path = ["/home/vangeit/local/pybinreports/lib64/python2.6/site-packages"]+ sys.path
+import soma2h5
+
 import os
 
 def create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=None, dt=None, record_dt=None, fill_outdat=False):
@@ -54,6 +58,12 @@ def create_extracted_simulation(output_path, blueconfig_template, runsh_template
     print os.getcwd()
     subprocess.call("./run.sh")
 
+    os.chdir("output")
+
+    soma2h5.main()
+
+    os.chdir("..")
+
     os.chdir(old_cwd)
 
 def main():
@@ -69,40 +79,40 @@ def main():
     import create_circuit_twocell_example1
     create_circuit_twocell_example1.main()
 
-    with open("run.sh.template") as runsh_templatefile:
+    with open("templates/run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()
 
-    with open("BlueConfig.empty.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.empty.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_empty"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
-    with open("BlueConfig.noisestim.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.noisestim.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_noisestim"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt)
 
-    with open("BlueConfig.replay.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.replay.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_replay"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    with open("BlueConfig.minis.replay.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.minis.replay.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_minis_replay"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    with open("BlueConfig.all.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.all.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_all"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    with open("BlueConfig.neuronconfigure.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.neuronconfigure.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_neuronconfigure"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    with open("BlueConfig.synapseid.template") as blueconfig_templatefile:
+    with open("templates/BlueConfig.synapseid.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_synapseid"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
