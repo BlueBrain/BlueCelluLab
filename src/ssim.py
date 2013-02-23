@@ -119,7 +119,7 @@ class SSim(object):
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
 
             if intersect_pre_gids != None:
-                pre_datas = [pre_data for pre_data in pre_datas if pre_data[1][0] in intersect_pre_gids]
+                pre_datas = [pre_data for pre_data in pre_datas if pre_data[0] in intersect_pre_gids]
 
             if add_replay :
                 pre_spike_trains = parse_and_store_GID_spiketrains(\
