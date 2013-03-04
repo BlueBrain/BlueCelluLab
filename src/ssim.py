@@ -73,7 +73,7 @@ class SSim(object):
                 conf = entry.CONTENTS.Configure
                 self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
 
-    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False):
+    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False, intersect_pre_gids=None):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -117,6 +117,9 @@ class SSim(object):
                     self.cells[gid].execute_neuronconfigure(expression)
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
+
+            if intersect_pre_gids != None:
+                pre_datas = [pre_data for pre_data in pre_datas if pre_data[1][0] in intersect_pre_gids]
 
             if add_replay :
                 pre_spike_trains = parse_and_store_GID_spiketrains(\
