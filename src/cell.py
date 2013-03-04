@@ -9,6 +9,8 @@ Class that represents a cell in BGLibPy
 
 """
 
+# pylint: disable=F0401
+
 import numpy
 import re
 import math
