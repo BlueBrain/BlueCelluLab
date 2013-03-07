@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+"""Contains information about the version of the components of BGLibPy"""
+
 bglibpy_version = "${BGLIBPY_VERSION}"
+neuron_version = "${NRN_VERSION}"
+bg_hoclib_version = "${BG_Hoclib}"
 
 version = bglibpy_version
-VERSION = bglibpy_version
-__version__ = bglibpy_version
+build_versions = "BGLibPy:%s\nNeuron:%s\nBGHocLib:%s\n" % (bglibpy_version, neuron_version, bg_hoclib_version)

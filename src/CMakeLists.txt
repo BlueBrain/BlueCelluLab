@@ -7,7 +7,7 @@ exec_program(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ARGS "describe --abbrev=4 --dirty" 
     OUTPUT_VARIABLE BGLIBPY_VERSION)
-message("Work with BGLibPy Version: ${BGLIBPY_VERSION}")
+message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
 
 ###
 # LIBNRN
@@ -44,6 +44,12 @@ endif ()
 
 set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
 
+exec_program(
+    ${NRN_BINARIES}/nrniv
+    ARGS "--version" 
+    OUTPUT_VARIABLE NRN_VERSION)
+message("Working with Neuron Version: ${NRN_VERSION}")
+
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
 endif ()
@@ -51,6 +57,13 @@ endif ()
 if (NOT HOCLIBPATH)
     message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
 endif ()
+
+exec_program(
+    "git"
+    ${HOCLIBPATH}
+    ARGS "describe --abbrev=4 --dirty" 
+    OUTPUT_VARIABLE HOCLIB_VERSION)
+message("Working with BG_Hoclib Version: ${BG_HOCLIB_VERSION}")
 
 if (NOT BLUEPYPATH)
     message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
