@@ -1,4 +1,15 @@
 ###
+# VERSION
+###
+
+exec_program(
+    "git"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "describe --abbrev=4 --dirty" 
+    OUTPUT_VARIABLE BGLIBPY_VERSION)
+message("Work with BGLibPy Version: ${BGLIBPY_VERSION}")
+
+###
 # LIBNRN
 ###
 
@@ -90,10 +101,12 @@ set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
 set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
 
+configure_file(versions.py.in versions.py)
 configure_file(paths.config.in paths.config)
 
 set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py)
 
 install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/versions.py" DESTINATION ${DESTINATION_DIR})
 install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})
