@@ -17,9 +17,10 @@ from bglibpy import tools
 class Simulation(object):
 
     """Class that represents a neuron simulation"""
-    def __init__(self, verbose_level=0):
-        self.verbose_level = verbose_level
+    def __init__(self, show_progress=True):
         self.cells = []
+        if show_progress:
+            self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
 
     def add_cell(self, new_cell):
         """Add a cell to a simulation"""

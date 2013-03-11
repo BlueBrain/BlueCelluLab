@@ -35,6 +35,7 @@ neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedSections.hoc")
 neuron.h.load_file("TStim.hoc")
+neuron.h.load_file("ShowProgress.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
