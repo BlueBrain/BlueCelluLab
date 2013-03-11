@@ -153,16 +153,16 @@ class SSim(object):
                                                     pre_spike_trains)
 
                 if synapse_detail > 0:
-                    printv("Added synapses for gid %d" % gid, 1)
+                    printv("Added synapses for gid %d" % gid, 2)
                 if synapse_detail > 1:
-                    printv("Added minis for gid %d" % gid, 1)
+                    printv("Added minis for gid %d" % gid, 2)
                 if add_replay:
-                    printv("Added presynaptic spiketrains for gid %d" % gid, 1)
+                    printv("Added presynaptic spiketrains for gid %d" % gid, 2)
 
             if add_stimuli:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
-                printv("Added stimuli for gid %d" % gid, 1)
+                printv("Added stimuli for gid %d" % gid, 2)
 
 
     def _add_replay_stimuli(self, gid):
