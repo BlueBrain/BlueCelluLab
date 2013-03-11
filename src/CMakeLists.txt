@@ -5,7 +5,7 @@
 exec_program(
     "git"
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --abbrev=4 --dirty" 
+    ARGS "describe --tags --abbrev=4 --dirty" 
     OUTPUT_VARIABLE BGLIBPY_VERSION)
 message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
 
@@ -61,8 +61,8 @@ endif ()
 exec_program(
     "git"
     ${HOCLIBPATH}
-    ARGS "describe --abbrev=4 --dirty" 
-    OUTPUT_VARIABLE HOCLIB_VERSION)
+    ARGS "describe --tags --abbrev=4 --dirty" 
+    OUTPUT_VARIABLE BG_HOCLIB_VERSION)
 message("Working with BG_Hoclib Version: ${BG_HOCLIB_VERSION}")
 
 if (NOT BLUEPYPATH)
