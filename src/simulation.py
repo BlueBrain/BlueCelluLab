@@ -17,7 +17,7 @@ from bglibpy import tools
 class Simulation(object):
 
     """Class that represents a neuron simulation"""
-    def __init__(self, show_progress=True):
+    def __init__(self, show_progress=False):
         self.cells = []
         if show_progress:
             self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
