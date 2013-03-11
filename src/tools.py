@@ -323,7 +323,26 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list,
         precision=.5,
         max_nestlevel=10,
         start_time=500, stop_time=2000):
-    """Search current necessary to bring cell to hyp_voltage in a network replay for a list of gids"""
+    """
+    Search current necessary to bring cell to target_voltage in a network replay for a list of gids.
+    This function will use multiprocessing to parallelize the task.
+
+    Parameters
+    ----------
+    blueconfig : Simulation BlueConfig
+    gid_list: list of gids to process
+    target_voltage: voltage you want to bring to cell to
+    min_current, max_current: The algorithm will search in ]min_current, max_current[
+    precision: algorithm stops when abs(calculated_voltage - target_voltage) < precision
+    max_nestlevel = the maximum number of nested levels the algorithm explores
+    start_time, stop_time: the time range for which the voltage is detected
+
+    Returns
+    -------
+    A dictionary where the keys are gids, and the values tuples of the form (detected_level, voltage_trace).
+    voltage_trace is the voltage at the current injection level (=detected_level) that matches the target target_voltage.
+    When the algorithm reached max_nestlevel+1 (nan, None) is returned for that gid
+    """
 
     pool = NestedPool(len(gid_list))
     results = pool.map(search_hyp_function(blueconfig,
