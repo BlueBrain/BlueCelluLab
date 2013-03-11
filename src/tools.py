@@ -212,31 +212,37 @@ def detect_threshold_current(template_name, morphology_name, hyp_level, inj_star
     """Search current necessary to reach threshold"""
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
-def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None, stop_time=None):
+def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False):
     """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
     #print "Calculate_SS_voltage_replay %f" % step_level
-    (SS_voltage, voltage) = pool.apply(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time])
+    (SS_voltage, voltage) = pool.apply(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time, ignore_timerange])
     #(SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level)
     pool.terminate()
     del pool
     return (SS_voltage, voltage)
 
 
-def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level, start_time=None, stop_time=None):
+def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False):
     """Subprocess wrapper of calculate_SS_voltage"""
     process_name = multiprocessing.current_process().name
     ssim = bglibpy.SSim(blueconfig)
+    if ignore_timerange:
+        tstart = 0
+        tstop = int(ssim.bc.entry_map['Default'].CONTENTS.Duration)
+    else:
+        tstart = start_time
+        tstop = stop_time
     #print "%s: Calculating SS voltage of step level %f nA" % (process_name, step_level)
     #print "Calculate_SS_voltage_replay_subprocess instantiating gid ..."
     ssim.instantiate_gids([gid], synapse_detail=2, add_stimuli=True, add_replay=True)
     #print "Calculate_SS_voltage_replay_subprocess instantiating gid done"
 
-    ssim.cells[gid].addRamp(0, stop_time, step_level, step_level)
-    ssim.run(t_stop=stop_time)
+    ssim.cells[gid].addRamp(0, tstop, step_level, step_level)
+    ssim.run(t_stop=tstop)
     time = ssim.get_time()
     voltage = ssim.get_voltage_traces()[gid]
-    SS_voltage = numpy.mean(voltage[numpy.where((time < stop_time) & (time > start_time))])
+    SS_voltage = numpy.mean(voltage[numpy.where((time < tstop) & (time > tstart))])
     printv("%s: Calculated SS voltage for gid %d with step level %f nA: %s mV" % (process_name, gid, step_level, SS_voltage), 1)
 
     #print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
@@ -277,10 +283,10 @@ def search_hyp_current_replay(blueconfig, gid, hyp_voltage,
     elif nestlevel == 1:
         printv("%s: Searching for current to bring gid %d to %f mV" % (process_name, gid, hyp_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
-    (new_hyp_voltage, new_hyp_voltage_trace) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time)
+    (new_hyp_voltage, _) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time)
     #print "Detected voltage: ", new_hyp_voltage
     if abs(new_hyp_voltage - hyp_voltage) < precision:
-        return (med_current, new_hyp_voltage_trace)
+        return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True))
     elif new_hyp_voltage > hyp_voltage:
         return search_hyp_current_replay(blueconfig, gid, hyp_voltage,
                 min_current=min_current,
