@@ -227,7 +227,7 @@ class TestSSimBaseClass_full(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig")
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig")
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -284,7 +284,7 @@ class TestSSimBaseClass_full_run(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
                 record_dt=0.1)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
@@ -310,7 +310,7 @@ class TestSSimBaseClass_full_neuronconfigure(object):
     """Class to test SSim with full circuit that uses neuronconfigure"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
                 record_dt=0.1)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
