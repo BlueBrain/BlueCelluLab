@@ -15,24 +15,6 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
-def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
-    """Parse and store the gid spiketrains"""
-
-    gid_spiketimes_dict = collections.defaultdict(list)
-    full_outdat_name = "%s/%s" % (path, outdat_name)
-
-    if not os.path.exists(full_outdat_name):
-        raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
-    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
-    # last newline
-    with open(full_outdat_name, "r") as full_outdat_file:
-        for line in full_outdat_file.read().split("\n")[1:-1]:
-            splits = line.split("\t")
-            gid = int(splits[1])
-            spiketime = float(splits[0])
-            gid_spiketimes_dict[gid].append(spiketime)
-    return gid_spiketimes_dict
-
 class SSim(object):
     """SSim class"""
 
@@ -122,7 +104,7 @@ class SSim(object):
                 pre_datas = [pre_data for pre_data in pre_datas if pre_data[0] in intersect_pre_gids]
 
             if add_replay :
-                pre_spike_trains = parse_and_store_GID_spiketrains(\
+                pre_spike_trains = _parse_outdat(\
                                     self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                                     'out.dat')
 
@@ -307,3 +289,21 @@ class SSim(object):
             raise Exception("Gid %d not found in circuit" % gid)
 
         return template_name
+
+def _parse_outdat(path, outdat_name='out.dat'):
+    """Parse the replay spiketrains in out.dat"""
+
+    gid_spiketimes_dict = collections.defaultdict(list)
+    full_outdat_name = os.path.join(path, outdat_name)
+
+    if not os.path.exists(full_outdat_name):
+        raise IOError("Could not find presynaptic spike file at %s" % full_outdat_name)
+    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
+    # last newline
+    with open(full_outdat_name, "r") as full_outdat_file:
+        for line in full_outdat_file.read().split("\n")[1:-1]:
+            splits = line.split("\t")
+            gid = int(splits[1])
+            spiketime = float(splits[0])
+            gid_spiketimes_dict[gid].append(spiketime)
+    return gid_spiketimes_dict

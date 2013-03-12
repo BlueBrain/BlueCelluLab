@@ -4,8 +4,21 @@
 
 import nose.tools as nt
 import numpy
-import bglibpy.ssim
+import bglibpy
 import os
+
+
+def test_parse_outdat():
+    """SSim: Testing parsing of out.dat"""
+    try:
+        outdat = bglibpy.ssim._parse_outdat("examples/sim_twocell_empty/output_doesntexist")
+    except IOError:
+        nt.assert_true(True)
+    else:
+        nt.assert_true(False)
+
+    outdat = bglibpy.ssim._parse_outdat("examples/sim_twocell_minis_replay/output")
+    nt.assert_true(45 in outdat[2])
 
 class TestSSimBaseClass_twocell_empty(object):
     """Class to test SSim with two cell circuit"""
