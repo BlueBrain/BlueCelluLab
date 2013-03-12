@@ -8,30 +8,32 @@
 import nose.tools as nt
 import bglibpy
 
-"""
 def test_search_hyp_current_replay_gidlist():
-    ""Tools: test search_hyp_current_replay_gidlist""
+    """Tools: test search_hyp_current_replay_gidlist"""
     blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"
     #gids = [107462, 107461]
-    gids = [107461]
+    gid = 107461
+    precision = .5
+    target_voltage = -77
+    start_time = 1
+    stop_time = 5
 
-    bglibpy.VERBOSE_LEVEL = 1
-
-    results = bglibpy.search_hyp_current_replay_gidlist(blueconfig_location, gids,
-        target_voltage=-80,
+    results = bglibpy.search_hyp_current_replay_gidlist(blueconfig_location, [gid],
+        target_voltage=target_voltage,
         min_current=-2.0,
         max_current=0.0,
-        start_time=5,
-        stop_time=20,
-        precision=.5,
-        max_nestlevel=10,
+        start_time=start_time,
+        stop_time=stop_time,
+        precision=precision,
+        max_nestlevel=5,
         return_fullrange=False
         )
 
-    for gid in results:
-        (step_level, voltage) = results[gid]
-        print step_level, voltage
-"""
+    nt.assert_true(gid in results)
+    step_level, (time, voltage) = results[gid]
+    nt.assert_equal(step_level, -1.5)
+    import numpy
+    nt.assert_true(abs(numpy.mean(voltage[numpy.where((time < stop_time) & (time > start_time))])-target_voltage) < precision)
 
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""

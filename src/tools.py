@@ -247,7 +247,7 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level, start_ti
 
     #print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
 
-    return (SS_voltage, voltage)
+    return (SS_voltage, (time, voltage))
 
 class NoDaemonProcess(multiprocessing.Process):
     """Class that represents a non-daemon process"""
@@ -285,10 +285,13 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     elif nestlevel == 1:
         printv("%s: Searching for current to bring gid %d to %f mV" % (process_name, gid, target_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
-    (new_target_voltage, _) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time)
+    (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time)
     #print "Detected voltage: ", new_target_voltage
     if abs(new_target_voltage - target_voltage) < precision:
-        return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time, ignore_timerange=return_fullrange))
+        if return_fullrange:
+            return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True))
+        else:
+            return (med_current, (time, voltage))
     elif new_target_voltage > target_voltage:
         return search_hyp_current_replay(blueconfig, gid, target_voltage,
                 min_current=min_current,
@@ -296,7 +299,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
                 precision=precision,
                 nestlevel=nestlevel+1,
                 start_time=start_time, stop_time=stop_time,
-                max_nestlevel=max_nestlevel)
+                max_nestlevel=max_nestlevel,
+                return_fullrange=return_fullrange)
     elif new_target_voltage < target_voltage:
         return search_hyp_current_replay(blueconfig, gid, target_voltage,
                 min_current=med_current,
@@ -304,7 +308,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
                 precision=precision,
                 nestlevel=nestlevel+1,
                 start_time=start_time, stop_time=stop_time,
-                max_nestlevel=max_nestlevel)
+                max_nestlevel=max_nestlevel,
+                return_fullrange=return_fullrange)
 
 class search_hyp_function(object):
     """Function object"""
@@ -333,8 +338,8 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
 
     Returns
     -------
-    A dictionary where the keys are gids, and the values tuples of the form (detected_level, voltage_trace).
-    voltage_trace is the voltage at the current injection level (=detected_level) that matches the target target_voltage.
+    A dictionary where the keys are gids, and the values tuples of the form (detected_level, time_voltage).
+    time_voltage is a tuple of the time and voltage trace at the current injection level (=detected_level) that matches the target target_voltage.
     When the algorithm reached max_nestlevel+1 (nan, None) is returned for that gid
     """
 
@@ -342,8 +347,8 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     results = pool.map(search_hyp_function(blueconfig, **kwargs), gid_list)
     pool.terminate()
 
-    currentlevels_voltagetraces = {}
+    currentlevels_timevoltagetraces = {}
     for gid, result in zip(gid_list, results):
-        currentlevels_voltagetraces[gid] = result
+        currentlevels_timevoltagetraces[gid] = result
 
-    return currentlevels_voltagetraces
+    return currentlevels_timevoltagetraces
