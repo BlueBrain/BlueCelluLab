@@ -178,8 +178,6 @@ class SSim(object):
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
-        #hypamp_i = self.cells[gid].hypamp
-        #self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Delay)+float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
         self.cells[gid].add_replay_hypamp(stimulus)
 
     def _add_replay_noise(self, gid, stimulus, noise_seed=0):
