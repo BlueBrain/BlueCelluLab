@@ -21,7 +21,7 @@ class Dendrogram(object):
         pylab.ioff()
 
         self.sections = sections
-        neuron.h.finitialize()
+        #neuron.h.finitialize()
 
         self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
         self.proot = PSection(self.hroot, None)
