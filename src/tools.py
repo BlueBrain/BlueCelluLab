@@ -179,8 +179,8 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level, inj_
     simulation = bglibpy.Simulation()
     simulation.run(int(inj_stop), cvode=template_accepts_cvode(template_name))
 
-    time = cell.getTime()
-    voltage = cell.getSomaVoltage()
+    time = cell.get_time()
+    voltage = cell.get_soma_voltage()
     time_step = time[numpy.where((time > inj_start) & (time < inj_stop))]
     voltage_step = voltage[numpy.where((time_step > inj_start) & (time_step < inj_stop))]
     spike_detected = detect_spike(voltage_step)

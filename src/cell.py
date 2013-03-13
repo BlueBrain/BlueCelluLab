@@ -608,12 +608,12 @@ class Cell(object):
 
     @tools.deprecated
     def getTime(self):
-        """Get the time vector"""
+        """Deprecated by get_time()"""
         return self.get_time()
 
     @tools.deprecated
     def getSomaVoltage(self):
-        """Get a vector of the soma voltage"""
+        """Deprecated by get_soma_voltage"""
         return self.get_soma_voltage()
 
     @tools.deprecated
