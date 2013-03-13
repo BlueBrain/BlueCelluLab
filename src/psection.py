@@ -32,7 +32,8 @@ class PSection(object):
         self.psegments = []
         self.maxsegdiam = 0
         for hsegment in hsection:
-            psegment = bglibpy.PSegment(hsection(hsegment.x), self)
+            #psegment = bglibpy.PSegment(hsection(hsegment.x), self)
+            psegment = bglibpy.PSegment(hsegment, self)
             self.psegments.append(psegment)
             self.maxsegdiam = max(self.maxsegdiam, psegment.diam)
 

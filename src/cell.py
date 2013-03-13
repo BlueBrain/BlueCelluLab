@@ -419,7 +419,7 @@ class Cell(object):
                         apicaltrunk.append(child)
             return apicaltrunk
 
-    def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
+    def add_ramp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
         """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level - start_level) / (stop_time - start_time)) * (x - start_time) + start_level for x in t_content]
@@ -466,7 +466,7 @@ class Cell(object):
         self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
         self.update_necessary = True
 
-    def showDendrogram(self, variable=None, active=False):
+    def add_dendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
         cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
@@ -620,3 +620,14 @@ class Cell(object):
     def addPlotWindow(self, *args, **kwargs):
         """Deprecated by add_plot_window"""
         self.add_plot_window(*args, **kwargs)
+
+    @tools.deprecated
+    def showDendrogram(self, *args, **kwargs):
+        """Deprecated by add_dendrogram"""
+        self.add_dendrogram(*args, **kwargs)
+
+    @tools.deprecated
+    def addRamp(self, *args, **kwargs):
+        """Deprecated by add_ramp"""
+        self.add_ramp(*args, **kwargs)
+

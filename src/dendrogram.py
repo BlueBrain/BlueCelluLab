@@ -66,9 +66,8 @@ class Dendrogram(object):
                 for psection in self.psections:
                     psection.redraw()
                 self.canvas.blit(self.ax.bbox)
-                self.drawCount = 5
+                self.drawCount = 1
             else:
-
                 self.drawCount = self.drawCount - 1
 
         return True
