@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -8,6 +7,8 @@ Class that represents a cell in BGLibPy
          Do not distribute without further notice.
 
 """
+
+# pylint: disable=F0401
 
 import numpy
 import re
@@ -80,6 +81,8 @@ class Cell(object):
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
         self.plot_windows = []
+        self.fih = None # FInitializeHandler, sets up the callback functions
+        self.update_necessary = False # As long as no PlotWindow or active Dendrogram exist, don't update
 
         try:
             self.hypamp = self.cell.getHypAmp()
@@ -450,7 +453,7 @@ class Cell(object):
                         apicaltrunk.append(child)
             return apicaltrunk
 
-    def addRamp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
+    def add_ramp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
         """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level - start_level) / (stop_time - start_time)) * (x - start_time) + start_level for x in t_content]
@@ -487,7 +490,7 @@ class Cell(object):
             totalnseg += section.nseg
         return totalnseg
 
-    def addPlotWindow(self, var_list, xlim=None, ylim=None, title=""):
+    def add_plot_window(self, var_list, xlim=None, ylim=None, title=""):
         """Add a window to plot a variable"""
         xlim = [0, 1000] if xlim is None else xlim
         ylim = [-100, 100] if ylim is None else ylim
@@ -495,19 +498,29 @@ class Cell(object):
             if var_name not in self.recordings:
                 self.add_recording(var_name)
         self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
+        self.update_necessary = True
 
-    def showDendrogram(self, variable=None, active=False):
+    def add_dendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
         cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
+        if active:
+            self.update_necessary = True
 
-    def update(self):
+    def init_callbacks(self):
+        """Initialize the callback function (if necessary)"""
+        if self.update_necessary:
+            self.fih = neuron.h.FInitializeHandler(1, self.plot_callback)
+
+    def plot_callback(self):
         """Update all the windows"""
         for window in self.plot_windows:
             window.redraw()
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
+
+        neuron.h.cvode.event(neuron.h.t + 1, self.plot_callback)
 
     def delete(self):
         """Delete the cell"""
@@ -629,11 +642,26 @@ class Cell(object):
 
     @tools.deprecated
     def getTime(self):
-        """Get the time vector"""
+        """Deprecated by get_time()"""
         return self.get_time()
 
     @tools.deprecated
     def getSomaVoltage(self):
-        """Get a vector of the soma voltage"""
+        """Deprecated by get_soma_voltage"""
         return self.get_soma_voltage()
+
+    @tools.deprecated
+    def addPlotWindow(self, *args, **kwargs):
+        """Deprecated by add_plot_window"""
+        self.add_plot_window(*args, **kwargs)
+
+    @tools.deprecated
+    def showDendrogram(self, *args, **kwargs):
+        """Deprecated by add_dendrogram"""
+        self.add_dendrogram(*args, **kwargs)
+
+    @tools.deprecated
+    def addRamp(self, *args, **kwargs):
+        """Deprecated by add_ramp"""
+        self.add_ramp(*args, **kwargs)
 

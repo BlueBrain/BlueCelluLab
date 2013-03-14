@@ -40,7 +40,7 @@ CM = cell.soma.cm
 RM = 1.0 / cell.soma(0.5).g_pas
 RA= cell.soma.Ra
 EL= cell.soma(0.5).e_pas
-  
+
 ''' N simulations of ... the same '''
 
 ''' 1: PyNEURON (Hines) '''
@@ -59,7 +59,7 @@ def run_hines_bs(soma_l,soma_d) :
     dend.L = dend0_L
     dend.diam = dend0_D
     dend.nseg = cell.basal[0].nseg
-    print 'rune_hines: dend.nseg=%f' % (dend.nseg) 
+    print 'rune_hines: dend.nseg=%f' % (dend.nseg)
     dend.cm = CM
     dend.Ra = RA
     dend.insert('pas')
@@ -92,7 +92,7 @@ def run_hines_bs(soma_l,soma_d) :
     hines_v = np.array(v_vec)
     hines_t = np.array(t_vec)
     return hines_t,hines_v
-    
+
 # hines_t,hines_v = run_hines_bs(soma_L,soma_D)
 # plt.plot(hines_t,hines_v,label='hines, direct')
 
@@ -147,12 +147,12 @@ nc= bglibpy.neuron.h.NetCon(ns,syn,0,SYN_DELAY,SYN_G*1000.0)
 sim = bglibpy.Simulation()
 sim.addCell(cell)
 sim.run(T_STOP,v_init=V_INIT,cvode=False,dt=0.025)
-werner_t = cell.getTime()
-werner_v = cell.getSomaVoltage()
+werner_t = cell.get_time()
+werner_v = cell.get_soma_voltage()
 plt.plot(werner_t,werner_v,label='bglibpy dt=0.025 - ProbAMPANMDA_EMS')
 sim.run(T_STOP,v_init=V_INIT,cvode=False,dt=0.001)
-werner_t = cell.getTime()
-werner_v = cell.getSomaVoltage()
+werner_t = cell.get_time()
+werner_v = cell.get_soma_voltage()
 plt.plot(werner_t,werner_v,label='bglibpy dt=0.001 - ProbAMPANMDA_EMS')
 
 del(sim)
@@ -173,8 +173,8 @@ nc= bglibpy.neuron.h.NetCon(ns,syn,0,SYN_DELAY,SYN_G)
 sim = bglibpy.Simulation()
 sim.addCell(cell)
 sim.run(T_STOP,v_init=V_INIT,cvode=False,dt=DT)
-werner_t = cell.getTime()
-werner_v = cell.getSomaVoltage()
+werner_t = cell.get_time()
+werner_v = cell.get_soma_voltage()
 plt.plot(werner_t,werner_v,label='bglibpy - ExpSyn')
 del(sim)
 del(syn)
@@ -184,9 +184,9 @@ del(nc)
 
 ''' Eilif's BGLIB'''
 s = bluepy.Simulation("BlueConfig")
-# excitatory cell with an incoming inhibitory synapse 
+# excitatory cell with an incoming inhibitory synapse
 #v_a1 = s.reports.soma.time_series(1)
-# inhibitory cell with an incoming excitatory synapse 
+# inhibitory cell with an incoming excitatory synapse
 v_a2 = s.reports.soma.time_series(2)
 t = s.reports.soma.time_range- 401 + SYN_ACTIVATION_T
 plt.plot(t,v_a2,label='bglib, dt=0.025')

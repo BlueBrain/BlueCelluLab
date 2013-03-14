@@ -38,5 +38,5 @@ Creating the two_cell circuit and simulations in the test directory
 
 Login to the viz cluster
 Change the working directory to the directory that contains the create_sims_twocell.py script
-Adapt to sys.path in the script to point to your installation of BGLib
+Adapt to sys.path in the script to point to your installation of BGLib, and to your installation of pybinreports
 Execute "python create_sims_twocell.py"

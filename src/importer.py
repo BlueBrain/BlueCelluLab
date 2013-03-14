@@ -10,7 +10,6 @@
 
 import sys
 import os
-import numpy
 
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir + "/paths.config"
@@ -36,9 +35,9 @@ neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedSections.hoc")
 neuron.h.load_file("TStim.hoc")
+neuron.h.load_file("ShowProgress.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 
 sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy
 print "Imported bluepy from %s" % bluepy.__file__
-

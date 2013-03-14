@@ -1,4 +1,15 @@
 ###
+# VERSION
+###
+
+exec_program(
+    "git"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "describe --tags --abbrev=4 --dirty" 
+    OUTPUT_VARIABLE BGLIBPY_VERSION)
+message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
+
+###
 # LIBNRN
 ###
 
@@ -33,6 +44,12 @@ endif ()
 
 set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
 
+exec_program(
+    ${NRN_BINARIES}/nrniv
+    ARGS "--version" 
+    OUTPUT_VARIABLE NRN_VERSION)
+message("Working with Neuron Version: ${NRN_VERSION}")
+
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
 endif ()
@@ -40,6 +57,13 @@ endif ()
 if (NOT HOCLIBPATH)
     message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
 endif ()
+
+exec_program(
+    "git"
+    ${HOCLIBPATH}
+    ARGS "describe --tags --abbrev=4 --dirty" 
+    OUTPUT_VARIABLE BG_HOCLIB_VERSION)
+message("Working with BG_Hoclib Version: ${BG_HOCLIB_VERSION}")
 
 if (NOT BLUEPYPATH)
     message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
@@ -90,10 +114,12 @@ set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
 set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
 
+configure_file(versions.py.in versions.py)
 configure_file(paths.config.in paths.config)
 
 set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py)
 
 install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/versions.py" DESTINATION ${DESTINATION_DIR})
 install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})

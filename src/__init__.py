@@ -17,3 +17,5 @@ from .psection import PSection
 from .psegment import PSegment
 from .simulation import Simulation
 from .ssim import SSim
+from .versions import *
+#print "BGLibPy was built with:\n=====\n%s=====\n" % config

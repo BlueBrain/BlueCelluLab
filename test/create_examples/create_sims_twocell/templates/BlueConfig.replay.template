@@ -5,8 +5,8 @@ Run Default
           svnPath https://bbpteam.epfl.ch/svn/bluebrain
           Version 1094
            Prefix /bgscratch/bbp/release/02.04.12
-   MorphologyPath /bgscratch/bbp/morphologies/31.05.12
-       METypePath /bgscratch/bbp/CCells/b24.07.12
+   MorphologyPath /bgscratch/bbp/l5/release/2012.07.23/morphologies
+       METypePath   /bgscratch/bbp/l5/release/2012.07.23/ccells
 
       CircuitPath {circuit_path}
           nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
@@ -19,7 +19,6 @@ Run Default
          Duration {tstop}
                Dt {dt}
 
-         BaseSeed 12345
 }}
 
 Report soma
@@ -49,52 +48,10 @@ StimulusInject spikeReplayIntooneCell
         Target Mosaic
 }}
 
-Stimulus ThresholdExc
-{{
-
-              Mode Current
-           Pattern Noise
-       MeanPercent 120
-          Variance 1.0
-             Delay 0.000000
-          Duration 20000.000000
-}}
-
-StimulusInject ThresholdIntoExc
-{{
-        Stimulus ThresholdExc
-        Target Excitatory
-}}
-
-Stimulus hypamp
-{{
-        Mode Current
-  Pattern Hyperpolarizing
-        Delay 0.0
-  Duration 20000.0
-}}
-
-StimulusInject hypamp_mosaic
-{{
-        Stimulus hypamp
-        Target Mosaic
-}} 
-
 Connection changeUse
-{{
+{{    
               Source Excitatory
          Destination Excitatory
               Weight 1.0
     SynapseConfigure %s.Dep = 1.0
-          SpontMinis 100.0
-           SynapseID 119
 }}
-
-Connection scheme_minus2
-{{
-              Source Excitatory
-         Destination Excitatory
-              Weight 1.0
-    SynapseConfigure %s.NMDA_ratio = 0.4
-           SynapseID 113
-}}          

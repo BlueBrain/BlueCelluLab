@@ -65,6 +65,6 @@ class PlotWindow(object):
                 self.line[var_name].set_data(time, voltage)
                 self.ax.draw_artist(self.line[var_name])
             self.canvas.blit(self.ax.bbox)
-            self.drawCount = 100
+            self.drawCount = 10
         else:
             self.drawCount = self.drawCount - 1

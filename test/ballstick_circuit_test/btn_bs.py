@@ -149,10 +149,10 @@ def run_bglib_bs() :
     nc= bglibpy.neuron.h.NetCon(ns,syn,0,SYN_DELAY,SYN_G)
 
     sim = bglibpy.Simulation()
-    sim.addCell(cell)
+    sim.add_cell(cell)
     sim.run(T_STOP,v_init=V_INIT,cvode=False,dt=DT)
-    werner_t = cell.getTime()
-    werner_v = cell.getSomaVoltage()
+    werner_t = cell.get_time()
+    werner_v = cell.get_soma_voltage()
     del(sim)
     del(syn)
     del(ns)
@@ -228,10 +228,10 @@ def test_bs_ProbAMPANMDAEMS_pyneuron_vs_bglibpy() :
     nc= bglibpy.neuron.h.NetCon(ns,syn,0,SYN_DELAY,SYN_G)
 
     sim = bglibpy.Simulation()
-    sim.addCell(cell)
+    sim.add_cell(cell)
     sim.run(T_STOP,v_init=V_INIT,cvode=False,dt=DT)
-    werner_t = cell.getTime()
-    werner_v = cell.getSomaVoltage()
+    werner_t = cell.get_time()
+    werner_v = cell.get_soma_voltage()
 
     del(sim)
     del(ns);del(nc);del(syn)

@@ -15,24 +15,6 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
-def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
-    """Parse and store the gid spiketrains"""
-
-    gid_spiketimes_dict = collections.defaultdict(list)
-    full_outdat_name = "%s/%s" % (path, outdat_name)
-
-    if not os.path.exists(full_outdat_name):
-        raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
-    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
-    # last newline
-    with open(full_outdat_name, "r") as full_outdat_file:
-        for line in full_outdat_file.read().split("\n")[1:-1]:
-            splits = line.split("\t")
-            gid = int(splits[1])
-            spiketime = float(splits[0])
-            gid_spiketimes_dict[gid].append(spiketime)
-    return gid_spiketimes_dict
-
 class SSim(object):
     """SSim class"""
 
@@ -73,7 +55,7 @@ class SSim(object):
                 conf = entry.CONTENTS.Configure
                 self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
 
-    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False):
+    def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False, intersect_pre_gids=None):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -118,8 +100,11 @@ class SSim(object):
 
             pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
 
+            if intersect_pre_gids != None:
+                pre_datas = [pre_data for pre_data in pre_datas if pre_data[0] in intersect_pre_gids]
+
             if add_replay :
-                pre_spike_trains = parse_and_store_GID_spiketrains(\
+                pre_spike_trains = _parse_outdat(\
                                     self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                                     'out.dat')
 
@@ -152,16 +137,16 @@ class SSim(object):
                                                     pre_spike_trains)
 
                 if synapse_detail > 0:
-                    printv("Added synapses for gid %d" % gid, 1)
+                    printv("Added synapses for gid %d" % gid, 2)
                 if synapse_detail > 1:
-                    printv("Added minis for gid %d" % gid, 1)
+                    printv("Added minis for gid %d" % gid, 2)
                 if add_replay:
-                    printv("Added presynaptic spiketrains for gid %d" % gid, 1)
+                    printv("Added presynaptic spiketrains for gid %d" % gid, 2)
 
             if add_stimuli:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
-                printv("Added stimuli for gid %d" % gid, 1)
+                printv("Added stimuli for gid %d" % gid, 2)
 
 
     def _add_replay_stimuli(self, gid):
@@ -195,8 +180,6 @@ class SSim(object):
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
-        #hypamp_i = self.cells[gid].hypamp
-        #self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Delay)+float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
         self.cells[gid].add_replay_hypamp(stimulus)
 
     def _add_replay_noise(self, gid, stimulus, noise_seed=0):
@@ -254,6 +237,9 @@ class SSim(object):
                             else:
                                 parameters['SpontMinis'] = 0.0
                                 spontminis_set = True
+                        elif 'SpontMinis' in entry.CONTENTS.keys:
+                            import warnings
+                            warnings.warn("Connection '%s': SpontMinis was already set in previous block, IGNORING" % entry.NAME)
 
                         if 'SynapseConfigure' in entry.CONTENTS.keys:
                             conf = entry.CONTENTS.SynapseConfigure
@@ -280,7 +266,7 @@ class SSim(object):
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
-            sim.addCell(self.cells[gid])
+            sim.add_cell(self.cells[gid])
         sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init)
 
     def get_voltage_traces(self):
@@ -309,3 +295,21 @@ class SSim(object):
             raise Exception("Gid %d not found in circuit" % gid)
 
         return template_name
+
+def _parse_outdat(path, outdat_name='out.dat'):
+    """Parse the replay spiketrains in out.dat"""
+
+    gid_spiketimes_dict = collections.defaultdict(list)
+    full_outdat_name = os.path.join(path, outdat_name)
+
+    if not os.path.exists(full_outdat_name):
+        raise IOError("Could not find presynaptic spike file at %s" % full_outdat_name)
+    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
+    # last newline
+    with open(full_outdat_name, "r") as full_outdat_file:
+        for line in full_outdat_file.read().split("\n")[1:-1]:
+            splits = line.split("\t")
+            gid = int(splits[1])
+            spiketime = float(splits[0])
+            gid_spiketimes_dict[gid].append(spiketime)
+    return gid_spiketimes_dict

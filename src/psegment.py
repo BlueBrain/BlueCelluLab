@@ -32,35 +32,35 @@ class PSegment(object):
         self.varbounds = None
 
 
-def setupDraw(self, figure, x, y, variable=None, varbounds=None):
-    """Set up the drawing of a segment"""
-    import matplotlib as plt
+    def setupDraw(self, figure, x, y, variable=None, varbounds=None):
+        """Set up the drawing of a segment"""
+        import matplotlib as plt
 
-    self.figure = figure
-    self.plotvariable = variable
-    self.varbounds = varbounds
-    self.ax = self.figure.gca()
-    self.figX = x
-    self.figY = y
-    self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="white", edgecolor="black")
-    self.ax.add_patch(self.patch)
+        self.figure = figure
+        self.plotvariable = variable
+        self.varbounds = varbounds
+        self.ax = self.figure.gca()
+        self.figX = x
+        self.figY = y
+        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="black", edgecolor="white")
+        self.ax.add_patch(self.patch)
 
 
-def redraw(self):
-    """Redraw a segment"""
-    if self.plotvariable:
-        plotvariable_value = self.getVariableValue(self.plotvariable)
-        if not plotvariable_value is None:
-            self.patch.set_facecolor(self.color_map((plotvariable_value - self.varbounds[0]) / (self.varbounds[1] - self.varbounds[0])))
+    def redraw(self):
+        """Redraw a segment"""
+        if self.plotvariable:
+            plotvariable_value = self.getVariableValue(self.plotvariable)
+            if not plotvariable_value is None:
+                self.patch.set_facecolor(self.color_map((plotvariable_value - self.varbounds[0]) / (self.varbounds[1] - self.varbounds[0])))
+            else:
+                self.patch.set_facecolor(self.color_map(1.0))
+                self.patch.set_hatch("/")
+            self.ax.draw_artist(self.patch)
+
+
+    def getVariableValue(self, variable):
+        """Get a variable value in a segment"""
+        if variable is "v" or bglibpy.neuron.h.execute1("{%s.%s(%f)}" % (bglibpy.neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
+            return eval("self.hsegment." + variable)
         else:
-            self.patch.set_facecolor(self.color_map(1.0))
-            self.patch.set_hatch("/")
-        self.ax.draw_artist(self.patch)
-
-
-def getVariableValue(self, variable):
-    """Get a variable value in a segment"""
-    if variable is "v" or bglibpy.neuron.h.execute1("{%s.%s(%f)}" % (bglibpy.neuron.h.secname(sec=self.parentsection.hsection), variable, self.hsegment.x), 0):
-        return eval("self.hsegment." + variable)
-    else:
-        return None
+            return None
