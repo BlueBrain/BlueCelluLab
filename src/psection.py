@@ -10,24 +10,19 @@ Represents a python version of Neuron Section (for drawing)
 """
 
 import bglibpy
-
+from bglibpy import neuron
 
 class PSection(object):
     """Class that represents a cell section"""
-    def __init__(self, hsection, pparent):
+    def __init__(self, hsection, isec=None):
         self.L = hsection.L
         self.diam = hsection.diam
         self.hsection = hsection
-        self.name = bglibpy.neuron.h.secname(sec=hsection)
-        self.pparent = pparent
-        self.hchildren = [bglibpy.neuron.h.SectionRef(sec=self.hsection).child[index]
-                for index in range(0, int(bglibpy.neuron.h.SectionRef(sec=self.hsection).nchild()))]
+        self.name = neuron.h.secname(sec=hsection)
+        self.href = neuron.h.SectionRef(sec=self.hsection)
+        self.pparent = None
         self.pchildren = []
-        for hchild in self.hchildren:
-            self.pchildren.append(PSection(hchild, self))
-        self.isLeaf = False
-        if not self.hchildren:
-            self.isLeaf = True
+        self.isec = isec
 
         self.psegments = []
         self.maxsegdiam = 0
@@ -39,6 +34,29 @@ class PSection(object):
 
         self.xSpacing = 10
         self.ySpacing = 1
+
+    @property
+    def isLeaf(self):
+        """Return true if the section is a leaf in the morphological structure"""
+        return not self.hchildren
+
+    @property
+    def hparent(self):
+        """Return the hoc section of the parent"""
+        try:
+            hparent = self.href().parent
+        except SystemError:
+            hparent = None
+        return hparent
+
+    @property
+    def hchildren(self):
+        """Return a list with the hoc sections of the children"""
+        return [self.href.child[index] for index in range(0, int(self.href.nchild()))]
+
+    def add_pchild(self, pchild):
+        """Add a python represent of a child section"""
+        self.pchildren.append(pchild)
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
         """Setup draw of psection"""

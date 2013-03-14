@@ -17,6 +17,7 @@ import bglibpy
 import os
 from bglibpy import tools
 from bglibpy.importer import neuron
+from bglibpy import psection
 import Queue
 
 
@@ -97,6 +98,7 @@ class Cell(object):
         # As long as no PlotWindow or active Dendrogram exist, don't update
         self.plot_callback_necessary = False
         self.delayed_weights = Queue.PriorityQueue()
+        self.secname_to_isec = {}
 
         try:
             self.hypamp = self.cell.getHypAmp()
@@ -108,11 +110,55 @@ class Cell(object):
         except AttributeError:
             self.threshold = None
 
+        self.psections = {}
+        self.init_psections()
+
+    def init_psections(self):
+        """Initialize the psections list that contains the Python representation of the psections of this morphology"""
+        #self.hroot = neuron.h.SectionRef(sec=self.all[0]).root
+        #self.proot = psection.PSection(self.hroot)
+
+        max_isec = int(self.cell.getCell().nSecAll) #[None] * len(self.all)
+        for isec in range(0, max_isec):
+            hsection = self.get_hsection(isec)
+            #neuron.h.topology()
+            print neuron.h.secname(sec=hsection)
+            if hsection:
+                print isec
+                self.psections[isec] = psection.PSection(hsection, isec=isec)
+                print neuron.h.secname(sec=hsection)
+                self.secname_to_isec[neuron.h.secname(sec=hsection)] = isec
+
+
+        # Set all the parents of all the psections
+        for psec in self.psections.itervalues():
+            hparent = psec.hparent
+            if hparent:
+                parentname = neuron.h.secname(sec=hparent)
+                psec.pparent = self.get_psection(self.secname_to_isec[parentname])
+            else:
+                psec.pparent = None
+
+
+        # Set all the children of all the psections
+        for psec in self.psections.itervalues():
+            for hchild in psec.hchildren:
+                childname = neuron.h.secname(sec=hchild)
+                pchild = self.get_psection(self.secname_to_isec[childname])
+                psec.add_pchild(pchild)
+
+    #def secname_to_isec(self, secname):
+    #    """Convert the name of a section into it's section id"""
+    #    return self.secname_to_isec[secname]
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels
         """
         self.cell.re_init_rng()
+
+    def get_psection(self, secid):
+        """Return a python section with the specified section id"""
+        return self.psections[secid]
 
     def get_hsection(self, section_id):
         """Use the serialized object to find a hoc section from a section id
@@ -127,7 +173,11 @@ class Cell(object):
         hsection : nrnSection
                    The requested hoc section
         """
-        return self.serialized.isec2sec[int(section_id)].sec
+        sec_ref = self.serialized.isec2sec[int(secid)]
+        if sec_ref:
+            return self.serialized.isec2sec[int(secid)].sec
+        else:
+            return None
 
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block
@@ -543,7 +593,7 @@ class Cell(object):
 
     def add_dendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
-        cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
+        cell_dendrogram = bglibpy.Dendrogram(self.psections, variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
         if active:
