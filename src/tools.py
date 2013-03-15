@@ -229,11 +229,11 @@ def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None, st
     """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
     #print "Calculate_SS_voltage_replay %f" % step_level
-    (SS_voltage, voltage) = pool.apply(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time, ignore_timerange])
+    (SS_voltage, (time, voltage)) = pool.apply(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time, ignore_timerange])
     #(SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level)
     pool.terminate()
     del pool
-    return (SS_voltage, voltage)
+    return (SS_voltage, (time, voltage))
 
 
 def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False):
@@ -302,7 +302,7 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     #print "Detected voltage: ", new_target_voltage
     if abs(new_target_voltage - target_voltage) < precision:
         if return_fullrange:
-            return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True))
+            return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)[1])
         else:
             return (med_current, (time, voltage))
     elif new_target_voltage > target_voltage:
@@ -334,8 +334,8 @@ class search_hyp_function(object):
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     """
-    Search current necessary to bring cell to target_voltage in a network replay for a list of gids.
-    This function will use multiprocessing to parallelize the task.
+    Search, using bisection, for the current necessary to bring a cell to target_voltage in a network replay for a list of gids.
+    This function will use multiprocessing to parallelize the task, running one gid per available core.
 
     Parameters
     ----------
@@ -345,18 +345,18 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     min_current, max_current: The algorithm will search in ]min_current, max_current[
     precision: algorithm stops when abs(calculated_voltage - target_voltage) < precision
     max_nestlevel = the maximum number of nested levels the algorithm explores
-    start_time, stop_time: the time range for which the voltage is detected
-    return_fullrange: set to False if you don't want to return the voltage in full time range of the large simulation,
-        but rather the time between start_time, stop_time
+    start_time, stop_time: the time range for which the voltage is simulated and average for comparison against target_voltage
+    return_fullrange: Defaults to True.  Set to False if you don't want to return the voltage in full time range of the large simulation, but rather the time between start_time, stop_time
 
     Returns
     -------
     A dictionary where the keys are gids, and the values tuples of the form (detected_level, time_voltage).
-    time_voltage is a tuple of the time and voltage trace at the current injection level (=detected_level) that matches the target target_voltage.
-    When the algorithm reached max_nestlevel+1 (nan, None) is returned for that gid
+    time_voltage is a tuple of the time and voltage trace at the current injection level (=detected_level) that matches the target target_voltage within user specified precision.
+
+    If the algorithm reaches max_nestlevel+1 iterations without converging to the requested precision, (nan, None) is returned for that gid.
     """
 
-    pool = NestedPool(len(gid_list))
+    pool = NestedPool(multiprocessing.cpu_count())
     results = pool.map(search_hyp_function(blueconfig, **kwargs), gid_list)
     pool.terminate()
 
