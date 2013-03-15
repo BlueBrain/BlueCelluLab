@@ -203,6 +203,13 @@ class SSim(object):
         """Add a replay synapse on the cell"""
         return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
 
+    @staticmethod
+    def check_connection_contents(contents):
+        """Check the contents of a connection block, to see if we support all the fields"""
+        for key in contents.keys:
+            if key not in ['Weight', 'SynapseID', 'SpontMinis', 'SynapseConfigure', 'Source', 'Destination']:
+                raise Exception("Key %s in Connection blocks not supported by BGLibPy" % key)
+
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
         Parameters:
@@ -214,6 +221,7 @@ class SSim(object):
         spontminis_set = False
 
         for entry in self.connection_entries:
+            self.check_connection_contents(entry.CONTENTS)
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
