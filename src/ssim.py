@@ -112,6 +112,8 @@ class SSim(object):
             # synapses
             if pre_datas is None:
                 printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
+            elif synapse_detail == 0:
+                pass
             else:
                 for sid, syn_description in enumerate(pre_datas):
                     syn_type = syn_description[13]
@@ -199,7 +201,7 @@ class SSim(object):
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
-        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
@@ -248,6 +250,12 @@ class SSim(object):
                             raise Exception("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
 
         return parameters
+
+    def initialize_synapses(self):
+        """ Resets the state of all synapses of all cells to initial values """
+        for cell in self.cells.itervalues():
+            cell.initialize_synapses()
+
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""

@@ -121,8 +121,14 @@ def calculate_SS_voltage(template_name, morphology_name, step_level):
     return SS_voltage
 
 
-def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
-    """Subprocess wrapper of calculate_SS_voltage"""
+def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level, check_for_spiking=False, spike_threshold=-20.0):
+    """Subprocess wrapper of calculate_SS_voltage
+
+    if check_for_spiking is True,
+    this function will return None if the cell spikes from from 100ms to the end of the simulation
+    indicating no steady state was reached. 
+
+    """
     cell = bglibpy.Cell(template_name, morphology_name)
     cell.add_ramp(500, 5000, step_level, step_level, dt=1.0)
     simulation = bglibpy.Simulation()
@@ -132,7 +138,14 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level):
     SS_voltage = numpy.mean(voltage[numpy.where((time < 1000) & (time > 800))])
     cell.delete()
 
+    if check_for_spiking:
+        # check for voltage crossings 
+        if len(numpy.nonzero(voltage[numpy.where(time > 100.0)]>spike_threshold)[0])>0:
+            return None
+
     return SS_voltage
+
+
 
 def template_accepts_cvode(template_name):
     """Return True if template_name can be run with cvode"""

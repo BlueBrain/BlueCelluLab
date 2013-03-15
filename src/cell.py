@@ -112,9 +112,13 @@ class Cell(object):
         """
         return self.serialized.isec2sec[int(raw_section_id)].sec
 
-    def execute_neuronconfigure(self, expression):
+    def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block"""
-        for section in self.all:
+        sections_map = {'axonal': self.axonal, 'basal':self.basal, 'apical':self.apical, 'somatic': self.somatic,
+                        'dendritic': self.basal+self.apical+self.somatic, 
+                        None:self.all}
+
+        for section in sections_map[sections]:
             sec_expression = expression.replace('%s', neuron.h.secname(sec=section))
             if '%g' in expression:
                 for segment in section:
@@ -222,7 +226,10 @@ class Cell(object):
         self.persistent.append(tstim)
 
     def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
-        """Add synapse based on the syn_description to the cell"""
+        """Add synapse based on the syn_description to the cell 
+        
+        This operation can fail.  Returns True on success, otherwise False.
+        """
         #pre_gid = int(syn_description[0])
         #delay = syn_description[1]
         post_sec_id = syn_description[2]
@@ -241,7 +248,7 @@ class Cell(object):
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None :
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
-            return None
+            return False
 
         if syn_type < 100:
             ''' see: https://bbpteam.epfl.ch/\
@@ -281,6 +288,7 @@ class Cell(object):
 
         self.persistent.append(rndd)
         self.syns[sid] = syn
+        return True
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""
@@ -350,6 +358,32 @@ class Cell(object):
         self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, weight*weight_scalar) # ...,threshold,delay
         self.persistent.append(t_vec)
         self.persistent.append(vecstim)
+
+    def initialize_synapses(self):
+        for syn in self.syns.itervalues():
+            syn_type = syn.hname().partition('[')[0]
+            # TODO: Is there no way to call the mod file's INITIAL block?
+            # ... and do away with this brittle mess
+            assert syn_type in ['ProbAMPANMDA_EMS', 'ProbGABAAB_EMS']
+            if syn_type=='ProbAMPANMDA_EMS':
+                # basically what's in the INITIAL block
+                syn.Rstate=1
+                syn.tsyn_fac=bglibpy.neuron.h.t
+                syn.u=syn.u0
+                syn.A_AMPA = 0
+                syn.B_AMPA = 0
+                syn.A_NMDA = 0
+                syn.B_NMDA = 0
+            elif syn_type=='ProbGABAAB_EMS':
+                syn.Rstate=1
+                syn.tsyn_fac=bglibpy.neuron.h.t
+                syn.u=syn.u0
+                syn.A_GABAA = 0
+                syn.B_GABAA = 0
+                syn.A_GABAB = 0
+                syn.B_GABAB = 0
+            else:
+                assert False, "Problem with initialize_synapse"
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
