@@ -131,10 +131,13 @@ class SSim(object):
                         if add_replay:
                             if synapse_detail < 1:
                                 raise Exception("SSim: Cannot add replay stimulus if synapse_detail < 1")
-
                             self.charge_replay_synapse(gid, sid, syn_description, \
                                                     connection_parameters, \
                                                     pre_spike_trains)
+
+                            if "DelayWeights" in connection_parameters:
+                                for delay, weight in connection_parameters['DelayWeights']:
+                                    self._add_delayed_weight(gid, sid, delay, weight)
 
                 if synapse_detail > 0:
                     printv("Added synapses for gid %d" % gid, 2)
@@ -148,6 +151,10 @@ class SSim(object):
                 self._add_replay_stimuli(gid)
                 printv("Added stimuli for gid %d" % gid, 2)
 
+
+    def _add_delayed_weight(self, gid, sid, delay, weight):
+        """ Adds a weight with a delay to the synapse sid"""
+        self.cells[gid].add_replay_delayed_weight(sid, delay, weight)
 
     def _add_replay_stimuli(self, gid):
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
@@ -207,7 +214,7 @@ class SSim(object):
     def check_connection_contents(contents):
         """Check the contents of a connection block, to see if we support all the fields"""
         for key in contents.keys:
-            if key not in ['Weight', 'SynapseID', 'SpontMinis', 'SynapseConfigure', 'Source', 'Destination']:
+            if key not in ['Weight', 'SynapseID', 'SpontMinis', 'SynapseConfigure', 'Source', 'Destination', 'Delay']:
                 raise Exception("Key %s in Connection blocks not supported by BGLibPy" % key)
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
@@ -234,6 +241,10 @@ class SSim(object):
                         if int(entry.CONTENTS.SynapseID) != syn_type:
                             apply_parameters = False
 
+                    if 'Delay' in entry.CONTENTS.keys:
+                        parameters.setdefault('DelayWeights', []).append((float(entry.CONTENTS.Delay), float(entry.CONTENTS.Weight)))
+                        apply_parameters = False
+
                     if apply_parameters:
                         parameters['add_synapse'] = True
                         if 'Weight' in entry.CONTENTS.keys:
@@ -253,9 +264,6 @@ class SSim(object):
                             conf = entry.CONTENTS.SynapseConfigure
                             # collect list of applicable configure blocks to be applied with a "hoc exec" statement
                             parameters.setdefault('SynapseConfigure', []).append(conf)
-                        if 'Delay' in entry.CONTENTS.keys:
-                            #import warnings
-                            raise Exception("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
 
         return parameters
 

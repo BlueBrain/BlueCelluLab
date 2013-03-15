@@ -17,6 +17,7 @@ import bglibpy
 import os
 from bglibpy import tools
 from bglibpy.importer import neuron
+import Queue
 
 
 class Cell(object):
@@ -81,8 +82,10 @@ class Cell(object):
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
         self.cell_dendrograms = []
         self.plot_windows = []
-        self.fih = None # FInitializeHandler, sets up the callback functions
-        self.update_necessary = False # As long as no PlotWindow or active Dendrogram exist, don't update
+        self.fih_plots = None # FInitializeHandler, sets up the callback functions
+        self.fih_weights = None # FInitializeHandler, sets up the callback functions
+        self.plot_callback_necessary = False # As long as no PlotWindow or active Dendrogram exist, don't update
+        self.delayed_weights = Queue.PriorityQueue()
 
         try:
             self.hypamp = self.cell.getHypAmp()
@@ -115,7 +118,7 @@ class Cell(object):
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block"""
         sections_map = {'axonal': self.axonal, 'basal':self.basal, 'apical':self.apical, 'somatic': self.somatic,
-                        'dendritic': self.basal+self.apical+self.somatic, 
+                        'dendritic': self.basal+self.apical+self.somatic,
                         None:self.all}
 
         for section in sections_map[sections]:
@@ -226,8 +229,8 @@ class Cell(object):
         self.persistent.append(tstim)
 
     def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
-        """Add synapse based on the syn_description to the cell 
-        
+        """Add synapse based on the syn_description to the cell
+
         This operation can fail.  Returns True on success, otherwise False.
         """
         #pre_gid = int(syn_description[0])
@@ -289,6 +292,10 @@ class Cell(object):
         self.persistent.append(rndd)
         self.syns[sid] = syn
         return True
+
+    def add_replay_delayed_weight(self, sid, delay, weight):
+        """Add a synaptic weight for sid that will be set with a time delay"""
+        self.delayed_weights.put((delay, (sid, weight)))
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""
@@ -360,24 +367,25 @@ class Cell(object):
         self.persistent.append(vecstim)
 
     def initialize_synapses(self):
+        """Initialize the synapses"""
         for syn in self.syns.itervalues():
             syn_type = syn.hname().partition('[')[0]
-            # TODO: Is there no way to call the mod file's INITIAL block?
+            # todo: Is there no way to call the mod file's INITIAL block?
             # ... and do away with this brittle mess
             assert syn_type in ['ProbAMPANMDA_EMS', 'ProbGABAAB_EMS']
-            if syn_type=='ProbAMPANMDA_EMS':
+            if syn_type == 'ProbAMPANMDA_EMS':
                 # basically what's in the INITIAL block
-                syn.Rstate=1
-                syn.tsyn_fac=bglibpy.neuron.h.t
-                syn.u=syn.u0
+                syn.Rstate = 1
+                syn.tsyn_fac = bglibpy.neuron.h.t
+                syn.u = syn.u0
                 syn.A_AMPA = 0
                 syn.B_AMPA = 0
                 syn.A_NMDA = 0
                 syn.B_NMDA = 0
-            elif syn_type=='ProbGABAAB_EMS':
-                syn.Rstate=1
-                syn.tsyn_fac=bglibpy.neuron.h.t
-                syn.u=syn.u0
+            elif syn_type == 'ProbGABAAB_EMS':
+                syn.Rstate = 1
+                syn.tsyn_fac = bglibpy.neuron.h.t
+                syn.u = syn.u0
                 syn.A_GABAA = 0
                 syn.B_GABAA = 0
                 syn.A_GABAB = 0
@@ -498,7 +506,7 @@ class Cell(object):
             if var_name not in self.recordings:
                 self.add_recording(var_name)
         self.plot_windows.append(bglibpy.PlotWindow(var_list, self, xlim, ylim, title))
-        self.update_necessary = True
+        self.plot_callback_necessary = True
 
     def add_dendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
@@ -506,12 +514,26 @@ class Cell(object):
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
         if active:
-            self.update_necessary = True
+            self.plot_callback_necessary = True
 
     def init_callbacks(self):
         """Initialize the callback function (if necessary)"""
-        if self.update_necessary:
-            self.fih = neuron.h.FInitializeHandler(1, self.plot_callback)
+        if not self.delayed_weights.empty():
+            self.fih_weights = neuron.h.FInitializeHandler(1, self.weights_callback)
+
+        if self.plot_callback_necessary:
+            self.fih_plots = neuron.h.FInitializeHandler(1, self.plot_callback)
+
+    def weights_callback(self):
+        """Callback function that updates the delayed weights, when a certain delay has been reached"""
+        while not self.delayed_weights.empty() and abs(self.delayed_weights.queue[0][0] - neuron.h.t) < neuron.h.dt:
+            (_, (sid, weight)) = self.delayed_weights.get()
+            if sid in self.syn_netcons:
+                self.syn_netcons[sid].weight[0] = weight
+                #print "Changed weight of synapse id %d to %f at time %f" % (sid, weight, neuron.h.t)
+
+        if not self.delayed_weights.empty():
+            neuron.h.cvode.event(self.delayed_weights.queue[0][0], self.weights_callback)
 
     def plot_callback(self):
         """Update all the windows"""
