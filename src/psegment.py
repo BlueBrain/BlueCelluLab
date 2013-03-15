@@ -42,7 +42,7 @@ class PSegment(object):
         self.ax = self.figure.gca()
         self.figX = x
         self.figY = y
-        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="black", edgecolor="white")
+        self.patch = plt.patches.Rectangle([self.figX, self.figY], self.diam, self.L, facecolor="black", edgecolor="black")
         self.ax.add_patch(self.patch)
 
 
