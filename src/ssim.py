@@ -296,7 +296,10 @@ class SSim(object):
         """Get the time vector for the recordings"""
         return self.cells[self.gids[0]].get_time()
 
-
+    def __del__(self):
+        """Destructor"""
+        for gid in self.cells:
+            self.cells[gid].delete()
 
     """
     Auxialliary methods

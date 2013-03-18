@@ -56,6 +56,7 @@ class Cell(object):
 
         self.morphology_name = morphology_name
         self.template_name = template_name
+        self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
         #Set the gid of the cell
         self.cell.getCell().gid = gid
@@ -549,6 +550,10 @@ class Cell(object):
         if self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
+
+            self.fih_plots = None
+            self.fih_weights = None
+
         #for window in self.plot_windows:
         #    window.process.join()
         for persistent_object in self.persistent:

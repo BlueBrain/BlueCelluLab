@@ -11,6 +11,7 @@ import bglibpy
 #from bglibpy.importer import neuron
 import numpy
 import warnings
+import math
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 VERBOSE_LEVEL = 0
@@ -126,7 +127,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level, 
 
     if check_for_spiking is True,
     this function will return None if the cell spikes from from 100ms to the end of the simulation
-    indicating no steady state was reached. 
+    indicating no steady state was reached.
 
     """
     cell = bglibpy.Cell(template_name, morphology_name)
@@ -139,7 +140,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name, step_level, 
     cell.delete()
 
     if check_for_spiking:
-        # check for voltage crossings 
+        # check for voltage crossings
         if len(numpy.nonzero(voltage[numpy.where(time > 100.0)]>spike_threshold)[0])>0:
             return None
 
@@ -225,16 +226,21 @@ def detect_threshold_current(template_name, morphology_name, hyp_level, inj_star
     """Search current necessary to reach threshold"""
     return search_threshold_current(template_name, morphology_name, hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
-def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False):
+def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False, timeout=600):
     """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
     #print "Calculate_SS_voltage_replay %f" % step_level
-    (SS_voltage, (time, voltage)) = pool.apply(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time, ignore_timerange])
+    result = pool.apply_async(calculate_SS_voltage_replay_subprocess, [blueconfig, gid, step_level, start_time, stop_time, ignore_timerange])
+
+    try:
+        output = result.get(timeout=timeout)
+        #(SS_voltage, (time, voltage)) = result.get(timeout=timeout)
+    except multiprocessing.TimeoutError:
+        output = (float('nan'), (None, None))
+
     #(SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level)
     pool.terminate()
-    del pool
-    return (SS_voltage, (time, voltage))
-
+    return output
 
 def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level, start_time=None, stop_time=None, ignore_timerange=False):
     """Subprocess wrapper of calculate_SS_voltage"""
@@ -274,7 +280,7 @@ class NoDaemonProcess(multiprocessing.Process):
         pass
     daemon = property(_get_daemon, _set_daemon)
 
-# pylint: disable=W0223
+# pylint: disable=W0223, R0911
 
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
@@ -289,7 +295,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
         max_nestlevel=10,
         nestlevel=1,
         start_time=500, stop_time=2000,
-        return_fullrange=True):
+        return_fullrange=True,
+        timeout=600):
     """Search current necessary to bring cell to target_voltage in a network replay"""
     process_name = multiprocessing.current_process().name
 
@@ -298,11 +305,16 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     elif nestlevel == 1:
         printv("%s: Searching for current to bring gid %d to %f mV" % (process_name, gid, target_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
-    (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time)
+    (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time, timeout=timeout)
+    if math.isnan(new_target_voltage):
+        return (float('nan'), None)
     #print "Detected voltage: ", new_target_voltage
     if abs(new_target_voltage - target_voltage) < precision:
         if return_fullrange:
-            return (med_current, calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)[1])
+            (full_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
+            if math.isnan(full_voltage):
+                return (float('nan'), None)
+            return (med_current, (full_time, full_voltage))
         else:
             return (med_current, (time, voltage))
     elif new_target_voltage > target_voltage:
