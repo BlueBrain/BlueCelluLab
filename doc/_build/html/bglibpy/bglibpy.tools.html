@@ -1,0 +1,168 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bglibpy.tools &mdash; BGLibPy 1.0-40-gd841-dirty documentation</title>
+    
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/print.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0-40-gd841-dirty',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/theme_extras.js"></script>
+    <link rel="top" title="BGLibPy 1.0-40-gd841-dirty documentation" href="../index.html" />
+    <link rel="up" title="API documentation" href="../api.html" />
+    <link rel="next" title="bglibpy.ssim" href="bglibpy.ssim.html" />
+    <link rel="prev" title="bglibpy.ssim" href="bglibpy.ssim.html" /> 
+  </head>
+  <body>
+      <div class="header"><img class="rightlogo" src="../_static/bbp.png" alt="Logo"/><h1 class="heading"><a href="../index.html">
+          <span>BGLibPy 1.0-40-gd841-dirty documentation</span></a></h1>
+        <h2 class="heading"><span>bglibpy.tools</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="bglibpy.ssim.html">bglibpy.ssim</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="bglibpy.ssim.html">bglibpy.ssim</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-bglibpy.tools">
+<span id="bglibpy-tools"></span><h1>bglibpy.tools<a class="headerlink" href="#module-bglibpy.tools" title="Permalink to this headline">¶</a></h1>
+<p>Static tools for bglibpy</p>
+<p class="rubric">Functions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.calculate_SS_voltage" title="bglibpy.tools.calculate_SS_voltage"><tt class="xref py py-obj docutils literal"><span class="pre">calculate_SS_voltage</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Calculate the steady state voltage at a certain current step</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.calculate_SS_voltage_replay" title="bglibpy.tools.calculate_SS_voltage_replay"><tt class="xref py py-obj docutils literal"><span class="pre">calculate_SS_voltage_replay</span></tt></a>(blueconfig,&nbsp;gid,&nbsp;...)</td>
+<td>Calculate the steady state voltage at a certain current step</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.calculate_SS_voltage_replay_subprocess" title="bglibpy.tools.calculate_SS_voltage_replay_subprocess"><tt class="xref py py-obj docutils literal"><span class="pre">calculate_SS_voltage_replay_subprocess</span></tt></a>(...)</td>
+<td>Subprocess wrapper of calculate_SS_voltage</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.calculate_SS_voltage_subprocess" title="bglibpy.tools.calculate_SS_voltage_subprocess"><tt class="xref py py-obj docutils literal"><span class="pre">calculate_SS_voltage_subprocess</span></tt></a>(...[,&nbsp;...])</td>
+<td>Subprocess wrapper of calculate_SS_voltage</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.calculate_inputresistance" title="bglibpy.tools.calculate_inputresistance"><tt class="xref py py-obj docutils literal"><span class="pre">calculate_inputresistance</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Calculate the input resistance at rest of the cell</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.deprecated" title="bglibpy.tools.deprecated"><tt class="xref py py-obj docutils literal"><span class="pre">deprecated</span></tt></a>(func)</td>
+<td>A decorator that shows a warning message when a deprecated function is used</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.detect_hyp_current" title="bglibpy.tools.detect_hyp_current"><tt class="xref py py-obj docutils literal"><span class="pre">detect_hyp_current</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Search current necessary to bring cell to -85 mV</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.detect_spike" title="bglibpy.tools.detect_spike"><tt class="xref py py-obj docutils literal"><span class="pre">detect_spike</span></tt></a>(voltage)</td>
+<td>Detect if there is a spike in the voltage trace</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.detect_spike_step" title="bglibpy.tools.detect_spike_step"><tt class="xref py py-obj docutils literal"><span class="pre">detect_spike_step</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Detect if there is a spike at a certain step level</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.detect_spike_step_subprocess" title="bglibpy.tools.detect_spike_step_subprocess"><tt class="xref py py-obj docutils literal"><span class="pre">detect_spike_step_subprocess</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Detect if there is a spike at a certain step level</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.detect_threshold_current" title="bglibpy.tools.detect_threshold_current"><tt class="xref py py-obj docutils literal"><span class="pre">detect_threshold_current</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Search current necessary to reach threshold</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.get_gids_of_mtypes" title="bglibpy.tools.get_gids_of_mtypes"><tt class="xref py py-obj docutils literal"><span class="pre">get_gids_of_mtypes</span></tt></a>([mtypes])</td>
+<td>Helper function that, provided a BlueConfig, returns all the GIDs     associated with a specified M-type. (For instance, when you only want     to insert synapses of a specific pathway)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.load_nrnmechanisms" title="bglibpy.tools.load_nrnmechanisms"><tt class="xref py py-obj docutils literal"><span class="pre">load_nrnmechanisms</span></tt></a>(libnrnmech_location)</td>
+<td>Load another shared library with neuron mechanisms</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.parse_complete_BlueConfig" title="bglibpy.tools.parse_complete_BlueConfig"><tt class="xref py py-obj docutils literal"><span class="pre">parse_complete_BlueConfig</span></tt></a>(fName)</td>
+<td>Simplistic parser of the BlueConfig file</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.printv" title="bglibpy.tools.printv"><tt class="xref py py-obj docutils literal"><span class="pre">printv</span></tt></a>(message,&nbsp;verbose_level)</td>
+<td>Print the message depending on the verbose level</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.printv_err" title="bglibpy.tools.printv_err"><tt class="xref py py-obj docutils literal"><span class="pre">printv_err</span></tt></a>(message,&nbsp;verbose_level)</td>
+<td>Print the message depending on the verbose level</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.search_hyp_current" title="bglibpy.tools.search_hyp_current"><tt class="xref py py-obj docutils literal"><span class="pre">search_hyp_current</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Search current necessary to bring cell to -85 mV</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.search_hyp_current_replay" title="bglibpy.tools.search_hyp_current_replay"><tt class="xref py py-obj docutils literal"><span class="pre">search_hyp_current_replay</span></tt></a>(blueconfig,&nbsp;gid[,&nbsp;...])</td>
+<td>Search current necessary to bring cell to target_voltage in a network replay</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.search_hyp_current_replay_gidlist" title="bglibpy.tools.search_hyp_current_replay_gidlist"><tt class="xref py py-obj docutils literal"><span class="pre">search_hyp_current_replay_gidlist</span></tt></a>(...)</td>
+<td>Search current necessary to bring cell to target_voltage in a network replay for a list of gids.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.search_threshold_current" title="bglibpy.tools.search_threshold_current"><tt class="xref py py-obj docutils literal"><span class="pre">search_threshold_current</span></tt></a>(template_name,&nbsp;...)</td>
+<td>Search current necessary to reach threshold</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.template_accepts_cvode" title="bglibpy.tools.template_accepts_cvode"><tt class="xref py py-obj docutils literal"><span class="pre">template_accepts_cvode</span></tt></a>(template_name)</td>
+<td>Return True if template_name can be run with cvode</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.NestedPool" title="bglibpy.tools.NestedPool"><tt class="xref py py-obj docutils literal"><span class="pre">NestedPool</span></tt></a>([processes,&nbsp;initializer,&nbsp;...])</td>
+<td>Class that represents a MultiProcessing nested pool</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../api.html#bglibpy.tools.NoDaemonProcess" title="bglibpy.tools.NoDaemonProcess"><tt class="xref py py-obj docutils literal"><span class="pre">NoDaemonProcess</span></tt></a>([group,&nbsp;target,&nbsp;name,&nbsp;args,&nbsp;...])</td>
+<td>Class that represents a non-daemon process</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../api.html#bglibpy.tools.search_hyp_function" title="bglibpy.tools.search_hyp_function"><tt class="xref py py-obj docutils literal"><span class="pre">search_hyp_function</span></tt></a>(blueconfig,&nbsp;**kwargs)</td>
+<td>Function object</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="bglibpy.ssim.html">bglibpy.ssim</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="bglibpy.ssim.html">bglibpy.ssim</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, BBP.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
