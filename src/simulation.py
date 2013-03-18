@@ -17,13 +17,20 @@ from bglibpy import tools
 class Simulation(object):
 
     """Class that represents a neuron simulation"""
-    def __init__(self, verbose_level=0):
-        self.verbose_level = verbose_level
+    def __init__(self, show_progress=False):
         self.cells = []
+        self.fih = None
+        if show_progress:
+            self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
 
     def add_cell(self, new_cell):
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
+
+    def init_callbacks(self):
+        """Initialize the callback of all the registered simulation objects (e.g. for window plotting)"""
+        for cell in self.cells:
+            cell.init_callbacks()
 
     def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
         """Run the simulation"""
@@ -35,7 +42,7 @@ class Simulation(object):
             neuron.h.cvode_active(1)
         else:
             if cvode_old_status:
-                printv("WARNING: cvode was activated outside of Simulation, temporarily disabling it in run() because cvode=True was set", 2)
+                printv("WARNING: cvode was activated outside of Simulation, temporarily disabling it in run() because cvode=False was set", 2)
             neuron.h.cvode_active(0)
 
         neuron.h.v_init = v_init
@@ -56,8 +63,9 @@ class Simulation(object):
         e.g. finitialize() + step() != run()
         """
 
-        #neuron.h.finitialize()
         printv('Running a simulation until %f ms ...' % maxtime, 1)
+
+        self.init_callbacks()
 
         #pylint: disable=W0703
         try:
@@ -69,23 +77,7 @@ class Simulation(object):
                 printv("WARNING: cvode was activated outside of Simulation, this might make it impossible to load templates with stochastic channels", 2)
             neuron.h.cvode_active(cvode_old_status)
 
-
         printv('Finished simulation', 1)
-
-        #self.continuerun(maxtime)
-
-    #def continuerun(self, maxtime):
-    #    """Continue a running simulation"""
-    #    while neuron.h.t < maxtime:
-    #        for cell in self.cells:
-    #            cell.update()
-    #        if self.verbose_level >= 1:
-    #            print str(neuron.h.t) + " ms"
-            #try:
-    #        neuron.h.step()
-            #except Exception, e:
-            #    print 'The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e)
-            #    break
 
     def __del__(self):
         pass

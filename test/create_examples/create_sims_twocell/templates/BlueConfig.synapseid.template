@@ -5,9 +5,9 @@ Run Default
           svnPath https://bbpteam.epfl.ch/svn/bluebrain
           Version 1094
            Prefix /bgscratch/bbp/release/02.04.12
-   MorphologyPath /bgscratch/bbp/morphologies/31.05.12
-       METypePath /bgscratch/bbp/CCells/b24.07.12
-
+   MorphologyPath /bgscratch/bbp/l5/release/2012.07.23/morphologies
+       METypePath   /bgscratch/bbp/l5/release/2012.07.23/ccells
+      
       CircuitPath {circuit_path}
           nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
 

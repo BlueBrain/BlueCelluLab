@@ -4,8 +4,21 @@
 
 import nose.tools as nt
 import numpy
-import bglibpy.ssim
+import bglibpy
 import os
+
+
+def test_parse_outdat():
+    """SSim: Testing parsing of out.dat"""
+    try:
+        outdat = bglibpy.ssim._parse_outdat("examples/sim_twocell_empty/output_doesntexist")
+    except IOError:
+        nt.assert_true(True)
+    else:
+        nt.assert_true(False)
+
+    outdat = bglibpy.ssim._parse_outdat("examples/sim_twocell_minis_replay/output")
+    nt.assert_true(45 in outdat[2])
 
 class TestSSimBaseClass_twocell_empty(object):
     """Class to test SSim with two cell circuit"""
@@ -21,11 +34,9 @@ class TestSSimBaseClass_twocell_empty(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit"""
 
-        #time_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_range
         voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        #time_bglibpy = self.ssim_bglibpy.get_time()
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
@@ -229,9 +240,7 @@ class TestSSimBaseClass_full(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig")
-
-        #self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/19.11.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig")
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig")
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -276,7 +285,6 @@ class TestSSimBaseClass_full(object):
         inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
         sid = inh_synapses[0][1]
         syn_params = pre_datas[sid, :]
-        #pre_gid = syn_params[0]
         connection_modifiers = {'SynapseConfigure': ['%s.e_GABAA = -80.5 %s.e_GABAB = -101.0', '%s.tau_d_GABAA = 10.0 %s.tau_r_GABAA = 1.0', '%s.e_GABAA = -80.6'], 'Weight':2.0}
         self.ssim.add_single_synapse(gid, sid, syn_params, connection_modifiers)
 
@@ -289,7 +297,7 @@ class TestSSimBaseClass_full_run(object):
     """Class to test SSim with full circuit"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig",
                 record_dt=0.1)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
@@ -306,13 +314,7 @@ class TestSSimBaseClass_full_run(object):
         voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
         nt.assert_equal(len(time_bglibpy), 5000)
         nt.assert_equal(len(voltage_bglibpy), 5000)
-        #time_bglib = self.ssim.bc_simulation.reports.soma.time_range[:len(time_bglibpy)]
         voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
-
-        #import pylab
-        #pylab.plot(time_bglibpy, voltage_bglibpy)
-        #pylab.plot(time_bglib, voltage_bglib)
-        #pylab.show()
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
@@ -321,7 +323,7 @@ class TestSSimBaseClass_full_neuronconfigure(object):
     """Class to test SSim with full circuit that uses neuronconfigure"""
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/release/14.01.13/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/coupled_Ek65_Mg0p25/BlueConfig",
                 record_dt=0.1)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
@@ -338,13 +340,7 @@ class TestSSimBaseClass_full_neuronconfigure(object):
         voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
         nt.assert_equal(len(time_bglibpy), 5000)
         nt.assert_equal(len(voltage_bglibpy), 5000)
-        #time_bglib = self.ssim.bc_simulation.reports.soma.time_range[:len(time_bglibpy)]
         voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
-
-        #import pylab
-        #pylab.plot(time_bglibpy, voltage_bglibpy)
-        #pylab.plot(time_bglib, voltage_bglib)
-        #pylab.show()
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 0.01)

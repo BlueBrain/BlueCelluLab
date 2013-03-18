@@ -15,24 +15,6 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
-def parse_and_store_GID_spiketrains(path, outdat_name='out.dat'):
-    """Parse and store the gid spiketrains"""
-
-    gid_spiketimes_dict = collections.defaultdict(list)
-    full_outdat_name = "%s/%s" % (path, outdat_name)
-
-    if not os.path.exists(full_outdat_name):
-        raise Exception("Could not find presynaptic spike file %s in %s" % (outdat_name, path))
-    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
-    # last newline
-    with open(full_outdat_name, "r") as full_outdat_file:
-        for line in full_outdat_file.read().split("\n")[1:-1]:
-            splits = line.split("\t")
-            gid = int(splits[1])
-            spiketime = float(splits[0])
-            gid_spiketimes_dict[gid].append(spiketime)
-    return gid_spiketimes_dict
-
 class SSim(object):
     """SSim class"""
 
@@ -122,7 +104,7 @@ class SSim(object):
                 pre_datas = [pre_data for pre_data in pre_datas if pre_data[0] in intersect_pre_gids]
 
             if add_replay :
-                pre_spike_trains = parse_and_store_GID_spiketrains(\
+                pre_spike_trains = _parse_outdat(\
                                     self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                                     'out.dat')
 
@@ -130,6 +112,8 @@ class SSim(object):
             # synapses
             if pre_datas is None:
                 printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
+            elif synapse_detail == 0:
+                pass
             else:
                 for sid, syn_description in enumerate(pre_datas):
                     syn_type = syn_description[13]
@@ -147,23 +131,30 @@ class SSim(object):
                         if add_replay:
                             if synapse_detail < 1:
                                 raise Exception("SSim: Cannot add replay stimulus if synapse_detail < 1")
-
                             self.charge_replay_synapse(gid, sid, syn_description, \
                                                     connection_parameters, \
                                                     pre_spike_trains)
 
+                            if "DelayWeights" in connection_parameters:
+                                for delay, weight in connection_parameters['DelayWeights']:
+                                    self._add_delayed_weight(gid, sid, delay, weight)
+
                 if synapse_detail > 0:
-                    printv("Added synapses for gid %d" % gid, 1)
+                    printv("Added synapses for gid %d" % gid, 2)
                 if synapse_detail > 1:
-                    printv("Added minis for gid %d" % gid, 1)
+                    printv("Added minis for gid %d" % gid, 2)
                 if add_replay:
-                    printv("Added presynaptic spiketrains for gid %d" % gid, 1)
+                    printv("Added presynaptic spiketrains for gid %d" % gid, 2)
 
             if add_stimuli:
                 ''' Also add the injections / stimulations as in the cortical model '''
                 self._add_replay_stimuli(gid)
-                printv("Added stimuli for gid %d" % gid, 1)
+                printv("Added stimuli for gid %d" % gid, 2)
 
+
+    def _add_delayed_weight(self, gid, sid, delay, weight):
+        """ Adds a weight with a delay to the synapse sid"""
+        self.cells[gid].add_replay_delayed_weight(sid, delay, weight)
 
     def _add_replay_stimuli(self, gid):
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
@@ -196,8 +187,6 @@ class SSim(object):
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
-        #hypamp_i = self.cells[gid].hypamp
-        #self.cells[gid].addRamp(float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Delay)+float(stimulus.CONTENTS.Duration), hypamp_i, hypamp_i, dt=self.dt)
         self.cells[gid].add_replay_hypamp(stimulus)
 
     def _add_replay_noise(self, gid, stimulus, noise_seed=0):
@@ -219,7 +208,14 @@ class SSim(object):
 
     def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
-        self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
+
+    @staticmethod
+    def check_connection_contents(contents):
+        """Check the contents of a connection block, to see if we support all the fields"""
+        for key in contents.keys:
+            if key not in ['Weight', 'SynapseID', 'SpontMinis', 'SynapseConfigure', 'Source', 'Destination', 'Delay']:
+                raise Exception("Key %s in Connection blocks not supported by BGLibPy" % key)
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
@@ -232,6 +228,7 @@ class SSim(object):
         spontminis_set = False
 
         for entry in self.connection_entries:
+            self.check_connection_contents(entry.CONTENTS)
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
@@ -243,6 +240,10 @@ class SSim(object):
                     if 'SynapseID' in entry.CONTENTS.keys:
                         if int(entry.CONTENTS.SynapseID) != syn_type:
                             apply_parameters = False
+
+                    if 'Delay' in entry.CONTENTS.keys:
+                        parameters.setdefault('DelayWeights', []).append((float(entry.CONTENTS.Delay), float(entry.CONTENTS.Weight)))
+                        apply_parameters = False
 
                     if apply_parameters:
                         parameters['add_synapse'] = True
@@ -263,11 +264,14 @@ class SSim(object):
                             conf = entry.CONTENTS.SynapseConfigure
                             # collect list of applicable configure blocks to be applied with a "hoc exec" statement
                             parameters.setdefault('SynapseConfigure', []).append(conf)
-                        if 'Delay' in entry.CONTENTS.keys:
-                            #import warnings
-                            raise Exception("Connection '%s': BlueConfig Delay keyword for connection blocks unsupported." % entry.NAME)
 
         return parameters
+
+    def initialize_synapses(self):
+        """ Resets the state of all synapses of all cells to initial values """
+        for cell in self.cells.itervalues():
+            cell.initialize_synapses()
+
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
         """Simulate the SSim"""
@@ -307,3 +311,21 @@ class SSim(object):
             raise Exception("Gid %d not found in circuit" % gid)
 
         return template_name
+
+def _parse_outdat(path, outdat_name='out.dat'):
+    """Parse the replay spiketrains in out.dat"""
+
+    gid_spiketimes_dict = collections.defaultdict(list)
+    full_outdat_name = os.path.join(path, outdat_name)
+
+    if not os.path.exists(full_outdat_name):
+        raise IOError("Could not find presynaptic spike file at %s" % full_outdat_name)
+    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
+    # last newline
+    with open(full_outdat_name, "r") as full_outdat_file:
+        for line in full_outdat_file.read().split("\n")[1:-1]:
+            splits = line.split("\t")
+            gid = int(splits[1])
+            spiketime = float(splits[0])
+            gid_spiketimes_dict[gid].append(spiketime)
+    return gid_spiketimes_dict

@@ -21,7 +21,7 @@ class Dendrogram(object):
         pylab.ioff()
 
         self.sections = sections
-        neuron.h.finitialize()
+        #neuron.h.finitialize()
 
         self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
         self.proot = PSection(self.hroot, None)
@@ -55,7 +55,7 @@ class Dendrogram(object):
         self.canvas.blit(self.ax.bbox)
 
         self.background = self.canvas.copy_from_bbox(self.dend_figure.gca().bbox)
-        self.drawCount = 10
+        self.drawCount = 1
 
         self.active = active
 
@@ -66,9 +66,8 @@ class Dendrogram(object):
                 for psection in self.psections:
                     psection.redraw()
                 self.canvas.blit(self.ax.bbox)
-                self.drawCount = 50
+                self.drawCount = 1
             else:
-
                 self.drawCount = self.drawCount - 1
 
         return True
