@@ -308,11 +308,12 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time, timeout=timeout)
     if math.isnan(new_target_voltage):
         return (float('nan'), None)
-    #print "Detected voltage: ", new_target_voltage
     if abs(new_target_voltage - target_voltage) < precision:
         if return_fullrange:
-            (full_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
-            if math.isnan(full_voltage):
+            # We're calculating the full voltage range, just reusing calculate_SS_voltage_replay for this
+            # Variable names that start with full_ point to values that are related to the full voltage range
+            (full_SS_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
+            if math.isnan(full_SS_voltage):
                 return (float('nan'), None)
             return (med_current, (full_time, full_voltage))
         else:
