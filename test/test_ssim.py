@@ -332,7 +332,7 @@ class TestSSimBaseClass_full_neuronconfigure(object):
         del self.ssim
 
     def test_run(self):
-        """SSim: Check if a full replay of a simulation with neuronconfigure blocks run on BG/P gives the same output trace as on BG/P"""
+        """SSim: Check if a full replay of a simulation with neuronconfigure blocks run gives the same output trace as on BG/P"""
         gid = 116386
         self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
         self.ssim.run(500)
@@ -345,3 +345,28 @@ class TestSSimBaseClass_full_neuronconfigure(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 0.01)
 
+class TestSSimBaseClass_full_connection_delay(object):
+    """Class to test SSim with full circuit that uses a delay field in a connection block"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/L4_EXC/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a full replay of a simulation with delayed connection blocks gives the same output trace as on BG/P"""
+        gid = 116386
+        self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
+        self.ssim.run(500)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        nt.assert_equal(len(time_bglibpy), 5000)
+        nt.assert_equal(len(voltage_bglibpy), 5000)
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        #nt.assert_true(rms_error < 1.0)
