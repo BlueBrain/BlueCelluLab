@@ -8,6 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 # Set the name of your project here
 project("BGLibPy" NONE)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
+
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "0")
@@ -28,3 +30,13 @@ add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(test)
+
+option(ENABLE_DOCS "Enable generation of documentation." OFF)
+if (ENABLE_DOCS)
+  find_package("Sphinx")
+  if (NOT SPHINX_FOUND)
+    message(STATUS "Disabling generation of documentation because Sphinx is missing.")
+  else()
+    add_subdirectory(doc)
+  endif()
+endif()
