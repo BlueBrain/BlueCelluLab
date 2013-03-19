@@ -7,7 +7,6 @@
 
 import nose.tools as nt
 import bglibpy
-import multiprocessing
 
 def test_search_hyp_current_replay_gidlist():
     """Tools: Test search_hyp_current_replay_gidlist"""
@@ -37,53 +36,37 @@ def test_search_hyp_current_replay_gidlist():
     nt.assert_true(abs(numpy.mean(voltage[numpy.where((time < stop_time) & (time > start_time))])-target_voltage) < precision)
 
 def test_search_hyp_current_replay_imap():
-    """Tools: Test search_hyp_current_replay_gidlist"""
+    """Tools: Test search_hyp_current_replay_imap"""
     blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"
-    gid_list = [107461]
-    #gid_list = [107461, 107462]
-    #gid = 107461
+    gid_list = [107461, 107462]
     precision = .5
     target_voltage = -77
     start_time = 1
     stop_time = 5
 
-    print "Starting"
-    bglibpy.tools.VERBOSE_LEVEL = 10
-    results = bglibpy.tools.search_hyp_current_replay_imap(blueconfig_location, gid_list,
+    hyp_currents = {}
+    results = bglibpy.tools.search_hyp_current_replay_imap(blueconfig_location, gid_list, timeout=50,
         target_voltage=target_voltage,
         min_current=-2.0,
         max_current=0.0,
         start_time=start_time,
         stop_time=stop_time,
         precision=precision,
-        max_nestlevel=1,
+        max_nestlevel=2,
         return_fullrange=False
         )
-    level_traces = {}
-    unprocessed_gids = set(gid_list)
-    for _ in gid_list:
-        try:
-            if len(unprocessed_gids) == 1:
-                timeout = 1000
-            else:
-                timeout = 1000
-            (gid, result) = results.next(timeout=timeout)
-            level_traces[gid] = result
-            #Dosomething with gid and result (like save it to a file)
-            unprocessed_gids.remove(gid)
-        except StopIteration:
-            break
-        except multiprocessing.TimeoutError:
-            pass
-    print "Unprocessed gids: %s" % str(list(unprocessed_gids))
 
-    print level_traces
-    #for gid in gid_list:
-    #    nt.assert_true(gid in level_traces)
-    #step_level, (time, voltage) = results[gid]
-    #nt.assert_equal(step_level, -1.5)
-    #import numpy
-    #nt.assert_true(abs(numpy.mean(voltage[numpy.where((time < stop_time) & (time > start_time))])-target_voltage) < precision)
+    unprocessed_gids = set(gid_list)
+    for gid, result in results:
+        if gid == None:
+            break
+        else:
+            hyp_currents[gid] = result[0]
+            unprocessed_gids.remove(gid)
+
+    nt.assert_true(hyp_currents[107461] == -1.5)
+    import math
+    nt.assert_true(math.isnan(hyp_currents[107462]))
 
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""

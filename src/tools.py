@@ -351,7 +351,6 @@ class search_hyp_function_gid(object):
         self.blueconfig = blueconfig
         self.kwargs = kwargs
     def __call__(self, gid):
-        print "I'm here"
         return (gid, search_hyp_current_replay(self.blueconfig, gid, **self.kwargs))
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
@@ -388,28 +387,22 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
 
     return currentlevels_timevoltagetraces
 
-def search_hyp_current_replay_imap(blueconfig, gid_list, **kwargs):
+def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, **kwargs):
     """
-    Same functionality as search_hyp_current_gidlist(), except that this function returns an unordered iterator.
-    Subsequent calls to .next(timeout=sometimeout) on this iterator will return the unordered results one by one,
-    and will throw a TimeoutError for a result that takes sometimeout to calculate.
-    The result returned by next() will be of the form (gid, (current_step, (time, voltage)))
-    This is an example code snippet that can be used by the user of this function:
-
-    .. code-block:: python
-        results = search_hyp_current_replay_imap(blueconfig, gid_list)
-        unprocessed_gids = set(gid_list)
-        for _ in gid_list:
-            try:
-                (gid, result) = results.next(timeout=1)
-                #Dosomething with gid and result (like save it to a file)
-                unprocessed_gids.remove(gid)
-            except StopIteration:
-                break
-            except multiprocessing.TimeoutError as e:
-                pass
-        print "Unprocessed gids: %s" % str(list(unprocessed_gids))
+    Same functionality as search_hyp_current_gidlist(), except that this function returns an unordered generator.
+    Loop over this generator will return the unordered results one by one.
+    The results returned will be of the form (gid, (current_step, (time, voltage)))
+    When there are results that take more that 'timeout' time to retrieve, these results will be (None, None). The
+    user should stop iterating the generating after receiving this (None, None) result. In this case also probably
+    a broke pipe error from some of the parallel process will be shown on the stdout, these can be ignored.
     """
-
     pool = NestedPool(multiprocessing.cpu_count())
-    return pool.imap(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
+    results = pool.imap_unordered(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
+    for _ in gid_list:
+        try:
+            (gid, result) = results.next(timeout=timeout)
+            yield (gid, result)
+        except multiprocessing.TimeoutError:
+            pool.terminate()
+            yield (None, None)
+    pool.terminate()
