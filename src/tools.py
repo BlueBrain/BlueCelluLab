@@ -16,6 +16,27 @@ import math
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 VERBOSE_LEVEL = 0
 
+def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
+    """
+    Helper function that, provided a BlueConfig, returns all the GIDs \
+    associated with a specified M-type. (For instance, when you only want \
+    to insert synapses of a specific pathway)
+
+    Parameters
+    ----------
+    mtypes : list
+        List of M-types (each as a string)
+
+    Returns
+    -------
+    gids : list
+        List of all GIDs associated with one of the specified M-types
+
+    """
+    a = 1
+    b = a +1
+    return b
+
 def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
     def rep_func(*args, **kwargs):
@@ -339,11 +360,19 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
 
 class search_hyp_function(object):
     """Function object"""
-    def __init__(self, blueconfig, **kwargs): #target_voltage=None, min_current=None, max_current=None, precision=None, max_nestlevel=None, start_time=None, stop_time=None):
+    def __init__(self, blueconfig, **kwargs):
         self.blueconfig = blueconfig
         self.kwargs = kwargs
     def __call__(self, gid):
         return search_hyp_current_replay(self.blueconfig, gid, **self.kwargs)
+
+class search_hyp_function_gid(object):
+    """Function object, return a tuple (gid, results)"""
+    def __init__(self, blueconfig, **kwargs):
+        self.blueconfig = blueconfig
+        self.kwargs = kwargs
+    def __call__(self, gid):
+        return (gid, search_hyp_current_replay(self.blueconfig, gid, **self.kwargs))
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     """
@@ -353,7 +382,8 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     Parameters
     ----------
     blueconfig : Simulation BlueConfig
-    gid_list: list of gids to process
+    gid_list : list
+        of gids to process
     target_voltage: voltage you want to bring to cell to
     min_current, max_current: The algorithm will search in ]min_current, max_current[
     precision: algorithm stops when abs(calculated_voltage - target_voltage) < precision
@@ -378,3 +408,23 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
         currentlevels_timevoltagetraces[gid] = result
 
     return currentlevels_timevoltagetraces
+
+def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, **kwargs):
+    """
+    Same functionality as search_hyp_current_gidlist(), except that this function returns an unordered generator.
+    Loop over this generator will return the unordered results one by one.
+    The results returned will be of the form (gid, (current_step, (time, voltage)))
+    When there are results that take more that 'timeout' time to retrieve, these results will be (None, None). The
+    user should stop iterating the generating after receiving this (None, None) result. In this case also probably
+    a broke pipe error from some of the parallel process will be shown on the stdout, these can be ignored.
+    """
+    pool = NestedPool(multiprocessing.cpu_count())
+    results = pool.imap_unordered(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
+    for _ in gid_list:
+        try:
+            (gid, result) = results.next(timeout=timeout)
+            yield (gid, result)
+        except multiprocessing.TimeoutError:
+            pool.terminate()
+            yield (None, None)
+    pool.terminate()
