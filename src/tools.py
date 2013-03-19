@@ -360,11 +360,19 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
 
 class search_hyp_function(object):
     """Function object"""
-    def __init__(self, blueconfig, **kwargs): #target_voltage=None, min_current=None, max_current=None, precision=None, max_nestlevel=None, start_time=None, stop_time=None):
+    def __init__(self, blueconfig, **kwargs):
         self.blueconfig = blueconfig
         self.kwargs = kwargs
     def __call__(self, gid):
         return search_hyp_current_replay(self.blueconfig, gid, **self.kwargs)
+
+class search_hyp_function_gid(object):
+    """Function object, return a tuple (gid, results)"""
+    def __init__(self, blueconfig, **kwargs):
+        self.blueconfig = blueconfig
+        self.kwargs = kwargs
+    def __call__(self, gid):
+        return (gid, search_hyp_current_replay(self.blueconfig, gid, **self.kwargs))
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     """
@@ -374,7 +382,7 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     Parameters
     ----------
     blueconfig : Simulation BlueConfig
-    gid_list : list 
+    gid_list : list
         of gids to process
     target_voltage: voltage you want to bring to cell to
     min_current, max_current: The algorithm will search in ]min_current, max_current[
@@ -401,4 +409,22 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
 
     return currentlevels_timevoltagetraces
 
-    
+def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, **kwargs):
+    """
+    Same functionality as search_hyp_current_gidlist(), except that this function returns an unordered generator.
+    Loop over this generator will return the unordered results one by one.
+    The results returned will be of the form (gid, (current_step, (time, voltage)))
+    When there are results that take more that 'timeout' time to retrieve, these results will be (None, None). The
+    user should stop iterating the generating after receiving this (None, None) result. In this case also probably
+    a broke pipe error from some of the parallel process will be shown on the stdout, these can be ignored.
+    """
+    pool = NestedPool(multiprocessing.cpu_count())
+    results = pool.imap_unordered(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
+    for _ in gid_list:
+        try:
+            (gid, result) = results.next(timeout=timeout)
+            yield (gid, result)
+        except multiprocessing.TimeoutError:
+            pool.terminate()
+            yield (None, None)
+    pool.terminate()
