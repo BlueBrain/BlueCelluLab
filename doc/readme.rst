@@ -1,0 +1,6 @@
+Introduction
+============
+
+Quickstart ::
+
+  import bglibpy
