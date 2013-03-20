@@ -322,20 +322,20 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     process_name = multiprocessing.current_process().name
 
     if nestlevel > max_nestlevel:
-        return (float('nan'), None)
+        return (float('nan'), (None, None))
     elif nestlevel == 1:
         printv("%s: Searching for current to bring gid %d to %f mV" % (process_name, gid, target_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
     (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time, timeout=timeout)
     if math.isnan(new_target_voltage):
-        return (float('nan'), None)
+        return (float('nan'), (None, None))
     if abs(new_target_voltage - target_voltage) < precision:
         if return_fullrange:
             # We're calculating the full voltage range, just reusing calculate_SS_voltage_replay for this
             # Variable names that start with full_ point to values that are related to the full voltage range
             (full_SS_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
             if math.isnan(full_SS_voltage):
-                return (float('nan'), None)
+                return (float('nan'), (None, None))
             return (med_current, (full_time, full_voltage))
         else:
             return (med_current, (time, voltage))
