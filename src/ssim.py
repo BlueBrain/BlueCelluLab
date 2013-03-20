@@ -55,6 +55,32 @@ class SSim(object):
                 conf = entry.CONTENTS.Configure
                 self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
 
+    def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
+        """
+        Helper function that, provided a BlueConfig, returns all the GIDs \
+        associated with a specified M-type. (For instance, when you only want \
+        to insert synapses of a specific pathway)
+
+        Parameters
+        ----------
+        mtypes : list
+            List of M-types (each as a string)
+
+        Returns
+        -------
+        gids : list
+            List of all GIDs associated with one of the specified M-types
+
+        """
+        gids = []
+        for mtype in mtypes :
+            temp_gids = self.bc_simulation.circuit.mvddb.select_gids( \
+                             MType.name == mtype)
+            gids = gids + temp_gids # concat the lists
+        return gids
+    
+
+                
     def instantiate_gids(self, gids, synapse_detail=0, add_replay=False, add_stimuli=False, intersect_pre_gids=None):
         """ Instantiate a list of GIDs
 
