@@ -15,27 +15,6 @@ import warnings
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 VERBOSE_LEVEL = 0
 
-def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
-    """
-    Helper function that, provided a BlueConfig, returns all the GIDs \
-    associated with a specified M-type. (For instance, when you only want \
-    to insert synapses of a specific pathway)
-
-    Parameters
-    ----------
-    mtypes : list
-        List of M-types (each as a string)
-
-    Returns
-    -------
-    gids : list
-        List of all GIDs associated with one of the specified M-types
-
-    """
-    a = 1
-    b = a +1
-    return b
-
 def deprecated(func):
     """A decorator that shows a warning message when a deprecated function is used"""
     def rep_func(*args, **kwargs):
