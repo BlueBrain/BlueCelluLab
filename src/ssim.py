@@ -15,6 +15,9 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
+import bluepy
+from bluepy.targets.mvddb import MType
+
 class SSim(object):
     """SSim class"""
 
@@ -55,16 +58,20 @@ class SSim(object):
                 conf = entry.CONTENTS.Configure
                 self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
 
-    def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
+    def get_gids_of_mtypes(self,mtypes=None):#['L5_UTPC','L6_TPC_L4']) :
         """
         Helper function that, provided a BlueConfig, returns all the GIDs \
         associated with a specified M-type. (For instance, when you only want \
         to insert synapses of a specific pathway)
+        
 
         Parameters
         ----------
         mtypes : list
-            List of M-types (each as a string)
+            List of M-types (each as a string). Wildcards are *not* allowed, \
+            the strings must represent the true M-type names. A list with names \
+            can be found here: \
+            bbpteam.epfl.ch/projects/spaces/display/MEETMORPH/m-types
 
         Returns
         -------
