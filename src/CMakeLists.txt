@@ -114,8 +114,8 @@ set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
 set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
 
-configure_file(versions.py.in versions.py)
-configure_file(paths.config.in paths.config)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versions.py.in ${CMAKE_CURRENT_BINARY_DIR}/versions.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.config.in ${CMAKE_CURRENT_BINARY_DIR}/paths.config)
 
 set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py)
 
