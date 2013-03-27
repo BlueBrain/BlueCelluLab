@@ -13,7 +13,10 @@
 
 import sys
 import os
-#import bluepy
+
+import sys
+
+sys.path = ['${PYTHON_PACKAGE_INSTALL_DIR}'] + sys.path
 import bglibpy
 
 # If extensions (or modules to document with autodoc) are in another directory,
