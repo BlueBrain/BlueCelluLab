@@ -123,3 +123,6 @@ install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/versions.py" DESTINATION ${DESTINATION_DIR})
 install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})
+
+install(CODE "MESSAGE(\"\n**********************\nThe BGLibPy python module was installed in ${DESTINATION_DIR}.
+You probably want to add: \n\nexport \"PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:$PYTHONPATH\" \n\nto your .bashrc \n**********************\n\")")
