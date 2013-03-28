@@ -68,7 +68,6 @@ class Cell(object):
         self.connections = {} #Outside connections to this cell
 
         self.pre_spiketrains = {}
-        self.syns = {}
         self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
@@ -234,64 +233,17 @@ class Cell(object):
 
         This operation can fail.  Returns True on success, otherwise False.
         """
-        #pre_gid = int(syn_description[0])
-        #delay = syn_description[1]
-        post_sec_id = syn_description[2]
-        isec = post_sec_id
-        post_seg_id = syn_description[3]
-        ipt = post_seg_id
-        post_seg_distance = syn_description[4]
-        syn_offset = post_seg_distance
-        #weight = syn_description[8]
-        syn_U = syn_description[9]
-        syn_D = syn_description[10]
-        syn_F = syn_description[11]
-        syn_DTC = syn_description[12]
-        syn_type = syn_description[13]
-        #''' --- todo: what happens with -1 in location_to_point --- '''
+
+        isec = syn_description[2]
+        ipt = syn_description[3]
+        syn_offset = syn_description[4]
+
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None :
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
             return False
 
-        if syn_type < 100:
-            ''' see: https://bbpteam.epfl.ch/\
-            wiki/index.php/BlueBuilder_Specifications#NRN,
-            inhibitory synapse
-            '''
-            syn = bglibpy.neuron.h.\
-              ProbGABAAB_EMS(location, \
-                             sec=self.get_section(post_sec_id))
-
-            syn.tau_d_GABAA = syn_DTC
-            rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed)
-            rng.lognormal(0.2, 0.1)
-            syn.tau_r_GABAA = rng.repick()
-        else:
-            ''' else we have excitatory synapse '''
-            syn = bglibpy.neuron.h.\
-              ProbAMPANMDA_EMS(location,sec=self.get_section(post_sec_id))
-            syn.tau_d_AMPA = syn_DTC
-
-        syn.Use = abs( syn_U )
-        syn.Dep = abs( syn_D )
-        syn.Fac = abs( syn_F )
-
-        rndd = bglibpy.neuron.h.Random()
-        rndd.MCellRan4(sid * 100000 + 100, self.gid + 250 + base_seed )
-        rndd.uniform(0, 1)
-        syn.setRNG(rndd)
-        syn.synapseID = sid
-
-        # hoc exec synapse configure blocks
-        if 'SynapseConfigure' in connection_modifiers:
-            for cmd in connection_modifiers['SynapseConfigure']:
-                cmd = cmd.replace('%s', '\n%(syn)s')
-                bglibpy.neuron.h(cmd % {'syn': syn.hname()})
-
-        self.persistent.append(rndd)
-        self.syns[sid] = syn
+        self.synapses[sid] = bglibpy.Synapse(self, location, sid, syn_description, connection_modifiers, base_seed)
         return True
 
     def add_replay_delayed_weight(self, sid, delay, weight):
@@ -322,7 +274,7 @@ class Cell(object):
 
             delay = 0.1
             self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
-              NetCon(self.ips[sid], self.syns[sid], \
+              NetCon(self.ips[sid], self.synapses[sid].hsynapse, \
                      -30, delay, weight*weight_scalar)
 
             exprng = bglibpy.neuron.h.Random()
@@ -354,15 +306,12 @@ class Cell(object):
         if sid in self.connections:
             raise Exception("Cell: trying to add a connection twice to the same synapse id: %d" % sid)
         else:
-            self.connections[sid] = bglibpy.Connection(self.syns[sid], syn_description, connection_parameters, pre_spiketrain=pre_spiketrain, pre_cell=None)
-
-    def instantiate_connections(self, stim_dt=None):
-        for sid in self.connections:
-            self.connections[sid].instantiate(stim_dt=stim_dt)
+            self.connections[sid] = bglibpy.Connection(self.synapses[sid].hsynapse, syn_description, connection_parameters, pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=stim_dt)
 
     def initialize_synapses(self):
         """Initialize the synapses"""
-        for syn in self.syns.itervalues():
+        for synapse in self.synapses.itervalues():
+            syn = synapse.hsynapse
             syn_type = syn.hname().partition('[')[0]
             # todo: Is there no way to call the mod file's INITIAL block?
             # ... and do away with this brittle mess

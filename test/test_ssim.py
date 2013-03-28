@@ -288,10 +288,10 @@ class TestSSimBaseClass_full(object):
         connection_modifiers = {'SynapseConfigure': ['%s.e_GABAA = -80.5 %s.e_GABAB = -101.0', '%s.tau_d_GABAA = 10.0 %s.tau_r_GABAA = 1.0', '%s.e_GABAA = -80.6'], 'Weight':2.0}
         self.ssim.add_single_synapse(gid, sid, syn_params, connection_modifiers)
 
-        nt.assert_equal(self.ssim.cells[gid].syns[sid].e_GABAA, -80.6)
-        nt.assert_equal(self.ssim.cells[gid].syns[sid].e_GABAB, -101.0)
-        nt.assert_equal(self.ssim.cells[gid].syns[sid].tau_d_GABAA, 10.0)
-        nt.assert_equal(self.ssim.cells[gid].syns[sid].tau_r_GABAA, 1.0)
+        nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.e_GABAA, -80.6)
+        nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.e_GABAB, -101.0)
+        nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.tau_d_GABAA, 10.0)
+        nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.tau_r_GABAA, 1.0)
 
 class TestSSimBaseClass_full_run(object):
     """Class to test SSim with full circuit"""

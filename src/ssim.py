@@ -130,7 +130,7 @@ class SSim(object):
         for gid in self.gids:
             for sid in self.cells[gid].synapses:
                 synapse = self.cells[gid].synapses[sid]
-                syn_description = synapse.description
+                syn_description = synapse.syn_description
                 connection_parameters = synapse.connection_parameters
                 pre_gid = syn_description[0]
                 if pre_gid in self.gids and connect_cells:
@@ -144,7 +144,7 @@ class SSim(object):
                     #self._queue_real_synapse_connection(gid, sid, syn_description, synapse_detail=synapse_detail)
                 else:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
-                    connection = bglibpy.Connection(self.cells[gid].synapses[sid],
+                    connection = bglibpy.Connection(self.cells[gid].synapses[sid].hsynapse,
                             syn_description, connection_parameters,
                             pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=self.dt)
                     self.connections[gid][sid] = connection
@@ -153,8 +153,7 @@ class SSim(object):
                         for delay, weight in connection_parameters['DelayWeights']:
                             self._add_delayed_weight(gid, sid, delay, weight)
 
-           printv("Added synaptic connections for gid %d" % gid, 2)
-
+            printv("Added synaptic connections for gid %d" % gid, 2)
 
     def _add_cells(self, gids):
         """Instantiate cells from a gid list"""
