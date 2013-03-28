@@ -12,7 +12,7 @@ import bglibpy
 class Connection(object):
     """ Class that represents a connection between two cells in BGLibPy """
 
-    def __init__(self, post_synapse, syn_description, connection_parameters, pre_spiketrain=None, pre_cell=None):
+    def __init__(self, post_synapse, syn_description, connection_parameters, pre_spiketrain=None, pre_cell=None, stim_dt=None):
         self.persistent = []
         self.delay = syn_description[1]
         self.weight = syn_description[8]
@@ -30,8 +30,6 @@ class Connection(object):
 
         self.netcon = None
 
-    def instantiate(self, stim_dt=None):
-        """ Instantiate the connection in the simulator """
         if self.pre_spiketrain:
             t_vec = bglibpy.neuron.h.Vector(self.pre_spiketrain)
             vecstim = bglibpy.neuron.h.VecStim()
