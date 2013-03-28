@@ -350,22 +350,15 @@ class Cell(object):
 
     def charge_replay_synapse(self, sid, syn_description, connection_parameters, pre_spiketrain, stim_dt=None):
         """Put the replay spiketrains from out.dat on the synapses"""
-        delay = syn_description[1]
-        weight = syn_description[8]
 
-        self.pre_spiketrains[sid] = pre_spiketrain
-        t_vec = bglibpy.neuron.h.Vector(pre_spiketrain)
-        vecstim = bglibpy.neuron.h.VecStim()
-        vecstim.play(t_vec, stim_dt)
-
-        if('Weight' in connection_parameters):
-            weight_scalar = connection_parameters['Weight']
+        if sid in self.connections:
+            raise Exception("Cell: trying to add a connection twice to the same synapse id: %d" % sid)
         else:
-            weight_scalar = 1.0
+            self.connections[sid] = bglibpy.Connection(self.syns[sid], syn_description, connection_parameters, pre_spiketrain=pre_spiketrain, pre_cell=None)
 
-        self.syn_netcons[sid] = bglibpy.neuron.h.NetCon(vecstim, self.syns[sid], -30, delay, weight*weight_scalar) # ...,threshold,delay
-        self.persistent.append(t_vec)
-        self.persistent.append(vecstim)
+    def instantiate_connections(self, stim_dt=None):
+        for sid in self.connections:
+            self.connections[sid].instantiate(stim_dt=stim_dt)
 
     def initialize_synapses(self):
         """Initialize the synapses"""
@@ -613,42 +606,6 @@ class Cell(object):
     def locateBAPSite(self, seclistName, distance):
         """Deprecated"""
         return self.locate_bapsite(seclistName, distance)
-
-    @tools.deprecated
-    def addSynapticStimulus(self, section, location, delay=150):
-        """Add a synaptic stimulus to a certain section"""
-        segname = section.name() + "(" + str(location) + ")"
-        synapse = neuron.h.tmgExSyn(location, sec=section)
-        synapse.Use = 0.5
-        synapse.Fac = 21
-
-        netstim = neuron.h.NetStim(sec=section)
-        stimfreq = 70
-        netstim.interval = 1000 / stimfreq
-        netstim.number = 1
-        netstim.start = delay
-        netstim.noise = 0
-        connection = neuron.h.NetCon(netstim, synapse, 10, 0, 700, sec=section)
-        connection.weight[0] = 1.0
-        self.synapses[segname] = synapse
-        self.netstims[segname] = netstim
-        self.connections[segname] = connection
-
-    @tools.deprecated
-    def removeSynapticStimulus(self, segname):
-        """Removed a synaptic stimulus"""
-        self.synapses[segname] = None
-        self.netstims[segname] = None
-        self.connections[segname] = None
-
-    @tools.deprecated
-    def addAllSynapses(self):
-        """Add synapses to all dendritic sections"""
-        dendritic_sections = [x for x in self.cell.getCell().basal] + [x for x in self.cell.getCell().apical]
-        for section in dendritic_sections:
-            self.addSynapticStimulus(section, 0)
-            self.addSynapticStimulus(section, 0.5)
-            self.addSynapticStimulus(section, 1)
 
     def injectCurrentWaveform(self, t_content, i_content):
         """Inject a current in the cell"""
