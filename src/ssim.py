@@ -120,6 +120,10 @@ class SSim(object):
                 for sid, syn_description in enumerate(syn_descriptions):
                     self._instantiate_synapse(gid, sid, syn_description,
                                                         add_minis=add_minis)
+                printv("Added synapses for gid %d" % gid, 2)
+                if add_minis:
+                    printv("Added minis for gid %d" % gid, 2)
+
 
     def _add_connections(self, connect_cells=None):
         """Instantiate the (replay and real) connections in the network"""
@@ -138,20 +142,21 @@ class SSim(object):
                 else:
                     real_synapse_connection = False
 
-
                 if real_synapse_connection:
-                    pass
-                    #self._queue_real_synapse_connection(gid, sid, syn_description, synapse_detail=synapse_detail)
-                else:
-                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     connection = bglibpy.Connection(self.cells[gid].synapses[sid].hsynapse,
                             syn_description, connection_parameters,
-                            pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=self.dt)
-                    self.connections[gid][sid] = connection
-                    """TODO this needs to be executed also for real connections"""
-                    if "DelayWeights" in connection_parameters:
-                        for delay, weight in connection_parameters['DelayWeights']:
-                            self._add_delayed_weight(gid, sid, delay, weight)
+                            pre_spiketrain=None, pre_cell=self.cells[pre_gid], stim_dt=self.dt)
+                else:
+                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
+                    if pre_spiketrain:
+                        connection = bglibpy.Connection(self.cells[gid].synapses[sid].hsynapse,
+                                syn_description, connection_parameters,
+                                pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=self.dt)
+                self.cells[gid].connections[sid] = connection
+                """TODO this needs to be executed also for real connections"""
+                if "DelayWeights" in connection_parameters:
+                    for delay, weight in connection_parameters['DelayWeights']:
+                        self._add_delayed_weight(gid, sid, delay, weight)
 
             printv("Added synaptic connections for gid %d" % gid, 2)
 
@@ -197,10 +202,6 @@ class SSim(object):
             if add_minis:
                 self.add_replay_minis(gid, sid, syn_description, \
                                     connection_parameters)
-
-        printv("Added synapses for gid %d" % gid, 2)
-        if add_minis:
-            printv("Added minis for gid %d" % gid, 2)
 
     def _add_delayed_weight(self, gid, sid, delay, weight):
         """ Adds a weight with a delay to the synapse sid"""

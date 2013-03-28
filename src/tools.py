@@ -14,7 +14,11 @@ import warnings
 import math
 
 BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
+
 VERBOSE_LEVEL = 0
+
+def set_verbose(level=1):
+    bglibpy.VERBOSE_LEVEL = level
 
 def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
     """

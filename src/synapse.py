@@ -64,8 +64,15 @@ class Synapse(object):
         rndd.MCellRan4(sid * 100000 + 100, self.cell.gid + 250 + base_seed )
         rndd.uniform(0, 1)
         self.hsynapse.setRNG(rndd)
+        self.persistent.append(rndd)
+
         self.hsynapse.synapseID = sid
 
+        # hoc exec synapse configure blocks
+        if 'SynapseConfigure' in connection_parameters:
+            for cmd in connection_parameters['SynapseConfigure']:
+                cmd = cmd.replace('%s', '\n%(syn)s')
+                bglibpy.neuron.h(cmd % {'syn': self.hsynapse.hname()})
 
     def delete(self):
         """Delete the connection"""

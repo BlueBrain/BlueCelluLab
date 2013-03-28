@@ -68,7 +68,7 @@ class Cell(object):
         self.connections = {} #Outside connections to this cell
 
         self.pre_spiketrains = {}
-        self.syn_netcons = {}
+        #self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
@@ -249,6 +249,11 @@ class Cell(object):
     def add_replay_delayed_weight(self, sid, delay, weight):
         """Add a synaptic weight for sid that will be set with a time delay"""
         self.delayed_weights.put((delay, (sid, weight)))
+
+    def create_netcon_spikedetector(self, target):
+        netcon = None
+        self.cell.getCell().connect2target(target, netcon)
+        return netcon
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""
@@ -471,8 +476,8 @@ class Cell(object):
         """Callback function that updates the delayed weights, when a certain delay has been reached"""
         while not self.delayed_weights.empty() and abs(self.delayed_weights.queue[0][0] - neuron.h.t) < neuron.h.dt:
             (_, (sid, weight)) = self.delayed_weights.get()
-            if sid in self.syn_netcons:
-                self.syn_netcons[sid].weight[0] = weight
+            if sid in self.connections:
+                self.connections[sid].post_netcon.weight[0] = weight
                 #print "Changed weight of synapse id %d to %f at time %f" % (sid, weight, neuron.h.t)
 
         if not self.delayed_weights.empty():
@@ -495,9 +500,9 @@ class Cell(object):
 
             self.fih_plots = None
             self.fih_weights = None
+            self.connections = None
+            self.synapses=None
 
-        #for window in self.plot_windows:
-        #    window.process.join()
         for persistent_object in self.persistent:
             del(persistent_object)
 
