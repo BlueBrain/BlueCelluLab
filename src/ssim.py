@@ -83,6 +83,11 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
+        if add_replay:
+            pre_spike_trains = _parse_outdat(\
+                                self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
+                                'out.dat')
+
         for gid in self.gids:
             ''' Fetch the template for this GID '''
             template_name_of_gid = self._fetch_template_name(gid)
@@ -98,24 +103,21 @@ class SSim(object):
                 for expression in self.neuronconfigure_expressions[gid]:
                     self.cells[gid].execute_neuronconfigure(expression)
 
-            pre_datas = self.bc_simulation.circuit.get_presynaptic_data(gid)
+            syn_descrptions = self.bc_simulation.circuit.get_presynaptic_data(gid)
 
             if intersect_pre_gids != None:
-                pre_datas = [pre_data for pre_data in pre_datas if pre_data[0] in intersect_pre_gids]
+                syn_descrptions = [syn_description for syn_description in syn_descrptions
+                        if syn_description[0] in intersect_pre_gids]
 
-            if add_replay :
-                pre_spike_trains = _parse_outdat(\
-                                    self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                                    'out.dat')
 
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
-            if pre_datas is None:
+            if syn_descrptions is None:
                 printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
             elif synapse_detail == 0:
                 pass
             else:
-                for sid, syn_description in enumerate(pre_datas):
+                for sid, syn_description in enumerate(syn_descrptions):
                     syn_type = syn_description[13]
 
                     connection_parameters = self.\
