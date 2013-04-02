@@ -89,10 +89,12 @@ class SSim(object):
             if synapse_detail > 1:
                 add_minis = True
 
+        """
         if not add_synapses:
             if interconnect_cells or add_replay or add_minis or intersect_pre_gids != None:
                 raise Exception("SSim: instantiate_gids() received an interconnect_cells, add_replay, add_minis, intersect_pre_gids request \
                                         while add_synapses is False, this is not allowed")
+        """
 
         if self.gids_instantiated:
             raise Exception("SSim: instantiate_gids() called twice on the same SSim, this is not supported yet")
