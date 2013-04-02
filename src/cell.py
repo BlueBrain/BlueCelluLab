@@ -251,9 +251,15 @@ class Cell(object):
         self.delayed_weights.put((delay, (sid, weight)))
 
     def create_netcon_spikedetector(self, target):
-        netcon = None
-        self.cell.getCell().connect2target(target, netcon)
-        return netcon
+        #neuron.h('objref nil')
+        neuron.h('objref netcon')
+        #neuron.h('{Cell[0].connect2target(nil, netcon)}')
+        #neuron.h('netcon = new NetCon(nil, nil)')
+        #neuron.h.netcon = neuron.h.NetCon(neuron.h.nil, target)
+
+        self.cell.getCell().connect2target(target, neuron.h.netcon)
+        #netcon = neuron.h.NetCon()
+        return None #neuron.h.netcon
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""

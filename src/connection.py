@@ -34,12 +34,12 @@ class Connection(object):
             t_vec = bglibpy.neuron.h.Vector(self.pre_spiketrain)
             vecstim = bglibpy.neuron.h.VecStim()
             vecstim.play(t_vec, stim_dt)
-            self.post_netcon = bglibpy.neuron.h.NetCon(vecstim, self.post_synapse, -30, self.delay, self.weight * self.weight_scalar)
+            self.post_netcon = bglibpy.neuron.h.NetCon(vecstim, self.post_synapse.hsynapse, -30, self.delay, self.weight * self.weight_scalar)
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
         elif self.pre_cell:
             print "Connecting two cells"
-            self.pre_netcon = self.pre_cell.create_netcon_spikedetector(post_synapse)
+            self.pre_netcon = self.pre_cell.create_netcon_spikedetector(self.post_synapse.hsynapse)
         else:
             raise Exception("Connection: trying to instantiated connection without presynaptic spiketrain nor cell")
 

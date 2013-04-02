@@ -143,13 +143,13 @@ class SSim(object):
                     real_synapse_connection = False
 
                 if real_synapse_connection:
-                    connection = bglibpy.Connection(self.cells[gid].synapses[sid].hsynapse,
+                    connection = bglibpy.Connection(self.cells[gid].synapses[sid],
                             syn_description, connection_parameters,
                             pre_spiketrain=None, pre_cell=self.cells[pre_gid], stim_dt=self.dt)
                 else:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     if pre_spiketrain:
-                        connection = bglibpy.Connection(self.cells[gid].synapses[sid].hsynapse,
+                        connection = bglibpy.Connection(self.cells[gid].synapses[sid],
                                 syn_description, connection_parameters,
                                 pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=self.dt)
                 self.cells[gid].connections[sid] = connection
