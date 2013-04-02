@@ -39,9 +39,9 @@ class Connection(object):
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
         elif self.pre_cell:
-            self.pre_netcon = self.pre_cell.create_netcon_spikedetector(self.post_synapse.hsynapse)
-            self.pre_netcon.weight[0] = self.weight * self.weight_scalar
-            self.pre_netcon.delay = self.delay
+            self.post_netcon = self.pre_cell.create_netcon_spikedetector(self.post_synapse.hsynapse)
+            self.post_netcon.weight[0] = self.weight * self.weight_scalar
+            self.post_netcon.delay = self.delay
         else:
             raise Exception("Connection: trying to instantiated connection without presynaptic spiketrain nor cell")
 

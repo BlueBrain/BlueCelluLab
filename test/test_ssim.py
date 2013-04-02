@@ -104,7 +104,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of BGLibPy for two cell circuit, spike replay, minis, noisy stimulus and real connections between cells"""
         voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(1)
-        voltage_bglib2 = self.ssim_bglib.bc_simulation.reports.soma.time_series(2)
+        #voltage_bglib2 = self.ssim_bglib.bc_simulation.reports.soma.time_series(2)
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][0:len(voltage_bglib)]
@@ -398,4 +398,32 @@ class TestSSimBaseClass_full_connection_delay(object):
         voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
-        #nt.assert_true(rms_error < 1.0)
+        nt.assert_true(rms_error < 1.0)
+
+class TestSSimBaseClass_full_realconn(object):
+    """Class to test SSim with full circuit and multiple cells instantiate with real connections"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/L4_EXC/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a multi-cell full replay of a simulation gives the same output trace as on BG/P"""
+        gid = 116390
+        #gids = 116390, 116392
+        gids = range(gid, gid+5)
+        self.ssim.instantiate_gids(gids, synapse_detail=2, add_replay=True, add_stimuli=True, interconnect_cells=True)
+        self.ssim.run(100)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gids[0]]
+        nt.assert_equal(len(time_bglibpy), 1001)
+        nt.assert_equal(len(voltage_bglibpy), 1001)
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gids[0])[:len(voltage_bglibpy)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 1.0)

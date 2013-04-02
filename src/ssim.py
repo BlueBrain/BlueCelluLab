@@ -74,6 +74,13 @@ class SSim(object):
         add_replay: Add presynaptic spiketrains from the large simulation
             throws an exception if this is set when synapse_detail < 1
         add_stimuli: Add the same stimuli as in the large simulation
+        add_synapses: Add the touch-detected synapses, as described by the circuit to the cell
+                      (This option only influence the 'creation' of synapses, it doesn't add any connections)
+        add_minis: Add synaptic minis to the synapses (this requires add_synapses=True)
+        intersect_pre_gids: Only add synapses to the cells if their presynaptic gid is in this list
+        interconnect_cells: When multiple gids are instantiated, interconnect the cells with real (non-replay) synapses
+                            When this option is combined with add_replay, replay spiketrains will only be added for those presynaptic
+                            cells that are not in the network that's instantiated. This option requires add_synapses=True
         """
 
         if synapse_detail != None:
@@ -81,6 +88,11 @@ class SSim(object):
                 add_synapses = True
             if synapse_detail > 1:
                 add_minis = True
+
+        if not add_synapses:
+            if interconnect_cells or add_replay or add_minis or intersect_pre_gids != None:
+                raise Exception("SSim: instantiate_gids() received an interconnect_cells, add_replay, add_minis, intersect_pre_gids request \
+                                        while add_synapses is False, this is not allowed")
 
         if self.gids_instantiated:
             raise Exception("SSim: instantiate_gids() called twice on the same SSim, this is not supported yet")
