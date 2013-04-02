@@ -74,6 +74,7 @@ class Cell(object):
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
+        self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
         self.somatic = [x for x in self.cell.getCell().somatic]
         self.basal = [x for x in self.cell.getCell().basal]
         self.apical = [x for x in self.cell.getCell().apical]
@@ -251,15 +252,14 @@ class Cell(object):
         self.delayed_weights.put((delay, (sid, weight)))
 
     def create_netcon_spikedetector(self, target):
-        #neuron.h('objref nil')
-        neuron.h('objref netcon')
-        #neuron.h('{Cell[0].connect2target(nil, netcon)}')
-        #neuron.h('netcon = new NetCon(nil, nil)')
-        #neuron.h.netcon = neuron.h.NetCon(neuron.h.nil, target)
+        """Add and return a NetCon that detects spike in the current cell, and that connects to target"""
 
-        self.cell.getCell().connect2target(target, neuron.h.netcon)
-        #netcon = neuron.h.NetCon()
-        return None #neuron.h.netcon
+        # M. Hines magic to return a variable by reference to a python function
+        netcon = neuron.h.ref(None)
+        self.cell.getCell().connect2target(target, netcon)
+        netcon = netcon[0]
+
+        return netcon
 
     def add_replay_minis(self, sid, syn_description, connection_parameters, base_seed):
         """Add minis from the replay"""
@@ -507,7 +507,7 @@ class Cell(object):
             self.fih_plots = None
             self.fih_weights = None
             self.connections = None
-            self.synapses=None
+            self.synapses = None
 
         for persistent_object in self.persistent:
             del(persistent_object)

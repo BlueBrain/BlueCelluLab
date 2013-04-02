@@ -58,7 +58,7 @@ class SSim(object):
         self.gids_instantiated = False
         self.connections = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
 
-    def instantiate_gids(self, gids, synapse_detail=None, add_replay=False, add_stimuli=False, add_synapses=False, add_minis=False, intersect_pre_gids=None, connect_cells=True):
+    def instantiate_gids(self, gids, synapse_detail=None, add_replay=False, add_stimuli=False, add_synapses=False, add_minis=False, intersect_pre_gids=None, interconnect_cells=True):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -92,8 +92,8 @@ class SSim(object):
             self._add_stimuli()
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids, add_minis=add_minis)
-        if add_replay:
-            self._add_connections(connect_cells=connect_cells)
+        if add_replay or interconnect_cells:
+            self._add_connections(add_replay=add_replay, interconnect_cells=interconnect_cells)
 
 
     def _add_stimuli(self):
@@ -115,50 +115,57 @@ class SSim(object):
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
             if syn_descriptions is None:
-                printv("No presynaptic cells found for gid %d, no synapses added" % gid, 1)
+                printv("Warning: No presynaptic cells found for gid %d, no synapses added" % gid, 2)
             else:
-                for sid, syn_description in enumerate(syn_descriptions):
-                    self._instantiate_synapse(gid, sid, syn_description,
+                for syn_id, syn_description in enumerate(syn_descriptions):
+                    self._instantiate_synapse(gid, syn_id, syn_description,
                                                         add_minis=add_minis)
                 printv("Added synapses for gid %d" % gid, 2)
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
 
-    def _add_connections(self, connect_cells=None):
+    def _add_connections(self, add_replay=None, interconnect_cells=None):
         """Instantiate the (replay and real) connections in the network"""
         pre_spike_trains = _parse_outdat(\
                             self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
                             'out.dat')
 
-        for gid in self.gids:
-            for sid in self.cells[gid].synapses:
-                synapse = self.cells[gid].synapses[sid]
+        for post_gid in self.gids:
+            for syn_id in self.cells[post_gid].synapses:
+                synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 connection_parameters = synapse.connection_parameters
                 pre_gid = syn_description[0]
-                if pre_gid in self.gids and connect_cells:
+                if pre_gid in self.gids and interconnect_cells:
                     real_synapse_connection = True
                 else:
                     real_synapse_connection = False
 
+                connection = None
                 if real_synapse_connection:
-                    connection = bglibpy.Connection(self.cells[gid].synapses[sid],
-                            syn_description, connection_parameters,
-                            pre_spiketrain=None, pre_cell=self.cells[pre_gid], stim_dt=self.dt)
-                else:
+                    connection = bglibpy.Connection(self.cells[post_gid].synapses[syn_id],
+                                                        pre_spiketrain=None,
+                                                        pre_cell=self.cells[pre_gid],
+                                                        stim_dt=self.dt)
+                    printv("Added real connection between pre_gid %d and post_gid %d, syn_id %d" % (pre_gid, post_gid, syn_id), 5)
+                elif add_replay:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     if pre_spiketrain:
-                        connection = bglibpy.Connection(self.cells[gid].synapses[sid],
-                                syn_description, connection_parameters,
-                                pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=self.dt)
-                self.cells[gid].connections[sid] = connection
-                """TODO this needs to be executed also for real connections"""
-                if "DelayWeights" in connection_parameters:
-                    for delay, weight in connection_parameters['DelayWeights']:
-                        self._add_delayed_weight(gid, sid, delay, weight)
+                        connection = bglibpy.Connection(self.cells[post_gid].synapses[syn_id],
+                                                                pre_spiketrain=pre_spiketrain,
+                                                                pre_cell=None,
+                                                                stim_dt=self.dt)
+                        printv("Added replay connection to post_gid %d, syn_id %d" % (post_gid, syn_id), 5)
 
-            printv("Added synaptic connections for gid %d" % gid, 2)
+                if connection != None:
+                    self.cells[post_gid].connections[syn_id] = connection
+                    if "DelayWeights" in connection_parameters:
+                        for delay, weight in connection_parameters['DelayWeights']:
+                            self.cells[post_gid].add_replay_delayed_weight(syn_id, delay, weight)
+
+            if len(self.cells[post_gid].connections) > 0:
+                printv("Added synaptic connections for target post_gid %d" % post_gid, 2)
 
     def _add_cells(self, gids):
         """Instantiate cells from a gid list"""
@@ -189,23 +196,19 @@ class SSim(object):
                     self.cells[gid].execute_neuronconfigure(expression)
 
 
-    def _instantiate_synapse(self, gid, sid, syn_description, add_minis=None):
-        """Instantiate one synapse for a given gid, sid and syn_description"""
+    def _instantiate_synapse(self, gid, syn_id, syn_description, add_minis=None):
+        """Instantiate one synapse for a given gid, syn_id and syn_description"""
         syn_type = syn_description[13]
 
         connection_parameters = self.\
           _evaluate_connection_parameters(syn_description[0], gid, syn_type)
 
         if connection_parameters["add_synapse"]:
-            self.add_single_synapse(gid, sid, syn_description, \
+            self.add_single_synapse(gid, syn_id, syn_description, \
                                     connection_parameters)
             if add_minis:
-                self.add_replay_minis(gid, sid, syn_description, \
+                self.add_replay_minis(gid, syn_id, syn_description, \
                                     connection_parameters)
-
-    def _add_delayed_weight(self, gid, sid, delay, weight):
-        """ Adds a weight with a delay to the synapse sid"""
-        self.cells[gid].add_replay_delayed_weight(sid, delay, weight)
 
     def _add_stimuli_gid(self, gid):
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
@@ -243,13 +246,13 @@ class SSim(object):
         """Add noise injection from the replay"""
         self.cells[gid].add_replay_noise(stimulus, noise_seed=noise_seed)
 
-    def add_replay_minis(self, gid, sid, syn_description, syn_parameters):
+    def add_replay_minis(self, gid, syn_id, syn_description, syn_parameters):
         """Add minis from the replay"""
-        self.cells[gid].add_replay_minis(sid, syn_description, syn_parameters, self.base_seed)
+        self.cells[gid].add_replay_minis(syn_id, syn_description, syn_parameters, self.base_seed)
 
-    def add_single_synapse(self, gid, sid, syn_description, connection_modifiers):
+    def add_single_synapse(self, gid, syn_id, syn_description, connection_modifiers):
         """Add a replay synapse on the cell"""
-        return self.cells[gid].add_replay_synapse(sid, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(syn_id, syn_description, connection_modifiers, self.base_seed)
 
     @staticmethod
     def check_connection_contents(contents):

@@ -37,6 +37,8 @@ neuron.h.load_file("SerializedSections.hoc")
 neuron.h.load_file("TStim.hoc")
 neuron.h.load_file("ShowProgress.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
+neuron.h('objref p')
+neuron.h('p = new PythonObject()')
 
 sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy

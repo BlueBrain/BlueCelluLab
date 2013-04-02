@@ -12,10 +12,11 @@ import bglibpy
 class Connection(object):
     """ Class that represents a connection between two cells in BGLibPy """
 
-    def __init__(self, post_synapse, syn_description, connection_parameters, pre_spiketrain=None, pre_cell=None, stim_dt=None):
+    def __init__(self, post_synapse, pre_spiketrain=None, pre_cell=None, stim_dt=None):
         self.persistent = []
-        self.delay = syn_description[1]
-        self.weight = syn_description[8]
+        self.delay = post_synapse.syn_description[1]
+        self.weight = post_synapse.syn_description[8]
+        self.connection_parameters = post_synapse.connection_parameters
         self.pre_cell = pre_cell
         self.pre_spiketrain = pre_spiketrain
         self.post_synapse = post_synapse
@@ -23,8 +24,8 @@ class Connection(object):
         if self.pre_spiketrain == None and self.pre_cell == None:
             raise Exception("Connection: trying to create a connection without presynaptic spiketrain nor cell")
 
-        if('Weight' in connection_parameters):
-            self.weight_scalar = connection_parameters['Weight']
+        if('Weight' in self.connection_parameters):
+            self.weight_scalar = self.connection_parameters['Weight']
         else:
             self.weight_scalar = 1.0
 
@@ -38,8 +39,9 @@ class Connection(object):
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
         elif self.pre_cell:
-            print "Connecting two cells"
             self.pre_netcon = self.pre_cell.create_netcon_spikedetector(self.post_synapse.hsynapse)
+            self.pre_netcon.weight[0] = self.weight * self.weight_scalar
+            self.pre_netcon.delay = self.delay
         else:
             raise Exception("Connection: trying to instantiated connection without presynaptic spiketrain nor cell")
 

@@ -78,7 +78,6 @@ def main():
 
     import create_circuit_twocell_example1
     create_circuit_twocell_example1.main()
-
     with open("templates/run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()
 
@@ -105,7 +104,9 @@ def main():
     with open("templates/BlueConfig.all.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_all"
         blueconfig_template = blueconfig_templatefile.read()
-        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
+        create_extracted_simulation(output_path, blueconfig_template,
+        runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
+
 
     with open("templates/BlueConfig.neuronconfigure.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_neuronconfigure"
@@ -117,10 +118,15 @@ def main():
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=True)
 
-    os.chdir("../../examples/sim_twocell_synapseid")
+    with open("templates/BlueConfig.realconn.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_realconn"
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(output_path, blueconfig_template, runsh_template, tstop=tstop, dt=dt, record_dt=record_dt, fill_outdat=False)
 
+    os.chdir("../../examples/sim_twocell_realconn")
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
-    ssim_bglibpy.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True)
+    bglibpy.set_verbose(100)
+    ssim_bglibpy.instantiate_gids([1, 2], synapse_detail=2, add_stimuli=True, add_replay=False, interconnect_cells=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
@@ -133,6 +139,11 @@ def main():
     pylab.plot(ssim_bglib.bc_simulation.reports.soma.time_range, ssim_bglib.bc_simulation.reports.soma.time_series(1), 'r-', label="BGLib")
     pylab.legend()
     pylab.show()
+
+    #os.chdir("../../examples/sim_twocell_all")
+    #ssim_bglib_all = bglibpy.SSim("BlueConfig", record_dt=record_dt)
+    #pylab.plot(ssim_bglib_all.bc_simulation.reports.soma.time_range, ssim_bglib_all.bc_simulation.reports.soma.time_series(1), 'k-', label="BGLib all")
+
 
 if __name__ == "__main__":
     main()
