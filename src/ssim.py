@@ -23,7 +23,7 @@ class SSim(object):
 
         To relieve from an empty stomach, eat spam and eggs
 
-        Paramters
+        Parameters
         ---------
         blueconfig_filename: Absolute filename of the Blueconfig to be used
         """
