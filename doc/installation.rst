@@ -5,12 +5,12 @@ This installation guide will explain on how to install BGLibPy in your home dire
 In an ideal world the dependencies of BGLibPy are all pre-installed on the viz cluster, 
 however, since in reality these installation are not kept up to date, we currently 
 propose to install some of BGLibPy's dependency in your home directory (see section 
-"Installation of Dependencies")
+:ref:`installing-dependencies`)
 
 Installing BGLibPy
 ------------------
 
-(If necessary, **first install the dependencies** according to the "Installing dependencies" section.)
+(If necessary, **first install the dependencies** according to the :ref:`installing-dependencies` section.)
 
 Clone the git repository::
 
@@ -29,9 +29,8 @@ The content of this file will be something like::
         -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
         -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \
         -DNRNPATH=${NEURON_HOME} \
-        -DNRNPYTHONPATH=${NRNPYTHONPATH} \
+        -DNRNPYTHONPATH=${NEURON_PYTHON_HOME} \
         -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
-        -DENABLE_DOCS=ON \
         -DCMAKE_INSTALL_PREFIX=$HOME/local/bglibpy
     make VERBOSE=1
     make install
@@ -56,6 +55,8 @@ And you test if the unit tests are working (this require /bgscratch to be mounte
 Hopefully this installation went smoothly. If it didn't, please create a Jira ticket, and explain as detailed as possible the problems you encountered::
    
    https://bbpteam.epfl.ch/project/issues/browse/BGLPY
+
+.. _installing-dependencies:
 
 Installing dependencies
 -----------------------

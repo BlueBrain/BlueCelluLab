@@ -6,7 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   readme
+   introduction
    installation
    tutorial
    api

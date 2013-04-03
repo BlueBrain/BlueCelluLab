@@ -21,7 +21,19 @@ bglibpy.cell
    :members:
 
 bglibpy.simulation
-------------
+------------------
 
 .. automodule:: bglibpy.simulation
+   :members:
+
+bglibpy.connection
+------------------
+
+.. automodule:: bglibpy.connection
+   :members:
+
+bglibpy.synapse
+---------------
+
+.. automodule:: bglibpy.synapse
    :members:
