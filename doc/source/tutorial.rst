@@ -17,7 +17,7 @@ Instantiating a single cell from a network simulation
 =====================================================
 
 First the network simulation needs to be loaded. These simulations are 
-represented by an object of the class :py:class:`bglibpy.ssim.SSim`, 
+represented by an object of the class :py:class:`~bglibpy.ssim.SSim`, 
 and are constructed based on a BlueConfig of the simulation.
 
 .. code-block:: python
@@ -34,14 +34,14 @@ Next, a cell can be instantiated from this network:
         gid = 101390
         ssim.instantiate_gids([gid])
 
-The :py:class:`bglibpy.cell.Cell` object of the instantiated gid can then be
+The :py:class:`~bglibpy.cell.Cell` object of the instantiated gid can then be
 accessed with:
 
 .. code-block:: python
 
         cell = ssim.cells[gid]
 
-The simulate that cell, the function :py:meth:`bglibpy.ssim.SSim.run` is 
+The simulate that cell, the function :py:meth:`~bglibpy.ssim.SSim.run` is 
 called:
 
 .. code-block:: python
