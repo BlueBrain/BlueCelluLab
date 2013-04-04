@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Class that represent can load BGLib BlueConfig, and instantiate the simulation
+"""SSim Class
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.
@@ -16,7 +16,8 @@ from bglibpy import printv
 from bglibpy import printv_err
 
 class SSim(object):
-    """SSim class"""
+    """Class that can load a BGLib BlueConfig,
+               and instantiate the simulation"""
 
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None):
         """Object dealing with BlueConfig configured Small Simulations
@@ -25,10 +26,9 @@ class SSim(object):
 
         Parameters
         ----------
-        blueconfig_filename : Absolute filename of the Blueconfig to be used
+        blueconfig_filename : string
+                              Absolute filename of the Blueconfig
 
-        Returns
-        -------
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -36,44 +36,89 @@ class SSim(object):
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
         try:
-            self.base_seed  = int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
+            self.base_seed  = \
+                int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
         except AttributeError:
             self.base_seed = 0 # in case the seed is not set, it's 0
 
-        self.connection_entries = self.bc_simulation.config.typed_entries("Connection")
+        self.connection_entries = \
+                self.bc_simulation.config.typed_entries("Connection")
         self.all_targets = self.bc_simulation.TARGETS.available_targets()
         self.all_targets_dict = {}
-        # if pre_gid in self.all_targets_dict[src]: #self.bc_simulation.get_target(src)
         for target in self.all_targets:
-            self.all_targets_dict[target] = self.bc_simulation.get_target(target)
+            self.all_targets_dict[target] = \
+                self.bc_simulation.get_target(target)
 
         self.gids = []
         self.templates = []
         self.cells = {}
 
-        self.neuronconfigure_entries = self.bc_simulation.config.typed_entries("NeuronConfigure")
+        self.neuronconfigure_entries = \
+                self.bc_simulation.config.typed_entries("NeuronConfigure")
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
             for gid in self.all_targets_dict[entry.CONTENTS.Target]:
                 conf = entry.CONTENTS.Configure
-                self.neuronconfigure_expressions.setdefault(gid, []).append(conf)
+                self.neuronconfigure_expressions.\
+                        setdefault(gid, []).append(conf)
 
         self.gids_instantiated = False
-        self.connections = collections.defaultdict(lambda: collections.defaultdict(lambda: None))
+        self.connections = \
+                collections.defaultdict(\
+                        lambda: collections.defaultdict(\
+                                lambda: None))
 
-    def instantiate_gids(self, gids, synapse_detail=None, add_replay=False, add_stimuli=False, add_synapses=False, add_minis=False, intersect_pre_gids=None, interconnect_cells=True):
+    def instantiate_gids(self, gids, synapse_detail=None,
+            add_replay=False,
+            add_stimuli=False,
+            add_synapses=False,
+            add_minis=False,
+            intersect_pre_gids=None,
+            interconnect_cells=True):
         """ Instantiate a list of GIDs
 
         Parameters
         ----------
-        gids: list of GIDs. Must be a list; even in case of instantiation of a single GID
-        synapse_detail: Level of detail; if chosen, all settings are takenfrom the "large" cortical simulation. Possible values: 0: No synapses 1: Add synapse of the correct type at the simulated locations with all settings as in the "large" simulation 2: As 1 but with minis
-        add_replay: Add presynaptic spiketrains from the large simulation throws an exception if this is set when synapse_detail < 1
-        add_stimuli: Add the same stimuli as in the large simulation
-        add_synapses: Add the touch-detected synapses, as described by the circuit to the cell (This option only influence the 'creation' of synapses, it doesn't add any connections)
-        add_minis: Add synaptic minis to the synapses (this requires add_synapses=True)
-        intersect_pre_gids: Only add synapses to the cells if their presynaptic gid is in this list
-        interconnect_cells: When multiple gids are instantiated, interconnect the cells with real (non-replay) synapses. When this option is combined with add_replay, replay spiketrains will only be added for those presynaptic cells that are not in the network that's instantiated. This option requires add_synapses=True
+        gids : list of integers
+               List of GIDs. Must be a list,
+               even in case of instantiation of a single GID.
+        synapse_detail : {0 , 1, 2}
+                         Level of detail. If chosen, all settings are taken
+                         from the "large" cortical simulation.
+                         Possible values:
+
+                         * 0 No synapses
+
+                         * 1 Add synapse of the correct type at the
+                            simulated locations with all settings
+                            as in the "large" simulation
+
+                         * 2 As 1 but with minis
+
+        add_replay : Boolean
+                     Add presynaptic spiketrains from the large simulation
+                     throws an exception if this is set when synapse_detail < 1
+        add_stimuli : Boolean
+                      Add the same stimuli as in the large simulation
+        add_synapses : Boolean
+                       Add the touch-detected synapses, as described by the
+                       circuit to the cell
+                       (This option only influence the 'creation' of synapses,
+                       it doesn't add any connections)
+        add_minis : Boolean
+                    Add synaptic minis to the synapses
+                    (this requires add_synapses=True)
+        intersect_pre_gids : Boolean
+                             Only add synapses to the cells if their
+                             presynaptic gid is in this list
+        interconnect_cells : Boolean
+                             When multiple gids are instantiated,
+                             interconnect the cells with real (non-replay)
+                             synapses. When this option is combined with
+                             add_replay, replay spiketrains will only be added
+                             for those presynaptic cells that are not in the
+                             network that's instantiated.
+                             This option requires add_synapses=True
         """
 
         if synapse_detail != None:
@@ -84,13 +129,17 @@ class SSim(object):
 
         """
         if not add_synapses:
-            if interconnect_cells or add_replay or add_minis or intersect_pre_gids != None:
-                raise Exception("SSim: instantiate_gids() received an interconnect_cells, add_replay, add_minis, intersect_pre_gids request \
-                                        while add_synapses is False, this is not allowed")
+            if interconnect_cells or add_replay or add_minis or
+                        intersect_pre_gids != None:
+                raise Exception("SSim: instantiate_gids() received an \
+                        interconnect_cells, add_replay, add_minis, \
+                        intersect_pre_gids request while add_synapses is \
+                        False, this is not allowed")
         """
 
         if self.gids_instantiated:
-            raise Exception("SSim: instantiate_gids() called twice on the same SSim, this is not supported yet")
+            raise Exception("SSim: instantiate_gids() called twice on the \
+                    same SSim, this is not supported yet")
         else:
             self.gids_instantiated = True
 
@@ -98,9 +147,11 @@ class SSim(object):
         if add_stimuli:
             self._add_stimuli()
         if add_synapses:
-            self._add_synapses(intersect_pre_gids=intersect_pre_gids, add_minis=add_minis)
+            self._add_synapses(intersect_pre_gids=intersect_pre_gids,
+                    add_minis=add_minis)
         if add_replay or interconnect_cells:
-            self._add_connections(add_replay=add_replay, interconnect_cells=interconnect_cells)
+            self._add_connections(add_replay=add_replay,
+                    interconnect_cells=interconnect_cells)
 
 
     def _add_stimuli(self):
@@ -151,11 +202,15 @@ class SSim(object):
 
                 connection = None
                 if real_synapse_connection:
-                    connection = bglibpy.Connection(self.cells[post_gid].synapses[syn_id],
-                                                        pre_spiketrain=None,
-                                                        pre_cell=self.cells[pre_gid],
-                                                        stim_dt=self.dt)
-                    printv("Added real connection between pre_gid %d and post_gid %d, syn_id %d" % (pre_gid, post_gid, syn_id), 5)
+                    connection = bglibpy.Connection(\
+                            self.cells[post_gid].synapses[syn_id],
+                            pre_spiketrain=None,
+                            pre_cell=self.cells[pre_gid],
+                            stim_dt=self.dt)
+                    printv("Added real connection between pre_gid %d and \
+                            post_gid %d, syn_id %d" % (pre_gid, \
+                                                        post_gid, \
+                                                        syn_id), 5)
                 elif add_replay:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     if pre_spiketrain:
@@ -258,7 +313,19 @@ class SSim(object):
         self.cells[gid].add_replay_minis(syn_id, syn_description, syn_parameters, self.base_seed)
 
     def add_single_synapse(self, gid, syn_id, syn_description, connection_modifiers):
-        """Add a replay synapse on the cell"""
+        """Add a replay synapse on the cell
+
+        Parameters
+        ----------
+        gid : int
+              GID of the cell
+        syn_id: int
+              Synapse ID of the synapse
+        syn_description: dict
+              Description of the synapse
+        connection_modifiers: dict
+              Connection modifiers for the synapse
+        """
         return self.cells[gid].add_replay_synapse(syn_id, syn_description, connection_modifiers, self.base_seed)
 
     @staticmethod
@@ -270,9 +337,12 @@ class SSim(object):
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
+
         Parameters:
         -----------
-        gid: gid of the post-synaptic cell
+        gid : int
+              gid of the post-synaptic cell
+
         """
         parameters = {}
         parameters['add_synapse'] = False

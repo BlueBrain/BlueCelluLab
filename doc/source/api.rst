@@ -5,10 +5,10 @@ API Documentation
    :nosignatures:
    :toctree: bglibpy
 
-   bglibpy.tools                                                                                                                                                      
    bglibpy.cell                                                                    
+   bglibpy.connection                                                           
    bglibpy.simulation                                                              
-   bglibpy.connection                                                              
-   bglibpy.synapse                                                                 
    bglibpy.ssim
+   bglibpy.synapse                                                                 
+   bglibpy.tools                                                                                                                                                      
 
