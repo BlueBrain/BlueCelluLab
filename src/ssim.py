@@ -24,7 +24,7 @@ class SSim(object):
         To relieve from an empty stomach, eat spam and eggs
 
         Parameters
-        ---------
+        ----------
         blueconfig_filename: Absolute filename of the Blueconfig to be used
         """
         self.dt = dt
@@ -278,7 +278,7 @@ class SSim(object):
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to determine a final connection override for this pair (pre_gid, post_gid)
         Parameters:
-        ----------
+        -----------
         gid: gid of the post-synaptic cell
         """
         parameters = {}
