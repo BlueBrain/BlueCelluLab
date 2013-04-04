@@ -19,13 +19,16 @@ class SSim(object):
     """SSim class"""
 
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None):
-        """ Object dealing with BlueConfig configured Small Simulations
+        """Object dealing with BlueConfig configured Small Simulations
 
         To relieve from an empty stomach, eat spam and eggs
 
         Parameters
         ----------
-        blueconfig_filename: Absolute filename of the Blueconfig to be used
+        blueconfig_filename : Absolute filename of the Blueconfig to be used
+
+        Returns
+        -------
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -63,24 +66,14 @@ class SSim(object):
 
         Parameters
         ----------
-        gids: list of GIDs. Must be a list; even in case of instantiation of
-        a single GID
-        synapse_detail: Level of detail; if chosen, all settings are taken
-         from the "large" cortical simulation. Possible values:
-            0: No synapses
-            1: Add synapse of the correct type at the simulated locations
-               with all settings as in the "large" simulation
-            2: As 1 but with minis
-        add_replay: Add presynaptic spiketrains from the large simulation
-            throws an exception if this is set when synapse_detail < 1
+        gids: list of GIDs. Must be a list; even in case of instantiation of a single GID
+        synapse_detail: Level of detail; if chosen, all settings are takenfrom the "large" cortical simulation. Possible values: 0: No synapses 1: Add synapse of the correct type at the simulated locations with all settings as in the "large" simulation 2: As 1 but with minis
+        add_replay: Add presynaptic spiketrains from the large simulation throws an exception if this is set when synapse_detail < 1
         add_stimuli: Add the same stimuli as in the large simulation
-        add_synapses: Add the touch-detected synapses, as described by the circuit to the cell
-                      (This option only influence the 'creation' of synapses, it doesn't add any connections)
+        add_synapses: Add the touch-detected synapses, as described by the circuit to the cell (This option only influence the 'creation' of synapses, it doesn't add any connections)
         add_minis: Add synaptic minis to the synapses (this requires add_synapses=True)
         intersect_pre_gids: Only add synapses to the cells if their presynaptic gid is in this list
-        interconnect_cells: When multiple gids are instantiated, interconnect the cells with real (non-replay) synapses
-                            When this option is combined with add_replay, replay spiketrains will only be added for those presynaptic
-                            cells that are not in the network that's instantiated. This option requires add_synapses=True
+        interconnect_cells: When multiple gids are instantiated, interconnect the cells with real (non-replay) synapses. When this option is combined with add_replay, replay spiketrains will only be added for those presynaptic cells that are not in the network that's instantiated. This option requires add_synapses=True
         """
 
         if synapse_detail != None:

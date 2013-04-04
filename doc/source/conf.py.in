@@ -18,7 +18,7 @@ import sys
 
 #import sys
 
-sys.path = ['${PYTHON_PACKAGE_INSTALL_DIR}'] + sys.path
+sys.path.insert(0, '${PYTHON_PACKAGE_INSTALL_DIR}')
 import bglibpy
 
 # If extensions (or modules to document with autodoc) are in another directory,

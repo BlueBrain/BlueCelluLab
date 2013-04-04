@@ -132,7 +132,8 @@ class Cell(object):
                 bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
 
     def synlocation_to_segx(self, isec, ipt, syn_offset):
-        """Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
+        """
+        Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
 
         Parameters
         ----------

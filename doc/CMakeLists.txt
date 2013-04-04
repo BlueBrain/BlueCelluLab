@@ -7,15 +7,18 @@ if (SPHINX_FOUND)
 
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
       FILES_MATCHING
-      PATTERN "*.rst"
-      PATTERN "*.conf"
-      PATTERN "*.html"
-      PATTERN "*.png"
-      PATTERN "*.css*"
+      PATTERN "source/*.rst"
+      PATTERN "source/*.conf"
+      PATTERN "source/*.html"
+      PATTERN "source/*.png"
+      PATTERN "source/*.css*"
+      PATTERN "source/_templates/autosummary/*"
+      PATTERN "sphinxext/numpydoc/*"
+      PATTERN "source/_static/*.png"
       PATTERN "Makefile"
       PATTERN "CMakeFiles" EXCLUDE)
 
-  configure_file(conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/doc/conf.py)
+  configure_file(source/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/doc/source/conf.py)
 
   set( ENV{PYTHONPATH} ENV{PYTHONPATH}:/home/vangeit/local/bglibpy/lib64/python2.6/site-packages/ )
   add_custom_target(doc_html_python
@@ -30,7 +33,7 @@ if (SPHINX_FOUND)
 
   add_custom_target(doc_install
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CMAKE_CURRENT_BINARY_DIR}/doc/_build/html"
+      "${CMAKE_CURRENT_BINARY_DIR}/doc/build/html"
       "${CMAKE_INSTALL_PREFIX}/doc/html")
   add_dependencies(doc_install doc)
 
