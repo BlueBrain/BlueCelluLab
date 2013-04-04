@@ -1,23 +1,26 @@
 Installation
 ============
 
-This installation guide will explain on how to install BGLibPy in your home directory.
-In an ideal world the dependencies of BGLibPy are all pre-installed on the viz cluster, 
-however, since in reality these installation are not kept up to date, we currently 
-propose to install some of BGLibPy's dependency in your home directory (see section 
-:ref:`installing-dependencies`)
+This installation guide will explain on how to install BGLibPy in your home 
+directory on the viz cluster. In an ideal world the dependencies of BGLibPy are 
+all pre-installed on the viz cluster, however, since in reality these 
+installation are not kept up to date, we currently propose to install some of 
+BGLibPy's dependency in your home directory 
+(see section :ref:`installing-dependencies`)
 
 Installing BGLibPy
 ------------------
 
-(If necessary, **first install the dependencies** according to the :ref:`installing-dependencies` section.)
+(If necessary, **first install the dependencies** according to the 
+:ref:`installing-dependencies` section.)
 
 Clone the git repository::
 
     git clone ssh://bbpgit.epfl.ch/sim/BGLibPy.git
     cd BGLibPy
 
-The source directory contains an example build script called "buid.sh.example.viz", make a copy of this script::
+The source directory contains an example build script called 
+"buid.sh.example.viz", make a copy of this script::
 
     cp build.sh.example.viz build.sh
 
@@ -48,17 +51,19 @@ Once this is done you execute the script::
 
     ./build.sh
 
-And you test if the unit tests are working (this require /bgscratch to be mounted on the machine you are testing this on)::
+Run the unit tests (this require /bgscratch to be 
+mounted on the machine you are testing this on)::
 
    ./runtests.sh
 
-Hopefully this installation went smoothly. If it didn't, please create a Jira ticket, and explain as detailed as possible the problems you encountered::
+Hopefully this installation went smoothly. If it didn't, please create a Jira 
+ticket, and explain as detailed as possible the problems you encountered::
    
    https://bbpteam.epfl.ch/project/issues/browse/BGLPY
 
 .. _installing-dependencies:
 
-Installing dependencies
+Installing Dependencies
 -----------------------
 
 The dependencies are::
@@ -67,10 +72,12 @@ The dependencies are::
     BGLib (Neurodamus)
     Neuron
 
-Ideally you follow the installation instructions of the tools mentioned above, in case they are missing:
+Ideally you follow the installation instructions of the tools, 
+in case these are missing:
 
 *BluePy*
-    Install the source from a git repository clone (e.g. to $HOME/local/bluepy)::
+    Install the source from a git repository clone 
+    (e.g. to $HOME/local/bluepy)::
 
         git clone ssh://bbpgit.epfl.ch/analysis/BluePy.git
         cd BluePy
