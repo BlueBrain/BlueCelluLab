@@ -310,9 +310,13 @@ class SSim(object):
 
     def add_replay_minis(self, gid, syn_id, syn_description, syn_parameters):
         """Add minis from the replay"""
-        self.cells[gid].add_replay_minis(syn_id, syn_description, syn_parameters, self.base_seed)
+        self.cells[gid].add_replay_minis(syn_id,
+                                                syn_description,
+                                                syn_parameters,
+                                                self.base_seed)
 
-    def add_single_synapse(self, gid, syn_id, syn_description, connection_modifiers):
+    def add_single_synapse(self, gid, syn_id,
+                                syn_description, connection_modifiers):
         """Add a replay synapse on the cell
 
         Parameters
@@ -326,7 +330,10 @@ class SSim(object):
         connection_modifiers: dict
               Connection modifiers for the synapse
         """
-        return self.cells[gid].add_replay_synapse(syn_id, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(syn_id,
+                                                      syn_description,
+                                                      connection_modifiers,
+                                                      self.base_seed)
 
     @staticmethod
     def check_connection_contents(contents):

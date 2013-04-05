@@ -4,11 +4,10 @@ Static tools for bglibpy
 
 import sys
 import inspect
-from bglibpy.importer import neuron
 import multiprocessing
 import multiprocessing.pool
 import bglibpy
-#from bglibpy.importer import neuron
+from bglibpy import neuron
 import numpy
 import warnings
 import math
@@ -18,33 +17,24 @@ BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connectio
 VERBOSE_LEVEL = 0
 
 def set_verbose(level=1):
+    """Set the verbose level of BGLibPy
+
+       Parameters
+       ----------
+       level : int
+               Verbose level, the higher the more verbosity.
+               Level 0 means 'completely quiet', except if some very serious
+               errors or warnings are encountered.
+    """
     bglibpy.VERBOSE_LEVEL = level
 
-def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
-    """
-    Helper function that, provided a BlueConfig, returns all the GIDs \
-    associated with a specified M-type. (For instance, when you only want \
-    to insert synapses of a specific pathway)
-
-    Parameters
-    ----------
-    mtypes : list
-        List of M-types (each as a string)
-
-    Returns
-    -------
-    gids : list
-        List of all GIDs associated with one of the specified M-types
-
-    """
-    a = 1
-    b = a +1
-    return b
 
 class deprecated(object):
-
+    """Decorator to mark a function as deprecated"""
     def __init__(self, new_function=""):
-        """A decorator that shows a warning message when a deprecated function is used"""
+        """A decorator that shows a warning message when a deprecated function
+        is used
+        """
         self.new_function = new_function
 
     def __call__(self, func):
@@ -56,29 +46,61 @@ class deprecated(object):
         rep_func.__name__ = func.__name__
         if func.__doc__ == None or func.__doc__ == "":
             func.__doc__ = "Deprecated"
-        rep_func.__doc__ = func.__doc__ + "\n\n.. note:: Replaced by %s\n\n       .. deprecated:: .1\n" % self.new_function
+        rep_func.__doc__ = func.__doc__ + "\n\n         \
+                .. note:: Replaced by %s\n\n       \
+                .. deprecated:: .1\n" % self.new_function
         rep_func.__dict__.update(func.__dict__)
         return rep_func
 
+
 def printv(message, verbose_level):
-    """Print the message depending on the verbose level"""
+    """Print the message to stdout depending on the verbose level
+
+       Parameters
+       ----------
+       message : string
+                 Message to print
+       verbose_level: int
+                      Message will only be printed if the verbose level is
+                      higher or equal to this number
+    """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
         print message
 
+
 def printv_err(message, verbose_level):
-    """Print the message depending on the verbose level"""
+    """Print the message to stderr depending on the verbose level
+
+       Parameters
+       ----------
+       message : string
+                 Message to print
+       verbose_level: int
+                      Message will only be printed if the verbose level is
+                      higher or equal to this number
+    """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
         print >> sys.stderr,  message
 
+
 def _me():
-    '''Used for debgugging. Reads the stack and provides info about which
-    function called  '''
-    print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
+    """Used for debgugging. Reads the stack and provides info about which
+    function called"""
+    print 'Call -> from %s::%s' % \
+            (inspect.stack()[1][1], inspect.stack()[1][3])
 
 
-def load_nrnmechanisms(libnrnmech_location):
-    """Load another shared library with neuron mechanisms"""
-    neuron.h.nrn_load_dll(libnrnmech_location)
+def load_nrnmechanisms(libnrnmech_path):
+    """
+    Load another shared library with neuron mechanisms
+    (Created by nrnivmodl)
+
+    Parameters
+    ----------
+    libnrnmech_path: string
+                     Path to a neuron mechanisms file
+    """
+    neuron.h.nrn_load_dll(libnrnmech_path)
 
 
 def parse_complete_BlueConfig(fName):
