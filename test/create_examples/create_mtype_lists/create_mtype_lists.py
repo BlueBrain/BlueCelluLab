@@ -31,15 +31,15 @@ for line in ncs.readlines() :
     counter = counter +1
     gid = line.strip().split(' ')[0][1:]
     mtype = -1
-    match = re.search(r' [a-zA-Z0-9]*_(L[0-9]+_[a-zA-Z0-9-]+_L[14])_', line) 
+    match = re.search(r' [a-zA-Z0-9]*_(L[0-9]+_[a-zA-Z0-9-]+_L[14])_', line)
     if match :
         mtype=match.groups()[0]
         # print 'gid=%s, mtype=%s' % (gid,mtype)
     else :
-        match = re.search(r' [a-zA-Z0-9]*_(L[0-9]+_[a-zA-Z0-9-]+)_', line) 
+        match = re.search(r' [a-zA-Z0-9]*_(L[0-9]+_[a-zA-Z0-9-]+)_', line)
         if match :
             mtype=match.groups()[0]
-            # print 'gid=%s, mtype=%s' % (gid,mtype)            
+            # print 'gid=%s, mtype=%s' % (gid,mtype)
         else :
             raise Exception('Could not parse the M-type at line:\n%s'% line)
 
@@ -54,11 +54,11 @@ for line in ncs.readlines() :
 print 'len l23_btc=%f' % len(l23_btc_gids)
 print 'len l56=%f' % len(l56_gids)
 print 'len l23_several=%f' % len(l23_several_gids)
-pickle.dump(l23_btc_gids,open('../../examples/l23_btc_gids.pkl','w'))
-pickle.dump(l56_gids,open('../../examples/l56_gids.pkl','w'))
-pickle.dump(l23_several_gids,open('../../examples/l23_several_gids.pkl','w'))            
-        
-print 'encountered %i lines' % counter    
+pickle.dump(l23_btc_gids,open('../../examples/mtype_lists/l23_btc_gids.pkl','w'))
+pickle.dump(l56_gids,open('../../examples/mtype_lists/l56_gids.pkl','w'))
+pickle.dump(l23_several_gids,open('../../examples/mtype_lists/l23_several_gids.pkl','w'))
+
+print 'encountered %i lines' % counter
 
 
 

@@ -9,5 +9,3 @@ builddoc.sh
 .bglib*
 *.rope*
 *#
-l56_gids.pkl
-l23*.pkl
