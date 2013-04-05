@@ -440,7 +440,7 @@ class SSim(object):
         return template_name
 
 
-    def get_gids_of_mtypes(self,mtypes=None):#['L5_UTPC','L6_TPC_L4']) :
+    def get_gids_of_mtypes(self,mtypes=None):
         """
         Helper function that, provided a BlueConfig, returns all the GIDs \
         associated with a specified M-type. (For instance, when you only want \
