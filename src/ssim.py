@@ -15,6 +15,9 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
+import bluepy
+from bluepy.targets.mvddb import MType
+
 class SSim(object):
     """Class that can load a BGLib BlueConfig,
                and instantiate the simulation"""
@@ -435,6 +438,35 @@ class SSim(object):
             raise Exception("Gid %d not found in circuit" % gid)
 
         return template_name
+
+
+    def get_gids_of_mtypes(self,mtypes=None):#['L5_UTPC','L6_TPC_L4']) :
+        """
+        Helper function that, provided a BlueConfig, returns all the GIDs \
+        associated with a specified M-type. (For instance, when you only want \
+        to insert synapses of a specific pathway)
+
+
+        Parameters
+        ----------
+        mtypes : list
+            List of M-types (each as a string). Wildcards are *not* allowed, \
+            the strings must represent the true M-type names. A list with names \
+            can be found here: \
+            bbpteam.epfl.ch/projects/spaces/display/MEETMORPH/m-types
+
+        Returns
+        -------
+        gids : list
+            List of all GIDs associated with one of the specified M-types
+
+        """
+        gids = []
+        for mtype in mtypes :
+            temp_gids = self.bc_simulation.circuit.mvddb.select_gids( \
+                             MType.name == mtype)
+            gids = gids + temp_gids # concat the lists
+        return gids
 
 def _parse_outdat(path, outdat_name='out.dat'):
     """Parse the replay spiketrains in out.dat"""

@@ -8,3 +8,6 @@ builddoc.sh
 *.pyc
 .bglib*
 *.rope*
+*#
+l56_gids.pkl
+l23*.pkl
