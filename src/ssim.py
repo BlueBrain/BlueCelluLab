@@ -461,6 +461,8 @@ class SSim(object):
             List of all GIDs associated with one of the specified M-types
 
         """
+        # TODO: this functionality doesn't belong here, and should over time
+        # be moved to BluePy
         gids = []
         for mtype in mtypes :
             temp_gids = self.bc_simulation.circuit.mvddb.select_gids( \
