@@ -41,17 +41,24 @@ def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
     b = a +1
     return b
 
-def deprecated(func):
-    """A decorator that shows a warning message when a deprecated function is used"""
-    def rep_func(*args, **kwargs):
-        """Replacement function"""
-        warnings.warn("Call to deprecated function {%s}." % func.__name__,
-                      category=DeprecationWarning)
-        return func(*args, **kwargs)
-    rep_func.__name__ = func.__name__
-    rep_func.__doc__ = func.__doc__
-    rep_func.__dict__.update(func.__dict__)
-    return rep_func
+class deprecated(object):
+
+    def __init__(self, new_function=""):
+        """A decorator that shows a warning message when a deprecated function is used"""
+        self.new_function = new_function
+
+    def __call__(self, func):
+        def rep_func(*args, **kwargs):
+            """Replacement function"""
+            warnings.warn("Call to deprecated function {%s}." % func.__name__,
+                          category=DeprecationWarning)
+            return func(*args, **kwargs)
+        rep_func.__name__ = func.__name__
+        if func.__doc__ == None or func.__doc__ == "":
+            func.__doc__ = "Deprecated"
+        rep_func.__doc__ = func.__doc__ + "\n\n.. note:: Replaced by %s\n\n       .. deprecated:: .1\n" % self.new_function
+        rep_func.__dict__.update(func.__dict__)
+        return rep_func
 
 def printv(message, verbose_level):
     """Print the message depending on the verbose level"""
