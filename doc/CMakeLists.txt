@@ -13,6 +13,8 @@ if (SPHINX_FOUND)
       PATTERN "source/*.png"
       PATTERN "source/*.css*"
       PATTERN "source/_templates/autosummary/*"
+      PATTERN "source/haiku-bbp/*"
+      PATTERN "source/haiku-bbp/static/*"
       PATTERN "sphinxext/numpydoc/*"
       PATTERN "source/_static/*.png"
       PATTERN "Makefile"

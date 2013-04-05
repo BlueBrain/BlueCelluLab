@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Class that represents a cell in BGLibPy
+Cell class
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.
@@ -21,20 +21,26 @@ import Queue
 
 
 class Cell(object):
-    """Represents a bglib cell"""
+    """Represents a BGLib Cell object"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
         """ Constructor
 
         Parameters
         ----------
-        template_name: full path to BGLib template to be loaded
-        morphology_name: morphologyname passed to the BGLib template
-            When the argument ends '.asc', that specific morph will be loaded
-            otherwise this argument is interpreted as the directory containing
-            the morphologies
-        gid: the gid of the instantiated cell (default: 0)
-        record_dt: force a different timestep for the recordings (default: None)
+        template_name : string
+                        Full path to BGLib template to be loaded
+        morphology_name : string
+                          Morphology name passed to the BGLib template
+                          When the argument ends '.asc', that specific morph
+                          will be loaded otherwise this argument is
+                          interpreted as the directory containing the
+                          morphologies
+        gid: int
+             GID of the instantiated cell (default: 0)
+        record_dt: float
+                   Force a different timestep for the recordings
+                   (default: None)
         """
 
         #Persistent objects, like clamps, that exist as long as the object exists
