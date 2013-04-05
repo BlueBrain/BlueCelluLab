@@ -15,9 +15,6 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
-import bluepy
-from bluepy.targets.mvddb import MType
-
 class SSim(object):
     """Class that can load a BGLib BlueConfig,
                and instantiate the simulation"""
@@ -440,7 +437,7 @@ class SSim(object):
         return template_name
 
 
-    def get_gids_of_mtypes(self,mtypes=None):
+    def get_gids_of_mtypes(self, mtypes=None):
         """
         Helper function that, provided a BlueConfig, returns all the GIDs \
         associated with a specified M-type. (For instance, when you only want \
@@ -461,13 +458,14 @@ class SSim(object):
             List of all GIDs associated with one of the specified M-types
 
         """
+        # pylint: disable=W0511, E1101
         # TODO: this functionality doesn't belong here, and should over time
         # be moved to BluePy
         gids = []
         for mtype in mtypes :
-            temp_gids = self.bc_simulation.circuit.mvddb.select_gids( \
-                             MType.name == mtype)
-            gids = gids + temp_gids # concat the lists
+            gids += self.bc_simulation.circuit.mvddb.select_gids( \
+                             bluepy.targets.mvddb.MType.name == mtype)
+        # pylint: enable=W0511, E1101
         return gids
 
 def _parse_outdat(path, outdat_name='out.dat'):
@@ -477,7 +475,8 @@ def _parse_outdat(path, outdat_name='out.dat'):
     full_outdat_name = os.path.join(path, outdat_name)
 
     if not os.path.exists(full_outdat_name):
-        raise IOError("Could not find presynaptic spike file at %s" % full_outdat_name)
+        raise IOError("Could not find presynaptic spike file at %s" \
+                                               % full_outdat_name)
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
     with open(full_outdat_name, "r") as full_outdat_file:
