@@ -21,7 +21,7 @@ class Synapse(object):
         self.connection_parameters = connection_parameters
         self.hsynapse = None
 
-        #pre_gid = int(syn_description[0])
+        pre_gid = int(syn_description[0])
         #delay = syn_description[1]
         post_sec_id = syn_description[2]
         self.isec = post_sec_id
