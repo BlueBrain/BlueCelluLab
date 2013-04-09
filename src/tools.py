@@ -4,11 +4,10 @@ Static tools for bglibpy
 
 import sys
 import inspect
-from bglibpy.importer import neuron
 import multiprocessing
 import multiprocessing.pool
 import bglibpy
-#from bglibpy.importer import neuron
+from bglibpy import neuron
 import numpy
 import warnings
 import math
@@ -18,60 +17,90 @@ BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connectio
 VERBOSE_LEVEL = 0
 
 def set_verbose(level=1):
+    """Set the verbose level of BGLibPy
+
+       Parameters
+       ----------
+       level : int
+               Verbose level, the higher the more verbosity.
+               Level 0 means 'completely quiet', except if some very serious
+               errors or warnings are encountered.
+    """
     bglibpy.VERBOSE_LEVEL = level
 
-def get_gids_of_mtypes(mtypes=['L5_UTPC','L6_TPC_L4']) :
-    """
-    Helper function that, provided a BlueConfig, returns all the GIDs \
-    associated with a specified M-type. (For instance, when you only want \
-    to insert synapses of a specific pathway)
 
-    Parameters
-    ----------
-    mtypes : list
-        List of M-types (each as a string)
+class deprecated(object):
+    """Decorator to mark a function as deprecated"""
+    def __init__(self, new_function=""):
+        """A decorator that shows a warning message when a deprecated function
+        is used
+        """
+        self.new_function = new_function
 
-    Returns
-    -------
-    gids : list
-        List of all GIDs associated with one of the specified M-types
+    def __call__(self, func):
+        def rep_func(*args, **kwargs):
+            """Replacement function"""
+            warnings.warn("Call to deprecated function {%s}." % func.__name__,
+                          category=DeprecationWarning)
+            return func(*args, **kwargs)
+        rep_func.__name__ = func.__name__
+        if func.__doc__ == None or func.__doc__ == "":
+            func.__doc__ = "Deprecated"
+        rep_func.__doc__ = func.__doc__ + "\n\n         \
+                .. note:: Replaced by %s\n\n       \
+                .. deprecated:: .1\n" % self.new_function
+        rep_func.__dict__.update(func.__dict__)
+        return rep_func
 
-    """
-    a = 1
-    b = a +1
-    return b
-
-def deprecated(func):
-    """A decorator that shows a warning message when a deprecated function is used"""
-    def rep_func(*args, **kwargs):
-        """Replacement function"""
-        warnings.warn("Call to deprecated function {%s}." % func.__name__,
-                      category=DeprecationWarning)
-        return func(*args, **kwargs)
-    rep_func.__name__ = func.__name__
-    rep_func.__doc__ = func.__doc__
-    rep_func.__dict__.update(func.__dict__)
-    return rep_func
 
 def printv(message, verbose_level):
-    """Print the message depending on the verbose level"""
+    """Print the message to stdout depending on the verbose level
+
+       Parameters
+       ----------
+       message : string
+                 Message to print
+       verbose_level: int
+                      Message will only be printed if the verbose level is
+                      higher or equal to this number
+    """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
         print message
 
+
 def printv_err(message, verbose_level):
-    """Print the message depending on the verbose level"""
+    """Print the message to stderr depending on the verbose level
+
+       Parameters
+       ----------
+       message : string
+                 Message to print
+       verbose_level: int
+                      Message will only be printed if the verbose level is
+                      higher or equal to this number
+    """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
         print >> sys.stderr,  message
 
+
 def _me():
-    '''Used for debgugging. Reads the stack and provides info about which
-    function called  '''
-    print 'Call -> from %s::%s' % (inspect.stack()[1][1], inspect.stack()[1][3])
+    """Used for debgugging. Reads the stack and provides info about which
+    function called"""
+    print 'Call -> from %s::%s' % \
+            (inspect.stack()[1][1], inspect.stack()[1][3])
 
 
-def load_nrnmechanisms(libnrnmech_location):
-    """Load another shared library with neuron mechanisms"""
-    neuron.h.nrn_load_dll(libnrnmech_location)
+def load_nrnmechanisms(libnrnmech_path):
+    """
+    Load another shared library with neuron mechanisms
+    (Created by nrnivmodl)
+
+    Parameters
+    ----------
+    libnrnmech_path: string
+                     Path to a neuron mechanisms file
+    """
+    neuron.h.nrn_load_dll(libnrnmech_path)
 
 
 def parse_complete_BlueConfig(fName):
@@ -326,20 +355,20 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     process_name = multiprocessing.current_process().name
 
     if nestlevel > max_nestlevel:
-        return (float('nan'), None)
+        return (float('nan'), (None, None))
     elif nestlevel == 1:
         printv("%s: Searching for current to bring gid %d to %f mV" % (process_name, gid, target_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
     (new_target_voltage, (time, voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, stop_time=stop_time, timeout=timeout)
     if math.isnan(new_target_voltage):
-        return (float('nan'), None)
+        return (float('nan'), (None, None))
     if abs(new_target_voltage - target_voltage) < precision:
         if return_fullrange:
             # We're calculating the full voltage range, just reusing calculate_SS_voltage_replay for this
             # Variable names that start with full_ point to values that are related to the full voltage range
             (full_SS_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
             if math.isnan(full_SS_voltage):
-                return (float('nan'), None)
+                return (float('nan'), (None, None))
             return (med_current, (full_time, full_voltage))
         else:
             return (med_current, (time, voltage))
@@ -380,27 +409,48 @@ class search_hyp_function_gid(object):
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
     """
-    Search, using bisection, for the current necessary to bring a cell to target_voltage in a network replay for a list of gids.
-    This function will use multiprocessing to parallelize the task, running one gid per available core.
+    Search, using bisection, for the current necessary to bring a cell to
+    target_voltage in a network replay for a list of gids.
+    This function will use multiprocessing to parallelize the task,
+    running one gid per available core.
 
     Parameters
     ----------
-    blueconfig : Simulation BlueConfig
-    gid_list : list
-        of gids to process
-    target_voltage: voltage you want to bring to cell to
-    min_current, max_current: The algorithm will search in ]min_current, max_current[
-    precision: algorithm stops when abs(calculated_voltage - target_voltage) < precision
-    max_nestlevel = the maximum number of nested levels the algorithm explores
-    start_time, stop_time: the time range for which the voltage is simulated and average for comparison against target_voltage
-    return_fullrange: Defaults to True.  Set to False if you don't want to return the voltage in full time range of the large simulation, but rather the time between start_time, stop_time
+    blueconfig : string
+                 Path to simulation BlueConfig
+    gid_list : list of integers
+               List of the gids
+    target_voltage : float
+                     Voltage you want to bring to cell to
+    min_current, max_current : float
+                               The algorithm will search in
+                               ]min_current, max_current[
+    precision: float
+               The algorithm stops when
+               abs(calculated_voltage - target_voltage) < precision
+    max_nestlevel : integer
+                    The maximum number of nested levels the algorithm explores
+    start_time, stop_time : float
+                            The time range for which the voltage is simulated
+                            and average for comparison against target_voltage
+    return_fullrange: boolean
+                      Defaults to True. Set to False if you don't want to
+                      return the voltage in full time range of the large
+                      simulation, but rather the time between
+                      start_time, stop_time
 
     Returns
     -------
-    A dictionary where the keys are gids, and the values tuples of the form (detected_level, time_voltage).
-    time_voltage is a tuple of the time and voltage trace at the current injection level (=detected_level) that matches the target target_voltage within user specified precision.
+    result: dictionary
+            A dictionary where the keys are gids, and the values tuples of the
+            form (detected_level, time_voltage).
+            time_voltage is a tuple of the time and voltage trace at the
+            current injection level (=detected_level) that matches the target
+            target_voltage within user specified precision.
 
-    If the algorithm reaches max_nestlevel+1 iterations without converging to the requested precision, (nan, None) is returned for that gid.
+            If the algorithm reaches max_nestlevel+1 iterations without
+            converging to the requested precision, (nan, None) is returned
+            for that gid.
     """
 
     pool = NestedPool(multiprocessing.cpu_count())

@@ -42,9 +42,9 @@ class TestCellBaseClass1(object):
             self.cell.addRecording(varname)
             nt.assert_true(len([warning for warning in w if issubclass(warning.category, DeprecationWarning)]) > 0)
 
-    def test_get_section(self):
-        """Cell: Test cell.get_section"""
-        nt.assert_true(isinstance(self.cell.get_section(0), bglibpy.neuron.nrn.Section))
+    def test_get_hsection(self):
+        """Cell: Test cell.get_hsection"""
+        nt.assert_true(isinstance(self.cell.get_hsection(0), bglibpy.neuron.nrn.Section))
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""

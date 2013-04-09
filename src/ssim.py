@@ -310,9 +310,13 @@ class SSim(object):
 
     def add_replay_minis(self, gid, syn_id, syn_description, syn_parameters):
         """Add minis from the replay"""
-        self.cells[gid].add_replay_minis(syn_id, syn_description, syn_parameters, self.base_seed)
+        self.cells[gid].add_replay_minis(syn_id,
+                                                syn_description,
+                                                syn_parameters,
+                                                self.base_seed)
 
-    def add_single_synapse(self, gid, syn_id, syn_description, connection_modifiers):
+    def add_single_synapse(self, gid, syn_id,
+                                syn_description, connection_modifiers):
         """Add a replay synapse on the cell
 
         Parameters
@@ -326,7 +330,10 @@ class SSim(object):
         connection_modifiers: dict
               Connection modifiers for the synapse
         """
-        return self.cells[gid].add_replay_synapse(syn_id, syn_description, connection_modifiers, self.base_seed)
+        return self.cells[gid].add_replay_synapse(syn_id,
+                                                      syn_description,
+                                                      connection_modifiers,
+                                                      self.base_seed)
 
     @staticmethod
     def check_connection_contents(contents):
@@ -436,6 +443,38 @@ class SSim(object):
 
         return template_name
 
+
+    def get_gids_of_mtypes(self, mtypes=None):
+        """
+        Helper function that, provided a BlueConfig, returns all the GIDs \
+        associated with a specified M-type. (For instance, when you only want \
+        to insert synapses of a specific pathway)
+
+
+        Parameters
+        ----------
+        mtypes : list
+            List of M-types (each as a string). Wildcards are *not* allowed, \
+            the strings must represent the true M-type names. A list with names \
+            can be found here: \
+            bbpteam.epfl.ch/projects/spaces/display/MEETMORPH/m-types
+
+        Returns
+        -------
+        gids : list
+            List of all GIDs associated with one of the specified M-types
+
+        """
+        # pylint: disable=W0511, E1101
+        # TODO: this functionality doesn't belong here, and should over time
+        # be moved to BluePy
+        gids = []
+        for mtype in mtypes :
+            gids += self.bc_simulation.circuit.mvddb.select_gids( \
+                             bluepy.targets.mvddb.MType.name == mtype)
+        # pylint: enable=W0511, E1101
+        return gids
+
 def _parse_outdat(path, outdat_name='out.dat'):
     """Parse the replay spiketrains in out.dat"""
 
@@ -443,7 +482,8 @@ def _parse_outdat(path, outdat_name='out.dat'):
     full_outdat_name = os.path.join(path, outdat_name)
 
     if not os.path.exists(full_outdat_name):
-        raise IOError("Could not find presynaptic spike file at %s" % full_outdat_name)
+        raise IOError("Could not find presynaptic spike file at %s" \
+                                               % full_outdat_name)
     # read out.dat lines like 'spiketime, gid', ignore the first line, and the
     # last newline
     with open(full_outdat_name, "r") as full_outdat_file:

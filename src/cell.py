@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Class that represents a cell in BGLibPy
+Cell class
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.
@@ -21,23 +21,30 @@ import Queue
 
 
 class Cell(object):
-    """Represents a bglib cell"""
+    """Represents a BGLib Cell object"""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
         """ Constructor
 
         Parameters
         ----------
-        template_name: full path to BGLib template to be loaded
-        morphology_name: morphologyname passed to the BGLib template
-            When the argument ends '.asc', that specific morph will be loaded
-            otherwise this argument is interpreted as the directory containing
-            the morphologies
-        gid: the gid of the instantiated cell (default: 0)
-        record_dt: force a different timestep for the recordings (default: None)
+        template_name : string
+                        Full path to BGLib template to be loaded
+        morphology_name : string
+                          Morphology name passed to the BGLib template
+                          When the argument ends '.asc', that specific morph
+                          will be loaded otherwise this argument is
+                          interpreted as the directory containing the
+                          morphologies
+        gid : integer
+             GID of the instantiated cell (default: 0)
+        record_dt : float
+                   Force a different timestep for the recordings
+                   (default: None)
         """
 
-        #Persistent objects, like clamps, that exist as long as the object exists
+        # Persistent objects, like clamps, that exist as long
+        # as the object exists
         self.persistent = []
 
         if not os.path.exists(template_name):
@@ -68,7 +75,6 @@ class Cell(object):
         self.connections = {} #Outside connections to this cell
 
         self.pre_spiketrains = {}
-        #self.syn_netcons = {}
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
@@ -80,12 +86,16 @@ class Cell(object):
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
-        self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'], dt=record_dt)
+        self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
+                                dt=record_dt)
         self.cell_dendrograms = []
         self.plot_windows = []
-        self.fih_plots = None # FInitializeHandler, sets up the callback functions
-        self.fih_weights = None # FInitializeHandler, sets up the callback functions
-        self.plot_callback_necessary = False # As long as no PlotWindow or active Dendrogram exist, don't update
+
+        self.fih_plots = None
+        self.fih_weights = None
+
+        # As long as no PlotWindow or active Dendrogram exist, don't update
+        self.plot_callback_necessary = False
         self.delayed_weights = Queue.PriorityQueue()
 
         try:
@@ -100,30 +110,48 @@ class Cell(object):
 
 
     def re_init_rng(self):
-        """Reinitialize the random number generator for the stochastic channels"""
+        """Reinitialize the random number generator for the stochastic channels
+        """
         self.cell.re_init_rng()
 
-    def get_section(self, raw_section_id):
-        """Use the serialized object to find your section
+    def get_hsection(self, section_id):
+        """Use the serialized object to find a hoc section from a section id
 
         Parameters
         ----------
-        raw_section_id: section id
+        section_id : int
+                    Section id
 
         Returns
         -------
-        A nrnSection object of to the requested section
+        hsection : nrnSection
+                   The requested hoc section
         """
-        return self.serialized.isec2sec[int(raw_section_id)].sec
+        return self.serialized.isec2sec[int(section_id)].sec
 
     def execute_neuronconfigure(self, expression, sections=None):
-        """Execute a statement from a BlueConfig NeuronConfigure block"""
-        sections_map = {'axonal': self.axonal, 'basal':self.basal, 'apical':self.apical, 'somatic': self.somatic,
+        """Execute a statement from a BlueConfig NeuronConfigure block
+           on this cell
+
+        Parameters
+        ----------
+        expression : string
+                     Expression to evaluate on this cell object
+        sections : string
+                   Section group this expression has to be evaluated on
+                   Possible values are
+                   'axonal', 'basal', 'apical', 'somatic', 'dendritic', None
+                   When None is passed, the expression is evaluated on all
+                   sections
+        """
+        sections_map = {'axonal': self.axonal, 'basal':self.basal,
+                        'apical':self.apical, 'somatic': self.somatic,
                         'dendritic': self.basal+self.apical+self.somatic,
                         None:self.all}
 
         for section in sections_map[sections]:
-            sec_expression = expression.replace('%s', neuron.h.secname(sec=section))
+            sec_expression = \
+                    expression.replace('%s', neuron.h.secname(sec=section))
             if '%g' in expression:
                 for segment in section:
                     seg_expression = sec_expression.replace('%g', segment.x)
@@ -133,58 +161,87 @@ class Cell(object):
 
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """
-        Translate a synaptic (secid, ipt, offset) to a x coordinate on section secid
+        Translate a synaptic (secid, ipt, offset) to a x coordinate
+        on section secid
 
         Parameters
         ----------
-        isec: section id
-        ipt: ipt
-        syn_offset: synaptic offset
+        isec : integer
+               section id
+        ipt : float
+              ipt
+        syn_offset : float
+                     Synaptic offset
 
         Returns
         -------
-        An x coordinate on section with secid, where the synapse can be placed
+        x : float
+            The x coordinate on section with secid, where the synapse
+            can be placed
         """
 
         if syn_offset < 0.0:
             syn_offset = 0.0
 
-        curr_sec = self.get_section(isec)
+        curr_sec = self.get_hsection(isec)
         length = curr_sec.L
 
         # access section to compute the distance
-        if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
-            ipt = neuron.h.n3d(sec=self.get_section(isec)) - 1 - ipt
+        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
+            ipt = neuron.h.n3d(sec=self.get_hsection(isec)) - 1 - ipt
             syn_offset = -syn_offset
 
         distance = 0.5
-        if ipt < neuron.h.n3d(sec=self.get_section(isec)):
-            distance = (neuron.h.arc3d(ipt, sec=self.get_section(isec)) + syn_offset) / length
+        if ipt < neuron.h.n3d(sec=self.get_hsection(isec)):
+            distance = (neuron.h.arc3d(ipt, sec=self.get_hsection(isec)) + \
+                                                        syn_offset) / length
             if distance >= 1.0:
                 distance = 1.0
 
-        if neuron.h.section_orientation(sec=self.get_section(isec)) == 1:
+        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
             distance = 1 - distance
 
         if distance < 0:
-            print "WARNING: synlocation_to_segx found negative distance at curr_sec(%s) syn_offset: %f" % (neuron.h.secname(sec=curr_sec), syn_offset)
+            print "WARNING: synlocation_to_segx found negative distance \
+                    at curr_sec(%s) syn_offset: %f" \
+                        % (neuron.h.secname(sec=curr_sec), syn_offset)
             return 0
         else:
             return distance
 
     def add_recording(self, var_name, dt=None):
-        """Add a recording to the cell"""
+        """Add a recording to the cell
+
+        Parameters
+        ----------
+        var_name : string
+                   Variable to be recorded
+        dt : float
+             Recording time step
+        """
+
         recording = neuron.h.Vector()
         if dt:
-            #This float_epsilon stuff is some magic from M. Hines to make the time points fall exactly on the dts
-            #recording.record(eval(var_name), (1.0+neuron.h.float_epsilon)/(1.0/dt))
+            # This float_epsilon stuff is some magic from M. Hines to make
+            # the time points fall exactly on the dts
+            # recording.record(eval(var_name),
+            # (1.0+neuron.h.float_epsilon)/(1.0/dt))
             recording.record(eval(var_name), dt)
         else:
             recording.record(eval(var_name))
         self.recordings[var_name] = recording
 
     def add_recordings(self, var_names, dt=None):
-        """Add a set of recordings to the cell"""
+        """Add a list of recordings to the cell
+
+        Parameters
+        ----------
+        var_names : list of strings
+                    Variables to be recorded
+        dt : float
+             Recording time step
+        """
+
         for var_name in var_names:
             self.add_recording(var_name, dt)
 
@@ -211,7 +268,8 @@ class Cell(object):
     def add_replay_hypamp(self, stimulus):
         """Inject hypamp for the replay"""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        tstim.pulse( float(stimulus.CONTENTS.Delay), float(stimulus.CONTENTS.Duration), self.hypamp)
+        tstim.pulse( float(stimulus.CONTENTS.Delay),
+                float(stimulus.CONTENTS.Duration), self.hypamp)
         self.persistent.append(tstim)
 
     def add_replay_noise(self, stimulus, noise_seed=0):
@@ -220,9 +278,14 @@ class Cell(object):
         variance = (float(stimulus.CONTENTS.Variance) * self.threshold)/100.0
         delay = float(stimulus.CONTENTS.Delay)
         duration = float(stimulus.CONTENTS.Duration)
-        self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration, self.gid + noise_seed)
+        self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration,
+                                                        self.gid + noise_seed)
 
-    def add_noise_step(self, section, segx, mean, variance, delay, duration, seed):
+    def add_noise_step(self, section,
+            segx,
+            mean, variance,
+            delay,
+            duration, seed):
         """Inject a step current with noise on top"""
         rand = bglibpy.neuron.h.Random(seed)
         tstim = bglibpy.neuron.h.TStim(segx, rand, sec=section)
@@ -282,7 +345,7 @@ class Cell(object):
             spont_minis_rate = connection_parameters['SpontMinis']
             self.ips[sid] = bglibpy.neuron.h.\
               InhPoissonStim(location, \
-                             sec=self.get_section(post_sec_id))
+                             sec=self.get_hsection(post_sec_id))
 
             delay = 0.1
             self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
@@ -310,15 +373,28 @@ class Cell(object):
             self.persistent.append(rate_vec)
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
-            #print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, uniform_seed1, uniform_seed2)
+            #print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % \
+            # (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, \
+            # uniform_seed1, uniform_seed2)
 
-    def charge_replay_synapse(self, sid, syn_description, connection_parameters, pre_spiketrain, stim_dt=None):
+    def charge_replay_synapse(self, sid,
+            syn_description,
+            connection_parameters,
+            pre_spiketrain,
+            stim_dt=None):
         """Put the replay spiketrains from out.dat on the synapses"""
 
         if sid in self.connections:
-            raise Exception("Cell: trying to add a connection twice to the same synapse id: %d" % sid)
+            raise Exception("Cell: trying to add a connection twice to the \
+                                        same synapse id: %d" % sid)
         else:
-            self.connections[sid] = bglibpy.Connection(self.synapses[sid].hsynapse, syn_description, connection_parameters, pre_spiketrain=pre_spiketrain, pre_cell=None, stim_dt=stim_dt)
+            self.connections[sid] = \
+                    bglibpy.Connection(self.synapses[sid].hsynapse,
+                            syn_description,
+                            connection_parameters,
+                            pre_spiketrain=pre_spiketrain,
+                            pre_cell=None,
+                            stim_dt=stim_dt)
 
     def initialize_synapses(self):
         """Initialize the synapses"""
@@ -350,7 +426,8 @@ class Cell(object):
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site"""
-        return [x for x in self.cell.getCell().locateBAPSite(seclist_name, distance)]
+        return [x for x in self.cell.getCell().locateBAPSite(seclist_name, \
+                                                                distance)]
 
     def get_childrensections(self, parentsection):
         """Get the children section of a neuron section"""
@@ -366,7 +443,8 @@ class Cell(object):
         return neuron.h.SectionRef(sec=childsection).parent
 
     def addAxialCurrentRecordings(self, section):
-        """Create a recording that will contain all the axial current flowing in and out of the section"""
+        """Create a recording that will contain all the axial current
+        flowing in and out of the section"""
         secname = neuron.h.secname(sec=section)
         self.addRecording(secname)
         for child in self.get_childrensections(section):
@@ -528,42 +606,41 @@ class Cell(object):
     Deprecated functions
     """
 
-    @tools.deprecated
+    # pylint: disable=C0111, C0112
+
+    @tools.deprecated()
     def getThreshold(self):
         """Get the threshold current of the cell, warning: this is measured from hypamp"""
         return self.cell.threshold
 
-    @tools.deprecated
+    @tools.deprecated()
     def getHypAmp(self):
         """Get the current level necessary to bring the cell to -85 mV"""
         return self.cell.hypamp
 
-    @tools.deprecated
+    @tools.deprecated("add_recording")
     def addRecording(self, var_name):
-        """Deprecated add_recording"""
         return self.add_recording(var_name)
 
-    @tools.deprecated
+    @tools.deprecated("add_recordings")
     def addRecordings(self, var_names):
-        """Deprecated add_recordings"""
         return self.add_recordings(var_names)
 
-    @tools.deprecated
+    @tools.deprecated("get_recording")
     def getRecording(self, var_name):
-        """Deprecated get_recording"""
         return self.get_recording(var_name)
 
-    @tools.deprecated
+    @tools.deprecated()
     def addAllSectionsVoltageRecordings(self):
         """Deprecated"""
         self.add_allsections_voltagerecordings()
 
-    @tools.deprecated
+    @tools.deprecated()
     def getAllSectionsVoltageRecordings(self):
         """Deprecated"""
         return self.get_allsections_voltagerecordings()
 
-    @tools.deprecated
+    @tools.deprecated()
     def locateBAPSite(self, seclistName, distance):
         """Deprecated"""
         return self.locate_bapsite(seclistName, distance)
@@ -585,28 +662,27 @@ class Cell(object):
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
 
-    @tools.deprecated
+    @tools.deprecated("get_time")
     def getTime(self):
-        """Deprecated by get_time()"""
         return self.get_time()
 
-    @tools.deprecated
+    @tools.deprecated()
     def getSomaVoltage(self):
         """Deprecated by get_soma_voltage"""
         return self.get_soma_voltage()
 
-    @tools.deprecated
+    @tools.deprecated("add_plot_window")
     def addPlotWindow(self, *args, **kwargs):
-        """Deprecated by add_plot_window"""
         self.add_plot_window(*args, **kwargs)
 
-    @tools.deprecated
+    @tools.deprecated("add_dendrogram")
     def showDendrogram(self, *args, **kwargs):
-        """Deprecated by add_dendrogram"""
+        """"""
         self.add_dendrogram(*args, **kwargs)
 
-    @tools.deprecated
+    @tools.deprecated("add_ramp")
     def addRamp(self, *args, **kwargs):
-        """Deprecated by add_ramp"""
         self.add_ramp(*args, **kwargs)
+
+    # pylint: enable=C0111, C0112
 

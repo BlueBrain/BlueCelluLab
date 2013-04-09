@@ -43,7 +43,7 @@ class Synapse(object):
             '''
             self.hsynapse = bglibpy.neuron.h.\
               ProbGABAAB_EMS(location, \
-                             sec=self.cell.get_section(post_sec_id))
+                             sec=self.cell.get_hsection(post_sec_id))
 
             self.hsynapse.tau_d_GABAA = self.syn_DTC
             rng = bglibpy.neuron.h.Random()
@@ -53,7 +53,7 @@ class Synapse(object):
         else:
             ''' else we have excitatory synapse '''
             self.hsynapse = bglibpy.neuron.h.\
-              ProbAMPANMDA_EMS(location,sec=self.cell.get_section(post_sec_id))
+              ProbAMPANMDA_EMS(location,sec=self.cell.get_hsection(post_sec_id))
             self.hsynapse.tau_d_AMPA = self.syn_DTC
 
         self.hsynapse.Use = abs( self.syn_U )

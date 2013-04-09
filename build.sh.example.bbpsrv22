@@ -7,8 +7,8 @@
 #export NEURON_HOME=$HOME/local/santiago/nrnbglibpy
 #export NRNPYTHONPATH=${NEURON_HOME}/lib64/python2.6/site-packages
 
-mkdir build
-cd build
+mkdir build.bbpsrv22
+cd build.bbpsrv22
 cmake .. \
     -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
     -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \

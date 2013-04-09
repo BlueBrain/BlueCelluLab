@@ -276,6 +276,23 @@ class TestSSimBaseClass_full(object):
         """Teardown"""
         del self.ssim
 
+    def test_generate_mtype_list(self) :
+        L23_BTC_gids = self.ssim.get_gids_of_mtypes(mtypes=['L23_BTC'])
+        L2_several_gids = self.ssim.get_gids_of_mtypes(mtypes=['L23_BTC','L23_LBC'])
+        L56_gids = self.ssim.get_gids_of_mtypes(mtypes=['L5_TTPC1','L6_TPC_L1'])
+
+        import pickle
+        l23_btc = pickle.load(open('examples/mtype_lists/l23_btc_gids.pkl'))
+        l23_several = pickle.load(open('examples/mtype_lists/l23_several_gids.pkl'))
+        l56 = pickle.load(open('examples/mtype_lists/l56_gids.pkl'))
+
+        # print 'len(L23): ', len(L23_BTC_gids)
+        # print 'len(l23): ', len(l23_btc)
+
+        nt.eq_(len(L23_BTC_gids),len(l23_btc),"len of the list should be the same")
+        nt.eq_(len(L2_several_gids),len(l23_several),"len of the list should be the same")
+        nt.eq_(len(L56_gids),len(l56),"len of the list should be the same")
+
     def test_evaluate_connection_parameters(self):
         """SSim: Check if Connection block parsers yield expected output"""
 
