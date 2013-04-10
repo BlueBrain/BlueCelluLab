@@ -53,7 +53,7 @@ class Cell(object):
         #Load the template
         neuron.h.load_file(template_name)
         template_content = open(template_name, "r").read()
-        match = re.search("begintemplate\s*(\S*)", template_content)
+        match = re.search(r"begintemplate\s*(\S*)", template_content)
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
         self.soma = [x for x in self.cell.getCell().somatic][0]
