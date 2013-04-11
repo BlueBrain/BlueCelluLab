@@ -117,26 +117,22 @@ class Cell(object):
 
     def init_psections(self):
         """Initialize the psections list that contains the Python representation of the psections of this morphology"""
-        #self.hroot = neuron.h.SectionRef(sec=self.all[0]).root
-        #self.proot = psection.PSection(self.hroot)
-
-        max_isec = int(self.cell.getCell().nSecAll) #[None] * len(self.all)
 
         for hsection in self.all:
             secname = neuron.h.secname(sec=hsection)
             self.secname_to_hsection[secname] = hsection
             self.secname_to_psection[secname] = psection.PSection(hsection)
 
+        max_isec = int(self.cell.getCell().nSecAll)
         for isec in range(0, max_isec):
             hsection = self.get_hsection(isec)
             if hsection:
                 secname = neuron.h.secname(sec=hsection)
-                #print secname
                 self.psections[isec] = self.secname_to_psection[secname]
                 self.psections[isec].isec = isec
                 self.secname_to_isec[secname] = isec
 
-        # Set all the parents of all the psections
+        # Set the parents and children of all the psections
         for psec in self.psections.itervalues():
             hparent = psec.hparent
             if hparent:
