@@ -1,15 +1,4 @@
 ###
-# VERSION
-###
-
-exec_program(
-    "git"
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --tags --abbrev=4 --dirty" 
-    OUTPUT_VARIABLE BGLIBPY_VERSION)
-message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
-
-###
 # LIBNRN
 ###
 
