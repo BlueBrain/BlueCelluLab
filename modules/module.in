@@ -30,8 +30,6 @@ proc ModulesHelp { } {
 
     puts stderr "
 This module prepares your environment to run $package_name $version
-for the architecture:
- $architecture
 
 Type 'module list' to list all the loaded modules
 and 'module avail' to list all the availables ones.
