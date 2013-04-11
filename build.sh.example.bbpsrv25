@@ -7,16 +7,15 @@ module load neuronYale/rhel6-mvapich2-psm-x86_64-shared-dev
 #export NEURON_HOME=$HOME/local/santiago/nrnbglibpy
 #export NRNPYTHONPATH=${NEURON_HOME}/lib64/python2.6/site-packages
 
-mkdir build
-cd build
+mkdir build.bbpsrv25
+cd build.bbpsrv25
 cmake .. \
     -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
     -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \
     -DNRNPATH=${NEURON_HOME} \
     -DNRNPYTHONPATH=${NEURON_PYTHON_HOME} \
     -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
-    -DENABLE_DOC=ON \
-    -DCMAKE_INSTALL_PREFIX=$HOME/local/quantal/bglibpy
+    -DCMAKE_INSTALL_PREFIX=$HOME/local/bbpsrv25/bglibpy
 
 make VERBOSE=1
 make install
