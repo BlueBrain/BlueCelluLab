@@ -99,6 +99,8 @@ class Cell(object):
         self.plot_callback_necessary = False
         self.delayed_weights = Queue.PriorityQueue()
         self.secname_to_isec = {}
+        self.secname_to_hsection = {}
+        self.secname_to_psection = {}
 
         try:
             self.hypamp = self.cell.getHypAmp()
@@ -119,46 +121,66 @@ class Cell(object):
         #self.proot = psection.PSection(self.hroot)
 
         max_isec = int(self.cell.getCell().nSecAll) #[None] * len(self.all)
+
+        for hsection in self.all:
+            secname = neuron.h.secname(sec=hsection)
+            self.secname_to_hsection[secname] = hsection
+            self.secname_to_psection[secname] = psection.PSection(hsection)
+
         for isec in range(0, max_isec):
             hsection = self.get_hsection(isec)
-            #neuron.h.topology()
-            print neuron.h.secname(sec=hsection)
             if hsection:
-                print isec
-                self.psections[isec] = psection.PSection(hsection, isec=isec)
-                print neuron.h.secname(sec=hsection)
-                self.secname_to_isec[neuron.h.secname(sec=hsection)] = isec
-
+                secname = neuron.h.secname(sec=hsection)
+                #print secname
+                self.psections[isec] = self.secname_to_psection[secname]
+                self.psections[isec].isec = isec
+                self.secname_to_isec[secname] = isec
 
         # Set all the parents of all the psections
         for psec in self.psections.itervalues():
             hparent = psec.hparent
             if hparent:
                 parentname = neuron.h.secname(sec=hparent)
-                psec.pparent = self.get_psection(self.secname_to_isec[parentname])
+                psec.pparent = self.get_psection(secname=parentname)
             else:
                 psec.pparent = None
 
-
-        # Set all the children of all the psections
-        for psec in self.psections.itervalues():
             for hchild in psec.hchildren:
                 childname = neuron.h.secname(sec=hchild)
-                pchild = self.get_psection(self.secname_to_isec[childname])
+                pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
-    #def secname_to_isec(self, secname):
-    #    """Convert the name of a section into it's section id"""
-    #    return self.secname_to_isec[secname]
+    def get_section_id(self, secname=None):
+        return self.secname_to_psection[secname].section_id
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels
         """
         self.cell.re_init_rng()
 
-    def get_psection(self, secid):
-        """Return a python section with the specified section id"""
-        return self.psections[secid]
+    def get_psection(self, section_id=None, secname=None):
+        """
+        Return a python section with the specified section id or name
+
+        Parameters
+        ----------
+        section_id: int
+                    Return the PSection object based on section id
+        secname: string
+                 Return the PSection object based on section name
+
+        Returns
+        -------
+        psection: PSection
+                  PSection object of the specified section id or name
+
+        """
+        if section_id != None:
+            return self.psections[section_id]
+        elif secname != None:
+            return self.secname_to_psection[secname]
+        else:
+            raise Exception("SSim: get_psection requires or a section_id or a secname")
 
     def get_hsection(self, section_id):
         """Use the serialized object to find a hoc section from a section id
@@ -173,9 +195,9 @@ class Cell(object):
         hsection : nrnSection
                    The requested hoc section
         """
-        sec_ref = self.serialized.isec2sec[int(secid)]
+        sec_ref = self.serialized.isec2sec[int(section_id)]
         if sec_ref:
-            return self.serialized.isec2sec[int(secid)].sec
+            return self.serialized.isec2sec[int(section_id)].sec
         else:
             return None
 
