@@ -73,6 +73,8 @@ class SSim(object):
             add_stimuli=False,
             add_synapses=False,
             add_minis=False,
+            add_noise_stimuli=False,
+            add_hyperpolarizing_stimuli=False,
             intersect_pre_gids=None,
             interconnect_cells=True):
         """ Instantiate a list of GIDs
@@ -108,6 +110,12 @@ class SSim(object):
         add_minis : Boolean
                     Add synaptic minis to the synapses
                     (this requires add_synapses=True)
+        add_noise_stimuli : Boolean
+                            Process the 'noise' stimuli blocks of the BlueConfig,
+                            Setting add_stimuli=True, will automatically set this option to True.
+        add_hyperpolarizing_stimuli : Boolean
+                                      Process the 'hyperpolarizing' stimuli blocks of the BlueConfig.
+                                      Setting add_stimuli=True, will automatically set this option to True.
         intersect_pre_gids : Boolean
                              Only add synapses to the cells if their
                              presynaptic gid is in this list
@@ -145,7 +153,12 @@ class SSim(object):
 
         self._add_cells(gids)
         if add_stimuli:
-            self._add_stimuli()
+            add_noise_stimuli = True
+            add_hyperpolarizing_stimuli = True
+
+        if add_noise_stimuli or add_hyperpolarizing_stimuli:
+            self._add_stimuli(add_noise_stimuli=add_noise_stimuli,
+                    add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
                     add_minis=add_minis)
@@ -154,11 +167,14 @@ class SSim(object):
                     interconnect_cells=interconnect_cells)
 
 
-    def _add_stimuli(self):
+    def _add_stimuli(self, add_noise_stimuli=False,
+                           add_hyperpolarizing_stimuli=False):
         """Instantiate all the stimuli"""
         for gid in self.gids:
             ''' Also add the injections / stimulations as in the cortical model '''
-            self._add_stimuli_gid(gid)
+            self._add_stimuli_gid(gid,
+                    add_noise_stimuli=add_noise_stimuli,
+                    add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
     def _add_synapses(self, intersect_pre_gids=None, add_minis=None):
@@ -272,7 +288,9 @@ class SSim(object):
                 self.add_replay_minis(gid, syn_id, syn_description, \
                                     connection_parameters)
 
-    def _add_stimuli_gid(self, gid):
+    def _add_stimuli_gid(self, gid,
+                         add_noise_stimuli=False,
+                         add_hyperpolarizing_stimuli=False):
         """ Adds indeitical stimuli to the simulated cell as in the 'large' model
 
         Parameters:
@@ -290,10 +308,12 @@ class SSim(object):
                     stimulus_name = entry.CONTENTS.Stimulus
                     stimulus = self.bc.entry_map[stimulus_name]
                     if stimulus.CONTENTS.Pattern == 'Noise':
-                        self._add_replay_noise(gid, stimulus, noise_seed=noise_seed)
+                        if add_noise_stimuli:
+                            self._add_replay_noise(gid, stimulus, noise_seed=noise_seed)
                         noise_seed += 1
                     elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
-                        self._add_replay_hypamp_injection(gid, stimulus)
+                        if add_hyperpolarizing_stimuli:
+                           self._add_replay_hypamp_injection(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" % stimulus.CONTENTS.Pattern, 1)
                     else:
