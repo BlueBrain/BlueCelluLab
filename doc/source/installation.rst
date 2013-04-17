@@ -29,8 +29,8 @@ The content of this file will be something like::
     mkdir build
     cd build
     cmake .. \
-        -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
-        -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \
+        -DMODLIBPATH=$HOME/src/bbp/lib/modlib \
+        -DHOCLIBPATH=$HOME/src/bbp/lib/hoclib \
         -DNRNPATH=${NEURON_HOME} \
         -DNRNPYTHONPATH=${NEURON_PYTHON_HOME} \
         -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
@@ -40,8 +40,8 @@ The content of this file will be something like::
 
 After copying the script adapt the variables to your needs::
 
-    MODLIBPATH = place where you checked out the BGLib modlib (lib/modlib subdirectory of the BlueBrain repository)
-    HOCLIBPATH = place where you checked out the BGLib hoclib (lib/modlib subdirectory of the BlueBrain repository)
+    MODLIBPATH = place where you checked out the BGLib modlib (lib/modlib subdirectory of the Neurodamus/bbp repository)
+    HOCLIBPATH = place where you checked out the BGLib hoclib (lib/modlib subdirectory of the Neurodamus/bbp repository)
     NRNPATH = the installation directory of Neuron (in case you use the default install, this will be $NEURON_HOME)
     NRNPYTHONPATH = the path where the Neuron python module is installed (in case you use the default install, this will be $NRNPYTHONPATH)
     BLUEPYPATH = the path where the BluePy python module is installed 
@@ -87,7 +87,7 @@ in case these are missing:
 *BGLib*
     Just get the source from the git repository, no installation is required::
 
-        git clone ssh://bbpgit.epfl.ch/sim/BlueBrain.git
+        git clone ssh://bbpgit.epfl.ch/sim/neurodamus/bbp.git
 
 *Neuron*
 

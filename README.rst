@@ -21,7 +21,7 @@ Third party dependencies are:
 BBP dependencies are:
 
 * BluePy
-* BGLib (BlueBrain)
+* BGLib (Neurodamus)
 
 Building
 --------

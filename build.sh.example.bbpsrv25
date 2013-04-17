@@ -10,8 +10,8 @@ module load neuronYale/rhel6-mvapich2-psm-x86_64-shared-dev
 mkdir build.bbpsrv25
 cd build.bbpsrv25
 cmake .. \
-    -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
-    -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \
+    -DMODLIBPATH=$HOME/src/bbp/lib/modlib \
+    -DHOCLIBPATH=$HOME/src/bbp/lib/hoclib \
     -DNRNPATH=${NEURON_HOME} \
     -DNRNPYTHONPATH=${NEURON_PYTHON_HOME} \
     -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
