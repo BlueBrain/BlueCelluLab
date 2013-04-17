@@ -13,6 +13,24 @@ class Synapse(object):
     """ Class that represents a synapse in BGLibPy """
 
     def __init__(self, cell, location, sid, syn_description, connection_parameters, base_seed):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        cell : Cell
+               Cell that contains the synapse
+        location : float in [0, 1]
+                   Location on the section this synapse is placed
+        sid : integer
+              Synapse identifier
+        syn_description : list of floats
+                          Parameters of the synapse
+        connection_parameters : list of floats
+                                Parameters of the connection
+        base_seed : float
+                    Base seed of the simulation, the seeds for this synapse will be derived from this
+        """
         self.persistent = []
 
         self.cell = cell
@@ -74,10 +92,39 @@ class Synapse(object):
                 cmd = cmd.replace('%s', '\n%(syn)s')
                 bglibpy.neuron.h(cmd % {'syn': self.hsynapse.hname()})
 
+    def is_inhibitory():
+        """
+        Check if synapse is inhibitory
+
+        Returns
+        -------
+        is_inhibitory: Boolean
+                       Only True if synapse is inhibitory
+        """
+
+        return (self.syn_type < 100)
+
+    def is_excitatory():
+        """
+        Check if synapse is excitatory
+
+        Returns
+        -------
+        is_excitatory: Boolean
+                       Only True if synapse is excitatory
+        """
+
+        return (self.syn_type >= 100)
+
     def delete(self):
-        """Delete the connection"""
+        """
+        Delete the connection
+        """
         for persistent_object in self.persistent:
             del(persistent_object)
 
     def __del__(self):
+        """
+        Destructor
+        """
         self.delete()
