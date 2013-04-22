@@ -595,13 +595,6 @@ class Cell(object):
         self.delete()
 
 
-    def showDendDiam(self):
-        """Show a dendrogram plot"""
-        import pylab
-        diamlist = [section.diam for section in self.apical]
-        pylab.hist(diamlist, bins=int((max(diamlist) - min(diamlist)) / .1))
-        pylab.show()
-
     """
     Deprecated functions
     """
@@ -685,4 +678,3 @@ class Cell(object):
         self.add_ramp(*args, **kwargs)
 
     # pylint: enable=C0111, C0112
-
