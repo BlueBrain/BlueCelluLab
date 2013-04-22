@@ -10,8 +10,8 @@
 mkdir build.bbpsrv22
 cd build.bbpsrv22
 cmake .. \
-    -DMODLIBPATH=$HOME/src/BlueBrain/lib/modlib \
-    -DHOCLIBPATH=$HOME/src/BlueBrain/lib/hoclib \
+    -DMODLIBPATH=$HOME/src/bbp/lib/modlib \
+    -DHOCLIBPATH=$HOME/src/bbp/lib/hoclib \
     -DBBPQUANTAL=ON \
     -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
     -DENABLE_DOC=ON \

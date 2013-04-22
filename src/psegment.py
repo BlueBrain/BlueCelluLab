@@ -14,7 +14,8 @@ import bglibpy
 class PSegment(object):
     """A python representation of a segment"""
     def __init__(self, hsegment, parentsection):
-        import matplotlib as plt
+        #import matplotlib as plt
+        from matplotlib import cm
 
         self.hsegment = hsegment
         self.parentsection = parentsection
@@ -24,7 +25,7 @@ class PSegment(object):
         self.figure = None
         self.figX = None
         self.figY = None
-        self.color_map = plt.cm.get_cmap("hot")
+        self.color_map = cm.get_cmap("hot")
         self.ax = None
         self.patch = None
         self.plotvariable = None

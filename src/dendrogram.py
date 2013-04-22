@@ -14,18 +14,18 @@ from .psection import PSection
 
 class Dendrogram(object):
     """Class that represent a dendrogram plot"""
-    def __init__(self, sections, variable=None, active=False):
+    def __init__(self, psections, variable=None, active=False):
         import pylab
         pylab.ion()
         self.dend_figure = pylab.figure(figsize=(20, 12))
         pylab.ioff()
 
-        self.sections = sections
+        self.psections = psections
         #neuron.h.finitialize()
 
-        self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
-        self.proot = PSection(self.hroot, None)
-        self.psections = [self.proot] + self.proot.getAllPDescendants()
+        #self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
+        self.proot = psections[0]
+        #self.psections = [self.proot] + self.proot.getAllPDescendants()
 
         pylab.xlim([0, self.proot.treeWidth() + self.proot.ySpacing])
         pylab.ylim([0, self.proot.treeHeight() + self.proot.xSpacing])
@@ -34,7 +34,7 @@ class Dendrogram(object):
         pylab.gcf().subplots_adjust(top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
 
         if variable is "v" or variable is None:
-            varbounds = [-70, 50]
+            varbounds = [-100, 50]
         else:
             varbounds = self.proot.getTreeVarBounds(variable)
 

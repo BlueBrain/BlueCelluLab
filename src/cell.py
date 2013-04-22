@@ -17,6 +17,7 @@ import bglibpy
 import os
 from bglibpy import tools
 from bglibpy.importer import neuron
+from bglibpy import psection
 import Queue
 
 
@@ -97,6 +98,9 @@ class Cell(object):
         # As long as no PlotWindow or active Dendrogram exist, don't update
         self.plot_callback_necessary = False
         self.delayed_weights = Queue.PriorityQueue()
+        self.secname_to_isec = {}
+        self.secname_to_hsection = {}
+        self.secname_to_psection = {}
 
         try:
             self.hypamp = self.cell.getHypAmp()
@@ -108,11 +112,71 @@ class Cell(object):
         except AttributeError:
             self.threshold = None
 
+        self.psections = {}
+        self.init_psections()
+
+    def init_psections(self):
+        """Initialize the psections list that contains the Python representation of the psections of this morphology"""
+
+        for hsection in self.all:
+            secname = neuron.h.secname(sec=hsection)
+            self.secname_to_hsection[secname] = hsection
+            self.secname_to_psection[secname] = psection.PSection(hsection)
+
+        max_isec = int(self.cell.getCell().nSecAll)
+        for isec in range(0, max_isec):
+            hsection = self.get_hsection(isec)
+            if hsection:
+                secname = neuron.h.secname(sec=hsection)
+                self.psections[isec] = self.secname_to_psection[secname]
+                self.psections[isec].isec = isec
+                self.secname_to_isec[secname] = isec
+
+        # Set the parents and children of all the psections
+        for psec in self.psections.itervalues():
+            hparent = psec.hparent
+            if hparent:
+                parentname = neuron.h.secname(sec=hparent)
+                psec.pparent = self.get_psection(secname=parentname)
+            else:
+                psec.pparent = None
+
+            for hchild in psec.hchildren:
+                childname = neuron.h.secname(sec=hchild)
+                pchild = self.get_psection(secname=childname)
+                psec.add_pchild(pchild)
+
+    def get_section_id(self, secname=None):
+        return self.secname_to_psection[secname].section_id
 
     def re_init_rng(self):
         """Reinitialize the random number generator for the stochastic channels
         """
         self.cell.re_init_rng()
+
+    def get_psection(self, section_id=None, secname=None):
+        """
+        Return a python section with the specified section id or name
+
+        Parameters
+        ----------
+        section_id: int
+                    Return the PSection object based on section id
+        secname: string
+                 Return the PSection object based on section name
+
+        Returns
+        -------
+        psection: PSection
+                  PSection object of the specified section id or name
+
+        """
+        if section_id != None:
+            return self.psections[section_id]
+        elif secname != None:
+            return self.secname_to_psection[secname]
+        else:
+            raise Exception("SSim: get_psection requires or a section_id or a secname")
 
     def get_hsection(self, section_id):
         """Use the serialized object to find a hoc section from a section id
@@ -127,7 +191,11 @@ class Cell(object):
         hsection : nrnSection
                    The requested hoc section
         """
-        return self.serialized.isec2sec[int(section_id)].sec
+        sec_ref = self.serialized.isec2sec[int(section_id)]
+        if sec_ref:
+            return self.serialized.isec2sec[int(section_id)].sec
+        else:
+            return None
 
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block
@@ -293,7 +361,7 @@ class Cell(object):
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
-    def add_replay_synapse(self, sid, syn_description, connection_modifiers, base_seed):
+    def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers, base_seed):
         """Add synapse based on the syn_description to the cell
 
         This operation can fail.  Returns True on success, otherwise False.
@@ -308,7 +376,7 @@ class Cell(object):
             print 'WARNING: add_single_synapse: skipping a synapse at isec %d ipt %f' % (isec, ipt)
             return False
 
-        self.synapses[sid] = bglibpy.Synapse(self, location, sid, syn_description, connection_modifiers, base_seed)
+        self.synapses[synapse_id] = bglibpy.Synapse(self, location, synapse_id, syn_description, connection_modifiers, base_seed)
         return True
 
     def add_replay_delayed_weight(self, sid, delay, weight):
@@ -543,7 +611,7 @@ class Cell(object):
 
     def add_dendrogram(self, variable=None, active=False):
         """Show a dendrogram of the cell"""
-        cell_dendrogram = bglibpy.Dendrogram([x for x in self.cell.getCell().all], variable=variable, active=active)
+        cell_dendrogram = bglibpy.Dendrogram(self.psections, variable=variable, active=active)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
         if active:
