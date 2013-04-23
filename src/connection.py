@@ -31,14 +31,14 @@ class Connection(object):
 
         self.post_netcon = None
 
-        if self.pre_spiketrain:
+        if self.pre_spiketrain != None:
             t_vec = bglibpy.neuron.h.Vector(self.pre_spiketrain)
             vecstim = bglibpy.neuron.h.VecStim()
             vecstim.play(t_vec, stim_dt)
             self.post_netcon = bglibpy.neuron.h.NetCon(vecstim, self.post_synapse.hsynapse, -30, self.delay, self.weight * self.weight_scalar)
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
-        elif self.pre_cell:
+        elif self.pre_cell != None:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(self.post_synapse.hsynapse)
             self.post_netcon.weight[0] = self.weight * self.weight_scalar
             self.post_netcon.delay = self.delay
