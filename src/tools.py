@@ -40,7 +40,7 @@ class deprecated(object):
     def __call__(self, func):
         def rep_func(*args, **kwargs):
             """Replacement function"""
-            warnings.warn("Call to deprecated function {%s}." % func.__name__,
+            warnings.warn("Call to deprecated function {%s}. Use {%s} instead." % (func.__name__, self.new_function),
                           category=DeprecationWarning)
             return func(*args, **kwargs)
         rep_func.__name__ = func.__name__

@@ -113,7 +113,7 @@ class Cell(object):
             self.threshold = None
 
         self.psections = {}
-        self.init_psections()
+        #self.init_psections()
 
     def init_psections(self):
         """Initialize the psections list that contains the Python representation of the psections of this morphology"""
@@ -659,6 +659,11 @@ class Cell(object):
         for persistent_object in self.persistent:
             del(persistent_object)
 
+    @property
+    def hsynapses(self):
+        """Contains a dictionary of all the hoc synapses in the cell with as key the gid"""
+        return dict((gid, synapse.hsynapse) for (gid, synapse) in self.synapses.iteritems())
+
     def __del__(self):
         self.delete()
 
@@ -668,6 +673,12 @@ class Cell(object):
     """
 
     # pylint: disable=C0111, C0112
+
+    @property
+    @tools.deprecated("hsynapses")
+    def syns(self):
+        """Contains a list of all the hoc synapses of the cell with as key the gid"""
+        return self.hsynapses
 
     @tools.deprecated()
     def getThreshold(self):

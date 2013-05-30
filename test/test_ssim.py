@@ -444,3 +444,31 @@ class TestSSimBaseClass_full_realconn(object):
 
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
+
+class TestSSimBaseClass_syns(object):
+    """Class to test the syns / hsynapses property of Cell"""
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("examples/sim_twocell_all")
+        self.ssim = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim.instantiate_gids([1], synapse_detail=2, add_stimuli=True, add_replay=True, interconnect_cells=False)
+
+        #self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/L4_EXC/BlueConfig",
+        #        record_dt=0.1)
+        #nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if Cells.hsynapses and Cells.syns return the right dictionary"""
+        gid = 1
+        nt.assert_true(isinstance(self.ssim.cells[gid].hsynapses[3].Use, float))
+        import warnings
+        with warnings.catch_warnings(True) as w:
+            nt.assert_true(isinstance(self.ssim.cells[gid].syns[4].Use, float))
+            nt.assert_true(len(w) == 1)
+            nt.assert_true(issubclass(w[-1].category, DeprecationWarning))
+            nt.assert_true("deprecated" in str(w[-1].message))
