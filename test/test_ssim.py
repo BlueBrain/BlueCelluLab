@@ -461,6 +461,7 @@ class TestSSimBaseClass_syns(object):
     def teardown(self):
         """Teardown"""
         del self.ssim
+        os.chdir(self.prev_cwd)
 
     def test_run(self):
         """SSim: Check if Cells.hsynapses and Cells.syns return the right dictionary"""
