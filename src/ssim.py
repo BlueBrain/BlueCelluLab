@@ -380,8 +380,8 @@ class SSim(object):
             src = entry.CONTENTS.Source
             dest = entry.CONTENTS.Destination
 
-            if pre_gid in self.all_targets_dict[src]:
-                if post_gid in self.all_targets_dict[dest]:
+            if src in self.all_targets_dict and dest in self.all_targets_dict:
+                if pre_gid in self.all_targets_dict[src] and post_gid in self.all_targets_dict[dest]:
                     ''' whatever specified in this block, is applied to gid '''
                     apply_parameters = True
 
