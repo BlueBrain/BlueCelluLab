@@ -177,10 +177,10 @@ class SSim(object):
                     add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
-    def _add_synapses(self, intersect_pre_gids=None, add_minis=None):
+    def _add_synapses(self, intersect_pre_gids=None, add_minis=None, projection=None):
         """Instantiate all the synapses"""
         for gid in self.gids:
-            syn_descriptions = self.bc_simulation.circuit.get_presynaptic_data(gid)
+            syn_descriptions = self.bc_simulation.circuit.get_presynaptic_data(gid, projection)
 
             if intersect_pre_gids != None:
                 syn_descriptions = [syn_description for syn_description in syn_descriptions
@@ -198,19 +198,37 @@ class SSim(object):
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
+    def _add_synapse_replay_stimuli(self):
+        """inject all SynapseReplay stimuli"""
+        sim = self.bc_simulation
+        # build a map of Stimulus names to StimulusInjection entries
+        si_map = {}
+        for si in sim.config.typed_entries_iter("StimulusInject"):
+            si_map.setdefault(si.CONTENTS.Stimulus,[]).append(si.NAME)
 
-    def _add_connections(self, add_replay=None, interconnect_cells=None):
+        for stim in sim.config.typed_entries_iter("Stimulus"):
+            if stim.CONTENTS.Pattern == "SynapseReplay":
+                injections = si_map[stim.NAME]
+                for si_name in injections:
+                    si = sim.config.entry_map[si_name]
+                    dest = sim.get_target(si.CONTENTS.Target)
+                    self._add_connections(add_replay=True, outdat_path=stim.CONTENTS.SpikeFile, dest=dest)
+
+    def _add_connections(self, add_replay=None, interconnect_cells=None, outdat_path=None,
+                         source = None, dest = None):
         """Instantiate the (replay and real) connections in the network"""
-        pre_spike_trains = _parse_outdat(\
-                            self.bc.entry_map['Default'].CONTENTS.OutputRoot,\
-                            'out.dat')
+        if outdat_path is None:
+            outdat_path = os.path.join(self.bc.entry_map['Default'].CONTENTS.OutputRoot, 'out.dat')
+        pre_spike_trains = _parse_outdat2(outdat_path)
 
         for post_gid in self.gids:
+            if dest and post_gid not in dest: continue
             for syn_id in self.cells[post_gid].synapses:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 connection_parameters = synapse.connection_parameters
                 pre_gid = syn_description[0]
+                if source and pre_gid not in source: continue
                 if pre_gid in self.gids and interconnect_cells:
                     real_synapse_connection = True
                 else:
@@ -495,21 +513,16 @@ class SSim(object):
         # pylint: enable=W0511, E1101
         return gids
 
+def _parse_outdat2(path):
+    """Parse the replay spiketrains in a out.dat formatted file pointed to by path"""
+    from bluepy.parsers.outdat import OutDat
+    if not os.path.exists(path):
+        raise IOError("Could not find presynaptic spike file at %s" \
+                                               % path)
+    od = OutDat(path)
+    return od._spikes_hash
+
 def _parse_outdat(path, outdat_name='out.dat'):
     """Parse the replay spiketrains in out.dat"""
-
-    gid_spiketimes_dict = collections.defaultdict(list)
     full_outdat_name = os.path.join(path, outdat_name)
-
-    if not os.path.exists(full_outdat_name):
-        raise IOError("Could not find presynaptic spike file at %s" \
-                                               % full_outdat_name)
-    # read out.dat lines like 'spiketime, gid', ignore the first line, and the
-    # last newline
-    with open(full_outdat_name, "r") as full_outdat_file:
-        for line in full_outdat_file.read().split("\n")[1:-1]:
-            splits = line.split("\t")
-            gid = int(splits[1])
-            spiketime = float(splits[0])
-            gid_spiketimes_dict[gid].append(spiketime)
-    return gid_spiketimes_dict
+    return _parse_outdat2(full_outdat_name)
