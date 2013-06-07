@@ -22,15 +22,21 @@ class Simulation(object):
         self.fih = None
         if show_progress:
             self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
+        else:
+            self.progress = None
 
     def add_cell(self, new_cell):
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 
+
+
     def init_callbacks(self):
         """Initialize the callback of all the registered simulation objects (e.g. for window plotting)"""
         for cell in self.cells:
             cell.init_callbacks()
+        #if not self.progress and bglibpy.VERBOSE_LEVEL > 0:
+        #    self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
 
     def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
         """Run the simulation"""

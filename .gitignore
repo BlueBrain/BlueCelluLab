@@ -1,8 +1,12 @@
 build
+build.bbpsrv22
+build.bbpsrv25
 build.sh
+builddoc.sh
 *~
 *.log
 *.log.*
 *.pyc
 .bglib*
 *.rope*
+*#

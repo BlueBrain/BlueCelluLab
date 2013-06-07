@@ -1,0 +1,42 @@
+#%Module1.0
+######################################################################
+#
+# Module:      bglibpy/
+#
+# Sourced:
+#   meta/bbp/sw
+# Prereq:
+#   none
+#
+
+# Set internal variables
+#set             sw_basedir      "/nfs4/bbp.epfl.ch/sw"
+#set             sw_class        "bbp-stack"
+
+set             package_name    "bglibpy"
+set             version         "${BGLIBPY_VERSION}"
+set             installpath     "${CMAKE_INSTALL_PREFIX}"
+set             python_installpath     "${PYTHON_PACKAGE_INSTALL_DIR}"
+#set             platform        "x86_64"
+#set             architecture    "$platform/$compiler"
+
+#set             root            "$sw_basedir/$sw_class/$package_name/$version/$architecture"
+#set             root             "$sw_basedir/$sw_class/$package_name/$version/install-shared"
+module-whatis   "loads the environment for $package_name"
+#set             hoclib           $root/lib
+
+proc ModulesHelp { } {
+    global package_name version architecture
+
+    puts stderr "
+This module prepares your environment to run $package_name $version
+
+Type 'module list' to list all the loaded modules
+and 'module avail' to list all the availables ones.
+"
+}
+
+# Update PYTHONPATH environment:
+setenv         BGLIBPY_PYTHONPATH    $python_installpath 
+setenv         BGLIBPY_INSTALLPATH   $installpath
+prepend-path    PYTHONPATH            $python_installpath

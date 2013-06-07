@@ -1,15 +1,4 @@
 ###
-# VERSION
-###
-
-exec_program(
-    "git"
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --tags --abbrev=4 --dirty" 
-    OUTPUT_VARIABLE BGLIBPY_VERSION)
-message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
-
-###
 # LIBNRN
 ###
 
@@ -28,6 +17,8 @@ endif (BGP)
 if (NOT NRNPATH)
    if (BBPSANTIAGO)
      set(NRNPATH /home/vangeit/local/santiago/nrnbglibpy)
+   elseif (BBPQUANTAL)
+     set(NRNPATH /home/vangeit/local/quantal/nrnbglibpy/)
    else ()
       message(FATAL_ERROR "The user should set -DNRNPATH= to a directory containing a Neuron installation compiled with the linux_nrnmech=yes option
         OR define the machine name, like with -DBBPLINSRV1=1 or -DBBPSG1=1 or -DBGP=1 or -DBBPLINSRV2=1 or -DBBPNATTY=1 or -DBBPONEIRIC=1")
@@ -37,6 +28,8 @@ endif()
 if (NOT NRNPYTHONPATH)
     if (BBPSANTIAGO)
         set(NRNPYTHONPATH /home/vangeit/local/santiago/nrnbglibpy/lib64/python2.6/site-packages)
+    elseif (BBPQUANTAL)
+        set(NRNPYTHONPATH /home/vangeit/local/quantal/nrnbglibpy/lib/python)
     else ()
         message(FATAL_ERROR "The user should set NRNPYTHONPATH to a directory where the Neuron python module is installed")
     endif()
@@ -114,12 +107,15 @@ set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
 set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
 
-configure_file(versions.py.in versions.py)
-configure_file(paths.config.in paths.config)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versions.py.in ${CMAKE_CURRENT_BINARY_DIR}/versions.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.config.in ${CMAKE_CURRENT_BINARY_DIR}/paths.config)
 
-set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py)
+set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py tools.py dendrogram.py importer.py connection.py synapse.py) 
 
 install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/versions.py" DESTINATION ${DESTINATION_DIR})
 install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})
+
+install(CODE "MESSAGE(\"\n**********************\nThe BGLibPy python module was installed in ${DESTINATION_DIR}.
+You probably want to add: \n\nexport \"PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:$PYTHONPATH\" \n\nto your .bashrc \n**********************\n\")")

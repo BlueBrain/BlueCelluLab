@@ -8,9 +8,11 @@ Python library for running single cell bglib templates
          Do not distribute without further notice.
 
 """
-from .tools import *
 from .importer import *
+from .tools import *
 from .cell import Cell
+from .connection import Connection
+from .synapse import Synapse
 from .plotwindow import PlotWindow
 from .dendrogram import Dendrogram
 from .psection import PSection
