@@ -333,7 +333,7 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
         if return_fullrange:
             # We're calculating the full voltage range, just reusing calculate_SS_voltage_replay for this
             # Variable names that start with full_ point to values that are related to the full voltage range
-            (full_SS_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, ignore_timerange=True)
+            (full_SS_voltage, (full_time, full_voltage)) = calculate_SS_voltage_replay(blueconfig, gid, med_current, start_time=start_time, timeout=timeout, ignore_timerange=True)
             if math.isnan(full_SS_voltage):
                 return (float('nan'), (None, None))
             return (med_current, (full_time, full_voltage))
@@ -409,7 +409,7 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
 
     return currentlevels_timevoltagetraces
 
-def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, **kwargs):
+def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, cpu_count = None, **kwargs):
     """
     Same functionality as search_hyp_current_gidlist(), except that this function returns an unordered generator.
     Loop over this generator will return the unordered results one by one.
@@ -418,7 +418,11 @@ def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, **kwargs):
     user should stop iterating the generating after receiving this (None, None) result. In this case also probably
     a broke pipe error from some of the parallel process will be shown on the stdout, these can be ignored.
     """
-    pool = NestedPool(multiprocessing.cpu_count())
+    if cpu_count == None:
+        pool = NestedPool(multiprocessing.cpu_count())
+    else:
+        pool = NestedPool(cpu_count)
+        
     results = pool.imap_unordered(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
     for _ in gid_list:
         try:
