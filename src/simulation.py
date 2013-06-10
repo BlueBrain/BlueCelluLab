@@ -38,7 +38,7 @@ class Simulation(object):
         #if not self.progress and bglibpy.VERBOSE_LEVEL > 0:
         #    self.progress = neuron.h.ShowProgress( neuron.h.cvode, 0 )
 
-    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025):
+    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025, forward_skip=None):
         """Run the simulation"""
         neuron.h.celsius = celsius
         neuron.h.tstop = maxtime
@@ -73,9 +73,21 @@ class Simulation(object):
 
         self.init_callbacks()
 
+        neuron.h.stdinit()
+
+        if forward_skip != None:
+            neuron.h.t = -1e9
+            save_dt = neuron.h.dt
+            neuron.h.dt = forward_skip*0.1
+            for _ in range(0, 10):
+                neuron.h.fadvance()
+            neuron.h.dt = save_dt
+            neuron.h.t = 0
+
+
         #pylint: disable=W0703
         try:
-            neuron.h.run()
+            neuron.h.continuerun(neuron.h.tstop)
         except Exception, e:
             printv_err('The neuron was eaten by the Python !\nReason: %s: %s' % (e.__class__.__name__, e), 1)
         finally:

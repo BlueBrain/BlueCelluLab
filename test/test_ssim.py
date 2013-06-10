@@ -417,6 +417,32 @@ class TestSSimBaseClass_full_connection_delay(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
 
+class TestSSimBaseClass_full_forwardskip(object):
+    """Class to test SSim with full circuit that uses a ForwardSkip"""
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim("/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/k_ca_scan/K5p0/Ca1p3/BlueConfig",
+                record_dt=0.1)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a full replay of a simulation with ForwardSkip gives the same output trace as on BG/P"""
+        gid = 108849
+        self.ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True, add_stimuli=True)
+        self.ssim.run(100)
+        time_bglibpy = self.ssim.get_time()
+        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        nt.assert_equal(len(time_bglibpy), 1001)
+        nt.assert_equal(len(voltage_bglibpy), 1001)
+        voltage_bglib = self.ssim.bc_simulation.reports.soma.time_series(gid)[:len(voltage_bglibpy)]
+
+        rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
+        nt.assert_true(rms_error < 0.3)
+
 class TestSSimBaseClass_full_realconn(object):
     """Class to test SSim with full circuit and multiple cells instantiate with real connections"""
     def setup(self):

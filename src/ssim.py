@@ -439,17 +439,22 @@ class SSim(object):
             cell.initialize_synapses()
 
 
-    def run(self, t_stop=None, v_init=-65, celsius=34, dt=None):
+    def run(self, t_stop=None, v_init=-65, celsius=34, dt=None, forward_skip=None):
         """Simulate the SSim"""
-        if t_stop is None:
+        if t_stop == None:
             t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
-        if dt is None:
+        if dt == None:
             dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
+        if forward_skip == None:
+            try:
+                forward_skip = float(self.bc.entry_map['Default'].CONTENTS.ForwardSkip)
+            except AttributeError:
+                forward_skip=None
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.add_cell(self.cells[gid])
-        sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init)
+        sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init, forward_skip=forward_skip)
 
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary based on gid"""
