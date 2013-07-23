@@ -197,6 +197,22 @@ class Cell(object):
         else:
             return None
 
+    def make_passive(self):
+        """Make the cell passive by deactivating all the active channels
+
+        Parameters
+        ----------
+        """
+
+        for section in self.all:
+            mech_names = set()
+            for seg in section:
+                for mech in seg:
+                    mech_names.add(mech.name())
+            for mech_name in mech_names:
+                if mech_name not in ["k_ion", "na_ion", "ca_ion", "pas"]:
+                    neuron.h('uninsert %s' % mech_name, sec=section)
+
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block
            on this cell
@@ -562,11 +578,11 @@ class Cell(object):
                         apicaltrunk.append(child)
             return apicaltrunk
 
-    def add_ramp(self, start_time, stop_time, start_level, stop_level, dt=0.1):
+    def add_ramp(self, start_time, stop_time, start_level, stop_level, dt=0.1, location=None):
         """Add a ramp current injection"""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level - start_level) / (stop_time - start_time)) * (x - start_time) + start_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content)
+        self.injectCurrentWaveform(t_content, i_content, location=location)
 
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp"""
@@ -717,7 +733,7 @@ class Cell(object):
         """Deprecated"""
         return self.locate_bapsite(seclistName, distance)
 
-    def injectCurrentWaveform(self, t_content, i_content):
+    def injectCurrentWaveform(self, t_content, i_content, location=None):
         """Inject a current in the cell"""
         start_time = t_content[0]
         stop_time = t_content[-1]
@@ -726,7 +742,9 @@ class Cell(object):
         time = time.from_python(t_content)
         currents = currents.from_python(i_content)
 
-        pulse = neuron.h.new_IClamp(0.5, sec=self.soma)
+        if location == None:
+            location = self.soma
+        pulse = neuron.h.new_IClamp(0.5, sec=location)
         self.persistent.append(pulse)
         self.persistent.append(time)
         self.persistent.append(currents)
