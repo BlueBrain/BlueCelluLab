@@ -16,6 +16,12 @@ BLUECONFIG_KEYWORDS = ['Run', 'Stimulus', 'StimulusInject', 'Report', 'Connectio
 
 VERBOSE_LEVEL = 0
 
+def get_release_ccells():
+    return "/bgscratch/bbp/release/CCells/b24.07.12"
+
+def get_release_morphologies():
+    return "/bgscratch/bbp/release/morphologies/31.05.12"
+
 def set_verbose(level=1):
     """Set the verbose level of BGLibPy
 
@@ -476,7 +482,7 @@ def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600, cpu_count 
         pool = NestedPool(multiprocessing.cpu_count())
     else:
         pool = NestedPool(cpu_count)
-        
+
     results = pool.imap_unordered(search_hyp_function_gid(blueconfig, **kwargs), gid_list)
     for _ in gid_list:
         try:
