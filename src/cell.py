@@ -247,6 +247,14 @@ class Cell(object):
             else:
                 bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
 
+    def area(self):
+        area = 0
+        for section in self.basal:
+            for segment in section:
+                area += bglibpy.neuron.h.area(segment.x, sec=section)
+        return area
+
+
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """
         Translate a synaptic (secid, ipt, offset) to a x coordinate
