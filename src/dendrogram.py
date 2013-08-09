@@ -47,8 +47,8 @@ class Dendrogram(object):
         self.proot.drawTree(self.dend_figure, self.proot.ySpacing, self.proot.xSpacing, variable=variable, varbounds=varbounds)
         self.dend_figure.canvas.draw()
 
-        for psection in self.psections:
-            psection.redraw()
+        for secid in self.psections:
+            psections[secid].redraw()
 
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()
