@@ -32,10 +32,20 @@ class Simulation(object):
         if not self.fih_progress:
             self.fih_progress = neuron.h.FInitializeHandler(
                 1, self.progress_callback)
+        self.progress_closed = False
 
     def progress_callback(self):
         self.progress += 1
-        sys.stdout.write("\r[%s%s]" % ("#" * self.progress, " " * (100 - self.progress)))
+        self.progress_closed = False if self.progress_closed else True
+        sys.stdout.write("\x1b[2F")
+        if self.progress_closed:
+            sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), " ", " " * (100 - self.progress)))
+            sys.stdout.write("[%s%s%s]\n" % ("#" * (self.progress-1), "-", "." * (100 - self.progress)))
+            sys.stdout.write(" %s%s%s " % (" " * (self.progress-1), " ", " " * (100 - self.progress)))
+        else:
+            sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), "/", " " * (100 - self.progress)))
+            sys.stdout.write("[%s%s%s]\n" % ("#" * (self.progress-1), ">", "." * (100 - self.progress)))
+            sys.stdout.write(" %s%s%s " % (" " * (self.progress-1), "\\", " " * (100 - self.progress)))
         sys.stdout.flush()
 
         neuron.h.cvode.event(
