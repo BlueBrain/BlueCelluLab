@@ -35,17 +35,19 @@ class Simulation(object):
         self.progress_closed = False
 
     def progress_callback(self):
+        if self.progress > 0:
+            sys.stdout.write("\x1b[3F")
+
         self.progress += 1
         self.progress_closed = False if self.progress_closed else True
-        sys.stdout.write("\x1b[2F")
         if self.progress_closed:
             sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), " ", " " * (100 - self.progress)))
             sys.stdout.write("[%s%s%s]\n" % ("#" * (self.progress-1), "-", "." * (100 - self.progress)))
-            sys.stdout.write(" %s%s%s " % (" " * (self.progress-1), " ", " " * (100 - self.progress)))
+            sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), " ", " " * (100 - self.progress)))
         else:
             sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), "/", " " * (100 - self.progress)))
             sys.stdout.write("[%s%s%s]\n" % ("#" * (self.progress-1), ">", "." * (100 - self.progress)))
-            sys.stdout.write(" %s%s%s " % (" " * (self.progress-1), "\\", " " * (100 - self.progress)))
+            sys.stdout.write(" %s%s%s \n" % (" " * (self.progress-1), "\\", " " * (100 - self.progress)))
         sys.stdout.flush()
 
         neuron.h.cvode.event(
