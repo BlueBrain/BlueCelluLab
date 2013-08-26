@@ -250,8 +250,11 @@ class Cell(object):
     def area(self):
         area = 0
         for section in self.basal:
-            for segment in section:
-                area += bglibpy.neuron.h.area(segment.x, sec=section)
+            xs = numpy.arange(1.0/(2*section.nseg), 1.0, 1.0/(section.nseg))
+            for x in xs:
+                area += bglibpy.neuron.h.area(x, sec=section)
+            #for segment in section:
+            #    area += bglibpy.neuron.h.area(segment.x, sec=section)
         return area
 
 
