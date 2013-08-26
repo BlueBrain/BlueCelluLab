@@ -27,7 +27,7 @@ endif()
 
 if (NOT NRNPYTHONPATH)
     if (BBPSANTIAGO)
-        set(NRNPYTHONPATH /home/vangeit/local/santiago/nrnbglibpy/lib64/python2.6/site-packages)
+        set(NRNPYTHONPATH /home/vangeit/local/santiago/nrnbglibpy/lib64/python)
     elseif (BBPQUANTAL)
         set(NRNPYTHONPATH /home/vangeit/local/quantal/nrnbglibpy/lib/python)
     else ()
