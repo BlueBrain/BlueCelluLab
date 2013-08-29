@@ -8,7 +8,7 @@ Cell class
 
 """
 
-# pylint: disable=F0401
+# pylint: disable=F0401, R0915
 
 import numpy
 import re
@@ -23,10 +23,10 @@ import Queue
 
 class Cell(object):
 
-    """Represents a BGLib Cell object"""
+    """Represents a BGLib Cell object."""
 
     def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
-        """ Constructor
+        """ Constructor.
 
         Parameters
         ----------
@@ -43,6 +43,7 @@ class Cell(object):
         record_dt : float
                    Force a different timestep for the recordings
                    (default: None)
+
         """
 
         # Persistent objects, like clamps, that exist as long
@@ -117,8 +118,12 @@ class Cell(object):
         # self.init_psections()
 
     def init_psections(self):
-        """Initialize the psections list that contains the Python
-        representation of the psections of this morphology"""
+        """Initialize the psections list.
+
+        This list contains the Python representation of the psections
+        of this morphology.
+
+        """
 
         for hsection in self.all:
             secname = neuron.h.secname(sec=hsection)
@@ -149,17 +154,22 @@ class Cell(object):
                 psec.add_pchild(pchild)
 
     def get_section_id(self, secname=None):
-        """Get section based on section id"""
+        """Get section based on section id.
+
+        Returns
+        -------
+        integer: section id
+                 section id of the section with name secname
+
+        """
         return self.secname_to_psection[secname].section_id
 
     def re_init_rng(self):
-        """Reinitialize the random number generator for the stochastic channels
-        """
+        """Reinitialize the random number generator for stochastic channels."""
         self.cell.re_init_rng()
 
     def get_psection(self, section_id=None, secname=None):
-        """
-        Return a python section with the specified section id or name
+        """Return a python section with the specified section id or name.
 
         Parameters
         ----------
@@ -183,7 +193,7 @@ class Cell(object):
                 "SSim: get_psection requires or a section_id or a secname")
 
     def get_hsection(self, section_id):
-        """Use the serialized object to find a hoc section from a section id
+        """Use the serialized object to find a hoc section from a section id.
 
         Parameters
         ----------
@@ -194,6 +204,7 @@ class Cell(object):
         -------
         hsection : nrnSection
                    The requested hoc section
+
         """
         sec_ref = self.serialized.isec2sec[int(section_id)]
         if sec_ref:
@@ -202,11 +213,7 @@ class Cell(object):
             return None
 
     def make_passive(self):
-        """Make the cell passive by deactivating all the active channels
-
-        Parameters
-        ----------
-        """
+        """Make the cell passive by deactivating all the active channels."""
 
         for section in self.all:
             mech_names = set()
@@ -218,8 +225,7 @@ class Cell(object):
                     neuron.h('uninsert %s' % mech_name, sec=section)
 
     def execute_neuronconfigure(self, expression, sections=None):
-        """Execute a statement from a BlueConfig NeuronConfigure block
-           on this cell
+        """Execute a statement from a BlueConfig NeuronConfigure block.
 
         Parameters
         ----------
@@ -231,6 +237,7 @@ class Cell(object):
                    'axonal', 'basal', 'apical', 'somatic', 'dendritic', None
                    When None is passed, the expression is evaluated on all
                    sections
+
         """
         sections_map = {'axonal': self.axonal, 'basal': self.basal,
                         'apical': self.apical, 'somatic': self.somatic,
@@ -253,7 +260,6 @@ class Cell(object):
             for segment in section:
                 area += bglibpy.neuron.h.area(segment.x, sec=section)
         return area
-
 
     def synlocation_to_segx(self, isec, ipt, syn_offset):
         """
