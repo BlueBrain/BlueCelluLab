@@ -60,8 +60,8 @@ class Cell(object):
         cell_name = match.group(1)
         self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
         self.soma = [x for x in self.cell.getCell().somatic][0]
-        """WARNING: this finitialize 'must' be here, otherwhise the diameters
-        of the loaded morph are wrong"""
+        # WARNING: this finitialize 'must' be here, otherwhise the
+        # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
         self.morphology_name = morphology_name
@@ -255,10 +255,26 @@ class Cell(object):
                 bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
 
     def area(self):
+        """Calculate the total area of the cell
+
+        Parameters
+        ----------
+
+
+        Returns
+        -------
+        area : float
+               Total surface area of the cell
+        """
+        # pylint: disable=C0103
         area = 0
-        for section in self.basal:
-            for segment in section:
-                area += bglibpy.neuron.h.area(segment.x, sec=section)
+        for section in self.all:
+            x_s = numpy.arange(1.0 / (2 * section.nseg), 1.0,
+                               1.0 / (section.nseg))
+            for x in x_s:
+                area += bglibpy.neuron.h.area(x, sec=section)
+            # for segment in section:
+            #    area += bglibpy.neuron.h.area(segment.x, sec=section)
         return area
 
     def synlocation_to_segx(self, isec, ipt, syn_offset):
@@ -311,6 +327,7 @@ class Cell(object):
         else:
             return distance
 
+    # pylint: disable=C0103
     def add_recording(self, var_name, dt=None):
         """Add a recording to the cell
 
@@ -442,14 +459,14 @@ class Cell(object):
         location = self.\
             synlocation_to_segx(post_sec_id, post_seg_id,
                                 post_seg_distance)
-        ''' todo: False'''
+        # todo: False
         if('Weight' in connection_parameters):
             weight_scalar = connection_parameters['Weight']
         else:
             weight_scalar = 1.0
 
         if('SpontMinis' in connection_parameters):
-            ''' add the *minis*: spontaneous synaptic events '''
+            # add the *minis*: spontaneous synaptic events
             spont_minis_rate = connection_parameters['SpontMinis']
             self.ips[sid] = bglibpy.neuron.h.\
                 InhPoissonStim(location,
@@ -735,9 +752,7 @@ class Cell(object):
     def __del__(self):
         self.delete()
 
-    """
-    Deprecated functions
-    """
+    # Deprecated functions ###
 
     # pylint: disable=C0111, C0112
 
@@ -803,6 +818,7 @@ class Cell(object):
         self.persistent.append(currents)
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
+        # pylint: disable=W0212
         currents.play(pulse._ref_amp, time)
 
     @tools.deprecated("get_time")
