@@ -35,7 +35,15 @@ if (NOT NRNPYTHONPATH)
     endif()
 endif ()
 
+
 set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
+if (NOT EXISTS ${NRN_BINARIES}/nrnivmodl)
+    set(NRN_BINARIES ${NRNPATH}/bin)
+    if (NOT EXISTS ${NRN_BINARIES}/nrnivmodl)
+        message(FATAL_ERROR "Couldn't find nrnivmodl in ${NRNPATH}/${NRNARCH}/bin or ${NRNPATH}/bin")
+    endif ()
+endif ()
+
 
 exec_program(
     ${NRN_BINARIES}/nrniv
@@ -99,7 +107,7 @@ if (EXISTS "${MODLIBPATH}/synutils.inc")
     set(SYNUTILSINC "${MODLIBBUILDPATH}/synutils.inc")
 endif()
 
-set(LIBNRNMECHS "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${ARCH}/.libs/libnrnmech.so.0.0.0" )
+set(LIBNRNMECHS "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
 add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECHS})
 add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
 
