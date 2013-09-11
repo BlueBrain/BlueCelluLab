@@ -16,7 +16,9 @@ pathsconfig_filename = installdir + "/paths.config"
 
 if os.path.exists(pathsconfig_filename):
     pathsconfig_file = open(pathsconfig_filename, "r")
-    pathsconfig = dict((line.strip().split("=")[0], line.strip().split("=")[1]) for line in pathsconfig_file)
+    pathsconfig = dict((line.strip().split("=")[0],
+                        line.strip().split("=")[1])
+                       for line in pathsconfig_file)
     pathsconfig_file.close()
 else:
     raise Exception("Sorry, can not find the file paths.config")
