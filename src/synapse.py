@@ -9,10 +9,13 @@ Class that represents a synapse in BGLibPy
 
 import bglibpy
 
+
 class Synapse(object):
+
     """ Class that represents a synapse in BGLibPy """
 
-    def __init__(self, cell, location, sid, syn_description, connection_parameters, base_seed):
+    def __init__(self, cell, location, sid, syn_description,
+                 connection_parameters, base_seed):
         """
         Constructor
 
@@ -29,7 +32,8 @@ class Synapse(object):
         connection_parameters : list of floats
                                 Parameters of the connection
         base_seed : float
-                    Base seed of the simulation, the seeds for this synapse will be derived from this
+                    Base seed of the simulation, the seeds for this synapse
+                    will be derived from this
         """
         self.persistent = []
 
@@ -39,15 +43,15 @@ class Synapse(object):
         self.connection_parameters = connection_parameters
         self.hsynapse = None
 
-        pre_gid = int(syn_description[0])
-        #delay = syn_description[1]
+        # pre_gid = int(syn_description[0])
+        # delay = syn_description[1]
         post_sec_id = syn_description[2]
         self.isec = post_sec_id
         post_seg_id = syn_description[3]
         self.ipt = post_seg_id
         post_seg_distance = syn_description[4]
         self.syn_offset = post_seg_distance
-        #weight = syn_description[8]
+        # weight = syn_description[8]
         self.syn_U = syn_description[9]
         self.syn_D = syn_description[10]
         self.syn_F = syn_description[11]
@@ -60,8 +64,8 @@ class Synapse(object):
             inhibitory synapse
             '''
             self.hsynapse = bglibpy.neuron.h.\
-              ProbGABAAB_EMS(location, \
-                             sec=self.cell.get_hsection(post_sec_id))
+                ProbGABAAB_EMS(location,
+                               sec=self.cell.get_hsection(post_sec_id))
 
             self.hsynapse.tau_d_GABAA = self.syn_DTC
             rng = bglibpy.neuron.h.Random()
@@ -71,15 +75,16 @@ class Synapse(object):
         else:
             ''' else we have excitatory synapse '''
             self.hsynapse = bglibpy.neuron.h.\
-              ProbAMPANMDA_EMS(location,sec=self.cell.get_hsection(post_sec_id))
+                ProbAMPANMDA_EMS(
+                    location, sec=self.cell.get_hsection(post_sec_id))
             self.hsynapse.tau_d_AMPA = self.syn_DTC
 
-        self.hsynapse.Use = abs( self.syn_U )
-        self.hsynapse.Dep = abs( self.syn_D )
-        self.hsynapse.Fac = abs( self.syn_F )
+        self.hsynapse.Use = abs(self.syn_U)
+        self.hsynapse.Dep = abs(self.syn_D)
+        self.hsynapse.Fac = abs(self.syn_F)
 
         rndd = bglibpy.neuron.h.Random()
-        rndd.MCellRan4(sid * 100000 + 100, self.cell.gid + 250 + base_seed )
+        rndd.MCellRan4(sid * 100000 + 100, self.cell.gid + 250 + base_seed)
         rndd.uniform(0, 1)
         self.hsynapse.setRNG(rndd)
         self.persistent.append(rndd)
@@ -92,7 +97,7 @@ class Synapse(object):
                 cmd = cmd.replace('%s', '\n%(syn)s')
                 bglibpy.neuron.h(cmd % {'syn': self.hsynapse.hname()})
 
-    def is_inhibitory():
+    def is_inhibitory(self):
         """
         Check if synapse is inhibitory
 
@@ -104,7 +109,7 @@ class Synapse(object):
 
         return (self.syn_type < 100)
 
-    def is_excitatory():
+    def is_excitatory(self):
         """
         Check if synapse is excitatory
 
