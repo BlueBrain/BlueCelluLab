@@ -11,6 +11,7 @@ Class that represents a plot window in BGLibPy
 
 import itertools
 
+
 class PlotWindow(object):
 
     """Class the represents a plotting window"""
@@ -21,7 +22,7 @@ class PlotWindow(object):
         self.var_list = var_list
         pylab.ion()
         self.figure = pylab.figure(figsize=(10, 10))
-        #pylab.ioff()
+        # pylab.ioff()
 
         self.ax = self.figure.gca()
         self.canvas = self.ax.figure.canvas
@@ -43,10 +44,13 @@ class PlotWindow(object):
             else:
                 time = self.cell.get_time()[1:]
 
-            #print dir(pylab.gca()._get_lines)
-            #print pylab.gca()._get_lines.color_cycle
-            linecolors = [x for x in itertools.islice(pylab.gca()._get_lines.color_cycle, 0, 50)]
-            self.line[var_name] = pylab.Line2D(time, recording, label=var_name, color=linecolors[linenumber % len(linecolors)])
+            # print dir(pylab.gca()._get_lines)
+            # print pylab.gca()._get_lines.color_cycle
+            linecolors = [x for x in itertools.islice(
+                pylab.gca()._get_lines.color_cycle, 0, 50)]
+            self.line[var_name] = pylab.Line2D(
+                time, recording, label=var_name,
+                color=linecolors[linenumber % len(linecolors)])
             self.ax.add_line(self.line[var_name])
             linenumber += 1
 
