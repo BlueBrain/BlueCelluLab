@@ -230,7 +230,9 @@ class SSim(object):
             outdat_path = os.path.join(self.bc.entry_map[
                                        'Default'].CONTENTS.OutputRoot,
                                        'out.dat')
-        pre_spike_trains = _parse_outdat2(outdat_path)
+
+        if add_replay:
+                pre_spike_trains = _parse_outdat2(outdat_path)
 
         for post_gid in self.gids:
             if dest and post_gid not in dest:
