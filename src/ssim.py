@@ -32,7 +32,10 @@ class SSim(object):
         ----------
         blueconfig_filename : string
                               Absolute filename of the Blueconfig
-
+        dt : float
+             Timestep of the simulation
+        record_dt : float
+                    Sampling interval of the recordings
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -232,7 +235,7 @@ class SSim(object):
                                        'out.dat')
 
         if add_replay:
-                pre_spike_trains = _parse_outdat2(outdat_path)
+            pre_spike_trains = _parse_outdat2(outdat_path)
 
         for post_gid in self.gids:
             if dest and post_gid not in dest:
