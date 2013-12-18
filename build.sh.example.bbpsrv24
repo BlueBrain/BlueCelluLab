@@ -1,0 +1,24 @@
+#Example build script for BGLibPy
+
+#rm -rf build
+#module load neuronYale/rhel6-mvapich2-psm-x86_64-shared-dev
+#module load bglib/rhel6-mvapich2-psm-x86_64-shared-dev 
+
+#export NEURON_HOME=$HOME/local/santiago/nrnbglibpy
+#export NRNPYTHONPATH=${NEURON_HOME}/lib64/python2.6/site-packages
+
+mkdir build.bbpsrv22
+cd build.bbpsrv22
+cmake .. \
+    -DMODLIBPATH=$HOME/src/bbp/lib/modlib \
+    -DHOCLIBPATH=$HOME/src/bbp/lib/hoclib \
+    -DBBPSAUCY=ON \
+    -DBLUEPYPATH=$HOME/local/bluepy/lib/python2.6/site-packages \
+    -DENABLE_DOC=ON \
+    -DCMAKE_INSTALL_PREFIX=$HOME/local/saucy/bglibpy
+
+make VERBOSE=1
+make install
+make doc
+make doc_install
+#ctest -VV
