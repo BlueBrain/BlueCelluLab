@@ -454,6 +454,45 @@ class Cell(object):
         """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 
+    def pre_gids(self):
+        """List of gids of cells that connect to this cell
+
+        Returns
+        -------
+        A list of gids of cell that connect to this cell.
+        """
+
+        pre_gid_list = []
+        for syn_id in self.synapses:
+            pre_gid_list.append(self.synapses[syn_id].pre_gid)
+
+        return pre_gid_list
+
+    def pre_gid_synapse_id(self, pre_gid):
+        """List of synapse_id's of synapses a cell uses to connect to this cell
+
+        Parameters
+        ----------
+        pre_gid : int
+                  gid of the presynaptic cell
+
+        Returns
+        -------
+        A list of the synapse_id's that connect the presynaptic cell with
+        this cell.
+        In case there are no such synapses because the cells e.g. are not
+        connected, an empty list is returned.
+        The synapse_id's can be used in the 'synapse' dictionary of this cell
+        to return the Synapse objects
+        """
+
+        syn_id_list = []
+        for syn_id in self.synapses:
+            if self.synapses[syn_id].pre_gid == pre_gid:
+                syn_id_list.append(syn_id)
+
+        return syn_id_list
+
     def create_netcon_spikedetector(self, target):
         """Add and return a spikedetector.
 

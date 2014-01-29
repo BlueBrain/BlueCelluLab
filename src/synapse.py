@@ -43,8 +43,10 @@ class Synapse(object):
         self.connection_parameters = connection_parameters
         self.hsynapse = None
 
-        # pre_gid = int(syn_description[0])
-        # delay = syn_description[1]
+        # pylint: disable = C0103
+
+        self.pre_gid = int(syn_description[0])
+        # self.delay = syn_description[1]
         post_sec_id = syn_description[2]
         self.isec = post_sec_id
         post_seg_id = syn_description[3]
@@ -58,11 +60,13 @@ class Synapse(object):
         self.syn_DTC = syn_description[12]
         self.syn_type = syn_description[13]
 
+        # pylint: enable = C0103
+
         if self.syn_type < 100:
-            ''' see: https://bbpteam.epfl.ch/\
-            wiki/index.php/BlueBuilder_Specifications#NRN,
-            inhibitory synapse
-            '''
+            # see: https://bbpteam.epfl.ch/
+            # wiki/index.php/BlueBuilder_Specifications#NRN,
+            # inhibitory synapse
+
             self.hsynapse = bglibpy.neuron.h.\
                 ProbGABAAB_EMS(location,
                                sec=self.cell.get_hsection(post_sec_id))
@@ -73,7 +77,7 @@ class Synapse(object):
             rng.lognormal(0.2, 0.1)
             self.hsynapse.tau_r_GABAA = rng.repick()
         else:
-            ''' else we have excitatory synapse '''
+            # else we have excitatory synapse
             self.hsynapse = bglibpy.neuron.h.\
                 ProbAMPANMDA_EMS(
                     location, sec=self.cell.get_hsection(post_sec_id))
