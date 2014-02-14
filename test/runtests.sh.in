@@ -4,5 +4,15 @@ echo "###"
 echo "### WARNING Make sure you rebuild/install BGLibPy before running theses tests !"
 echo "###"
 export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
-{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s $*; }
+
+if [ "$#" -e 1 ]
+then
+    ATTRIBUTES="" 
+elif [ $1 = "NOBGSCRATCH" ]
+then
+    ATTRIBUTES="-a !bgscratch"
+
+fi
+
+{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests $ATTRIBUTES -v -x -s ${@:2}; }
 #-v: verbose -x: exit at first error -s: don't redirect stdout
