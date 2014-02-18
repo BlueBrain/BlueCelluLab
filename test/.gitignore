@@ -3,3 +3,4 @@ i686
 *.pyc
 cover
 .coverage
+nosetests.xml
