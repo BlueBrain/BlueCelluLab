@@ -459,16 +459,16 @@ class Cell(object):
 
         Returns
         -------
-        A list of gids of cell that connect to this cell.
+        A list of gids of cells that connect to this cell.
         """
 
-        pre_gid_list = []
+        pre_gid_list = set()
         for syn_id in self.synapses:
-            pre_gid_list.append(self.synapses[syn_id].pre_gid)
+            pre_gid_list.add(self.synapses[syn_id].pre_gid)
 
-        return pre_gid_list
+        return list(pre_gid_list)
 
-    def pre_gid_synapse_id(self, pre_gid):
+    def pre_gid_synapse_ids(self, pre_gid):
         """List of synapse_id's of synapses a cell uses to connect to this cell
 
         Parameters
