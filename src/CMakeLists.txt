@@ -54,6 +54,8 @@ exec_program(
     ARGS "--version" 
     OUTPUT_VARIABLE NRN_VERSION)
 message("Working with Neuron Version: ${NRN_VERSION}")
+message("Neuron installation path: ${NRNPATH}")
+message("Neuron python module installation path: ${NRNPYTHONPATH}")
 
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
