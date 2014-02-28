@@ -80,7 +80,7 @@ in case these are missing:
     (e.g. to $HOME/local/bluepy)::
 
         git clone ssh://bbpgit.epfl.ch/analysis/BluePy.git
-        cd BluePy
+        cd BluePy/bluepy
         python setup.py install --prefix=$HOME/local/
 
 
