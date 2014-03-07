@@ -79,7 +79,7 @@ in case these are missing:
     Install the source from a git repository clone 
     (e.g. to $HOME/local/bluepy)::
 
-        git clone ssh://bbpgit.epfl.ch/analysis/BluePy.git
+        git clone ssh://bbpcode.epfl.ch/analysis/BluePy.git
         cd BluePy/bluepy
         python setup.py install --prefix=$HOME/local/
 
