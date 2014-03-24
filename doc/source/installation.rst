@@ -87,7 +87,7 @@ in case these are missing:
 *BGLib*
     Just get the source from the git repository, no installation is required::
 
-        git clone ssh://bbpgit.epfl.ch/sim/neurodamus/bbp.git
+        git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
 
 *Neuron*
 
