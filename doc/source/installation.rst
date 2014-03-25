@@ -79,15 +79,15 @@ in case these are missing:
     Install the source from a git repository clone 
     (e.g. to $HOME/local/bluepy)::
 
-        git clone ssh://bbpgit.epfl.ch/analysis/BluePy.git
-        cd BluePy
+        git clone ssh://bbpcode.epfl.ch/analysis/BluePy.git
+        cd BluePy/bluepy
         python setup.py install --prefix=$HOME/local/
 
 
 *BGLib*
     Just get the source from the git repository, no installation is required::
 
-        git clone ssh://bbpgit.epfl.ch/sim/neurodamus/bbp.git
+        git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
 
 *Neuron*
 
