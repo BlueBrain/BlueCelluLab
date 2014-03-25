@@ -1,6 +1,7 @@
 build
 build.bbpsrv22
 build.bbpsrv25
+build.sh.lviz
 build.sh
 builddoc.sh
 *~
