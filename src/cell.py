@@ -25,12 +25,15 @@ class Cell(object):
 
     """Represents a BGLib Cell object."""
 
-    def __init__(self, template_name, morphology_name, gid=0, record_dt=None):
+    used_template_names = []
+
+    def __init__(self, template_filename, morphology_name,
+                 gid=0, record_dt=None):
         """ Constructor.
 
         Parameters
         ----------
-        template_name : string
+        template_filename : string
                         Full path to BGLib template to be loaded
         morphology_name : string
                           Morphology name passed to the BGLib template
@@ -50,22 +53,22 @@ class Cell(object):
         # as the object exists
         self.persistent = []
 
-        if not os.path.exists(template_name):
-            raise Exception("Couldn't find template file [%s]" % template_name)
+        if not os.path.exists(template_filename):
+            raise Exception("Couldn't find template file [%s]"
+                            % template_filename)
 
         # Load the template
-        neuron.h.load_file(template_name)
-        template_content = open(template_name, "r").read()
-        match = re.search(r"begintemplate\s*(\S*)", template_content)
-        cell_name = match.group(1)
-        self.cell = eval("neuron.h." + cell_name + "(0, morphology_name)")
+        self.template_name, self.template_content = \
+            self._load_template(template_filename)
+
+        self.cell = getattr(neuron.h, self.template_name)(0, morphology_name)
+
         self.soma = [x for x in self.cell.getCell().somatic][0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
         self.morphology_name = morphology_name
-        self.template_name = template_name
         self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
         # Set the gid of the cell
@@ -152,6 +155,36 @@ class Cell(object):
                 childname = neuron.h.secname(sec=hchild)
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
+
+    def _load_template(self, template_filename):
+        """Open a cell template, if template name already exists, rename it"""
+
+        template_content = open(template_filename, "r").read()
+        neuron.h.load_file(template_filename)
+
+        match = re.search(r"begintemplate\s*(\S*)", template_content)
+        template_name = match.group(1)
+
+        """
+        if template_name in Cell.used_template_names:
+            new_template_name = template_name
+            while new_template_name in Cell.used_template_names:
+                new_template_name = "%s_x" % template_name
+
+            Cell.used_template_names.append(new_template_name)
+            template_name = new_template_name
+
+        template_content = re.sub(r"begintemplate\s*(\S*)",
+                                  "begintemplate %s" % template_name,
+                                  template_content)
+        template_content = re.sub(r"endtemplate\s*(\S*)",
+                                  "endtemplate %s" % template_name,
+                                  template_content)
+
+        neuron.h.execute(template_content)
+        """
+
+        return template_name, template_content
 
     def get_section_id(self, secname=None):
         """Get section based on section id.
