@@ -1,8 +1,10 @@
 build
+build_viz
 build_lviz
 build_lbgq
 build.bbpsrv22
 build.bbpsrv25
+build.sh.viz
 build.sh.lviz
 build.sh
 builddoc.sh
