@@ -45,7 +45,7 @@ def test_search_hyp_current_replay_imap():
     stop_time = 5
 
     hyp_currents = {}
-    results = bglibpy.tools.search_hyp_current_replay_imap(blueconfig_location, gid_list, timeout=50,
+    results = bglibpy.tools.search_hyp_current_replay_imap(blueconfig_location, gid_list, timeout=150,
         target_voltage=target_voltage,
         min_current=-2.0,
         max_current=0.0,
