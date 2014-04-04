@@ -160,19 +160,22 @@ class Cell(object):
         """Open a cell template, if template name already exists, rename it"""
 
         template_content = open(template_filename, "r").read()
-        neuron.h.load_file(template_filename)
 
         match = re.search(r"begintemplate\s*(\S*)", template_content)
         template_name = match.group(1)
 
-        """
+        # add bglibpy to the template name, so that we don't interfere with
+        # templates load outside of bglibpy
+        template_name = "%s_bglibpy" % template_name
+
         if template_name in Cell.used_template_names:
             new_template_name = template_name
             while new_template_name in Cell.used_template_names:
-                new_template_name = "%s_x" % template_name
+                new_template_name = "%s_x" % new_template_name
 
-            Cell.used_template_names.append(new_template_name)
             template_name = new_template_name
+
+        Cell.used_template_names.append(template_name)
 
         template_content = re.sub(r"begintemplate\s*(\S*)",
                                   "begintemplate %s" % template_name,
@@ -181,8 +184,7 @@ class Cell(object):
                                   "endtemplate %s" % template_name,
                                   template_content)
 
-        neuron.h.execute(template_content)
-        """
+        neuron.h(template_content)
 
         return template_name, template_content
 
