@@ -19,6 +19,8 @@ from bglibpy import tools
 from bglibpy.importer import neuron
 from bglibpy import psection
 import Queue
+from bglibpy import printv
+# from bglibpy import printv_err
 
 
 class Cell(object):
@@ -156,7 +158,8 @@ class Cell(object):
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
-    def _load_template(self, template_filename):
+    @staticmethod
+    def _load_template(template_filename):
         """Open a cell template, if template name already exists, rename it"""
 
         template_content = open(template_filename, "r").read()
@@ -164,27 +167,41 @@ class Cell(object):
         match = re.search(r"begintemplate\s*(\S*)", template_content)
         template_name = match.group(1)
 
-        # add bglibpy to the template name, so that we don't interfere with
-        # templates load outside of bglibpy
-        template_name = "%s_bglibpy" % template_name
+        neuron_versiondate_string = neuron.h.nrnversion(4)
+        import datetime
+        neuron_versiondate = datetime.datetime.strptime(
+            neuron_versiondate_string,
+            "%Y-%m-%d").date()
+        good_neuron_versiondate = datetime.date(2014, 3, 20)
 
-        if template_name in Cell.used_template_names:
-            new_template_name = template_name
-            while new_template_name in Cell.used_template_names:
-                new_template_name = "%s_x" % new_template_name
+        if neuron_versiondate >= good_neuron_versiondate:
+            printv("This Neuron version supports renaming "
+                   "templates, enabling...", 5)
+            # add bglibpy to the template name, so that we don't interfere with
+            # templates load outside of bglibpy
+            template_name = "%s_bglibpy" % template_name
 
-            template_name = new_template_name
+            if template_name in Cell.used_template_names:
+                new_template_name = template_name
+                while new_template_name in Cell.used_template_names:
+                    new_template_name = "%s_x" % new_template_name
 
-        Cell.used_template_names.append(template_name)
+                template_name = new_template_name
 
-        template_content = re.sub(r"begintemplate\s*(\S*)",
-                                  "begintemplate %s" % template_name,
-                                  template_content)
-        template_content = re.sub(r"endtemplate\s*(\S*)",
-                                  "endtemplate %s" % template_name,
-                                  template_content)
+            Cell.used_template_names.append(template_name)
 
-        neuron.h(template_content)
+            template_content = re.sub(r"begintemplate\s*(\S*)",
+                                      "begintemplate %s" % template_name,
+                                      template_content)
+            template_content = re.sub(r"endtemplate\s*(\S*)",
+                                      "endtemplate %s" % template_name,
+                                      template_content)
+
+            neuron.h(template_content)
+        else:
+            printv("This Neuron version doesn't support renaming "
+                   "templates, disabling...", 5)
+            neuron.h.load_file(template_filename)
 
         return template_name, template_content
 
