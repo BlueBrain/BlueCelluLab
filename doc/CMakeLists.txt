@@ -48,7 +48,7 @@ if (SPHINX_FOUND)
   ###
   # Target doc_upload: Uploading documentation to bbp documentation server
   ###
-  set(DOCUMENTATION_REPO ssh://bbpgit.epfl.ch/common/Documentation)
+  set(DOCUMENTATION_REPO ssh://bbpcode.epfl.ch/common/Documentation)
 
   find_package(Git)
   if(NOT GIT_EXECUTABLE)
