@@ -20,9 +20,16 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 exec_program(
     "git"
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --tags --abbrev=4 --dirty" 
+    ARGS "describe --tags --abbrev=0 --always" 
+    OUTPUT_VARIABLE BGLIBPY_MAIN_VERSION)
+
+exec_program(
+    "git"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ARGS "describe --tags --abbrev=4 --dirty --always" 
     OUTPUT_VARIABLE BGLIBPY_VERSION)
-message("Working with BGLibPy Version: ${BGLIBPY_VERSION}")
+
+message("Working with BGLibPy Version: ${BGLIBPY_VERSION} (Main version: ${BGLIBPY_MAIN_VERSION})")
 
 execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}');"
     OUTPUT_VARIABLE PYTHON_PACKAGE_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)

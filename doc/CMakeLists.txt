@@ -59,7 +59,7 @@ if (SPHINX_FOUND)
   
   add_custom_target(git_pull_bbpdocumentation COMMAND ${GIT_EXECUTABLE} pull WORKING_DIRECTORY "Documentation" DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Documentation")
   
-  set(NEWDOC_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-2.0")
+  set(NEWDOC_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-${BGLIBPY_MAINVERSION}")
   add_custom_target(remove_bglibpy_bbpdocumentation
      COMMAND ${CMAKE_COMMAND} -E remove_directory
      ${NEWDOC_DIRECTORY} DEPENDS git_pull_bbpdocumentation)
@@ -78,9 +78,9 @@ if (SPHINX_FOUND)
 
   add_custom_target(git_commit_bbpdocumentation COMMAND ${GIT_EXECUTABLE} commit -m "Documentation for BGLibPy-${BGLIBPY_VERSION}" WORKING_DIRECTORY "Documentation" DEPENDS git_addindex_bbpdocumentation)
 
-  # git push origin master ${DOC_PUSH_OPTION}
+  add_custom_target(git_push_bbpdocumentation COMMAND ${GIT_EXECUTABLE} push origin master WORKING_DIRECTORY "Documentation" DEPENDS git_addindex_bbpdocumentation)
 
-  add_custom_target(doc_upload DEPENDS git_commit_bbpdocumentation)
+  add_custom_target(doc_upload DEPENDS git_push_bbpdocumentation)
  
 endif()
 
