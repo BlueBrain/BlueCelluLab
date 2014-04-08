@@ -21,7 +21,7 @@ exec_program(
     "git"
     ${CMAKE_CURRENT_SOURCE_DIR}
     ARGS "describe --tags --abbrev=0 --always" 
-    OUTPUT_VARIABLE BGLIBPY_MAIN_VERSION)
+    OUTPUT_VARIABLE BGLIBPY_MAINVERSION)
 
 exec_program(
     "git"

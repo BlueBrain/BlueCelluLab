@@ -54,7 +54,7 @@ if (SPHINX_FOUND)
   set(DOCUMENTATION_REPO ssh://bbpcode.epfl.ch/common/Documentation)
 
   find_package(Git)
-  if(GIT_EXECUTABLE)
+  if ((GIT_EXECUTABLE) AND (NOT BGLIBPY_VERSION MATCHES ".*dirty.*"))
       message("Git found, enabling doc_upload target")
 
       set(NEWDOC_DIRECTORY 
@@ -103,8 +103,10 @@ if (SPHINX_FOUND)
 
       add_custom_target(doc_upload 
           DEPENDS git_push_bbpdocumentation)
-  else()
-      message(FATAL_ERROR "Git not found, disabling doc_upload target")
+  elseif (BGLIBPY_VERSION MATCHES ".*dirty.*")
+      message("WARNING: BGLIBPY directory is dirty, disabling doc_upload target, commit changes first")
+  elseif (GIT_EXECUTABLE)
+      message("WARNING: Git not found, disabling doc_upload target")
   endif()
 
 endif()
