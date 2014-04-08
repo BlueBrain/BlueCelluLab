@@ -5,7 +5,8 @@
 if (SPHINX_FOUND)
   message(STATUS "Enabling generation of html-documentation")
 
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}" 
+      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
       FILES_MATCHING
       PATTERN "source/*.rst"
       PATTERN "source/*.conf"
@@ -20,9 +21,11 @@ if (SPHINX_FOUND)
       PATTERN "Makefile"
       PATTERN "CMakeFiles" EXCLUDE)
 
-  configure_file(source/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/doc/source/conf.py)
+  configure_file(source/conf.py.in 
+      ${CMAKE_CURRENT_BINARY_DIR}/doc/source/conf.py)
 
-  set( ENV{PYTHONPATH} ENV{PYTHONPATH}:/home/vangeit/local/bglibpy/lib64/python2.6/site-packages/ )
+  set(ENV{PYTHONPATH} 
+      ENV{PYTHONPATH}:/home/vangeit/local/bglibpy/lib64/python2.6/site-packages/)
   add_custom_target(doc_html_python
       COMMAND ${CMAKE_MAKE_PROGRAM} html
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc")
@@ -51,36 +54,57 @@ if (SPHINX_FOUND)
   set(DOCUMENTATION_REPO ssh://bbpcode.epfl.ch/common/Documentation)
 
   find_package(Git)
-  if(NOT GIT_EXECUTABLE)
-      message(FATAL_ERROR "Git not found, incompatible with INSTALL_DOC option")
+  if(GIT_EXECUTABLE)
+      message("Git found, enabling doc_upload target")
+
+      set(NEWDOC_DIRECTORY 
+          "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-${BGLIBPY_MAINVERSION}")
+
+      add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Documentation" 
+          COMMAND ${GIT_EXECUTABLE} clone ${DOCUMENTATION_REPO})
+      
+      add_custom_target(git_pull_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} pull WORKING_DIRECTORY "Documentation" 
+          DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Documentation")
+      
+      add_custom_target(remove_bglibpy_bbpdocumentation
+         COMMAND ${CMAKE_COMMAND} -E remove_directory
+         ${NEWDOC_DIRECTORY} DEPENDS git_pull_bbpdocumentation)
+
+      add_custom_target(copy_to_bbpdocumentation
+         COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_CURRENT_BINARY_DIR}/doc/build/html" ${NEWDOC_DIRECTORY} 
+          DEPENDS remove_bglibpy_bbpdocumentation doc)
+
+      add_custom_target(git_add_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY} 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS copy_to_bbpdocumentation)
+
+      add_custom_target(cmake_bbpdocumentation
+          COMMAND ${CMAKE_COMMAND} -DCMAKE_SOURCE_DIR="Documentation" 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS git_add_bbpdocumentation)
+
+      add_custom_target(git_addindex_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY}/index.html 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS cmake_bbpdocumentation)
+
+      add_custom_target(git_commit_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} commit -m "Documentation for BGLibPy-${BGLIBPY_VERSION}" 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS git_addindex_bbpdocumentation)
+
+      add_custom_target(git_push_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} push -n origin master 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS git_addindex_bbpdocumentation)
+
+      add_custom_target(doc_upload 
+          DEPENDS git_push_bbpdocumentation)
+  else()
+      message(FATAL_ERROR "Git not found, disabling doc_upload target")
   endif()
 
-  add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Documentation" COMMAND ${GIT_EXECUTABLE} clone ${DOCUMENTATION_REPO})
-  
-  add_custom_target(git_pull_bbpdocumentation COMMAND ${GIT_EXECUTABLE} pull WORKING_DIRECTORY "Documentation" DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Documentation")
-  
-  set(NEWDOC_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-${BGLIBPY_MAINVERSION}")
-  add_custom_target(remove_bglibpy_bbpdocumentation
-     COMMAND ${CMAKE_COMMAND} -E remove_directory
-     ${NEWDOC_DIRECTORY} DEPENDS git_pull_bbpdocumentation)
-
-  add_custom_target(copy_to_bbpdocumentation
-     COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CMAKE_CURRENT_BINARY_DIR}/doc/build/html"
-      ${NEWDOC_DIRECTORY} DEPENDS remove_bglibpy_bbpdocumentation doc)
-
-  add_custom_target(git_add_bbpdocumentation COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY} WORKING_DIRECTORY "Documentation" DEPENDS copy_to_bbpdocumentation)
-
-  add_custom_target(cmake_bbpdocumentation
-      COMMAND ${CMAKE_COMMAND} -DCMAKE_SOURCE_DIR="Documentation" WORKING_DIRECTORY "Documentation" DEPENDS git_add_bbpdocumentation)
-
-  add_custom_target(git_addindex_bbpdocumentation COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY}/index.html WORKING_DIRECTORY "Documentation" DEPENDS cmake_bbpdocumentation)
-
-  add_custom_target(git_commit_bbpdocumentation COMMAND ${GIT_EXECUTABLE} commit -m "Documentation for BGLibPy-${BGLIBPY_VERSION}" WORKING_DIRECTORY "Documentation" DEPENDS git_addindex_bbpdocumentation)
-
-  add_custom_target(git_push_bbpdocumentation COMMAND ${GIT_EXECUTABLE} push origin master WORKING_DIRECTORY "Documentation" DEPENDS git_addindex_bbpdocumentation)
-
-  add_custom_target(doc_upload DEPENDS git_push_bbpdocumentation)
- 
 endif()
-
