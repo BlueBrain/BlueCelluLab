@@ -78,7 +78,7 @@ if (SPHINX_FOUND)
 
       add_custom_target(git_add_bbpdocumentation 
           COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY} 
-          WORKING_DIRECTORY "Documentation" 
+          WORKING_DIRECTORY "Documentation"
           DEPENDS copy_to_bbpdocumentation)
 
       add_custom_target(cmake_bbpdocumentation
@@ -99,7 +99,7 @@ if (SPHINX_FOUND)
       add_custom_target(git_push_bbpdocumentation 
           COMMAND ${GIT_EXECUTABLE} push -n origin master 
           WORKING_DIRECTORY "Documentation" 
-          DEPENDS git_addindex_bbpdocumentation)
+          DEPENDS git_commit_bbpdocumentation )
 
       add_custom_target(doc_upload 
           DEPENDS git_push_bbpdocumentation)
