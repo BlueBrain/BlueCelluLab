@@ -82,14 +82,19 @@ if (SPHINX_FOUND)
           DEPENDS copy_to_bbpdocumentation)
 
       add_custom_target(git_add_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} add .
+          COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY} 
           WORKING_DIRECTORY "Documentation"
           DEPENDS cmake_bbpdocumentation)
+
+      add_custom_target(git_addindex_bbpdocumentation 
+          COMMAND ${GIT_EXECUTABLE} add index.html 
+          WORKING_DIRECTORY "Documentation" 
+          DEPENDS git_add_bbpdocumentation)
 
       add_custom_target(git_commit_bbpdocumentation 
           COMMAND ${GIT_EXECUTABLE} commit -m "Documentation for BGLibPy-${BGLIBPY_VERSION}" 
           WORKING_DIRECTORY "Documentation" 
-          DEPENDS git_add_bbpdocumentation)
+          DEPENDS git_addindex_bbpdocumentation)
 
       add_custom_target(git_push_bbpdocumentation 
           COMMAND ${GIT_EXECUTABLE} push -n origin master 
