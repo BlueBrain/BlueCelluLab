@@ -54,55 +54,25 @@ if (SPHINX_FOUND)
   set(DOCUMENTATION_REPO ssh://bbpcode.epfl.ch/common/Documentation)
 
   find_package(Git)
+
   if ((GIT_EXECUTABLE) AND (NOT BGLIBPY_VERSION MATCHES ".*dirty.*"))
       message("Git found, enabling doc_upload target")
 
       set(NEWDOC_DIRECTORY 
           "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-${BGLIBPY_MAINVERSION}")
 
-      add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/Documentation" 
-          COMMAND ${GIT_EXECUTABLE} clone ${DOCUMENTATION_REPO})
-      
-      add_custom_target(git_pull_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} pull WORKING_DIRECTORY "Documentation" 
-          DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Documentation")
-      
-      add_custom_target(remove_bglibpy_bbpdocumentation
-         COMMAND ${CMAKE_COMMAND} -E remove_directory
-         ${NEWDOC_DIRECTORY} DEPENDS git_pull_bbpdocumentation)
-
-      add_custom_target(copy_to_bbpdocumentation
-         COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${CMAKE_CURRENT_BINARY_DIR}/doc/build/html" ${NEWDOC_DIRECTORY} 
-          DEPENDS remove_bglibpy_bbpdocumentation doc)
-
-      add_custom_target(cmake_bbpdocumentation
-          COMMAND ${CMAKE_COMMAND} -DCMAKE_SOURCE_DIR="Documentation" 
-          WORKING_DIRECTORY "Documentation" 
-          DEPENDS copy_to_bbpdocumentation)
-
-      add_custom_target(git_add_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} add ${NEWDOC_DIRECTORY} 
-          WORKING_DIRECTORY "Documentation"
-          DEPENDS cmake_bbpdocumentation)
-
-      add_custom_target(git_addindex_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} add index.html 
-          WORKING_DIRECTORY "Documentation" 
-          DEPENDS git_add_bbpdocumentation)
-
-      add_custom_target(git_commit_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} commit -m "Documentation for BGLibPy-${BGLIBPY_VERSION}" 
-          WORKING_DIRECTORY "Documentation" 
-          DEPENDS git_addindex_bbpdocumentation)
-
-      add_custom_target(git_push_bbpdocumentation 
-          COMMAND ${GIT_EXECUTABLE} push -n origin master 
-          WORKING_DIRECTORY "Documentation" 
-          DEPENDS git_commit_bbpdocumentation )
+      configure_file(upload_doc.sh.in 
+          ${CMAKE_CURRENT_BINARY_DIR}/upload_doc.sh
+          @ONLY)
+ 
+      file(COPY ${CMAKE_CURRENT_BINARY_DIR}/upload_doc.sh
+          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+          GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
       add_custom_target(doc_upload 
-          DEPENDS git_push_bbpdocumentation)
+          COMMAND ./upload_doc.sh
+          DEPENDS doc)
   elseif (BGLIBPY_VERSION MATCHES ".*dirty.*")
       message("WARNING: BGLIBPY directory is dirty, disabling doc_upload target, commit changes first")
   elseif (GIT_EXECUTABLE)

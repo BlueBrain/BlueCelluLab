@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -e
+set -x
+
+
+###
+# Get latest version of Documentation
+###
+if [ ! -d "Documentation" ]
+then
+    @GIT_EXECUTABLE@ clone "@DOCUMENTATION_REPO@"
+    cd Documentation
+else
+    cd Documentation
+    @GIT_EXECUTABLE@ pull
+fi
+
+version_filename="@NEWDOC_DIRECTORY@/current_version.txt"
+
+###
+# Check if directory with latest version exists, and if it is up to date
+###
+if [ ! -f ${version_filename} ]
+then
+    doc_uptodate="False"
+else
+    current_doc_version=`cat ${version_filename}`
+    if [ ${current_doc_version} = "@BGLIBPY_VERSION@" ]
+    then
+        doc_uptodate="True"
+    else
+        doc_uptodate="False"
+    fi
+fi
+
+if [ ${doc_uptodate} = "False" ]    
+then
+    rm -rf "@NEWDOC_DIRECTORY@"
+                                                                                    
+    cp -r ../doc/build/html "@NEWDOC_DIRECTORY@"
+
+    cmake CMakeLists.txt
+
+    @GIT_EXECUTABLE@ add @NEWDOC_DIRECTORY@                                                                                
+    @GIT_EXECUTABLE@ add index.html
+
+    repo_status=`@GIT_EXECUTABLE@ status --porcelain --untracked-files=no`
+
+    if [ ! -z ${repo_status} ]
+    then
+        @GIT_EXECUTABLE@ commit -m "Documentation for BGLibPy-@BGLIBPY_VERSION@"                                                                                
+        @GIT_EXECUTABLE@ push origin master
+    fi
+    echo @BGLIBPY_VERSION@ >${version_filename}
+else
+    echo "Documentation at latest version, not updating"
+fi
