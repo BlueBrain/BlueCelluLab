@@ -45,7 +45,7 @@ then
     @GIT_EXECUTABLE@ add @NEWDOC_DIRECTORY@                                                                                
     @GIT_EXECUTABLE@ add index.html
 
-    repo_status=`@GIT_EXECUTABLE@ status --porcelain --untracked-files=no`
+    repo_status=`@GIT_EXECUTABLE@ status --porcelain --untracked-files=no | head -10`
 
     if [ ! -z ${repo_status} ]
     then
