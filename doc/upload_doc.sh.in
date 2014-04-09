@@ -41,18 +41,19 @@ then
     cp -r ../doc/build/html "@NEWDOC_DIRECTORY@"
 
     cmake CMakeLists.txt
+    
+    echo @BGLIBPY_VERSION@ >${version_filename}
 
-    @GIT_EXECUTABLE@ add @NEWDOC_DIRECTORY@                                                                                
+    @GIT_EXECUTABLE@ add @NEWDOC_DIRECTORY@
     @GIT_EXECUTABLE@ add index.html
 
     repo_status=`@GIT_EXECUTABLE@ status --porcelain --untracked-files=no | head -10`
 
-    if [ ! -z ${repo_status} ]
+    if [ ! -z "${repo_status}" ]
     then
         @GIT_EXECUTABLE@ commit -m "Documentation for BGLibPy-@BGLIBPY_VERSION@"                                                                                
         @GIT_EXECUTABLE@ push origin master
     fi
-    echo @BGLIBPY_VERSION@ >${version_filename}
 else
     echo "Documentation at latest version, not updating"
 fi
