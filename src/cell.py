@@ -718,7 +718,7 @@ class Cell(object):
         for index in range(0, int(nchild)):
             secname = neuron.h.secname(sec=neuron.h.SectionRef(
                 sec=self.soma).child[index])
-            if not "axon" in secname:
+            if "axon" not in secname:
                 if "dend" in secname:
                     dendnumber = int(secname.split("dend")[
                                      1].split("[")[1].split("]")[0])
