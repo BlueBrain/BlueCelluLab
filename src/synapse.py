@@ -111,7 +111,7 @@ class Synapse(object):
                        Only True if synapse is inhibitory
         """
 
-        return (self.syn_type < 100)
+        return self.syn_type < 100
 
     def is_excitatory(self):
         """
@@ -123,14 +123,14 @@ class Synapse(object):
                        Only True if synapse is excitatory
         """
 
-        return (self.syn_type >= 100)
+        return self.syn_type >= 100
 
     def delete(self):
         """
         Delete the connection
         """
         for persistent_object in self.persistent:
-            del(persistent_object)
+            del persistent_object
 
     def __del__(self):
         """

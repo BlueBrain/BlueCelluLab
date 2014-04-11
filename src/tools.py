@@ -12,6 +12,8 @@ import numpy
 import warnings
 import math
 
+# pylint: disable=R0914
+
 BLUECONFIG_KEYWORDS = [
     'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 
@@ -44,6 +46,7 @@ def set_verbose(level=1):
 class deprecated(object):
 
     """Decorator to mark a function as deprecated"""
+
     def __init__(self, new_function=""):
         """A decorator that shows a warning message when a deprecated function
         is used
@@ -95,7 +98,7 @@ def printv_err(message, verbose_level):
                       higher or equal to this number
     """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
-        print >> sys.stderr,  message
+        print >> sys.stderr, message
 
 
 def _me():
@@ -128,10 +131,10 @@ def parse_complete_BlueConfig(fName):
 
     block_number = 0
 
-    while(line != ''):
+    while line != '':
         stripped_line = line.strip()
         if stripped_line.startswith('#'):
-            ''' continue to next line '''
+            # continue to next line
             line = bc.next()
         elif stripped_line == '':
             # print 'found empty line'
@@ -158,14 +161,14 @@ def _parse_block_statement(file_object):
     file_object.next()  # skip the opening "}"
     line = file_object.next().strip()
     ret_dict = {}
-    while(not line.startswith('}')):
-        if(len(line) == 0 or line.startswith('#')):
+    while not line.startswith('}'):
+        if len(line) == 0 or line.startswith('#'):
             line = file_object.next().strip()
         else:
             key = line.split(' ')[0].strip()
             values = line.split(' ')[1:]
             for value in values:
-                if(value == ''):
+                if value == '':
                     pass
                 else:
                     ret_dict[key] = value
@@ -335,11 +338,11 @@ def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
 
     try:
         output = result.get(timeout=timeout)
-        #(SS_voltage, (time, voltage)) = result.get(timeout=timeout)
+        # (SS_voltage, (time, voltage)) = result.get(timeout=timeout)
     except multiprocessing.TimeoutError:
         output = (float('nan'), (None, None))
 
-    #(SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(
+    # (SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(
     # blueconfig, gid, step_level)
     pool.terminate()
     return output
@@ -469,6 +472,7 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
 class search_hyp_function(object):
 
     """Function object"""
+
     def __init__(self, blueconfig, **kwargs):
         self.blueconfig = blueconfig
         self.kwargs = kwargs
@@ -480,6 +484,7 @@ class search_hyp_function(object):
 class search_hyp_function_gid(object):
 
     """Function object, return a tuple (gid, results)"""
+
     def __init__(self, blueconfig, **kwargs):
         self.blueconfig = blueconfig
         self.kwargs = kwargs
