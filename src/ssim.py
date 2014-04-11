@@ -15,7 +15,7 @@ import os
 from bglibpy import printv
 from bglibpy import printv_err
 
-# pylint: disable=C0103
+# pylint: disable=C0103, R0914, R0912
 
 
 class SSim(object):
