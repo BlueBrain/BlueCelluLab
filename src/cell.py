@@ -8,7 +8,7 @@ Cell class
 
 """
 
-# pylint: disable=F0401, R0915
+# pylint: disable=F0401, R0915, R0914
 
 import numpy
 import re
@@ -573,12 +573,12 @@ class Cell(object):
             synlocation_to_segx(post_sec_id, post_seg_id,
                                 post_seg_distance)
         # todo: False
-        if('Weight' in connection_parameters):
+        if 'Weight' in connection_parameters:
             weight_scalar = connection_parameters['Weight']
         else:
             weight_scalar = 1.0
 
-        if('SpontMinis' in connection_parameters):
+        if 'SpontMinis' in connection_parameters:
             # add the *minis*: spontaneous synaptic events
             spont_minis_rate = connection_parameters['SpontMinis']
             self.ips[sid] = bglibpy.neuron.h.\
@@ -663,7 +663,22 @@ class Cell(object):
                 assert False, "Problem with initialize_synapse"
 
     def locate_bapsite(self, seclist_name, distance):
-        """Return the location of the BAP site."""
+        """Return the location of the BAP site.
+
+        Parameters
+        ----------
+
+        seclist_name : str
+            SectionList to search in
+        distance : float
+            Distance from soma
+
+        Returns
+        -------
+
+        list of sections at the specified distance from the soma
+
+        """
         return [x for x in self.cell.getCell().locateBAPSite(seclist_name,
                                                              distance)]
 
@@ -873,7 +888,7 @@ class Cell(object):
             self.synapses = None
 
         for persistent_object in self.persistent:
-            del(persistent_object)
+            del persistent_object
 
     @property
     def hsynapses(self):
