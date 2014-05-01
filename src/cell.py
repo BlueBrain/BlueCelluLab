@@ -8,7 +8,7 @@ Cell class
 
 """
 
-# pylint: disable=F0401, R0915
+# pylint: disable=F0401, R0915, R0914
 
 import numpy
 import re
@@ -48,9 +48,7 @@ class Cell(object):
         record_dt : float
                    Force a different timestep for the recordings
                    (default: None)
-
         """
-
         # Persistent objects, like clamps, that exist as long
         # as the object exists
         self.persistent = []
@@ -129,7 +127,6 @@ class Cell(object):
         of this morphology.
 
         """
-
         for hsection in self.all:
             secname = neuron.h.secname(sec=hsection)
             self.secname_to_hsection[secname] = hsection
@@ -160,7 +157,7 @@ class Cell(object):
 
     @staticmethod
     def _load_template(template_filename):
-        """Open a cell template, if template name already exists, rename it"""
+        """Open a cell template, if template name already exists, rename it."""
 
         template_content = open(template_filename, "r").read()
 
@@ -507,7 +504,7 @@ class Cell(object):
         self.delayed_weights.put((delay, (sid, weight)))
 
     def pre_gids(self):
-        """List of gids of cells that connect to this cell
+        """List of gids of cells that connect to this cell.
 
         Returns
         -------
@@ -521,7 +518,7 @@ class Cell(object):
         return list(pre_gid_list)
 
     def pre_gid_synapse_ids(self, pre_gid):
-        """List of synapse_id's of synapses a cell uses to connect to this cell
+        """List of synapse_id's of synapses a cell uses to connect to this cell.
 
         Parameters
         ----------
@@ -576,12 +573,12 @@ class Cell(object):
             synlocation_to_segx(post_sec_id, post_seg_id,
                                 post_seg_distance)
         # todo: False
-        if('Weight' in connection_parameters):
+        if 'Weight' in connection_parameters:
             weight_scalar = connection_parameters['Weight']
         else:
             weight_scalar = 1.0
 
-        if('SpontMinis' in connection_parameters):
+        if 'SpontMinis' in connection_parameters:
             # add the *minis*: spontaneous synaptic events
             spont_minis_rate = connection_parameters['SpontMinis']
             self.ips[sid] = bglibpy.neuron.h.\
@@ -666,7 +663,22 @@ class Cell(object):
                 assert False, "Problem with initialize_synapse"
 
     def locate_bapsite(self, seclist_name, distance):
-        """Return the location of the BAP site."""
+        """Return the location of the BAP site.
+
+        Parameters
+        ----------
+
+        seclist_name : str
+            SectionList to search in
+        distance : float
+            Distance from soma
+
+        Returns
+        -------
+
+        list of sections at the specified distance from the soma
+
+        """
         return [x for x in self.cell.getCell().locateBAPSite(seclist_name,
                                                              distance)]
 
@@ -876,7 +888,7 @@ class Cell(object):
             self.synapses = None
 
         for persistent_object in self.persistent:
-            del(persistent_object)
+            del persistent_object
 
     @property
     def hsynapses(self):
@@ -938,7 +950,7 @@ class Cell(object):
         return self.locate_bapsite(seclistName, distance)
 
     def injectCurrentWaveform(self, t_content, i_content, location=None):
-        """Inject a current in the cell"""
+        """Inject a current in the cell."""
         start_time = t_content[0]
         stop_time = t_content[-1]
         time = neuron.h.Vector()
