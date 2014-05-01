@@ -13,7 +13,6 @@ import bglibpy
 import collections
 import os
 from bglibpy import printv
-from bglibpy import printv_err
 
 # pylint: disable=C0103, R0914, R0912
 
@@ -364,10 +363,9 @@ class SSim(object):
                         printv("Found stimulus with pattern %s, ignoring" %
                                stimulus.CONTENTS.Pattern, 1)
                     else:
-                        printv_err("Found stimulus with pattern %s, "
-                                   "not supported" %
-                                   stimulus.CONTENTS.Pattern, 1)
-                        exit(1)
+                        raise Exception("Found stimulus with pattern %s, "
+                                        "not supported" %
+                                        stimulus.CONTENTS.Pattern)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
