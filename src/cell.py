@@ -20,7 +20,6 @@ from bglibpy.importer import neuron
 from bglibpy import psection
 import Queue
 from bglibpy import printv
-# from bglibpy import printv_err
 
 
 class Cell(object):
