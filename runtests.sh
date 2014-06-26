@@ -1,3 +1,3 @@
 #!/bin/sh
 
-build/test/runtests.sh $*
+build_viz/test/runtests.sh $*

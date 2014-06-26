@@ -8,7 +8,7 @@ Cell class
 
 """
 
-# pylint: disable=F0401, R0915, R0914
+# pylint: disable=F0401, R0915, R0914, C0302
 
 import numpy
 import re
@@ -874,6 +874,22 @@ class Cell(object):
             cell_dendrogram.redraw()
 
         neuron.h.cvode.event(neuron.h.t + 1, self.plot_callback)
+
+    @property
+    def info_dict(self):
+        """Return a dictionary with all the information of this cell"""
+
+        cell_info = {}
+
+        cell_info['synapses'] = {}
+        for sid, synapse in self.synapses.iteritems():
+            cell_info['synapses'][sid] = synapse.info_dict
+
+        cell_info['connections'] = {}
+        for sid, connection in self.connections.iteritems():
+            cell_info['connections'][sid] = connection.info_dict
+
+        return cell_info
 
     def delete(self):
         """Delete the cell."""
