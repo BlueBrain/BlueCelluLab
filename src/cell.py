@@ -156,7 +156,7 @@ class Cell(object):
 
     @staticmethod
     def _load_template(template_filename):
-        """Open a cell template, if template name already exists, rename it."""
+        """Open a cell template. If template name already exists, rename it."""
 
         template_content = open(template_filename, "r").read()
 
