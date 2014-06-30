@@ -39,25 +39,44 @@ class Connection(object):
             self.weight_scalar = 1.0
 
         self.post_netcon = None
+        self.post_netcon_delay = self.delay
+        self.post_netcon_weight = self.weight * self.weight_scalar
 
         if self.pre_spiketrain is not None:
             t_vec = bglibpy.neuron.h.Vector(self.pre_spiketrain)
             vecstim = bglibpy.neuron.h.VecStim()
             vecstim.play(t_vec, stim_dt)
             self.post_netcon = bglibpy.neuron.h.NetCon(
-                vecstim, self.post_synapse.hsynapse, -30, self.delay,
-                self.weight * self.weight_scalar)
+                vecstim, self.post_synapse.hsynapse, -30,
+                self.post_netcon_delay,
+                self.post_netcon_weight)
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
         elif self.pre_cell is not None:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(
                 self.post_synapse.hsynapse)
-            self.post_netcon.weight[0] = self.weight * self.weight_scalar
-            self.post_netcon.delay = self.delay
+            self.post_netcon.weight[0] = self.post_netcon_weight
+            self.post_netcon.delay = self.post_netcon_delay
         else:
             raise Exception(
                 "Connection: trying to instantiated connection without "
                 "presynaptic spiketrain nor cell")
+
+    @property
+    def info_dict(self):
+        """Return dict that contains information that can restore this conn."""
+
+        connection_dict = {}
+
+        connection_dict['pre_cell_id'] = self.post_synapse.pre_gid
+        connection_dict['post_cell_id'] = self.post_synapse.post_gid
+        connection_dict['post_synapse_id'] = self.post_synapse.sid
+
+        connection_dict['post_netcon'] = {}
+        connection_dict['post_netcon']['weight'] = self.post_netcon_weight
+        connection_dict['post_netcon']['delay'] = self.post_netcon_delay
+
+        return connection_dict
 
     def delete(self):
         """Delete the connection"""

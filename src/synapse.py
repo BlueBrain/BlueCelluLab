@@ -38,6 +38,7 @@ class Synapse(object):
         self.persistent = []
 
         self.cell = cell
+        self.post_gid = cell.gid
         self.sid = sid
         self.syn_description = syn_description
         self.connection_parameters = connection_parameters
@@ -60,6 +61,8 @@ class Synapse(object):
         self.syn_DTC = syn_description[12]
         self.syn_type = syn_description[13]
 
+        self.post_segx = location
+
         # pylint: enable = C0103
 
         if self.syn_type < 100:
@@ -67,8 +70,10 @@ class Synapse(object):
             # wiki/index.php/BlueBuilder_Specifications#NRN,
             # inhibitory synapse
 
+            self.mech_name = 'ProbGABAAB_EMS'
+
             self.hsynapse = bglibpy.neuron.h.\
-                ProbGABAAB_EMS(location,
+                ProbGABAAB_EMS(self.post_segx,
                                sec=self.cell.get_hsection(post_sec_id))
 
             self.hsynapse.tau_d_GABAA = self.syn_DTC
@@ -78,9 +83,12 @@ class Synapse(object):
             self.hsynapse.tau_r_GABAA = rng.repick()
         else:
             # else we have excitatory synapse
+
+            self.mech_name = 'ProbAMPANMDA_EMS'
+
             self.hsynapse = bglibpy.neuron.h.\
                 ProbAMPANMDA_EMS(
-                    location, sec=self.cell.get_hsection(post_sec_id))
+                    self.post_segx, sec=self.cell.get_hsection(post_sec_id))
             self.hsynapse.tau_d_AMPA = self.syn_DTC
 
         self.hsynapse.Use = abs(self.syn_U)
@@ -88,16 +96,20 @@ class Synapse(object):
         self.hsynapse.Fac = abs(self.syn_F)
 
         rndd = bglibpy.neuron.h.Random()
-        rndd.MCellRan4(sid * 100000 + 100, self.cell.gid + 250 + base_seed)
+        self.randseed1 = sid * 100000 + 100
+        self.randseed2 = self.cell.gid + 250 + base_seed
+        rndd.MCellRan4(self.randseed1, self.randseed2)
         rndd.uniform(0, 1)
         self.hsynapse.setRNG(rndd)
         self.persistent.append(rndd)
 
         self.hsynapse.synapseID = sid
 
+        self.synapseconfigure_cmds = []
         # hoc exec synapse configure blocks
-        if 'SynapseConfigure' in connection_parameters:
-            for cmd in connection_parameters['SynapseConfigure']:
+        if 'SynapseConfigure' in self.connection_parameters:
+            for cmd in self.connection_parameters['SynapseConfigure']:
+                self.synapseconfigure_cmds.append(cmd)
                 cmd = cmd.replace('%s', '\n%(syn)s')
                 bglibpy.neuron.h(cmd % {'syn': self.hsynapse.hname()})
 
@@ -131,6 +143,43 @@ class Synapse(object):
         """
         for persistent_object in self.persistent:
             del persistent_object
+
+    @property
+    def info_dict(self):
+        """
+        Convert the synapse info to a dict from which it can be reconstructed
+        """
+
+        synapse_dict = {}
+
+        synapse_dict['synapse_id'] = self.sid
+        synapse_dict['pre_cell_id'] = self.pre_gid
+        synapse_dict['post_cell_id'] = self.post_gid
+        synapse_dict['post_sec_id'] = self.isec
+        synapse_dict['post_segx'] = self.post_segx
+        synapse_dict['mech_name'] = self.mech_name
+        synapse_dict['randseed1'] = self.randseed1
+        synapse_dict['randseed2'] = self.randseed2
+        synapse_dict['synapseconfigure_cmds'] = self.synapseconfigure_cmds
+
+        # Parameters of the mod mechanism
+        synapse_dict['synapse_parameters'] = {}
+        synapse_dict['synapse_parameters']['Use'] = self.hsynapse.Use
+        synapse_dict['synapse_parameters']['Dep'] = self.hsynapse.Dep
+        synapse_dict['synapse_parameters']['Fac'] = self.hsynapse.Fac
+        if synapse_dict['mech_name'] == 'ProbGABAAB_EMS':
+            synapse_dict['synapse_parameters']['tau_d_GABAA'] = \
+                self.hsynapse.tau_d_GABAA
+            synapse_dict['synapse_parameters']['tau_r_GABAA'] = \
+                self.hsynapse.tau_r_GABAA
+        elif synapse_dict['mech_name'] == 'ProbAMPANMDA_EMS':
+            synapse_dict['synapse_parameters']['tau_d_AMPA'] = \
+                self.hsynapse.tau_d_AMPA
+        else:
+            raise Exception('Encountered unknow mech_name %s in synapse' %
+                            synapse_dict['mech_name'])
+
+        return synapse_dict
 
     def __del__(self):
         """

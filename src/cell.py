@@ -8,7 +8,7 @@ Cell class
 
 """
 
-# pylint: disable=F0401, R0915, R0914
+# pylint: disable=F0401, R0915, R0914, C0302
 
 import numpy
 import re
@@ -20,7 +20,6 @@ from bglibpy.importer import neuron
 from bglibpy import psection
 import Queue
 from bglibpy import printv
-# from bglibpy import printv_err
 
 
 class Cell(object):
@@ -157,7 +156,7 @@ class Cell(object):
 
     @staticmethod
     def _load_template(template_filename):
-        """Open a cell template, if template name already exists, rename it."""
+        """Open a cell template. If template name already exists, rename it."""
 
         template_content = open(template_filename, "r").read()
 
@@ -875,6 +874,22 @@ class Cell(object):
             cell_dendrogram.redraw()
 
         neuron.h.cvode.event(neuron.h.t + 1, self.plot_callback)
+
+    @property
+    def info_dict(self):
+        """Return a dictionary with all the information of this cell"""
+
+        cell_info = {}
+
+        cell_info['synapses'] = {}
+        for sid, synapse in self.synapses.iteritems():
+            cell_info['synapses'][sid] = synapse.info_dict
+
+        cell_info['connections'] = {}
+        for sid, connection in self.connections.iteritems():
+            cell_info['connections'][sid] = connection.info_dict
+
+        return cell_info
 
     def delete(self):
         """Delete the cell."""
