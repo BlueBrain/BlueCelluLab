@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- #pylint: disable=C0302, W0123
 
 """
 Cell class
@@ -8,7 +8,13 @@ Cell class
 
 """
 
-# pylint: disable=F0401, R0915, R0914, C0302
+# pylint: disable=F0401, R0915, R0914
+
+# WARNING: I am ignoring pylint warnings which don't allow one to use eval()
+# This might be a possible security risk, but in this specific case,
+# avoiding eval() is not trivial at all, due to Neuron's complex attributes
+# Since importing the neuron module is already a big security risk on it's
+# own, I'm ignoring this warning for the moment
 
 import numpy
 import re
@@ -731,8 +737,8 @@ class Cell(object):
                 sec=self.soma).child[index])
             if "axon" not in secname:
                 if "dend" in secname:
-                    dendnumber = int(secname.split("dend")[
-                                     1].split("[")[1].split("]")[0])
+                    dendnumber = int(
+                        secname.split("dend")[1].split("[")[1].split("]")[0])
                     secnumber = int(
                         self.cell.getCell().nSecAxonalOrig +
                         self.cell.getCell().nSecSoma + dendnumber)
@@ -757,11 +763,11 @@ class Cell(object):
             apicaltrunk.append(self.apical[0])
             currentsection = self.apical[0]
             while True:
-                children = \
-                    [neuron.h.SectionRef(sec=currentsection).child[index]
-                     for index in range(0,
-                                        int(neuron.h.SectionRef(sec=
-                                            currentsection).nchild()))]
+                children = [
+                    neuron.h.SectionRef(
+                        sec=currentsection).child[index]
+                    for index in range(0, int(neuron.h.SectionRef(
+                        sec=currentsection).nchild()))]
                 if len(children) is 0:
                     break
                 maxdiam = 0
@@ -777,8 +783,8 @@ class Cell(object):
         """Add a ramp current injection."""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level - start_level)
-                      / (stop_time - start_time)) * (
-            x - start_time) + start_level for x in t_content]
+                      / (stop_time - start_time)) *
+                     (x - start_time) + start_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content, location=location)
 
     def addVClamp(self, stop_time, level):
@@ -854,8 +860,8 @@ class Cell(object):
         """Callback function that updates the delayed weights,
         when a certain delay has been reached"""
         while not self.delayed_weights.empty() and \
-                abs(self.delayed_weights.queue[0][0] -
-                    neuron.h.t) < neuron.h.dt:
+                abs(self.delayed_weights.queue[0][0] - neuron.h.t) < \
+                neuron.h.dt:
             (_, (sid, weight)) = self.delayed_weights.get()
             if sid in self.connections:
                 self.connections[sid].post_netcon.weight[0] = weight
@@ -863,8 +869,8 @@ class Cell(object):
                 # (sid, weight, neuron.h.t)
 
         if not self.delayed_weights.empty():
-            neuron.h.cvode.event(self.delayed_weights.queue[
-                                 0][0], self.weights_callback)
+            neuron.h.cvode.event(self.delayed_weights.queue[0][0],
+                                 self.weights_callback)
 
     def plot_callback(self):
         """Update all the windows."""
