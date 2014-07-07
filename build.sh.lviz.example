@@ -7,11 +7,11 @@
 #export NEURON_HOME=$HOME/local/santiago/nrnbglibpy
 #export NRNPYTHONPATH=${NEURON_HOME}/lib64/python2.6/site-packages
 
-mkdir build
-cd build
+mkdir build_lviz
+cd build_lviz
 cmake .. \
-    -DMODLIBPATH=$HOME/src/bbp/lib/modlib \
-    -DHOCLIBPATH=$HOME/src/bbp/lib/hoclib \
+    -DMODLIBPATH=$HOME/private/src/bbp/lib/modlib \
+    -DHOCLIBPATH=$HOME/private/src/bbp/lib/hoclib \
     -DNRNPATH=$HOME/local/lviz/nrnnogui \
     -DNRNPYTHONPATH=$HOME/local/lviz/nrnnogui/lib64/python/ \
     -DBLUEPYPATH=$HOME/local/lviz/bluepy/lib/python2.6/site-packages \
