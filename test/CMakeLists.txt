@@ -1,3 +1,5 @@
+add_subdirectory(pylint)
+
 configure_file(runtests.sh.in runtests.sh @ONLY)
 configure_file(test_load.py.in test_load.py @ONLY)
 #configure_file(test_ballstick.py test_ballstick.py @ONLY)
