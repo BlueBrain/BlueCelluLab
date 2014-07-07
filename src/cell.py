@@ -757,11 +757,12 @@ class Cell(object):
             apicaltrunk.append(self.apical[0])
             currentsection = self.apical[0]
             while True:
-                children = \
-                    [neuron.h.SectionRef(sec=currentsection).child[index]
-                     for index in range(0,
-                                        int(neuron.h.SectionRef(sec=
-                                            currentsection).nchild()))]
+                children = [
+                    neuron.h.SectionRef(
+                        sec=currentsection).child[index] for index in range(
+                        0, int(
+                            neuron.h.SectionRef(
+                                sec=currentsection).nchild()))]
                 if len(children) is 0:
                     break
                 maxdiam = 0
