@@ -14,6 +14,7 @@ export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
 #
 # fi
 
-{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s ${@}; }
+{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s --with-coverage --with-xunit --xunit-file=@CMAKE_CURRENT_BINARY_DIR@/xunit.xml ${@}; }
+mv .coverage @CMAKE_CURRENT_BINARY_DIR@
 #{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests --with-xunit -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests $ATTRIBUTES --with-xunit -v -x -s ${@:2}; }
 #-v: verbose -x: exit at first error -s: don't redirect stdout
