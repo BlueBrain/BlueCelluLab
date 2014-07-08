@@ -74,6 +74,7 @@ class SSim(object):
                 lambda: collections.defaultdict(
                     lambda: None))
 
+    # pylint: disable=R0913
     def instantiate_gids(self, gids, synapse_detail=None,
                          add_replay=False,
                          add_stimuli=False,
@@ -158,9 +159,9 @@ class SSim(object):
             add_hyperpolarizing_stimuli = True
 
         if add_noise_stimuli or add_hyperpolarizing_stimuli:
-            self._add_stimuli(add_noise_stimuli=add_noise_stimuli,
-                              add_hyperpolarizing_stimuli=
-                              add_hyperpolarizing_stimuli)
+            self._add_stimuli(
+                add_noise_stimuli=add_noise_stimuli,
+                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
                                add_minis=add_minis)
@@ -168,15 +169,17 @@ class SSim(object):
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells)
 
+    # pylint: enable=R0913
+
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False):
         """Instantiate all the stimuli"""
         for gid in self.gids:
             # Also add the injections / stimulations as in the cortical model
-            self._add_stimuli_gid(gid,
-                                  add_noise_stimuli=add_noise_stimuli,
-                                  add_hyperpolarizing_stimuli=
-                                  add_hyperpolarizing_stimuli)
+            self._add_stimuli_gid(
+                gid,
+                add_noise_stimuli=add_noise_stimuli,
+                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
     def _add_synapses(self, intersect_pre_gids=None, add_minis=None,
@@ -225,13 +228,17 @@ class SSim(object):
                         dest=dest)
 
     def _add_connections(
-        self, add_replay=None, interconnect_cells=None, outdat_path=None,
-            source=None, dest=None):
+            self,
+            add_replay=None,
+            interconnect_cells=None,
+            outdat_path=None,
+            source=None,
+            dest=None):
         """Instantiate the (replay and real) connections in the network"""
         if outdat_path is None:
-            outdat_path = os.path.join(self.bc.entry_map[
-                                       'Default'].CONTENTS.OutputRoot,
-                                       'out.dat')
+            outdat_path = os.path.join(
+                self.bc.entry_map['Default'].CONTENTS.OutputRoot,
+                'out.dat')
 
         if add_replay:
             pre_spike_trains = _parse_outdat2(outdat_path)
@@ -446,8 +453,8 @@ class SSim(object):
 
                     if 'Delay' in entry.CONTENTS.keys:
                         parameters.setdefault('DelayWeights', []).append(
-                            (float(entry.CONTENTS.Delay),
-                                float(entry.CONTENTS.Weight)))
+                            float(entry.CONTENTS.Delay),
+                            float(entry.CONTENTS.Weight))
                         apply_parameters = False
 
                     if apply_parameters:
@@ -491,8 +498,8 @@ class SSim(object):
             dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
         if forward_skip is None:
             try:
-                forward_skip = float(self.bc.entry_map[
-                                     'Default'].CONTENTS.ForwardSkip)
+                forward_skip = float(
+                    self.bc.entry_map['Default'].CONTENTS.ForwardSkip)
             except AttributeError:
                 forward_skip = None
 

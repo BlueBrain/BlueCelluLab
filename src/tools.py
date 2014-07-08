@@ -410,6 +410,8 @@ class NestedPool(multiprocessing.pool.Pool):
     """Class that represents a MultiProcessing nested pool"""
     Process = NoDaemonProcess
 
+# pylint: disable=R0913
+
 
 def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
                               min_current=-1.0, max_current=0.0,
@@ -470,6 +472,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
                                          stop_time=stop_time,
                                          max_nestlevel=max_nestlevel,
                                          return_fullrange=return_fullrange)
+
+# pylint: enable=R0913
 
 
 class search_hyp_function(object):
