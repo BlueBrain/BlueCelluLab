@@ -8,4 +8,4 @@ echo "### WARNING Make sure you rebuild/install BGLibPy before running theses te
 echo "###"
 export PYTHONPATH=@PYTHON_PACKAGE_INSTALL_DIR@:${PYTHONPATH}
 
-{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s --with-coverage --cover-xml --cover-xml-file=@CMAKE_CURRENT_BINARY_DIR@/coverage.xml --with-xunit --xunit-file=@CMAKE_CURRENT_BINARY_DIR@/xunit.xml ${@}; }
+{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s --with-coverage --cover-package=bglibpy --cover-xml --cover-xml-file=@CMAKE_CURRENT_BINARY_DIR@/coverage.xml --with-xunit --xunit-file=@CMAKE_CURRENT_BINARY_DIR@/xunit.xml ${@}; }
