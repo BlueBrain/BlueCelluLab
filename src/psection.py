@@ -16,6 +16,7 @@ from bglibpy import neuron
 class PSection(object):
 
     """Class that represents a cell section"""
+
     def __init__(self, hsection, isec=None):
         self.L = hsection.L
         self.diam = hsection.diam
@@ -65,9 +66,11 @@ class PSection(object):
         """Setup draw of psection"""
         y_accum = 0
         for psegment in self.psegments:
-            psegment.setupDraw(figure, x + (
-                self.maxsegdiam - psegment.diam) / 2,
-                y + y_accum, variable=variable, varbounds=varbounds)
+            psegment.setupDraw(figure,
+                               x + (self.maxsegdiam - psegment.diam) / 2,
+                               y + y_accum,
+                               variable=variable,
+                               varbounds=varbounds)
             y_accum += psegment.L
 
     def redraw(self):
@@ -92,10 +95,12 @@ class PSection(object):
         for child in self.pchildren:
             child_varbounds = child.getTreeVarBounds(variable)
             if child_varbounds[0] and child_varbounds[1]:
-                varbounds[0] = min(varbounds[0], child_varbounds[
-                                   0]) if varbounds[0] else child_varbounds[0]
-                varbounds[1] = max(varbounds[1], child_varbounds[
-                                   1]) if varbounds[1] else child_varbounds[1]
+                varbounds[0] = min(
+                    varbounds[0],
+                    child_varbounds[0]) if varbounds[0] else child_varbounds[0]
+                varbounds[1] = max(
+                    varbounds[1],
+                    child_varbounds[1]) if varbounds[1] else child_varbounds[1]
 
         return varbounds
 
@@ -115,8 +120,9 @@ class PSection(object):
         for child in self.pchildren:
             child.drawTree(
                 figure, new_x, new_y, variable=variable, varbounds=varbounds)
-            pylab.plot([x + self.diam / 2, new_x + child.diam / 2], [
-                       y + self.L, new_y], 'k')
+            pylab.plot(
+                [x + self.diam / 2, new_x + child.diam / 2],
+                [y + self.L, new_y], 'k')
             new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
@@ -133,8 +139,8 @@ class PSection(object):
     def treeHeight(self):
         """Height of dendritic tree"""
         return self.L + self.xSpacing + \
-            (max([child.treeHeight()
-             for child in self.pchildren]) if self.pchildren else 0)
+            (max([child.treeHeight() for child in self.pchildren])
+             if self.pchildren else 0)
 
     def getHChildren(self):
         """All hoc children of a section"""

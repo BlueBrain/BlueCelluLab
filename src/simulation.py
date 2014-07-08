@@ -19,6 +19,7 @@ from bglibpy import tools
 class Simulation(object):
 
     """Class that represents a neuron simulation"""
+
     def __init__(self):
         self.cells = []
         self.fih_progress = None
@@ -72,7 +73,7 @@ class Simulation(object):
         for cell in self.cells:
             cell.init_callbacks()
 
-    # pylint: disable=C0103
+    # pylint: disable=C0103,R0912
     def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025,
             forward_skip=None, show_progress=None):
         """Run the simulation."""
@@ -154,7 +155,7 @@ class Simulation(object):
 
         printv('Finished simulation', 1)
 
-    # pylint: enable=C0103
+    # pylint: enable=C0103,R0912
 
     def __del__(self):
         pass
