@@ -191,8 +191,9 @@ def calculate_inputresistance(template_name, morphology_name,
 def calculate_SS_voltage(template_name, morphology_name, step_level):
     """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
-    SS_voltage = pool.apply(calculate_SS_voltage_subprocess, [
-                            template_name, morphology_name, step_level])
+    SS_voltage = pool.apply(
+        calculate_SS_voltage_subprocess, [
+            template_name, morphology_name, step_level])
     pool.terminate()
     return SS_voltage
 
@@ -263,9 +264,10 @@ def detect_spike_step(template_name, morphology_name, hyp_level, inj_start,
                       inj_stop, step_level):
     """Detect if there is a spike at a certain step level"""
     pool = multiprocessing.Pool(processes=1)
-    spike_detected = pool.apply(detect_spike_step_subprocess, [
-                                template_name, morphology_name, hyp_level,
-                                inj_start, inj_stop, step_level])
+    spike_detected = pool.apply(
+        detect_spike_step_subprocess,
+        [template_name, morphology_name, hyp_level,
+         inj_start, inj_stop, step_level])
     pool.terminate()
     return spike_detected
 
@@ -332,9 +334,9 @@ def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
     """Calculate the steady state voltage at a certain current step"""
     pool = multiprocessing.Pool(processes=1)
     # print "Calculate_SS_voltage_replay %f" % step_level
-    result = pool.apply_async(calculate_SS_voltage_replay_subprocess, [
-                              blueconfig, gid, step_level, start_time,
-                              stop_time, ignore_timerange])
+    result = pool.apply_async(calculate_SS_voltage_replay_subprocess,
+                              [blueconfig, gid, step_level, start_time,
+                               stop_time, ignore_timerange])
 
     try:
         output = result.get(timeout=timeout)
@@ -491,7 +493,11 @@ class search_hyp_function_gid(object):
         self.kwargs = kwargs
 
     def __call__(self, gid):
-        return (gid, search_hyp_current_replay(self.blueconfig, gid,
+        return (
+            gid,
+            search_hyp_current_replay(
+                self.blueconfig,
+                gid,
                 **self.kwargs))
 
 

@@ -15,6 +15,7 @@ import bglibpy
 class PSegment(object):
 
     """A python representation of a segment"""
+
     def __init__(self, hsegment, parentsection):
         # import matplotlib as plt
         from matplotlib import cm
@@ -53,7 +54,7 @@ class PSegment(object):
         """Redraw a segment"""
         if self.plotvariable:
             plotvariable_value = self.getVariableValue(self.plotvariable)
-            if not plotvariable_value is None:
+            if plotvariable_value is not None:
                 self.patch.set_facecolor(self.color_map(
                     (plotvariable_value - self.varbounds[0]) /
                     (self.varbounds[1] - self.varbounds[0])))

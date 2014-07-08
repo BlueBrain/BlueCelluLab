@@ -4,5 +4,6 @@ if [ $exitcode -ge 32 ]
 then
     exit $exitcode
 else
+    cat pylint.output
     exit 0
 fi
