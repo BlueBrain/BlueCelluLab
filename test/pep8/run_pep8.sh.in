@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -x
+
+pep8 --config=@CMAKE_CURRENT_SOURCE_DIR@/pep8rc @DESTINATION_DIR@ > pep8.output
+
+exitcode=$?
+if [ $exitcode -ge 2 ]
+then
+    exit $exitcode
+else
+    cat pep8.output
+    exit 0
+fi

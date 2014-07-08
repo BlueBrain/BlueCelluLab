@@ -1,4 +1,5 @@
 add_subdirectory(pylint)
+add_subdirectory(pep8)
 
 configure_file(runtests.sh.in runtests.sh @ONLY)
 configure_file(test_load.py.in test_load.py @ONLY)
