@@ -620,25 +620,6 @@ class Cell(object):
             # (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, \
             # uniform_seed1, uniform_seed2)
 
-    def charge_replay_synapse(self, sid,
-                              syn_description,
-                              connection_parameters,
-                              pre_spiketrain,
-                              stim_dt=None):
-        """Put the replay spiketrains from out.dat on the synapses."""
-
-        if sid in self.connections:
-            raise Exception("Cell: trying to add a connection twice to the \
-                                        same synapse id: %d" % sid)
-        else:
-            self.connections[sid] = \
-                bglibpy.Connection(self.synapses[sid].hsynapse,
-                                   syn_description,
-                                   connection_parameters,
-                                   pre_spiketrain=pre_spiketrain,
-                                   pre_cell=None,
-                                   stim_dt=stim_dt)
-
     def initialize_synapses(self):
         """Initialize the synapses."""
         for synapse in self.synapses.itervalues():

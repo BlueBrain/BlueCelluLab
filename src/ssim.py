@@ -452,9 +452,9 @@ class SSim(object):
                             apply_parameters = False
 
                     if 'Delay' in entry.CONTENTS.keys:
-                        parameters.setdefault('DelayWeights', []).append(
+                        parameters.setdefault('DelayWeights', []).append((
                             float(entry.CONTENTS.Delay),
-                            float(entry.CONTENTS.Weight))
+                            float(entry.CONTENTS.Weight)))
                         apply_parameters = False
 
                     if apply_parameters:
