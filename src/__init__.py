@@ -8,6 +8,9 @@ Python library for running single cell bglib templates
          Do not distribute without further notice.
 
 """
+
+# pylint: disable=W0401, W0611
+
 from .importer import *
 from .tools import *
 from .cell import Cell
@@ -20,4 +23,3 @@ from .psegment import PSegment
 from .simulation import Simulation
 from .ssim import SSim
 from .versions import *
-#print "BGLibPy was built with:\n=====\n%s=====\n" % config

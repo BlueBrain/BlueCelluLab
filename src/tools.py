@@ -387,6 +387,7 @@ class NoDaemonProcess(multiprocessing.Process):
     """Class that represents a non-daemon process"""
 
     # pylint: disable=R0201
+
     def _get_daemon(self):
         """Get daemon flag"""
         return False

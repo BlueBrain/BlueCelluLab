@@ -7,4 +7,5 @@ neuron_version = "${NRN_VERSION}"
 bg_hoclib_version = "${BG_Hoclib}"
 
 version = bglibpy_version
-build_versions = "BGLibPy:%s\nNeuron:%s\nBGHocLib:%s\n" % (bglibpy_version, neuron_version, bg_hoclib_version)
+build_versions = "BGLibPy:%s\nNeuron:%s\nBGHocLib:%s\n" % (
+    bglibpy_version, neuron_version, bg_hoclib_version)

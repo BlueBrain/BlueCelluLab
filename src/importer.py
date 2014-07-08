@@ -27,7 +27,9 @@ os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
 print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
 sys.path = [pathsconfig["NRNPYTHONPATH"]] + sys.path
+# pylint: disable=F0401
 import neuron
+# pylint: enable=F0401
 print "Imported neuron from %s" % neuron.__file__
 
 neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
