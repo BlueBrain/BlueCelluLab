@@ -68,8 +68,13 @@ class PSegment(object):
         if variable is "v" or \
                 bglibpy.neuron.h.execute1("{%s.%s(%f)}" %
                                           (bglibpy.neuron.h.secname(
-                                           sec=self.parentsection.hsection),
-                                           variable, self.hsegment.x), 0):
+                                              sec=self.parentsection.hsection),
+                                           variable,
+                                           self.hsegment.x),
+                                          0):
+            # pylint: disable=W0123
             return eval("self.hsegment." + variable)
+            # pylint: enable=W0123
+
         else:
             return None
