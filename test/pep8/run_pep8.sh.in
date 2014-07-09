@@ -2,6 +2,8 @@
 
 set -x
 
+export PYTHONPATH=@BLUEPYPATH@:$PYTHONPATH
+
 pep8 --config=@CMAKE_CURRENT_SOURCE_DIR@/pep8rc @DESTINATION_DIR@ > pep8.output
 
 exitcode=$?

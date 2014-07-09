@@ -8,13 +8,13 @@
 
 """
 
+# pylint: disable=C0103, R0914, R0912, F0401
+
 from bglibpy import bluepy
 import bglibpy
 import collections
 import os
 from bglibpy import printv
-
-# pylint: disable=C0103, R0914, R0912
 
 
 class SSim(object):
@@ -227,6 +227,7 @@ class SSim(object):
                         add_replay=True, outdat_path=stim.CONTENTS.SpikeFile,
                         dest=dest)
 
+    # pylint: disable=R0913
     def _add_connections(
             self,
             add_replay=None,

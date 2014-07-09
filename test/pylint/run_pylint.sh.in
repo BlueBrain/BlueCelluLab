@@ -2,6 +2,8 @@
 
 set -x
 
+export PYTHONPATH=@BLUEPYPATH@:$PYTHONPATH
+
 pylint @DESTINATION_DIR@ --rcfile=@CMAKE_CURRENT_SOURCE_DIR@/pylintrc --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' --disable=I0011 > pylint.output
 exitcode=$?
 if [ $exitcode -ge 32 ]
