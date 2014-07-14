@@ -1,14 +1,13 @@
+option(ENABLE_COVERAGE "Enable coverage report." ON)
+option(ENABLE_XUNITS "Enable XUnits reports." ON)
+
+
 add_subdirectory(pylint)
 add_subdirectory(pep8)
 
 configure_file(runtests.sh.in runtests.sh @ONLY)
 configure_file(test_load.py.in test_load.py @ONLY)
-#configure_file(test_ballstick.py test_ballstick.py @ONLY)
-#configure_file(test_bglib.py test_bglib.py @ONLY)
-#configure_file(test_cell.py test_cell.py @ONLY)
-#configure_file(test_simulation.py test_simulation.py @ONLY)
-#configure_file(test_ssim.py test_ssim.py @ONLY)
-#configure_file(test_tools.py test_tools.py @ONLY)
+
 if (NOBGSCRATCH)
     set(NOSEATTRIBUTES "NOBGSCRATCH")
 endif ()
