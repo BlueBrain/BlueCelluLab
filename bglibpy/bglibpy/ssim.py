@@ -209,24 +209,6 @@ class SSim(object):
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
-    def _add_synapse_replay_stimuli(self):
-        """inject all SynapseReplay stimuli"""
-        sim = self.bc_simulation
-        # build a map of Stimulus names to StimulusInjection entries
-        si_map = {}
-        for si in sim.config.typed_entries_iter("StimulusInject"):
-            si_map.setdefault(si.CONTENTS.Stimulus, []).append(si.NAME)
-
-        for stim in sim.config.typed_entries_iter("Stimulus"):
-            if stim.CONTENTS.Pattern == "SynapseReplay":
-                injections = si_map[stim.NAME]
-                for si_name in injections:
-                    si = sim.config.entry_map[si_name]
-                    dest = sim.get_target(si.CONTENTS.Target)
-                    self._add_connections(
-                        add_replay=True, outdat_path=stim.CONTENTS.SpikeFile,
-                        dest=dest)
-
     # pylint: disable=R0913
     def _add_connections(
             self,
@@ -417,7 +399,7 @@ class SSim(object):
         for key in contents.keys:
             if key not in ['Weight', 'SynapseID', 'SpontMinis',
                            'SynapseConfigure', 'Source',
-                           'Destination', 'Delay']:
+                           'Destination', 'Delay', 'CreateMode']:
                 raise Exception(
                     "Key %s in Connection blocks not supported by BGLibPy"
                     % key)
@@ -459,7 +441,15 @@ class SSim(object):
                         apply_parameters = False
 
                     if apply_parameters:
-                        parameters['add_synapse'] = True
+                        if 'CreateMode' in entry.CONTENTS.keys:
+                            if entry.CONTENTS.CreateMode != 'NoCreate':
+                                raise Exception('Connection %s: Unknown '
+                                                'CreateMode option %s'
+                                                % (entry.NAME,
+                                                   entry.CONTENTS.CreateMode))
+
+                        else:
+                            parameters['add_synapse'] = True
                         if 'Weight' in entry.CONTENTS.keys:
                             parameters['Weight'] = float(entry.CONTENTS.Weight)
                         if not spontminis_set:

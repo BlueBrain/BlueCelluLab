@@ -114,22 +114,10 @@ if (EXISTS "${MODLIBPATH}/synutils.inc")
 endif()
 
 set(LIBNRNMECHS "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
-add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECHS})
-add_custom_command(OUTPUT ${LIBNRNMECHS} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
+set(LIBNRNMECH "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
+add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECH})
+add_custom_command(OUTPUT ${LIBNRNMECH} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
 
 set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
-set(NRNMECH_PATH "${DESTINATION_DIR}/libnrnmech.so")
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versions.py.in ${CMAKE_CURRENT_BINARY_DIR}/versions.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.config.in ${CMAKE_CURRENT_BINARY_DIR}/paths.config)
-
-set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py dendrogram.py importer.py connection.py synapse.py) 
-
-install(FILES ${LIBNRNMECHS} DESTINATION ${DESTINATION_DIR})
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/paths.config" DESTINATION ${DESTINATION_DIR})
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/versions.py" DESTINATION ${DESTINATION_DIR})
-install(FILES ${PYTHON_FILES} DESTINATION ${DESTINATION_DIR})
-
-install(CODE "MESSAGE(\"\n**********************\nThe BGLibPy python module was installed in ${DESTINATION_DIR}.
-You probably want to add: \n\nexport \"PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:$PYTHONPATH\" \n\nto your .bashrc \n**********************\n\")")
+set(NRNMECH_PATH "libnrnmech.so")

@@ -37,7 +37,7 @@ execute_process (
     OUTPUT_VARIABLE PYTHON_PACKAGE_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(DESTINATION_DIR "${PYTHON_PACKAGE_INSTALL_DIR}/bglibpy")
 
-add_subdirectory(src)
+add_subdirectory(bglibpy)
 
 if (MODULEPATH)
     add_subdirectory(modules)
