@@ -37,6 +37,9 @@ execute_process (
     OUTPUT_VARIABLE PYTHON_PACKAGE_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(DESTINATION_DIR "${PYTHON_PACKAGE_INSTALL_DIR}/bglibpy")
 
+set(PYTHON_PACKAGE_FILE ${CMAKE_BINARY_DIR}/bglibpy.tar.gz)                     
+set(PYTHON_PACKAGE_CONTENT_DIR  ${CMAKE_BINARY_DIR}/bglibpy)               
+
 add_subdirectory(bglibpy)
 
 if (MODULEPATH)
