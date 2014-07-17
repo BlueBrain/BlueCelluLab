@@ -8,7 +8,6 @@
 
 """
 
-import sys
 import os
 
 #####
@@ -43,16 +42,17 @@ else:
                 pathsconfig["HOC_LIBRARY_PATH"])
     os.environ["HOC_LIBRARY_PATH"] = hoc_library_path
 print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
-sys.path = [pathsconfig["NRNPYTHONPATH"]] + sys.path
 
 
 #####
 # Import Neuron
 #####
 
-# pylint: disable=F0401
-import neuron
-# pylint: enable=F0401
+try:
+    import neuron
+except ImportError:
+    raise Exception('Unable to import neuron')
+
 print "Imported neuron from %s" % neuron.__file__
 
 #####
@@ -85,6 +85,9 @@ neuron.h('p = new PythonObject()')
 # Import bluepy
 #####
 
-sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
-import bluepy
+try:
+    import bluepy
+except ImportError:
+    raise Exception('Unable to import bluepy')
+
 print "Imported bluepy from %s" % bluepy.__file__

@@ -19,4 +19,17 @@ add_custom_command(OUTPUT ${PYTHON_PACKAGE_FILE}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
-add_custom_target(python_package DEPENDS ${PYTHON_PACKAGE_FILE})
+option(ENABLE_PIP "Enable the use of pip to install the python package" ON)
+
+if (ENABLE_PIP)
+    add_custom_target(pip_package ALL DEPENDS ${PYTHON_PACKAGE_FILE})
+    install(CODE
+        "execute_process(COMMAND pip install ${PYTHON_PACKAGE_FILE} --upgrade)"
+    )
+else ()
+    install(CODE
+        "execute_process(
+                COMMAND python setup.py install --prefix=${CMAKE_INSTALL_PREFIX}
+                WORKING_DIRECTORY ${PYTHON_PACKAGE_CONTENT_DIR})"
+    )
+endif ()
