@@ -11,6 +11,10 @@
 import sys
 import os
 
+#####
+# Load paths.config
+#####
+
 installdir = os.path.dirname(__file__)
 pathsconfig_filename = installdir + "/paths.config"
 
@@ -23,18 +27,50 @@ if os.path.exists(pathsconfig_filename):
 else:
     raise Exception("Sorry, can not find the file paths.config")
 
-os.environ["HOC_LIBRARY_PATH"] = pathsconfig["HOC_LIBRARY_PATH"]
-print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
+#####
+# Set HOC_LIBRARY_PATH
+#####
+
+hoc_library_path = pathsconfig["HOC_LIBRARY_PATH"]
+if pathsconfig["HOC_LIBRARY_PATH"] == '':
+    raise Exception('Empty HOC_LIBRIRAY_PATH')
+else:
+    for path in hoc_library_path.split(':'):
+        if not os.path.exists(path):
+            raise Exception(
+                'Invalid HOC_LIBRARY_PATH: %s' %
+                pathsconfig["HOC_LIBRARY_PATH"])
+    os.environ["HOC_LIBRARY_PATH"] = hoc_library_path
+print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 sys.path = [pathsconfig["NRNPYTHONPATH"]] + sys.path
+
+
+#####
+# Import Neuron
+#####
+
 # pylint: disable=F0401
 import neuron
 # pylint: enable=F0401
 print "Imported neuron from %s" % neuron.__file__
 
-neuron.h.nrn_load_dll(pathsconfig["NRNMECH_PATH"])
-neuron.h.load_file("stdrun.hoc")
+#####
+# Load Neuron mechanisms
+#####
 
+nrnmech_path = os.path.join(os.path.dirname(__file__), 'nrnmech/libnrnmech.so')
+if not os.path.exists(nrnmech_path):
+    raise Exception('Library with Neuron mechanisms does not exist at %s' %
+                    nrnmech_path)
+neuron.h.nrn_load_dll(nrnmech_path)
+
+
+#####
+# Load Neuron hoc files
+#####
+
+neuron.h.load_file("stdrun.hoc")
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedSections.hoc")
@@ -43,6 +79,11 @@ neuron.h.load_file("ShowProgress.hoc")
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 neuron.h('objref p')
 neuron.h('p = new PythonObject()')
+
+
+#####
+# Import bluepy
+#####
 
 sys.path = [pathsconfig["BLUEPYPATH"]] + sys.path
 import bluepy

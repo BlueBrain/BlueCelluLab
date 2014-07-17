@@ -114,10 +114,14 @@ if (EXISTS "${MODLIBPATH}/synutils.inc")
 endif()
 
 set(LIBNRNMECHS "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
-set(LIBNRNMECH "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
-add_custom_target(bglipby ALL DEPENDS ${LIBNRNMECH})
-add_custom_command(OUTPUT ${LIBNRNMECH} DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} WORKING_DIRECTORY ${MODLIBBUILDPATH} COMMAND ${NRN_BINARIES}/nrnivmodl)
+set(LIBNRNMECH "libnrnmech.so" )
 
-set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
+add_custom_command(OUTPUT ${LIBNRNMECHS} 
+    DEPENDS ${MODLIBMODS} ${MODLIBBUILDMODS} ${SYNUTILSINC} 
+    WORKING_DIRECTORY ${MODLIBBUILDPATH} 
+    COMMAND ${NRN_BINARIES}/nrnivmodl)
 
-set(NRNMECH_PATH "libnrnmech.so")
+add_custom_target(nrnmech
+    COMMAND cmake -E copy "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" ${LIBNRNMECH} 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} 
+    DEPENDS ${LIBNRNMECHS})

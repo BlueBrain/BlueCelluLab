@@ -43,7 +43,7 @@ class bglibpy_build(distutils.command.build.build):
 
 setup(
     name="bglibpy",
-    version=1.0,
+    version='@BGLIBPY_VERSION@',
     install_requires=REQS,
     packages=['bglibpy'],
     package_data={'bglibpy': ['paths.config', '@NRNMECH_PATH@']},
