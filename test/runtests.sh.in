@@ -30,4 +30,6 @@ else
     XUNIT_OPTIONS=''
 fi
 
-{ cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s ${COVERAGE_OPTIONS} ${XUNIT_OPTIONS} ${@}; }
+# { cd @CMAKE_CURRENT_BINARY_DIR@; nosetests -v -x -s; } && { cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s ${COVERAGE_OPTIONS} ${XUNIT_OPTIONS} ${@}; }
+{ cd @CMAKE_CURRENT_SOURCE_DIR@; nosetests -v -x -s ${COVERAGE_OPTIONS} ${XUNIT_OPTIONS} ${@}; }
+

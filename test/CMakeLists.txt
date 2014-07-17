@@ -1,7 +1,6 @@
 option(ENABLE_COVERAGE "Enable coverage report." ON)
 option(ENABLE_XUNITS "Enable XUnits reports." ON)
 
-
 add_subdirectory(pylint)
 add_subdirectory(pep8)
 
