@@ -205,7 +205,8 @@ class SSim(object):
                 for syn_id, syn_description in enumerate(syn_descriptions):
                     self._instantiate_synapse(gid, syn_id, syn_description,
                                               add_minis=add_minis)
-                printv("Added synapses for gid %d" % gid, 2)
+                printv("Added %d synapses for gid %d" %
+                       (len(syn_descriptions), gid), 2)
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
