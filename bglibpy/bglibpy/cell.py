@@ -503,10 +503,10 @@ class Cell(object):
             self, location, synapse_id, syn_description,
             connection_modifiers, base_seed)
 
-        printv('Added synapse to cell %d on sec[%d](%f)' %
-               (self.gid, isec, location), 50)
-
         self.synapses[synapse_id] = synapse
+
+        printv('Added synapse to cell %d: %s' %
+               (self.gid, synapse.info_dict), 50)
 
         return True
 

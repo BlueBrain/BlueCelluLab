@@ -21,8 +21,11 @@ if (ENABLE_PIP)
     )
 else ()
     install(CODE
+        "execute_process(COMMAND mkdir -p ${PYTHON_PACKAGE_INSTALL_DIR})"
+    )
+    install(CODE
         "execute_process(
-        COMMAND env PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:${PYTHONPATH} python setup.py install --prefix=${CMAKE_INSTALL_PREFIX}
+        COMMAND env PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:${PYTHONPATH} python setup.py install --prefix=${CMAKE_INSTALL_PREFIX} --force
                 WORKING_DIRECTORY ${PYTHON_PACKAGE_CONTENT_DIR})"
     )
 endif ()
