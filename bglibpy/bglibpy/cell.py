@@ -499,9 +499,15 @@ class Cell(object):
                         isec %d ipt %f' % (isec, ipt)
             return False
 
-        self.synapses[synapse_id] = bglibpy.Synapse(
+        synapse = bglibpy.Synapse(
             self, location, synapse_id, syn_description,
             connection_modifiers, base_seed)
+
+        self.synapses[synapse_id] = synapse
+
+        printv('Added synapse to cell %d: %s' %
+               (self.gid, synapse.info_dict), 50)
+
         return True
 
     def add_replay_delayed_weight(self, sid, delay, weight):

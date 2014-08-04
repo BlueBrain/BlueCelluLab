@@ -158,6 +158,7 @@ class Synapse(object):
         synapse_dict['post_sec_id'] = self.isec
         synapse_dict['post_segx'] = self.post_segx
         synapse_dict['mech_name'] = self.mech_name
+        synapse_dict['syn_type'] = self.syn_type
         synapse_dict['randseed1'] = self.randseed1
         synapse_dict['randseed2'] = self.randseed2
         synapse_dict['synapseconfigure_cmds'] = self.synapseconfigure_cmds

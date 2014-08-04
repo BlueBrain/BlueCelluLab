@@ -205,7 +205,8 @@ class SSim(object):
                 for syn_id, syn_description in enumerate(syn_descriptions):
                     self._instantiate_synapse(gid, syn_id, syn_description,
                                               add_minis=add_minis)
-                printv("Added synapses for gid %d" % gid, 2)
+                printv("Added %d synapses for gid %d" %
+                       (len(syn_descriptions), gid), 2)
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
@@ -320,6 +321,8 @@ class SSim(object):
             if add_minis:
                 self.add_replay_minis(gid, syn_id, syn_description,
                                       connection_parameters)
+        else:
+            print 'Here'
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
@@ -416,7 +419,7 @@ class SSim(object):
 
         """
         parameters = {}
-        parameters['add_synapse'] = False
+        parameters['add_synapse'] = True
         spontminis_set = False
 
         for entry in self.connection_entries:
@@ -442,14 +445,13 @@ class SSim(object):
 
                     if apply_parameters:
                         if 'CreateMode' in entry.CONTENTS.keys:
-                            if entry.CONTENTS.CreateMode != 'NoCreate':
+                            if entry.CONTENTS.CreateMode == 'NoCreate':
+                                parameters['add_synapse'] = False
+                            else:
                                 raise Exception('Connection %s: Unknown '
                                                 'CreateMode option %s'
                                                 % (entry.NAME,
                                                    entry.CONTENTS.CreateMode))
-
-                        else:
-                            parameters['add_synapse'] = True
                         if 'Weight' in entry.CONTENTS.keys:
                             parameters['Weight'] = float(entry.CONTENTS.Weight)
                         if not spontminis_set:

@@ -32,12 +32,12 @@ exec_program(
 message("Working with BGLibPy Version: ${BGLIBPY_VERSION} (Main version: ${BGLIBPY_MAIN_VERSION})")
 
 execute_process ( 
-    COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}');" 
+    COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}');" 
     COMMAND tail -1
     OUTPUT_VARIABLE PYTHON_PACKAGE_INSTALL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(DESTINATION_DIR "${PYTHON_PACKAGE_INSTALL_DIR}/bglibpy")
 
-set(PYTHON_PACKAGE_FILE ${CMAKE_BINARY_DIR}/bglibpy.tar.gz)                     
+set(PYTHON_PACKAGE_FILE ${CMAKE_BINARY_DIR}/bglibpy-${BGLIBPY_VERSION}.tar.gz)                     
 set(PYTHON_PACKAGE_CONTENT_DIR  ${CMAKE_BINARY_DIR}/bglibpy)               
 
 add_subdirectory(bglibpy)

@@ -27,19 +27,6 @@ if (NOT NRNPATH)
    endif()
 endif()
 
-if (NOT NRNPYTHONPATH)
-    if (BBPSANTIAGO)
-        set(NRNPYTHONPATH /home/vangeit/local/santiago/nrnbglibpy/lib64/python)
-    elseif (BBPQUANTAL)
-        set(NRNPYTHONPATH /home/vangeit/local/quantal/nrnbglibpy/lib/python)
-    elseif (BBPSAUCY)
-        set(NRNPYTHONPATH /home/vangeit/local/saucy/nrnbglibpy/lib/python)
-    else ()
-        message(FATAL_ERROR "The user should set NRNPYTHONPATH to a directory where the Neuron python module is installed")
-    endif()
-endif ()
-
-
 set(NRN_BINARIES ${NRNPATH}/${NRNARCH}/bin)
 if (NOT EXISTS ${NRN_BINARIES}/nrnivmodl)
     set(NRN_BINARIES ${NRNPATH}/bin)
@@ -55,7 +42,6 @@ exec_program(
     OUTPUT_VARIABLE NRN_VERSION)
 message("Working with Neuron Version: ${NRN_VERSION}")
 message("Neuron installation path: ${NRNPATH}")
-message("Neuron python module installation path: ${NRNPYTHONPATH}")
 
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
@@ -71,10 +57,6 @@ exec_program(
     ARGS "describe --tags --abbrev=4 --dirty" 
     OUTPUT_VARIABLE BG_HOCLIB_VERSION)
 message("Working with BG_Hoclib Version: ${BG_HOCLIB_VERSION}")
-
-if (NOT BLUEPYPATH)
-    message(FATAL_ERROR "The user should set BLUEPYPATH to a directory where the BluePy python module is installed")
-endif ()
 
 ###
 # MODLIB
