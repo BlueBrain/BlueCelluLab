@@ -4,7 +4,7 @@ set -x
 
 export PYTHONPATH=@BLUEPYPATH@:$PYTHONPATH
 
-pylint @PYTHON_PACKAGE_CONTENT_DIR@/bglibpy --rcfile=@CMAKE_CURRENT_SOURCE_DIR@/pylintrc --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' --disable=I0011 > pylint.output
+pylint @PYTHON_PACKAGE_CONTENT_DIR@/bglibpy --rcfile=@CMAKE_CURRENT_SOURCE_DIR@/pylintrc --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' --disable=I0011,I0012 > pylint.output
 exitcode=$?
 if [ $exitcode -ge 32 ]
 then
