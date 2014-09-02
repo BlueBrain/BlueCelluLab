@@ -6,8 +6,9 @@ import nose.tools as nt
 import numpy
 import bglibpy
 import os
-#from nose.plugins.attrib import attr
+from nose.plugins.attrib import attr
 
+# todo make two cell circuit independent of bgscratch
 
 def test_parse_outdat():
     """SSim: Testing parsing of out.dat"""
@@ -21,6 +22,7 @@ def test_parse_outdat():
     outdat = bglibpy.ssim._parse_outdat("examples/sim_twocell_minis_replay/output")
     nt.assert_true(45 in outdat[2])
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_empty(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -49,6 +51,7 @@ class TestSSimBaseClass_twocell_empty(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_replay(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -90,6 +93,7 @@ class TestSSimBaseClass_twocell_replay(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_all_realconn(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -119,6 +123,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_all(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -160,6 +165,7 @@ class TestSSimBaseClass_twocell_all(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_synapseid(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -197,6 +203,7 @@ class TestSSimBaseClass_twocell_synapseid(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_minis_replay(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -238,6 +245,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
+@attr('bgscratch')
 class TestSSimBaseClass_twocell_noisestim(object):
     """Class to test SSim with two cell circuit"""
     def setup(self):
@@ -279,7 +287,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full(object):
     """Class to test SSim with full circuit"""
     def setup(self):
@@ -354,7 +362,7 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.tau_d_GABAA, 10.0)
         nt.assert_equal(self.ssim.cells[gid].synapses[sid].hsynapse.tau_r_GABAA, 1.0)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full_run(object):
     """Class to test SSim with full circuit"""
     def setup(self):
@@ -381,7 +389,7 @@ class TestSSimBaseClass_full_run(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full_neuronconfigure(object):
     """Class to test SSim with full circuit that uses neuronconfigure"""
     def setup(self):
@@ -408,7 +416,7 @@ class TestSSimBaseClass_full_neuronconfigure(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 0.01)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full_connection_delay(object):
     """Class to test SSim with full circuit that uses a delay field in a connection block"""
     def setup(self):
@@ -435,7 +443,7 @@ class TestSSimBaseClass_full_connection_delay(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full_forwardskip(object):
     """Class to test SSim with full circuit that uses a ForwardSkip"""
     def setup(self):
@@ -462,7 +470,7 @@ class TestSSimBaseClass_full_forwardskip(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 0.3)
 
-# @attr('bgscratch')
+@attr('bgscratch')
 class TestSSimBaseClass_full_realconn(object):
     """Class to test SSim with full circuit and multiple cells instantiate with real connections"""
     def setup(self):
@@ -491,6 +499,7 @@ class TestSSimBaseClass_full_realconn(object):
         rms_error = numpy.sqrt(numpy.mean((voltage_bglibpy-voltage_bglib)**2))
         nt.assert_true(rms_error < 1.0)
 
+@attr('bgscratch')
 class TestSSimBaseClass_syns(object):
     """Class to test the syns / hsynapses property of Cell"""
     def setup(self):

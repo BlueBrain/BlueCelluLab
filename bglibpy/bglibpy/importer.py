@@ -66,6 +66,18 @@ if not os.path.exists(nrnmech_path):
 neuron.h.nrn_load_dll(nrnmech_path)
 
 
+def load_extra_nrnmech(extra_nrnmech_path):
+    """Load an extra nrnmech shared library.
+
+    Parameters
+    ----------
+    extra_nrnmech_path : path to extra libnrnmech.so you want to load
+
+    """
+
+    neuron.h.nrn_load_dll(extra_nrnmech_path)
+
+
 #####
 # Load Neuron hoc files
 #####

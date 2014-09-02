@@ -7,7 +7,9 @@
 
 import nose.tools as nt
 import bglibpy
+from nose.plugins.attrib import attr
 
+@attr('bgscratch')
 def test_search_hyp_current_replay_gidlist():
     """Tools: Test search_hyp_current_replay_gidlist"""
     blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"
@@ -35,6 +37,7 @@ def test_search_hyp_current_replay_gidlist():
     import numpy
     nt.assert_true(abs(numpy.mean(voltage[numpy.where((time < stop_time) & (time > start_time))])-target_voltage) < precision)
 
+@attr('bgscratch')
 def test_search_hyp_current_replay_imap():
     """Tools: Test search_hyp_current_replay_imap"""
     blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"

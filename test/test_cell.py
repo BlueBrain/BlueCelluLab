@@ -8,7 +8,7 @@ import nose.tools as nt
 import math
 import bglibpy
 import os
-
+from nose.plugins.attrib import attr
 
 class TestCellBaseClass1(object):
 
@@ -88,6 +88,7 @@ class TestCellBaseClass1(object):
             nt.assert_true(varname in self.cell.recordings)
 
 
+@attr('bgscratch')
 class TestCellBaseClassSynapses(object):
 
     """TestCellBaseClassSynapses"""

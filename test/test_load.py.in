@@ -8,9 +8,18 @@
 import nose.tools as nt
 import os
 
+
 def test_moduleload():
     """BGLibPy: Test the loading of the bglibpy module"""
     import bglibpy
-    #with open("installpath.txt") as path_file:
+    # with open("installpath.txt") as path_file:
     #    path = path_file.readline()
-    nt.assert_equal(os.path.dirname(bglibpy.__file__), "@DESTINATION_DIR@")
+    # nt.assert_equal(os.path.dirname(bglibpy.__file__), "@DESTINATION_DIR@")
+
+
+def test_load_extra_nrnmech():
+    """BGLibpy: Test load_extra_nrnmech"""
+    import bglibpy
+
+    extra_nrnmech_path = '@EXTRA_NRMECH_PATH@'
+    bglibpy.load_extra_nrnmech(extra_nrnmech_path)
