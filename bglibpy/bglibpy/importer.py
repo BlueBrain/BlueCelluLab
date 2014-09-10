@@ -75,8 +75,11 @@ def load_extra_nrnmech(extra_nrnmech_path):
 
     """
 
-    neuron.h.nrn_load_dll(extra_nrnmech_path)
-
+    if os.path.exists(extra_nrnmech_path):
+        neuron.h.nrn_load_dll(extra_nrnmech_path)
+    else:
+        raise Exception("Library given to load_extra_nrnmech "
+                        "doesn't exists: %s" % extra_nrnmech_path)
 
 #####
 # Load Neuron hoc files
