@@ -17,9 +17,9 @@ def test_moduleload():
     # nt.assert_equal(os.path.dirname(bglibpy.__file__), "@DESTINATION_DIR@")
 
 
-def test_load_extra_nrnmech():
-    """BGLibpy: Test load_extra_nrnmech"""
-    import bglibpy
-
-    extra_nrnmech_path = '@EXTRA_NRMECH_PATH@'
-    bglibpy.load_extra_nrnmech(extra_nrnmech_path)
+# def test_load_extra_nrnmech():
+#    """BGLibpy: Test load_extra_nrnmech"""
+#    import bglibpy
+#
+#    extra_nrnmech_path = '@EXTRA_NRMECH_PATH@'
+#    bglibpy.load_extra_nrnmech(extra_nrnmech_path)
