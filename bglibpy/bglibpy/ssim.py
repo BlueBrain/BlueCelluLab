@@ -26,8 +26,6 @@ class SSim(object):
                  base_seed=None):
         """Object dealing with BlueConfig configured Small Simulations
 
-        To relieve from an empty stomach, eat spam and eggs
-
         Parameters
         ----------
         blueconfig_filename : string
@@ -36,6 +34,12 @@ class SSim(object):
              Timestep of the simulation
         record_dt : float
                     Sampling interval of the recordings
+        base_seed : int
+                    Base seed used for this simulation. Setting this
+                    will override the value set in the BlueConfig.
+                    Has to positive integer.
+                    When this is not set, and no seed is set in the
+                    BlueConfig, the seed will be 0.
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -488,7 +492,26 @@ class SSim(object):
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None,
             forward_skip=None, cvode=False):
-        """Simulate the SSim"""
+        """Simulate the SSim
+
+        Parameters
+        ----------
+        t_stop : int
+                 This function will run the simulation until t_stop
+        v_init : float
+                 Voltage initial value when the simulation starts
+        celsius : float
+                  Temperature at which the simulation runs
+        dt : float
+             Timestep (delta-t) for the simulation
+        forward_skip : boolean
+                       Overwrite the ForwardSkip value in the BlueConfig
+        cvode : boolean
+                Force the simulation to run in variable timestep. Not possible
+                when there are stochastic channels in the neuron model. When
+                enabled results from a large network simulation will not be
+                exactly reproduced.
+        """
         if t_stop is None:
             t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
         if dt is None:
