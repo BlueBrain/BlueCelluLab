@@ -91,6 +91,9 @@ class Cell(object):
         self.serialized = neuron.h.SerializedSections(self.cell.getCell())
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
+        # Be careful when removing this,
+        # time recording needs this push
+        self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
         self.somatic = [x for x in self.cell.getCell().somatic]
         self.basal = [x for x in self.cell.getCell().basal]
@@ -123,6 +126,8 @@ class Cell(object):
             self.threshold = None
 
         self.psections = {}
+
+        neuron.h.pop_section()  # Undoing soma push
         # self.init_psections()
 
     def init_psections(self):
