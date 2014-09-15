@@ -22,10 +22,9 @@ class SSim(object):
     """Class that can load a BGLib BlueConfig,
                and instantiate the simulation"""
 
-    def __init__(self, blueconfig_filename, dt=0.025, record_dt=None):
+    def __init__(self, blueconfig_filename, dt=0.025, record_dt=None,
+                 base_seed=None):
         """Object dealing with BlueConfig configured Small Simulations
-
-        To relieve from an empty stomach, eat spam and eggs
 
         Parameters
         ----------
@@ -35,17 +34,26 @@ class SSim(object):
              Timestep of the simulation
         record_dt : float
                     Sampling interval of the recordings
+        base_seed : int
+                    Base seed used for this simulation. Setting this
+                    will override the value set in the BlueConfig.
+                    Has to positive integer.
+                    When this is not set, and no seed is set in the
+                    BlueConfig, the seed will be 0.
         """
         self.dt = dt
         self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc = self.bc_simulation.config
-        try:
-            self.base_seed = \
-                int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
-        except AttributeError:
-            self.base_seed = 0  # in case the seed is not set, it's 0
+        if base_seed is None:
+            try:
+                self.base_seed = \
+                    int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
+            except AttributeError:
+                self.base_seed = 0  # in case the seed is not set, it's 0
+        else:
+            self.base_seed = base_seed
 
         self.connection_entries = \
             self.bc_simulation.config.typed_entries("Connection")
@@ -483,8 +491,27 @@ class SSim(object):
             cell.initialize_synapses()
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None,
-            forward_skip=None):
-        """Simulate the SSim"""
+            forward_skip=None, cvode=False):
+        """Simulate the SSim
+
+        Parameters
+        ----------
+        t_stop : int
+                 This function will run the simulation until t_stop
+        v_init : float
+                 Voltage initial value when the simulation starts
+        celsius : float
+                  Temperature at which the simulation runs
+        dt : float
+             Timestep (delta-t) for the simulation
+        forward_skip : boolean
+                       Overwrite the ForwardSkip value in the BlueConfig
+        cvode : boolean
+                Force the simulation to run in variable timestep. Not possible
+                when there are stochastic channels in the neuron model. When
+                enabled results from a large network simulation will not be
+                exactly reproduced.
+        """
         if t_stop is None:
             t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
         if dt is None:
@@ -499,7 +526,7 @@ class SSim(object):
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.add_cell(self.cells[gid])
-        sim.run(t_stop, cvode=False, dt=dt, celsius=celsius, v_init=v_init,
+        sim.run(t_stop, cvode=cvode, dt=dt, celsius=celsius, v_init=v_init,
                 forward_skip=forward_skip)
 
     def get_voltage_traces(self):
