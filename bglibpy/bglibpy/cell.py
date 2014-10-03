@@ -753,20 +753,21 @@ class Cell(object):
         else:
             apicaltrunk = []
             apicaltrunk.append(self.apical[0])
-            currentsection = self.apical[0]
+            max_diam_section = self.apical[0]
             while True:
+                apicaltrunk.append(max_diam_section)
+
                 children = [
-                    neuron.h.SectionRef(sec=currentsection).child[index]
+                    neuron.h.SectionRef(sec=max_diam_section).child[index]
                     for index in range(0, int(neuron.h.SectionRef(
-                        sec=currentsection).nchild()))]
+                        sec=max_diam_section).nchild()))]
                 if len(children) is 0:
                     break
                 maxdiam = 0
                 for child in children:
                     if child.diam > maxdiam:
-                        currentsection = child
+                        max_diam_section = child
                         maxdiam = child.diam
-                        apicaltrunk.append(child)
             return apicaltrunk
 
     def add_ramp(self, start_time, stop_time, start_level, stop_level,

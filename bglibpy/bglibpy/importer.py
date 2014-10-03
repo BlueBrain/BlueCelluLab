@@ -8,6 +8,7 @@
 
 """
 
+import sys
 import os
 
 #####
@@ -33,7 +34,7 @@ else:
 
 hoc_library_path = pathsconfig["HOC_LIBRARY_PATH"]
 if pathsconfig["HOC_LIBRARY_PATH"] == '':
-    raise Exception('Empty HOC_LIBRIRAY_PATH')
+    raise Exception('Empty HOC_LIBRARY_PATH')
 else:
     for path in hoc_library_path.split(':'):
         if not os.path.exists(path):
@@ -48,10 +49,23 @@ print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 # Import Neuron
 #####
 
-try:
-    import neuron
-except ImportError:
-    raise Exception('Unable to import neuron')
+nrn_python_path = pathsconfig["NRNPYTHONPATH"]
+if nrn_python_path == '':
+    try:
+        import neuron
+    except ImportError:
+        raise Exception('Unable to import neuron from default python path, \
+                and NRNPYTHONPATH is not set either')
+else:
+    if not os.path.exists(nrn_python_path):
+        raise Exception('Inexistent NRNPYTHONPATH=%s' % nrn_python_path)
+    sys.path.insert(0, nrn_python_path)
+    try:
+        import neuron
+    except ImportError:
+        raise Exception('Unable to import neuron from NRNPYTHONPATH=%s' %
+                        nrn_python_path)
+
 
 print "Imported neuron from %s" % neuron.__file__
 
@@ -100,9 +114,21 @@ neuron.h('p = new PythonObject()')
 # Import bluepy
 #####
 
-try:
-    import bluepy
-except ImportError:
-    raise Exception('Unable to import bluepy')
+bluepy_path = pathsconfig["BLUEPYPATH"]
+if bluepy_path == '':
+    try:
+        import bluepy
+    except ImportError:
+        raise Exception('Unable to import bluepy from default python path, \
+                and BLUEPYPATH was not set during build either')
+else:
+    if not os.path.exists(bluepy_path):
+        raise Exception('Inexistent BLUEPYPATH=%s' % bluepy_path)
+    sys.path.insert(0, bluepy_path)
+    try:
+        import bluepy
+    except ImportError:
+        raise Exception('Unable to import bluepy from BLUEPYPATH=%s' %
+                        bluepy_path)
 
 print "Imported bluepy from %s" % bluepy.__file__
