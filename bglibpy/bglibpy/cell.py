@@ -751,18 +751,18 @@ class Cell(object):
         """Grindaway"""
 
         # get the data for the section
-        n_segments = neuron.h.n3d(sec=hsection)
+        n_segments = int(neuron.h.n3d(sec=hsection))
         n_comps = hsection.nseg
 
-        xs = numpy.array(n_segments)
-        ys = numpy.array(n_segments)
-        zs = numpy.array(n_segments)
-        lengths = numpy.array(n_segments)
+        xs = numpy.zeros(n_segments)
+        ys = numpy.zeros(n_segments)
+        zs = numpy.zeros(n_segments)
+        lengths = numpy.zeros(n_segments)
         for index in range(0, n_segments):
-            xs[index] = neuron.h.x3d(index)
-            ys[index] = neuron.h.y3d(index)
-            zs[index] = neuron.h.z3d(index)
-            lengths[index] = neuron.h.arc3d(index)
+            xs[index] = neuron.h.x3d(index, sec=hsection)
+            ys[index] = neuron.h.y3d(index, sec=hsection)
+            zs[index] = neuron.h.z3d(index, sec=hsection)
+            lengths[index] = neuron.h.arc3d(index, sec=hsection)
 
         # to use Vector class's .interpolate()
         # must first scale the independent variable
@@ -815,13 +815,13 @@ class Cell(object):
         xs_interp1, ys_interp1, zs_interp1 = Cell.grindaway(hsection1)
         xs_interp2, ys_interp2, zs_interp2 = Cell.grindaway(hsection2)
 
-        x1 = xs_interp1[int(numpy.floor(len(xs_interp1) * location1))]
-        y1 = ys_interp1[int(numpy.floor(len(ys_interp1) * location1))]
-        z1 = zs_interp1[int(numpy.floor(len(zs_interp1) * location1))]
+        x1 = xs_interp1[int(numpy.floor((len(xs_interp1) - 1) * location1))]
+        y1 = ys_interp1[int(numpy.floor((len(ys_interp1) - 1) * location1))]
+        z1 = zs_interp1[int(numpy.floor((len(zs_interp1) - 1) * location1))]
 
-        x2 = xs_interp2[int(numpy.floor(len(xs_interp2) * location2))]
-        y2 = ys_interp2[int(numpy.floor(len(ys_interp2) * location2))]
-        z2 = zs_interp2[int(numpy.floor(len(zs_interp2) * location2))]
+        x2 = xs_interp2[int(numpy.floor((len(xs_interp2) - 1) * location2))]
+        y2 = ys_interp2[int(numpy.floor((len(ys_interp2) - 1) * location2))]
+        z2 = zs_interp2[int(numpy.floor((len(zs_interp2) - 1) * location2))]
 
         distance = 0
         if 'x' in projection:
