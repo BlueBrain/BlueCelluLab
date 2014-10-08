@@ -771,7 +771,8 @@ class Cell(object):
 
         # initialize the destination "independent" vector
         # range = numpy.array(n_comps+2)
-        comp_range = numpy.arange(0, n_comps + 2) / n_comps - 1 / (2 * n_comps)
+        comp_range = numpy.arange(0, n_comps + 2) / n_comps - \
+                1.0 / (2 * n_comps)
         comp_range[0] = 0
         comp_range[-1] = 1
 

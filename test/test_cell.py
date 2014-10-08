@@ -8,7 +8,9 @@ import nose.tools as nt
 import math
 import bglibpy
 import os
+import random
 from nose.plugins.attrib import attr
+
 
 class TestCellBaseClass1(object):
 
@@ -86,6 +88,48 @@ class TestCellBaseClass1(object):
         for section in all_sections:
             varname = 'neuron.h.%s(0.5)._ref_v' % section.name()
             nt.assert_true(varname in self.cell.recordings)
+
+    def test_euclid_section_distance(self):
+        """Cell: Test cell.euclid_section_distance"""
+
+        random.seed(1)
+
+        for _ in range(1000):
+            hsection1 = random.choice(random.choice(
+                [self.cell.apical, self.cell.somatic, self.cell.basal]))
+            hsection2 = random.choice(random.choice(
+                [self.cell.apical, self.cell.somatic, self.cell.basal]))
+            location1 = 0.0
+            location2 = 1.0
+            distance_euclid = \
+                self.cell.euclid_section_distance(hsection1=hsection1,
+                                                  hsection2=hsection2,
+                                                  location1=location1,
+                                                  location2=location2,
+                                                  projection='xyz')
+
+            x1 = bglibpy.neuron.h.x3d(0,
+                                      sec=hsection1)
+            y1 = bglibpy.neuron.h.y3d(0,
+                                      sec=hsection1)
+            z1 = bglibpy.neuron.h.z3d(0,
+                                      sec=hsection1)
+            x2 = bglibpy.neuron.h.x3d(
+                bglibpy.neuron.h.n3d(
+                    sec=hsection2) - 1,
+                sec=hsection2)
+            y2 = bglibpy.neuron.h.y3d(
+                bglibpy.neuron.h.n3d(
+                    sec=hsection2) - 1,
+                sec=hsection2)
+            z2 = bglibpy.neuron.h.z3d(
+                bglibpy.neuron.h.n3d(
+                    sec=hsection2) - 1,
+                sec=hsection2)
+            import numpy
+            distance_hand = numpy.sqrt((x1 - x2) ** 2
+                                       + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+            nt.assert_true(distance_euclid == distance_hand)
 
 
 @attr('bgscratch')
