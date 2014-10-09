@@ -237,7 +237,7 @@ def holding_current_subprocess(v_hold, template_name, morphology_path):
     vclamp.amp1 = v_hold
 
     simulation = bglibpy.Simulation()
-    simulation.run(1000, cvode=True)
+    simulation.run(1000, cvode=False)
 
     i_hold = vclamp.i
     v_control = vclamp.vc
