@@ -11,8 +11,8 @@ from bglibpy import neuron
 import numpy
 import warnings
 import math
-
-# pylint: disable=R0914
+import os
+# pylint: disable=R0914, R0913
 
 BLUECONFIG_KEYWORDS = [
     'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
@@ -224,6 +224,64 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
             return None
 
     return SS_voltage
+
+
+def holding_current_subprocess(v_hold, template_name, morphology_path):
+    """Subprocess wrapper of holding_current"""
+
+    cell = bglibpy.Cell(template_name, morphology_path)
+
+    vclamp = bglibpy.neuron.h.SEClamp(.5, sec=cell.soma)
+    vclamp.rs = 0.01
+    vclamp.dur1 = 2000
+    vclamp.amp1 = v_hold
+
+    simulation = bglibpy.Simulation()
+    simulation.run(1000, cvode=True)
+
+    i_hold = vclamp.i
+    v_control = vclamp.vc
+
+    cell.delete()
+
+    return i_hold, v_control
+
+
+def holding_current(
+        v_hold,
+        gid=None,
+        circuit_path=None,
+        template_name=None,
+        morphology_path=None):
+    """
+    Calculate the holding current necessary for a given holding voltage
+    """
+
+    if gid is not None and circuit_path is not None:
+        bc = bglibpy.bluepy.load_circuit(circuit_path)
+
+        m = bc.mvddb
+        t_neuron = list(m.get_gids([gid]))[0]
+        template_name = str(
+            os.path.join(
+                bc.RUN.CONTENTS.METypePath,
+                t_neuron.METype +
+                '.hoc'))
+        morphology_path = os.path.join(
+            os.path.split(
+                bc.RUN.CONTENTS.MorphologyPath)[0],
+            'ascii/')
+    elif (gid is None or circuit_path is None) and (template_name is None or
+                                                    morphology_path is None):
+        raise Exception('User has to specify, or a gid and circuit path, '
+                        'or hoc template and a morphology path')
+    pool = multiprocessing.Pool(processes=1)
+    i_hold, v_control = pool.apply(
+        holding_current_subprocess, [
+            v_hold, template_name, morphology_path])
+    pool.terminate()
+
+    return i_hold, v_control
 
 
 def template_accepts_cvode(template_name):
