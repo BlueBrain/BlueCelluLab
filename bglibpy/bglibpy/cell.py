@@ -842,7 +842,6 @@ class Cell(object):
             return []
         else:
             apicaltrunk = []
-            apicaltrunk.append(self.apical[0])
             max_diam_section = self.apical[0]
             while True:
                 apicaltrunk.append(max_diam_section)
