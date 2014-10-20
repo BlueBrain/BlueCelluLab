@@ -263,14 +263,13 @@ class SSim(object):
                                                        syn_id), 5)
                 elif add_replay:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
-                    if pre_spiketrain:
-                        connection = bglibpy.Connection(
-                            self.cells[post_gid].synapses[syn_id],
-                            pre_spiketrain=pre_spiketrain,
-                            pre_cell=None,
-                            stim_dt=self.dt)
-                        printv("Added replay connection to post_gid %d, "
-                               "syn_id %d" % (post_gid, syn_id), 5)
+                    connection = bglibpy.Connection(
+                        self.cells[post_gid].synapses[syn_id],
+                        pre_spiketrain=pre_spiketrain,
+                        pre_cell=None,
+                        stim_dt=self.dt)
+                    printv("Added replay connection to post_gid %d, "
+                           "syn_id %d" % (post_gid, syn_id), 5)
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection

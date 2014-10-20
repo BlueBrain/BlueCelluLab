@@ -28,10 +28,10 @@ class Connection(object):
         self.pre_spiketrain = pre_spiketrain
         self.post_synapse = post_synapse
 
-        if self.pre_spiketrain is None and self.pre_cell is None:
-            raise Exception(
-                "Connection: trying to create a connection without presynaptic"
-                "spiketrain nor cell")
+        # if self.pre_spiketrain is None and self.pre_cell is None:
+        #     raise Exception(
+        #        "Connection: trying to create a connection without presynaptic"
+        #        "spiketrain nor cell")
 
         if 'Weight' in self.connection_parameters:
             self.weight_scalar = self.connection_parameters['Weight']
@@ -57,10 +57,10 @@ class Connection(object):
                 self.post_synapse.hsynapse)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
-        else:
-            raise Exception(
-                "Connection: trying to instantiated connection without "
-                "presynaptic spiketrain nor cell")
+        # else:
+        #     raise Exception(
+        #        "Connection: trying to instantiated connection without "
+        #        "presynaptic spiketrain nor cell")
 
     @property
     def info_dict(self):
