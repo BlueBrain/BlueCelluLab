@@ -772,7 +772,7 @@ class Cell(object):
         # initialize the destination "independent" vector
         # range = numpy.array(n_comps+2)
         comp_range = numpy.arange(0, n_comps + 2) / n_comps - \
-                1.0 / (2 * n_comps)
+            1.0 / (2 * n_comps)
         comp_range[0] = 0
         comp_range[-1] = 1
 
@@ -945,9 +945,8 @@ class Cell(object):
                 neuron.h.dt:
             (_, (sid, weight)) = self.delayed_weights.get()
             if sid in self.connections:
-                self.connections[sid].post_netcon.weight[0] = weight
-                # print "Changed weight of synapse id %d to %f at time %f" %
-                # (sid, weight, neuron.h.t)
+                if self.connections[sid].post_netcon is not None:
+                    self.connections[sid].post_netcon.weight[0] = weight
 
         if not self.delayed_weights.empty():
             neuron.h.cvode.event(self.delayed_weights.queue[0][0],
