@@ -119,8 +119,9 @@ if bluepy_path == '':
     try:
         import bluepy
     except ImportError:
-        raise Exception('Unable to import bluepy from default python path, \
-                and BLUEPYPATH was not set during build either')
+        print 'Unable to import bluepy from default python path, \
+                and BLUEPYPATH was not set during build either'
+        raise
 else:
     if not os.path.exists(bluepy_path):
         raise Exception('Inexistent BLUEPYPATH=%s' % bluepy_path)
