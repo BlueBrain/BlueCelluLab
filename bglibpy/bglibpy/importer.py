@@ -54,8 +54,9 @@ if nrn_python_path == '':
     try:
         import neuron
     except ImportError:
-        raise Exception('Unable to import neuron from default python path, \
-                and NRNPYTHONPATH is not set either')
+        print 'Unable to import neuron from default python path,' \
+            'and NRNPYTHONPATH is not set either'
+        raise
 else:
     if not os.path.exists(nrn_python_path):
         raise Exception('Inexistent NRNPYTHONPATH=%s' % nrn_python_path)
@@ -63,8 +64,8 @@ else:
     try:
         import neuron
     except ImportError:
-        raise Exception('Unable to import neuron from NRNPYTHONPATH=%s' %
-                        nrn_python_path)
+        print 'Unable to import neuron from NRNPYTHONPATH=%s' % nrn_python_path
+        raise
 
 
 print "Imported neuron from %s" % neuron.__file__
