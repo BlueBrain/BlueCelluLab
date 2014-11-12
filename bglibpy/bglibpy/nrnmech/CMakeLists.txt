@@ -71,6 +71,8 @@ string(REGEX REPLACE "${MODLIBPATH}/BinReportHelper.mod" "" MODLIBMODS "${MODLIB
 string(REGEX REPLACE "${MODLIBPATH}/BinReports.mod" "" MODLIBMODS "${MODLIBMODS}")
 string(REGEX REPLACE "${MODLIBPATH}/MemUsage.mod" "" MODLIBMODS "${MODLIBMODS}")
 string(REGEX REPLACE "${MODLIBPATH}/VirtualElectrode.mod" "" MODLIBMODS "${MODLIBMODS}")
+string(REGEX REPLACE "${MODLIBPATH}/ISynNMDAEx.mod" "" MODLIBMODS "${MODLIBMODS}")                                                 
+string(REGEX REPLACE "${MODLIBPATH}/ISynAMPAEx.mod" "" MODLIBMODS "${MODLIBMODS}")                           
 
 string(REGEX REPLACE "\\.mod" ".c" MODLIBSRCS "${MODLIBMODS}")
 set(MODLIBSRCS ${MODLIBSRCS} "${MODLIBPATH}/mod_func.c")
@@ -86,14 +88,6 @@ foreach (MODFILE ${MODLIBMODS})
         "${MODLIBBUILDPATH}/${MODFILESHORT}")
     set(MODLIBBUILDMODS "${MODLIBBUILDPATH}/${MODFILESHORT}" ${MODLIBBUILDMODS})
 endforeach ()
-
-if (EXISTS "${MODLIBPATH}/synutils.inc")
-    add_custom_command(
-        OUTPUT "${MODLIBBUILDPATH}/synutils.inc" 
-        COMMAND cmake -E copy "${MODLIBPATH}/synutils.inc"
-        "${MODLIBBUILDPATH}/synutils.inc")
-    set(SYNUTILSINC "${MODLIBBUILDPATH}/synutils.inc")
-endif()
 
 set(LIBNRNMECHS "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so" "${MODLIBBUILDPATH}/${NRNARCH}/.libs/libnrnmech.so.0.0.0" )
 set(LIBNRNMECH "libnrnmech.so" )
