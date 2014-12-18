@@ -703,7 +703,6 @@ class Cell(object):
         section : parent section of the specified child section
 
         """
-        print self.soma
         return neuron.h.SectionRef(sec=childsection).parent
 
     def addAxialCurrentRecordings(self, section):
