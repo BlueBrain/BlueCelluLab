@@ -49,7 +49,7 @@ class Synapse(object):
         self.pre_gid = int(syn_description[0])
         # self.delay = syn_description[1]
         post_sec_id = syn_description[2]
-        self.isec = post_sec_id
+        self.isec = int(post_sec_id)
         post_seg_id = syn_description[3]
         self.ipt = post_seg_id
         post_seg_distance = syn_description[4]
@@ -59,7 +59,7 @@ class Synapse(object):
         self.syn_D = syn_description[10]
         self.syn_F = syn_description[11]
         self.syn_DTC = syn_description[12]
-        self.syn_type = syn_description[13]
+        self.syn_type = int(syn_description[13])
 
         self.post_segx = location
 
@@ -156,6 +156,11 @@ class Synapse(object):
         synapse_dict['pre_cell_id'] = self.pre_gid
         synapse_dict['post_cell_id'] = self.post_gid
         synapse_dict['post_sec_id'] = self.isec
+
+        # Remove cellname using split
+        synapse_dict['post_sec_name'] = bglibpy.neuron.h.secname(
+            sec=self.cell.get_hsection(self.isec)).split('.')[1]
+
         synapse_dict['post_segx'] = self.post_segx
         synapse_dict['mech_name'] = self.mech_name
         synapse_dict['syn_type'] = self.syn_type

@@ -859,13 +859,14 @@ class Cell(object):
             return apicaltrunk
 
     def add_ramp(self, start_time, stop_time, start_level, stop_level,
-                 dt=0.1, location=None):
+                 dt=0.1, section=None, segx=0.5):
         """Add a ramp current injection."""
         t_content = numpy.arange(start_time, stop_time, dt)
         i_content = [((stop_level - start_level)
                       / (stop_time - start_time)) *
                      (x - start_time) + start_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content, location=location)
+        self.injectCurrentWaveform(t_content, i_content, section=section,
+                                   segx=segx)
 
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp."""
@@ -1049,7 +1050,8 @@ class Cell(object):
         """Deprecated."""
         return self.locate_bapsite(seclistName, distance)
 
-    def injectCurrentWaveform(self, t_content, i_content, location=None):
+    def injectCurrentWaveform(self, t_content, i_content, section=None,
+                              segx=0.5):
         """Inject a current in the cell."""
         start_time = t_content[0]
         stop_time = t_content[-1]
@@ -1058,9 +1060,9 @@ class Cell(object):
         time = time.from_python(t_content)
         currents = currents.from_python(i_content)
 
-        if location is None:
-            location = self.soma
-        pulse = neuron.h.new_IClamp(0.5, sec=location)
+        if section is None:
+            section = self.soma
+        pulse = neuron.h.new_IClamp(segx, sec=section)
         self.persistent.append(pulse)
         self.persistent.append(time)
         self.persistent.append(currents)
