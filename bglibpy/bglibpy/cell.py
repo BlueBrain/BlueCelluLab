@@ -694,7 +694,8 @@ class Cell(object):
             children.append(neuron.h.SectionRef(sec=self.soma).child[index])
         return children
 
-    def get_parentsection(self, childsection):
+    @staticmethod
+    def get_parentsection(childsection):
         """Get the parent section of a neuron section.
 
         Returns
