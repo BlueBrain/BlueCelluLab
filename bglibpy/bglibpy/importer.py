@@ -11,6 +11,8 @@
 import sys
 import os
 
+# pylint: disable=F0401
+
 #####
 # Load paths.config
 #####
@@ -36,12 +38,17 @@ hoc_library_path = pathsconfig["HOC_LIBRARY_PATH"]
 if pathsconfig["HOC_LIBRARY_PATH"] == '':
     raise Exception('Empty HOC_LIBRARY_PATH')
 else:
+    paths = []
+    if "HOC_LIBRARY_PATH" in os.environ:
+        paths = os.environ["HOC_LIBRARY_PATH"].split(':')
     for path in hoc_library_path.split(':'):
         if not os.path.exists(path):
-            raise Exception(
-                'Invalid HOC_LIBRARY_PATH: %s' %
-                pathsconfig["HOC_LIBRARY_PATH"])
-    os.environ["HOC_LIBRARY_PATH"] = hoc_library_path
+            print 'Path %s in HOC_LIBRARY_PATH doesn\'t exist, ignoring' % path
+        else:
+            paths.insert(0, path)
+
+    os.environ["HOC_LIBRARY_PATH"] = ':'.join(paths)
+
 print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
 
 
