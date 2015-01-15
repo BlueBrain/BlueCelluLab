@@ -859,6 +859,17 @@ class Cell(object):
                         maxdiam = child.diam
             return apicaltrunk
 
+    def add_step(self, start_time, stop_time, level, section=None, segx=0.5):
+        """Add a step current injection."""
+
+        if section is None:
+            section = self.soma
+        pulse = neuron.h.new_IClamp(segx, sec=section)
+        self.persistent.append(pulse)
+        setattr(pulse, 'del', start_time)
+        pulse.dur = stop_time - start_time
+        pulse.amp = level
+
     def add_ramp(self, start_time, stop_time, start_level, stop_level,
                  dt=0.1, section=None, segx=0.5):
         """Add a ramp current injection."""
