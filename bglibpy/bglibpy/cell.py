@@ -81,6 +81,7 @@ class Cell(object):
         self.gid = gid
 
         self.recordings = {}  # Recordings in this cell
+        self.voltage_recordings = {}  # Voltage recordings in this cell
         self.synapses = {}  # Synapses on this cell
         self.netstims = {}  # Netstims connected to this cell
         self.connections = {}  # Outside connections to this cell
@@ -424,6 +425,45 @@ class Cell(object):
 
         for var_name in var_names:
             self.add_recording(var_name, dt)
+
+    def add_voltage_recording(self, section, segx):
+        """Add a voltage recording to a certain section(segx)
+
+        Parameters
+        ----------
+        section : nrnSection
+                  Section to record from (Neuron section pointer)
+        segx : float
+               Segment x coordinate
+        """
+
+        recording = neuron.h.Vector()
+
+        recording.record(
+            eval(
+                'neuron.h.%s(%f)._ref_v' %
+                (section.name(), segx)))
+
+        self.voltage_recordings['%s(%f)' % (section.name(), segx)] = recording
+
+    def get_voltage_recording(self, section, segx):
+        """Get a voltage recording for a certain section(segx)
+
+        Parameters
+        ----------
+        section : nrnSection
+                  Section to record from (Neuron section pointer)
+        segx : float
+               Segment x coordinate
+        """
+
+        recording_name = '%s(%f)' % (section.name(), segx)
+        if recording_name in self.voltage_recordings:
+            return self.voltage_recordings[recording_name].to_python()
+        else:
+            raise Exception('get_voltage_recording: Voltage recording %s'
+                            ' was not added previously using '
+                            'add_voltage_recording' % recording_name)
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
@@ -880,6 +920,24 @@ class Cell(object):
         self.injectCurrentWaveform(t_content, i_content, section=section,
                                    segx=segx)
 
+    def add_tstim_ramp(self, start_time, stop_time, start_level, stop_level,
+                       dt=0.1, section=None, segx=0.5):
+        """Add a ramp current injection."""
+
+        tstim = neuron.h.TStim(segx, sec=section)
+
+        tstim.ramp(
+            0.0,
+            start_time,
+            start_level,
+            stop_level,
+            stop_time -
+            start_time,
+            0.0,
+            0.0)
+
+        self.persistent.append(tstim)
+
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp."""
         vclamp = neuron.h.SEClamp(0.5, sec=self.soma)
@@ -999,6 +1057,12 @@ class Cell(object):
             self.fih_weights = None
             self.connections = None
             self.synapses = None
+
+        for recording in self.recordings:
+            del recording
+
+        for voltage_recording in self.voltage_recordings:
+            del voltage_recording
 
         for persistent_object in self.persistent:
             del persistent_object
