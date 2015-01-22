@@ -921,7 +921,7 @@ class Cell(object):
                                    segx=segx)
 
     def add_tstim_ramp(self, start_time, stop_time, start_level, stop_level,
-                       dt=0.1, section=None, segx=0.5):
+                       section=None, segx=0.5):
         """Add a ramp current injection."""
 
         tstim = neuron.h.TStim(segx, sec=section)
