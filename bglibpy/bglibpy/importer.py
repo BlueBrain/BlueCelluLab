@@ -49,8 +49,6 @@ else:
 
     os.environ["HOC_LIBRARY_PATH"] = ':'.join(paths)
 
-print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
-
 
 #####
 # Import Neuron
@@ -74,8 +72,6 @@ else:
         print 'Unable to import neuron from NRNPYTHONPATH=%s' % nrn_python_path
         raise
 
-
-print "Imported neuron from %s" % neuron.__file__
 
 #####
 # Load Neuron mechanisms
@@ -140,4 +136,9 @@ else:
         raise Exception('Unable to import bluepy from BLUEPYPATH=%s' %
                         bluepy_path)
 
-print "Imported bluepy from %s" % bluepy.__file__
+
+def print_header():
+    """Print BGLibPy header to stdout"""
+    print "Imported neuron from %s" % neuron.__file__
+    print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
+    print "Imported bluepy from %s" % bluepy.__file__

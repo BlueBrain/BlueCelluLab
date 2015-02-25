@@ -77,10 +77,10 @@ class Simulation(object):
     def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025,
             forward_skip=None, show_progress=None):
         """Run the simulation."""
-        if maxtime <= neuron.h.t:
-            raise Exception("Simulation: need to provide a maxtime (=%f) "
-                            "that is bigger than the current time (=%f)" % (
-                                maxtime, neuron.h.t))
+        # if maxtime <= neuron.h.t:
+        #     raise Exception("Simulation: need to provide a maxtime (=%f) "
+        #                    "that is bigger than the current time (=%f)" % (
+        #                        maxtime, neuron.h.t))
 
         if show_progress is None:
             if bglibpy.VERBOSE_LEVEL > 1:
@@ -89,7 +89,7 @@ class Simulation(object):
                 show_progress = False
 
         if show_progress:
-            self.progress_dt = (maxtime - neuron.h.t) / 100
+            self.progress_dt = maxtime / 100
             self.init_progress_callback()
 
         neuron.h.celsius = celsius
