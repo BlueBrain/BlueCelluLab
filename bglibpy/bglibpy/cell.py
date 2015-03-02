@@ -126,6 +126,10 @@ class Cell(object):
         except AttributeError:
             self.threshold = None
 
+        # Keep track of when a cell is made passive by make_passive()
+        # Used to know when re_init_rng() can be executed
+        self.is_made_passive = False
+
         self.psections = {}
 
         neuron.h.pop_section()  # Undoing soma push
@@ -226,7 +230,9 @@ class Cell(object):
 
     def re_init_rng(self):
         """Reinitialize the random number generator for stochastic channels."""
-        self.cell.re_init_rng()
+
+        if not self.is_made_passive:
+            self.cell.re_init_rng()
 
     def get_psection(self, section_id=None, secname=None):
         """Return a python section with the specified section id or name.
@@ -283,6 +289,7 @@ class Cell(object):
             for mech_name in mech_names:
                 if mech_name not in ["k_ion", "na_ion", "ca_ion", "pas"]:
                     neuron.h('uninsert %s' % mech_name, sec=section)
+        self.is_made_passive = True
 
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block.
