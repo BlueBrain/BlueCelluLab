@@ -778,9 +778,8 @@ class Cell(object):
                 if "dend" in secname:
                     dendnumber = int(
                         secname.split("dend")[1].split("[")[1].split("]")[0])
-                    secnumber = int(
-                        self.cell.getCell().nSecAxonalOrig +
-                        self.cell.getCell().nSecSoma + dendnumber)
+                    secnumber = int(self.cell.getCell().nSecAxonalOrig +
+                                    self.cell.getCell().nSecSoma + dendnumber)
                 elif "apic" in secname:
                     apicnumber = int(secname.split(
                         "apic")[1].split("[")[1].split("]")[0])
