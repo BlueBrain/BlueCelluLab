@@ -917,18 +917,9 @@ class Cell(object):
         pulse.dur = stop_time - start_time
         pulse.amp = level
 
-    """
-    def add_ramp(self, start_time, stop_time, start_level, stop_level,
-                 dt=0.1, section=None, segx=0.5):
-        '''Add a ramp current injection.'''
-        t_content = numpy.arange(start_time, stop_time, dt)
-        i_content = [((stop_level - start_level)
-                      / (stop_time - start_time)) *
-                     (x - start_time) + start_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content, section=section,
-                                   segx=segx)
-    """
-
+    # Disable unused argument warning for dt. This is there for backward
+    # compatibility
+    # pylint: disable=W0613
     def add_ramp(self, start_time, stop_time, start_level, stop_level,
                  section=None, segx=0.5, dt=None):
         """Add a ramp current injection."""
@@ -949,6 +940,7 @@ class Cell(object):
             0.0)
 
         self.persistent.append(tstim)
+    # pylint: enable=W0613
 
     @tools.deprecated("add_ramp")
     def add_tstim_ramp(self, *args, **kwargs):
