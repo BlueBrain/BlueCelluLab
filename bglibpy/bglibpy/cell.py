@@ -783,8 +783,8 @@ class Cell(object):
                 elif "apic" in secname:
                     apicnumber = int(secname.split(
                         "apic")[1].split("[")[1].split("]")[0])
-                    secnumber = int(self.cell.getCell().nSecAxonalOrig
-                                    + self.cell.getCell().nSecSoma +
+                    secnumber = int(self.cell.getCell().nSecAxonalOrig +
+                                    self.cell.getCell().nSecSoma +
                                     self.cell.getCell().nSecBasal + apicnumber)
                     print apicnumber, secnumber
                 else:
