@@ -490,7 +490,7 @@ class SSim(object):
             cell.initialize_synapses()
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None,
-            forward_skip=None, cvode=False):
+            forward_skip=None, cvode=False, show_progress=False):
         """Simulate the SSim
 
         Parameters
@@ -510,6 +510,10 @@ class SSim(object):
                 when there are stochastic channels in the neuron model. When
                 enabled results from a large network simulation will not be
                 exactly reproduced.
+        show_progress: boolean
+                       Show a progress bar during simulations. When
+                       enabled results from a large network simulation
+                       will not be exactly reproduced.
         """
         if t_stop is None:
             t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
@@ -525,8 +529,14 @@ class SSim(object):
         sim = bglibpy.Simulation()
         for gid in self.gids:
             sim.add_cell(self.cells[gid])
+
+        if show_progress:
+            printv("Warning: show_progress enabled, this will very likely \
+                    break the exact reproducibility of large network \
+                    simulations", 2)
+
         sim.run(t_stop, cvode=cvode, dt=dt, celsius=celsius, v_init=v_init,
-                forward_skip=forward_skip)
+                forward_skip=forward_skip, show_progress=show_progress)
 
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary
