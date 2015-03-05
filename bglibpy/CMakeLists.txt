@@ -17,7 +17,7 @@ add_custom_target(python_package ALL DEPENDS ${PYTHON_PACKAGE_FILE})
 
 if (ENABLE_PIP)
     install(CODE
-        "execute_process(COMMAND pip install ${PYTHON_PACKAGE_FILE} --upgrade)"
+        "execute_process(COMMAND python -m pip.__main__ install ${PYTHON_PACKAGE_FILE} --upgrade)"
     )
 else ()
     install(CODE
