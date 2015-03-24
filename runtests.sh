@@ -1,3 +1,4 @@
 #!/bin/sh
 
-build_lviz/test/runtests.sh $*
+cd test
+../build_lviz/test/runtests.sh $*

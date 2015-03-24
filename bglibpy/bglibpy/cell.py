@@ -291,6 +291,16 @@ class Cell(object):
                     neuron.h('uninsert %s' % mech_name, sec=section)
         self.is_made_passive = True
 
+    def enable_ttx(self):
+        """Add TTX to the bath (i.e. block the Na channels)"""
+
+        self.cell.getCell().enable_ttx()
+
+    def disable_ttx(self):
+        """Add TTX to the bath (i.e. block the Na channels)"""
+
+        self.cell.getCell().disable_ttx()
+
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block.
 
