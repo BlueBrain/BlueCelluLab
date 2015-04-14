@@ -22,8 +22,10 @@ class SSim(object):
     """Class that can load a BGLib BlueConfig,
                and instantiate the simulation"""
 
+    # pylint: disable=R0913
+
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None,
-                 base_seed=None):
+                 base_seed=None, base_noise_seed=None):
         """Object dealing with BlueConfig configured Small Simulations
 
         Parameters
@@ -40,6 +42,11 @@ class SSim(object):
                     Has to positive integer.
                     When this is not set, and no seed is set in the
                     BlueConfig, the seed will be 0.
+        base_noise_seed : int
+                    Base seed used for the noise stimuli in the simulation.
+                    Not setting this will result in the default Neurodamus
+                    behavior (i.e. seed=0)
+                    Has to positive integer.
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -54,6 +61,11 @@ class SSim(object):
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
             self.base_seed = base_seed
+
+        if base_noise_seed is None:
+            self.base_noise_seed = 0
+        else:
+            self.base_noise_seed = base_noise_seed
 
         self.connection_entries = \
             self.bc_simulation.config.typed_entries("Connection")
@@ -342,7 +354,8 @@ class SSim(object):
         gid: gid of the simulated cell
         """
         # check in which StimulusInjects the gid is a target
-        noise_seed = 0  # Every noise stimulus gets a new seed
+        # Every noise stimulus gets a new seed
+        noise_seed = self.base_noise_seed + gid
         for entry in self.bc.entries:
             if entry.TYPE == 'StimulusInject':
                 destination = entry.CONTENTS.Target
@@ -371,7 +384,7 @@ class SSim(object):
         """Add injections from the replay"""
         self.cells[gid].add_replay_hypamp(stimulus)
 
-    def _add_replay_noise(self, gid, stimulus, noise_seed=0):
+    def _add_replay_noise(self, gid, stimulus, noise_seed=None):
         """Add noise injection from the replay"""
         self.cells[gid].add_replay_noise(stimulus, noise_seed=noise_seed)
 
