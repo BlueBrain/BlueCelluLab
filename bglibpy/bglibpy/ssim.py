@@ -186,6 +186,9 @@ class SSim(object):
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
                                add_minis=add_minis)
         if add_replay or interconnect_cells:
+            if add_replay and synapse_detail < 1:
+                raise Exception("SSim: add_replay option can not be used if "
+                                "synapse_detail < 1")
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells)
 
