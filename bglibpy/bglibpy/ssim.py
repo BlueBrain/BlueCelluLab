@@ -283,8 +283,10 @@ class SSim(object):
                         pre_spiketrain=pre_spiketrain,
                         pre_cell=None,
                         stim_dt=self.dt)
-                    printv("Added replay connection to post_gid %d, "
-                           "syn_id %d" % (post_gid, syn_id), 5)
+                    printv(
+                        "Added replay connection from pre_gid %d to "
+                        "post_gid %d, syn_id %d" %
+                        (pre_gid, post_gid, syn_id), 5)
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
@@ -547,9 +549,9 @@ class SSim(object):
             sim.add_cell(self.cells[gid])
 
         if show_progress:
-            printv("Warning: show_progress enabled, this will very likely \
-                    break the exact reproducibility of large network \
-                    simulations", 2)
+            printv("Warning: show_progress enabled, this will very likely"
+                   "break the exact reproducibility of large network"
+                   "simulations", 2)
 
         sim.run(t_stop, cvode=cvode, dt=dt, celsius=celsius, v_init=v_init,
                 forward_skip=forward_skip, show_progress=show_progress)

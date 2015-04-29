@@ -530,6 +530,9 @@ class Cell(object):
         duration = float(stimulus.CONTENTS.Duration)
         self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration,
                             noise_seed)
+        printv("Added noise stimulus to gid %d: "
+               "delay=%f, duration=%f, mean=%f, variance=%f" %
+               (self.gid, delay, duration, mean, variance), 50)
 
     def add_noise_step(self, section,
                        segx,
