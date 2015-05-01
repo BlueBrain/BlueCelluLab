@@ -75,7 +75,7 @@ class Simulation(object):
 
     # pylint: disable=C0103,R0912
     def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025,
-            forward_skip=None, show_progress=None):
+            forward_skip=None, forward_skip_value=False, show_progress=None):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
@@ -129,10 +129,10 @@ class Simulation(object):
 
         neuron.h.stdinit()
 
-        if forward_skip is not None:
+        if forward_skip_value is not None and forward_skip:
             neuron.h.t = -1e9
             save_dt = neuron.h.dt
-            neuron.h.dt = forward_skip * 0.1
+            neuron.h.dt = forward_skip_value * 0.1
             for _ in range(0, 10):
                 neuron.h.fadvance()
             neuron.h.dt = save_dt

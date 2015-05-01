@@ -508,7 +508,8 @@ class SSim(object):
             cell.initialize_synapses()
 
     def run(self, t_stop=None, v_init=-65, celsius=34, dt=None,
-            forward_skip=None, cvode=False, show_progress=False):
+            forward_skip=True, forward_skip_value=None,
+            cvode=False, show_progress=False):
         """Simulate the SSim
 
         Parameters
@@ -522,7 +523,10 @@ class SSim(object):
         dt : float
              Timestep (delta-t) for the simulation
         forward_skip : boolean
-                       Overwrite the ForwardSkip value in the BlueConfig
+                       Enable/disable ForwardSkip (default=True)
+        forward_skip_value : float
+                       Overwrite the ForwardSkip value in the BlueConfig. If
+                       this is set to None, the value in the BlueConfig is used.
         cvode : boolean
                 Force the simulation to run in variable timestep. Not possible
                 when there are stochastic channels in the neuron model. When
@@ -537,12 +541,12 @@ class SSim(object):
             t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
         if dt is None:
             dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
-        if forward_skip is None:
+        if forward_skip_value is None:
             try:
-                forward_skip = float(
+                forward_skip_value = float(
                     self.bc.entry_map['Default'].CONTENTS.ForwardSkip)
             except AttributeError:
-                forward_skip = None
+                forward_skip_value = None
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
@@ -553,8 +557,15 @@ class SSim(object):
                    "break the exact reproducibility of large network"
                    "simulations", 2)
 
-        sim.run(t_stop, cvode=cvode, dt=dt, celsius=celsius, v_init=v_init,
-                forward_skip=forward_skip, show_progress=show_progress)
+        sim.run(
+            t_stop,
+            cvode=cvode,
+            dt=dt,
+            celsius=celsius,
+            v_init=v_init,
+            forward_skip=forward_skip,
+            forward_skip_value=forward_skip_value,
+            show_progress=show_progress)
 
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary
