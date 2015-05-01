@@ -523,7 +523,9 @@ class SSim(object):
         dt : float
              Timestep (delta-t) for the simulation
         forward_skip : boolean
-                       Enable/disable ForwardSkip (default=True)
+                       Enable/disable ForwardSkip (default=True, when
+                       forward_skip_value is None, forward skip will only be
+                       enabled if BlueConfig has a ForwardSkip value)
         forward_skip_value : float
                        Overwrite the ForwardSkip value in the BlueConfig. If
                        this is set to None, the value in the BlueConfig is used.
