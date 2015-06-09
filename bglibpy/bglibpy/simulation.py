@@ -8,6 +8,8 @@
 
 """
 
+# pylint: disable=R0913
+
 import sys
 import bglibpy
 from bglibpy.importer import neuron
