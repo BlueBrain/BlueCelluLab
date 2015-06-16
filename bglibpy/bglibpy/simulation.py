@@ -76,8 +76,9 @@ class Simulation(object):
             cell.init_callbacks()
 
     # pylint: disable=C0103,R0912
-    def run(self, maxtime, cvode=True, celsius=34, v_init=-65, dt=0.025,
-            forward_skip=None, forward_skip_value=False, show_progress=None):
+    def run(self, maxtime, cvode=True, cvode_minstep=None, cvode_maxstep=None,
+            celsius=34, v_init=-65, dt=0.025, forward_skip=None,
+            forward_skip_value=False, show_progress=None):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
@@ -100,6 +101,10 @@ class Simulation(object):
         cvode_old_status = neuron.h.cvode_active()
         if cvode:
             neuron.h.cvode_active(1)
+            if cvode_minstep:
+                neuron.h.cvode.minstep(cvode_minstep)
+            if cvode_maxstep:
+                neuron.h.cvode.maxstep(cvode_maxstep)
         else:
             if cvode_old_status:
                 printv(
