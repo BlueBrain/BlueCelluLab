@@ -75,7 +75,7 @@ class Simulation(object):
         for cell in self.cells:
             cell.init_callbacks()
 
-    # pylint: disable=C0103,R0912
+    # pylint: disable=C0103,R0912,R0914
     def run(self, maxtime, cvode=True, cvode_minstep=None, cvode_maxstep=None,
             celsius=34, v_init=-65, dt=0.025, forward_skip=None,
             forward_skip_value=False, show_progress=None):
