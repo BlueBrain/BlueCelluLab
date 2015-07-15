@@ -377,6 +377,8 @@ class SSim(object):
                     elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
                         if add_hyperpolarizing_stimuli:
                             self._add_replay_hypamp_injection(gid, stimulus)
+                    elif stimulus.CONTENTS.Pattern == 'Pulse':
+                        self._add_pulse(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" %
                                stimulus.CONTENTS.Pattern, 1)
@@ -388,6 +390,10 @@ class SSim(object):
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
         self.cells[gid].add_replay_hypamp(stimulus)
+
+    def _add_pulse(self, gid, stimulus):
+        """Add injections from the replay"""
+        self.cells[gid].add_pulse(stimulus)
 
     def _add_replay_noise(self, gid, stimulus, noise_seed=None):
         """Add noise injection from the replay"""

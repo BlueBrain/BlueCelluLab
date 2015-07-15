@@ -515,6 +515,24 @@ class Cell(object):
         """
         return self.recordings[var_name].to_python()
 
+    def add_pulse(self, stimulus):
+        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
+        if 'Offset' in stimulus.CONTENTS.keys:
+            # TODO The meaning of "Offset" is not clear yet, ask Jim
+            #delay = float(stimulus.CONTENTS.Delay) +
+            #        float(stimulus.CONTENTS.Offset)
+            raise Exception("Found stimulus with pattern %s and Offset, "
+                            "not supported" % stimulus.CONTENTS.Pattern)
+        else:
+            delay = float(stimulus.CONTENTS.Delay)
+
+        tstim.train(delay,
+                    float(stimulus.CONTENTS.Duration),
+                    float(stimulus.CONTENTS.AmpStart),
+                    float(stimulus.CONTENTS.Frequency),
+                    float(stimulus.CONTENTS.Width))
+        self.persistent.append(tstim)
+
     def add_replay_hypamp(self, stimulus):
         """Inject hypamp for the replay."""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
