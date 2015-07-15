@@ -148,7 +148,7 @@ class SSim(object):
                                       Setting add_stimuli=True,
                                       will automatically set this option to
                                       True.
-        intersect_pre_gids : Boolean
+        intersect_pre_gids : list of gids
                              Only add synapses to the cells if their
                              presynaptic gid is in this list
         interconnect_cells : Boolean
