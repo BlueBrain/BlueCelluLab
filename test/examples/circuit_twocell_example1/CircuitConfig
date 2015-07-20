@@ -2,7 +2,7 @@ Run Default
 {
 
   MorphologyPath /bgscratch/bbp/l5/release/2012.07.23/morphologies/h5
-  METypePath /bgscratch/bbp/l5/release/2012.07.23/ccells/
+  METypePath ../circuit_twocell_example1/ccells/
   MeshPath /bgscratch/bbp/l5/release/2012.07.23/meshes
   CircuitPath ../circuit_twocell_example1
   nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
