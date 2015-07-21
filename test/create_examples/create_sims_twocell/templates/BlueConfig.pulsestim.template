@@ -1,42 +1,42 @@
 Run Default
-{
+{{
         Date    22:11:12
         Time    14:27:09
           svnPath https://bbpteam.epfl.ch/svn/bluebrain
           Version 1094
            Prefix /bgscratch/bbp/release/02.04.12
-   MorphologyPath ../circuit_twocell_example1/morphologies
-       METypePath ../circuit_twocell_example1/ccells
+   MorphologyPath {circuit_path}/morphologies
+       METypePath {circuit_path}/ccells
 
-      CircuitPath ../circuit_twocell_example1
-          nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+      CircuitPath {circuit_path}
+          nrnPath {circuit_path}/ncsFunctionalAllRecipePathways
 
-        CurrentDir ./
-      OutputRoot .//output
-      TargetFile .//user.target
+        CurrentDir {path}
+      OutputRoot {path}/output
+      TargetFile {path}/user.target
 
     CircuitTarget Mosaic
-         Duration 100
-               Dt 0.025
+         Duration {tstop}
+               Dt {dt}
 
          BaseSeed 12345
-}
+}}
 
 Report soma
-{
+{{
         Target Mosaic
         Type compartment
         ReportOn v
         Unit mV
         Format Bin
-        Dt 0.1
+        Dt {record_dt}
         StartTime 0
         EndTime 20000
-}
+}}
 
 
 Stimulus pulse1
-{
+{{
     Mode        Current                                                          
     Pattern     Pulse                                                            
     AmpStart    2.5                                                              
@@ -45,10 +45,10 @@ Stimulus pulse1
     Width       4                                                                
     Delay       10.0                                                             
     Duration    700000.0                                                         
-}
+}}
 
 Stimulus pulse2
-{
+{{
     Mode        Current                                                          
     Pattern     Pulse                                                            
     AmpStart    2.5                                                              
@@ -57,10 +57,10 @@ Stimulus pulse2
     Width       4                                                                
     Delay       20.0                                                             
     Duration    700000.0                                                         
-}
+}}
 
 Stimulus pulse3
-{
+{{
     Mode        Current                                                          
     Pattern     Pulse                                                            
     AmpStart    2.5                                                              
@@ -69,10 +69,10 @@ Stimulus pulse3
     Width       4                                                                
     Delay       40.0                                                             
     Duration    700000.0                                                         
-}
+}}
 
 Stimulus pulse4
-{
+{{
     Mode        Current                                                          
     Pattern     Pulse                                                            
     AmpStart    2.5                                                              
@@ -81,28 +81,28 @@ Stimulus pulse4
     Width       4                                                                
     Delay       60.0                                                             
     Duration    700000.0                                                         
-}
+}}
 
 StimulusInject excite_a_lot_pre
-{
+{{
     Stimulus pulse1                                                              
     Target PreCell                                                               
-}
+}}
 
 StimulusInject excite_a_lot_post_first
-{
+{{
     Stimulus pulse2                                                              
     Target PostCell                                                              
-}
+}}
 
 StimulusInject excite_a_lot_post_second
-{
+{{
     Stimulus pulse3                                                              
     Target PostCell                                                              
-}
+}}
                                                                                  
 StimulusInject excite_a_lot_post_third
-{
+{{
     Stimulus pulse4                                                              
     Target PostCell                                                              
-}
+}}

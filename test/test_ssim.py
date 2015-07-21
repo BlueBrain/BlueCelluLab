@@ -47,21 +47,20 @@ class TestSSimBaseClass_twocell_empty(object):
         """SSim: Compare the output traces of BGLib against those of """\
             """BGLibPy for two cell circuit"""
 
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
             0:len(voltage_bglib)]
-        # import pylab
-        # pylab.plot(voltage_bglibpy)
-        # pylab.plot(voltage_bglib)
-        # pylab.show()
 
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 4)
+        nt.assert_true(rms_error < 0.2)
 
     def teardown(self):
         """Teardown"""
@@ -101,8 +100,8 @@ class TestSSimBaseClass_twocell_replay(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.ssim_bglib.bc_simulation.reports.soma.time_series(1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -111,12 +110,15 @@ class TestSSimBaseClass_twocell_replay(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 3)
+        nt.assert_true(rms_error < .2)
 
     def test_disable_replay(self):
         """SSim: Check if disabling the stimuli creates a different result"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         voltage_bglibpy_withoutreplay = \
             self.ssim_bglibpy_withoutreplay.get_voltage_traces()[1][
                 0:len(voltage_bglib)]
@@ -157,8 +159,11 @@ class TestSSimBaseClass_twocell_all_realconn(object):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit, spike replay, minis, """ \
             """noisy stimulus and real connections between cells"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -167,7 +172,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 15.0)
+        nt.assert_true(rms_error < 1.0)
 
     def teardown(self):
         """Teardown"""
@@ -198,8 +203,11 @@ class TestSSimBaseClass_twocell_all(object):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, """ \
             """minis and noisy stimulus"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -208,7 +216,7 @@ class TestSSimBaseClass_twocell_all(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 15.0)
+        nt.assert_true(rms_error < 1.0)
 
     def test_pre_gids(self):
         """SSim: Test pre_gids() of the cells for a two cell circuit"""
@@ -253,8 +261,11 @@ class TestSSimBaseClass_twocell_synapseid(object):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, minis, """ \
             """noisy stimulus and SynapseID"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -262,14 +273,16 @@ class TestSSimBaseClass_twocell_synapseid(object):
 
         os.chdir("../sim_twocell_all")
         ssim_bglib_all = bglibpy.SSim("BlueConfig")
-        voltage_bglib_all = \
-            ssim_bglib_all.bc_simulation.reports.soma.time_series(1)
+        voltage_bglib_all = numpy.transpose(
+            ssim_bglib_all.
+            bc_simulation.
+            reports.soma.time_series(1))[0]
         nt.assert_equal(len(voltage_bglib_all), 1000)
 
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 10)
+        nt.assert_true(rms_error < .5)
 
         rms_error_all = numpy.sqrt(
             numpy.mean(
@@ -315,8 +328,11 @@ class TestSSimBaseClass_twocell_minis_replay(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay and minis"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -325,12 +341,15 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 2.0)
+        nt.assert_true(rms_error < 1.0)
 
     def test_disable_minis(self):
         """SSim: Check if disabling the minis creates a different result"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         voltage_bglibpy_withoutminis = \
             self.ssim_bglibpy_withoutminis.get_voltage_traces()[1][
                 0:len(voltage_bglib)]
@@ -379,8 +398,11 @@ class TestSSimBaseClass_twocell_noisestim(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and noise stimulus"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -389,12 +411,15 @@ class TestSSimBaseClass_twocell_noisestim(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 10.0)
+        nt.assert_true(rms_error < 1.0)
 
     def test_disable_stimuli(self):
         """SSim: Check if disabling the stimuli creates a different result"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         voltage_bglibpy_withoutstim = \
             self.ssim_bglibpy_withoutstim.get_voltage_traces()[1][
                 0:len(voltage_bglib)]
@@ -413,6 +438,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
 
 
 class TestSSimBaseClass_twocell_pulsestim(object):
+
     """Class to test SSim with two cell circuit"""
 
     def setup(self):
@@ -442,8 +468,11 @@ class TestSSimBaseClass_twocell_pulsestim(object):
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and pulse stimulus"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         nt.assert_equal(len(voltage_bglib), 1000)
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
@@ -452,12 +481,17 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 1.0)
+
+        nt.assert_true(rms_error < 2.5)
 
     def test_disable_stimuli(self):
-        """SSim: Check if disabling the stimuli creates a different result"""
-        voltage_bglib = self.ssim_bglib.bc_simulation.reports.soma.time_series(
-            1)
+        """SSim: Check if disabling the pulse stimuli creates a different """ \
+            """result"""
+        voltage_bglib = numpy.transpose(
+            self.
+            ssim_bglib.
+            bc_simulation.reports.soma.time_series(
+                1))[0]
         voltage_bglibpy_withoutstim = \
             self.ssim_bglibpy_withoutstim.get_voltage_traces()[1][
                 0:len(voltage_bglib)]
@@ -465,7 +499,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
-        nt.assert_true(rms_error > 1.0)
+        nt.assert_true(rms_error > 25.0)
 
     def teardown(self):
         """Teardown"""
@@ -473,6 +507,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         del self.ssim_bglibpy
         del self.ssim_bglib
         os.chdir(self.prev_cwd)
+
 
 @attr('bgscratch')
 class TestSSimBaseClass_full(object):

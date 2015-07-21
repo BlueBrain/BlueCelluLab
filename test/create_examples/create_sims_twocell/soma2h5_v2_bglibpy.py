@@ -15,6 +15,8 @@ def main(bbp_filename, compression_lev=9, frame_chunk=500):
     # Create the binary report object
     br = pybinreports.BinReport(bbp_filename)
 
+    print bbp_filename
+
     # Create the h5 file
     h5 = h5py.File(h5_filename, 'w', libver='latest')
     h5.attrs.create('version', 1.0)

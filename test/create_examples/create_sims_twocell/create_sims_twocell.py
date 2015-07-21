@@ -21,6 +21,7 @@ def create_extracted_simulation(
         fill_outdat=False):
     """..."""
 
+    print "Creating new example in %s" % output_path
     outputdir = os.path.join(output_path, "output")
     # pylint: disable=W0704
     try:
@@ -45,8 +46,13 @@ def create_extracted_simulation(
 
     os.chmod(newrunsh, 0755)
 
+    usertarget_content = "Target Cell PreCell\n{\na2\n}\n\n" \
+        "Target Cell PostCell\n{\na1\n}\n\n" \
+        "Target Cell MyPairs\n{\nPreCell PostCell\n}\n\n"
+
     usertarget = os.path.join(output_path, "user.target")
     usertarget_file = open(usertarget, "w")
+    usertarget_file.write(usertarget_content)
     usertarget_file.close()
 
     old_cwd = os.getcwd()
@@ -72,7 +78,7 @@ def create_extracted_simulation(
 
     os.chdir("output")
 
-    soma2h5_v2_bglibpy.main('soma.bbp')
+    soma2h5_v2_bglibpy.main(os.path.join(os.getcwd(), 'soma.bbp'))
 
     os.chdir("..")
 
@@ -107,6 +113,17 @@ def main():
 
     with open("templates/BlueConfig.noisestim.template") as blueconfig_templatefile:
         output_path = "../../examples/sim_twocell_noisestim"
+        blueconfig_template = blueconfig_templatefile.read()
+        create_extracted_simulation(
+            output_path,
+            blueconfig_template,
+            runsh_template,
+            tstop=tstop,
+            dt=dt,
+            record_dt=record_dt)
+
+    with open("templates/BlueConfig.pulsestim.template") as blueconfig_templatefile:
+        output_path = "../../examples/sim_twocell_pulsestim"
         blueconfig_template = blueconfig_templatefile.read()
         create_extracted_simulation(
             output_path,
@@ -188,12 +205,11 @@ def main():
             record_dt=record_dt,
             fill_outdat=False)
 
-    os.chdir("../../examples/sim_twocell_realconn")
+    os.chdir("../../examples/sim_twocell_pulsestim")
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
     bglibpy.set_verbose(100)
     ssim_bglibpy.instantiate_gids(
-        [1, 2], synapse_detail=2, add_stimuli=True, add_replay=False,
-        interconnect_cells=True)
+        [1, 2], synapse_detail=2, add_stimuli=True, add_replay=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")

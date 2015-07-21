@@ -102,6 +102,7 @@ class SSim(object):
                          add_minis=False,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
+                         add_pulse_stimuli=False,
                          intersect_pre_gids=None,
                          interconnect_cells=True):
         """ Instantiate a list of GIDs
@@ -148,6 +149,12 @@ class SSim(object):
                                       Setting add_stimuli=True,
                                       will automatically set this option to
                                       True.
+        add_pulse_stimuli : Boolean
+                                      Process the 'pulse' stimuli
+                                      blocks of the BlueConfig.
+                                      Setting add_stimuli=True,
+                                      will automatically set this option to
+                                      True.
         intersect_pre_gids : list of gids
                              Only add synapses to the cells if their
                              presynaptic gid is in this list
@@ -177,11 +184,13 @@ class SSim(object):
         if add_stimuli:
             add_noise_stimuli = True
             add_hyperpolarizing_stimuli = True
+            add_pulse_stimuli = True
 
         if add_noise_stimuli or add_hyperpolarizing_stimuli:
             self._add_stimuli(
                 add_noise_stimuli=add_noise_stimuli,
-                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
+                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
+                add_pulse_stimuli=add_pulse_stimuli)
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
                                add_minis=add_minis)
@@ -195,14 +204,16 @@ class SSim(object):
     # pylint: enable=R0913
 
     def _add_stimuli(self, add_noise_stimuli=False,
-                     add_hyperpolarizing_stimuli=False):
+                     add_hyperpolarizing_stimuli=False,
+                     add_pulse_stimuli=False):
         """Instantiate all the stimuli"""
         for gid in self.gids:
             # Also add the injections / stimulations as in the cortical model
             self._add_stimuli_gid(
                 gid,
                 add_noise_stimuli=add_noise_stimuli,
-                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli)
+                add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
+                add_pulse_stimuli=add_pulse_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
     def _add_synapses(self, intersect_pre_gids=None, add_minis=None,
@@ -345,12 +356,11 @@ class SSim(object):
             if add_minis:
                 self.add_replay_minis(gid, syn_id, syn_description,
                                       connection_parameters)
-        else:
-            print 'Here'
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
-                         add_hyperpolarizing_stimuli=False):
+                         add_hyperpolarizing_stimuli=False,
+                         add_pulse_stimuli=False):
         """ Adds indeitical stimuli to the simulated cell as in the 'large'
             model
 
@@ -361,6 +371,7 @@ class SSim(object):
         # check in which StimulusInjects the gid is a target
         # Every noise stimulus gets a new seed
         noise_seed = self.base_noise_seed + gid
+
         for entry in self.bc.entries:
             if entry.TYPE == 'StimulusInject':
                 destination = entry.CONTENTS.Target
@@ -378,7 +389,8 @@ class SSim(object):
                         if add_hyperpolarizing_stimuli:
                             self._add_replay_hypamp_injection(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'Pulse':
-                        self._add_pulse(gid, stimulus)
+                        if add_pulse_stimuli:
+                            self._add_pulse(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" %
                                stimulus.CONTENTS.Pattern, 1)
