@@ -516,10 +516,11 @@ class Cell(object):
         return self.recordings[var_name].to_python()
 
     def add_pulse(self, stimulus):
+        """Inject pulse stimulus for replay."""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
         if 'Offset' in stimulus.CONTENTS.keys:
-            # TODO The meaning of "Offset" is not clear yet, ask Jim
-            #delay = float(stimulus.CONTENTS.Delay) +
+            # The meaning of "Offset" is not clear yet, ask Jim
+            # delay = float(stimulus.CONTENTS.Delay) +
             #        float(stimulus.CONTENTS.Offset)
             raise Exception("Found stimulus with pattern %s and Offset, "
                             "not supported" % stimulus.CONTENTS.Pattern)
