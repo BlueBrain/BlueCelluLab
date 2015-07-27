@@ -102,6 +102,7 @@ class SSim(object):
                          add_minis=False,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
+                         add_relativelinear_stimuli=False,
                          add_pulse_stimuli=False,
                          intersect_pre_gids=None,
                          interconnect_cells=True):
@@ -149,6 +150,12 @@ class SSim(object):
                                       Setting add_stimuli=True,
                                       will automatically set this option to
                                       True.
+        add_relativelinear_stimuli : Boolean
+                                      Process the 'relativelinear' stimuli
+                                      blocks of the BlueConfig.
+                                      Setting add_stimuli=True,
+                                      will automatically set this option to
+                                      True.
         add_pulse_stimuli : Boolean
                                       Process the 'pulse' stimuli
                                       blocks of the BlueConfig.
@@ -184,12 +191,17 @@ class SSim(object):
         if add_stimuli:
             add_noise_stimuli = True
             add_hyperpolarizing_stimuli = True
+            add_relativelinear_stimuli = True
             add_pulse_stimuli = True
 
-        if add_noise_stimuli or add_hyperpolarizing_stimuli:
+        if add_noise_stimuli or \
+                add_hyperpolarizing_stimuli or \
+                add_pulse_stimuli or \
+                add_relativelinear_stimuli:
             self._add_stimuli(
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
+                add_relativelinear_stimuli=add_relativelinear_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli)
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
@@ -205,6 +217,7 @@ class SSim(object):
 
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
+                     add_relativelinear_stimuli=False,
                      add_pulse_stimuli=False):
         """Instantiate all the stimuli"""
         for gid in self.gids:
@@ -213,6 +226,7 @@ class SSim(object):
                 gid,
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
+                add_relativelinear_stimuli=add_hyperpolarizing_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
@@ -360,6 +374,7 @@ class SSim(object):
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
+                         add_relativelinear_stimuli=False,
                          add_pulse_stimuli=False):
         """ Adds indeitical stimuli to the simulated cell as in the 'large'
             model
@@ -391,6 +406,9 @@ class SSim(object):
                     elif stimulus.CONTENTS.Pattern == 'Pulse':
                         if add_pulse_stimuli:
                             self._add_pulse(gid, stimulus)
+                    elif stimulus.CONTENTS.Pattern == 'RelativeLinear':
+                        if add_relativelinear_stimuli:
+                            self._add_relativelinear(gid, stimulus)
                     elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" %
                                stimulus.CONTENTS.Pattern, 1)
@@ -402,6 +420,10 @@ class SSim(object):
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
         self.cells[gid].add_replay_hypamp(stimulus)
+
+    def _add_relativelinear(self, gid, stimulus):
+        """Add relative linear injections from the replay"""
+        self.cells[gid].add_replay_relativelinear(stimulus)
 
     def _add_pulse(self, gid, stimulus):
         """Add injections from the replay"""

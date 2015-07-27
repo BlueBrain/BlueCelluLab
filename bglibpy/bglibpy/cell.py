@@ -541,6 +541,20 @@ class Cell(object):
                     float(stimulus.CONTENTS.Duration), self.hypamp)
         self.persistent.append(tstim)
 
+    def add_replay_relativelinear(self, stimulus):
+        """Add a relative linear stimulus."""
+
+        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
+        delay = float(stimulus.CONTENTS.Delay)
+        duration = float(stimulus.CONTENTS.Duration)
+        amp = (float(stimulus.CONTENTS.PercentStart) / 100.0) * self.threshold
+        tstim.pulse(delay, duration, amp)
+        self.persistent.append(tstim)
+
+        printv("Added relative linear stimulus to gid %d: "
+               "delay=%f, duration=%f, amp=%f" %
+               (self.gid, delay, duration, amp), 50)
+
     def add_replay_noise(self, stimulus, noise_seed=0):
         """Add a replay noise stimulus."""
         mean = (float(stimulus.CONTENTS.MeanPercent) * self.threshold) / 100.0
