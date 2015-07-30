@@ -226,7 +226,7 @@ class SSim(object):
                 gid,
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
-                add_relativelinear_stimuli=add_hyperpolarizing_stimuli,
+                add_relativelinear_stimuli=add_relativelinear_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
