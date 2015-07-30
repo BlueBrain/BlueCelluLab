@@ -552,7 +552,7 @@ class Cell(object):
         self.persistent.append(tstim)
 
         printv("Added relative linear stimulus to gid %d: "
-               "delay=%f, duration=%f, amp=%f" %
+               "delay=%f, duration=%f, amp=%f " %
                (self.gid, delay, duration, amp), 50)
 
     def add_replay_noise(self, stimulus, noise_seed=0):
