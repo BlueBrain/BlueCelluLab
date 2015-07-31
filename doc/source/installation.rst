@@ -16,7 +16,7 @@ Installing BGLibPy
 
 Clone the git repository::
 
-    git clone ssh://bbpgit.epfl.ch/sim/BGLibPy.git
+    git clone ssh://bbpcode.epfl.ch/sim/BGLibPy
     cd BGLibPy
 
 The source directory contains an example build script called 
