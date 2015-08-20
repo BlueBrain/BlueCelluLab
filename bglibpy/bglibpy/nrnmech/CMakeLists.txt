@@ -65,6 +65,10 @@ message("Working with BG_Hoclib Version: ${BG_HOCLIB_VERSION}")
 set(MODLIBBUILDPATH "${CMAKE_CURRENT_BINARY_DIR}/modlib")
 file(MAKE_DIRECTORY ${MODLIBBUILDPATH})
 file(GLOB MODLIBMODS "${MODLIBPATH}/*.mod")
+string(REGEX REPLACE "${MODLIBPATH}/hdf5.mod" ""                                 
+        MODLIBMODS "${MODLIBMODS}")                                                  
+string(REGEX REPLACE "${MODLIBPATH}/hdf5new.mod" ""                              
+        MODLIBMODS "${MODLIBMODS}")                                
 string(REGEX REPLACE "${MODLIBPATH}/HDF5record.mod" "" MODLIBMODS "${MODLIBMODS}")
 string(REGEX REPLACE "${MODLIBPATH}/HDF5reader.mod" "" MODLIBMODS "${MODLIBMODS}")
 string(REGEX REPLACE "${MODLIBPATH}/BinReportHelper.mod" "" MODLIBMODS "${MODLIBMODS}")
