@@ -27,6 +27,17 @@ class PSection(object):
         self.pchildren = []
         self.isec = isec
 
+        if 'apic' in self.name:
+            self.section_type = 'apical'
+        elif 'dend' in self.name:
+            self.section_type = 'basal'
+        elif 'soma' in self.name:
+            self.section_type = 'somatic'
+        elif 'axon' in self.name:
+            self.section_type = 'axonal'
+        else:
+            raise Exception("PSection: Section of unknown type: %s" % self.name)
+
         self.psegments = []
         self.maxsegdiam = 0
         for hsegment in hsection:
@@ -35,8 +46,8 @@ class PSection(object):
             self.psegments.append(psegment)
             self.maxsegdiam = max(self.maxsegdiam, psegment.diam)
 
-        self.xSpacing = 10
-        self.ySpacing = 1
+        self.xSpacing = 1
+        self.ySpacing = 5
 
     @property
     def isLeaf(self):
@@ -114,31 +125,41 @@ class PSection(object):
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
         """Draw a dendritic tree"""
         import pylab
+
+        # Draw myself
         self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
+
+        # Draw children
+
+        # First child is a same x coordinate
         new_x = x  # + self.L + self.xSpacing
-        new_y = y + self.L + self.xSpacing
+
+        # Children drawn L + ySpacing heigher
+        new_y = y + self.L + self.ySpacing
+
         for child in self.pchildren:
             child.drawTree(
                 figure, new_x, new_y, variable=variable, varbounds=varbounds)
             pylab.plot(
                 [x + self.diam / 2, new_x + child.diam / 2],
                 [y + self.L, new_y], 'k')
+            # Prepare new_x for next child
             new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
         """Width of a dendritic tree"""
         if self.isLeaf:
-            treeWidth = self.maxsegdiam + self.ySpacing
+            treeWidth = self.maxsegdiam + self.xSpacing
         else:
             treeWidth = 0
             for child in self.pchildren:
                 treeWidth += child.treeWidth()
 
-        return max(self.diam + self.ySpacing, treeWidth)
+        return max(self.diam + self.xSpacing, treeWidth)
 
     def treeHeight(self):
         """Height of dendritic tree"""
-        return self.L + self.xSpacing + \
+        return self.L + self.ySpacing + \
             (max([child.treeHeight() for child in self.pchildren])
              if self.pchildren else 0)
 

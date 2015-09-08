@@ -1044,10 +1044,26 @@ class Cell(object):
             var_list, self, xlim, ylim, title))
         self.plot_callback_necessary = True
 
-    def add_dendrogram(self, variable=None, active=False):
+    def add_dendrogram(
+            self,
+            variable=None,
+            active=False,
+            save_fig_path=None,
+            interactive=False,
+            scale_bar=True,
+            scale_bar_size=10.0,
+            fig_title=None):
         """Show a dendrogram of the cell."""
+        self.init_psections()
         cell_dendrogram = bglibpy.Dendrogram(
-            self.psections, variable=variable, active=active)
+            self.psections,
+            variable=variable,
+            active=active,
+            save_fig_path=save_fig_path,
+            interactive=interactive,
+            scale_bar=scale_bar,
+            scale_bar_size=scale_bar_size,
+            fig_title=fig_title)
         cell_dendrogram.redraw()
         self.cell_dendrograms.append(cell_dendrogram)
         if active:

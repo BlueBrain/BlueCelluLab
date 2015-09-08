@@ -11,6 +11,8 @@ Represent a Neuron Segment in Python (for drawing)
 
 import bglibpy
 
+type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b'}
+
 
 class PSegment(object):
 
@@ -46,8 +48,9 @@ class PSegment(object):
         self.figX = x
         self.figY = y
         self.patch = plt.patches.Rectangle(
-            [self.figX, self.figY], self.diam, self.L, facecolor="black",
-            edgecolor="black")
+            [self.figX, self.figY], self.diam, self.L,
+            facecolor=type_colormap[self.parentsection.section_type],
+            edgecolor=type_colormap[self.parentsection.section_type])
         self.ax.add_patch(self.patch)
 
     def redraw(self):
