@@ -26,7 +26,8 @@ class Dendrogram(object):
             interactive=False,
             scale_bar=True,
             scale_bar_size=10.0,
-            fig_title=None):
+            fig_title=None,
+            fig_show=True):
         import pylab
 
         if interactive:
@@ -127,7 +128,7 @@ class Dendrogram(object):
         if save_fig_path is not None:
             pylab.savefig(save_fig_path)
 
-        if not interactive:
+        if not interactive and fig_show:
             pylab.show()
 
     def redraw(self):
