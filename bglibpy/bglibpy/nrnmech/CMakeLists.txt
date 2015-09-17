@@ -45,10 +45,14 @@ message("Neuron installation path: ${NRNPATH}")
 
 if (NOT MODLIBPATH)
     message(FATAL_ERROR "The user should set MODLIBPATH to a directory where the BBP Modlib is installed")
+elseif (NOT EXISTS ${MODLIBPATH})
+    message(FATAL_ERROR "MODLIBPATH ${MODLIBPATH} doesn't exist")
 endif ()
 
 if (NOT HOCLIBPATH)
     message(FATAL_ERROR "The user should set HOCLIBPATH to a directory where the BBP Hoclib is installed")
+elseif (NOT EXISTS ${HOCLIBPATH})
+    message(FATAL_ERROR "HOCLIBPATH ${HOCLIBPATH} doesn't exist")
 endif ()
 
 exec_program(
