@@ -264,12 +264,12 @@ def holding_current(
         t_neuron = list(m.get_gids([gid]))[0]
         template_name = str(
             os.path.join(
-                bc.RUN.CONTENTS.METypePath,
+                bc.Run.METypePath,
                 t_neuron.METype +
                 '.hoc'))
         morphology_path = os.path.join(
             os.path.split(
-                bc.RUN.CONTENTS.MorphologyPath)[0],
+                bc.Run.MorphologyPath)[0],
             'ascii/')
     elif (gid is None or circuit_path is None) and (template_name is None or
                                                     morphology_path is None):
@@ -416,7 +416,7 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     ssim = bglibpy.SSim(blueconfig)
     if ignore_timerange:
         tstart = 0
-        tstop = int(ssim.bc.entry_map['Default'].CONTENTS.Duration)
+        tstop = int(ssim.bc.Run.Duration)
     else:
         tstart = start_time
         tstop = stop_time

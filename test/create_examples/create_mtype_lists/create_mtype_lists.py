@@ -13,7 +13,7 @@ BLUE_CONFIG = "/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/Somatosen
 
 sim = bglibpy.ssim.SSim(BLUE_CONFIG)
 bc = sim.bc
-path_to_ncs = bc.entry_map['Default'].CONTENTS.nrnPath
+path_to_ncs = bc.Run.nrnPath
 print 'path_to_ncs: %s' % path_to_ncs
 ncs_file_name=  path_to_ncs + '/start.ncs'
 ncs = open(ncs_file_name)

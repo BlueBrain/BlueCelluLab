@@ -56,7 +56,7 @@ class SSim(object):
         if base_seed is None:
             try:
                 self.base_seed = \
-                    int(self.bc.entry_map['Default'].CONTENTS.BaseSeed)
+                    int(self.bc.Run.BaseSeed)
             except AttributeError:
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
@@ -69,7 +69,7 @@ class SSim(object):
 
         self.connection_entries = \
             self.bc_simulation.config.typed_entries("Connection")
-        self.all_targets = self.bc_simulation.TARGETS.available_targets()
+        self.all_targets = self.bc_simulation.targets.available_targets()
         self.all_targets_dict = {}
         for target in self.all_targets:
             self.all_targets_dict[target] = \
@@ -83,8 +83,8 @@ class SSim(object):
             self.bc_simulation.config.typed_entries("NeuronConfigure")
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
-            for gid in self.all_targets_dict[entry.CONTENTS.Target]:
-                conf = entry.CONTENTS.Configure
+            for gid in self.all_targets_dict[entry.Target]:
+                conf = entry.Configure
                 self.neuronconfigure_expressions.\
                     setdefault(gid, []).append(conf)
 
@@ -269,7 +269,7 @@ class SSim(object):
         """Instantiate the (replay and real) connections in the network"""
         if outdat_path is None:
             outdat_path = os.path.join(
-                self.bc.entry_map['Default'].CONTENTS.OutputRoot,
+                self.bc.Run.OutputRoot,
                 'out.dat')
 
         if add_replay:
@@ -331,7 +331,7 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
-        bgc_morph_path = self.bc.entry_map['Default'].CONTENTS.MorphologyPath
+        bgc_morph_path = self.bc.Run.MorphologyPath
         # backwards compatible
         if bgc_morph_path[-3:] == "/h5":
             bgc_morph_path = bgc_morph_path[:-3]
@@ -341,8 +341,8 @@ class SSim(object):
         for gid in self.gids:
             # Fetch the template for this GID
             template_name_of_gid = self._fetch_template_name(gid)
-            full_template_name_of_gid = self.bc.entry_map['Default'].CONTENTS.\
-                METypePath + '/' + template_name_of_gid + '.hoc'
+            full_template_name_of_gid = (self.bc.Run.METypePath + '/' +
+                                         template_name_of_gid + '.hoc')
             printv('Added gid %d from template %s' %
                    (gid, full_template_name_of_gid), 1)
 
@@ -388,34 +388,34 @@ class SSim(object):
         noise_seed = self.base_noise_seed + gid
 
         for entry in self.bc.entries:
-            if entry.TYPE == 'StimulusInject':
-                destination = entry.CONTENTS.Target
+            if entry.section_type == 'StimulusInject':
+                destination = entry.Target
                 gids_of_target = self.bc_simulation.get_target(destination)
                 if gid in gids_of_target:
                     # retrieve the stimulus to apply
-                    stimulus_name = entry.CONTENTS.Stimulus
-                    stimulus = self.bc.entry_map[stimulus_name]
-                    if stimulus.CONTENTS.Pattern == 'Noise':
+                    stimulus_name = entry.Stimulus
+                    stimulus = self.bc.entry_map['Stimulus_' + stimulus_name]
+                    if stimulus.Pattern == 'Noise':
                         if add_noise_stimuli:
                             self._add_replay_noise(
                                 gid, stimulus, noise_seed=noise_seed)
                         noise_seed += 1
-                    elif stimulus.CONTENTS.Pattern == 'Hyperpolarizing':
+                    elif stimulus.Pattern == 'Hyperpolarizing':
                         if add_hyperpolarizing_stimuli:
                             self._add_replay_hypamp_injection(gid, stimulus)
-                    elif stimulus.CONTENTS.Pattern == 'Pulse':
+                    elif stimulus.Pattern == 'Pulse':
                         if add_pulse_stimuli:
                             self._add_pulse(gid, stimulus)
-                    elif stimulus.CONTENTS.Pattern == 'RelativeLinear':
+                    elif stimulus.Pattern == 'RelativeLinear':
                         if add_relativelinear_stimuli:
                             self._add_relativelinear(gid, stimulus)
-                    elif stimulus.CONTENTS.Pattern == 'SynapseReplay':
+                    elif stimulus.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" %
-                               stimulus.CONTENTS.Pattern, 1)
+                               stimulus.Pattern, 1)
                     else:
                         raise Exception("Found stimulus with pattern %s, "
                                         "not supported" %
-                                        stimulus.CONTENTS.Pattern)
+                                        stimulus.Pattern)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
@@ -464,10 +464,11 @@ class SSim(object):
     def check_connection_contents(contents):
         """Check the contents of a connection block,
            to see if we support all the fields"""
-        for key in contents.keys:
-            if key not in ['Weight', 'SynapseID', 'SpontMinis',
-                           'SynapseConfigure', 'Source',
-                           'Destination', 'Delay', 'CreateMode']:
+        allowed_keys = set(['Weight', 'SynapseID', 'SpontMinis',
+                            'SynapseConfigure', 'Source',
+                            'Destination', 'Delay', 'CreateMode'])
+        for key in contents.keys():
+            if key not in allowed_keys:
                 raise Exception(
                     "Key %s in Connection blocks not supported by BGLibPy"
                     % key)
@@ -488,53 +489,54 @@ class SSim(object):
         spontminis_set = False
 
         for entry in self.connection_entries:
-            self.check_connection_contents(entry.CONTENTS)
-            src = entry.CONTENTS.Source
-            dest = entry.CONTENTS.Destination
+            self.check_connection_contents(entry)
+            src = entry.Source
+            dest = entry.Destination
 
             if src in self.all_targets_dict and dest in self.all_targets_dict:
                 if pre_gid in self.all_targets_dict[src] and \
                         post_gid in self.all_targets_dict[dest]:
                     # whatever specified in this block, is applied to gid
                     apply_parameters = True
+                    keys = set(entry.keys())
 
-                    if 'SynapseID' in entry.CONTENTS.keys:
-                        if int(entry.CONTENTS.SynapseID) != syn_type:
+                    if 'SynapseID' in keys:
+                        if int(entry.SynapseID) != syn_type:
                             apply_parameters = False
 
-                    if 'Delay' in entry.CONTENTS.keys:
+                    if 'Delay' in keys:
                         parameters.setdefault('DelayWeights', []).append((
-                            float(entry.CONTENTS.Delay),
-                            float(entry.CONTENTS.Weight)))
+                            float(entry.Delay),
+                            float(entry.Weight)))
                         apply_parameters = False
 
                     if apply_parameters:
-                        if 'CreateMode' in entry.CONTENTS.keys:
-                            if entry.CONTENTS.CreateMode == 'NoCreate':
+                        if 'CreateMode' in keys:
+                            if entry.CreateMode == 'NoCreate':
                                 parameters['add_synapse'] = False
                             else:
                                 raise Exception('Connection %s: Unknown '
                                                 'CreateMode option %s'
-                                                % (entry.NAME,
-                                                   entry.CONTENTS.CreateMode))
-                        if 'Weight' in entry.CONTENTS.keys:
-                            parameters['Weight'] = float(entry.CONTENTS.Weight)
+                                                % (entry.name,
+                                                   entry.CreateMode))
+                        if 'Weight' in keys:
+                            parameters['Weight'] = float(entry.Weight)
                         if not spontminis_set:
-                            if 'SpontMinis' in entry.CONTENTS.keys:
+                            if 'SpontMinis' in keys:
                                 parameters['SpontMinis'] = float(
-                                    entry.CONTENTS.SpontMinis)
+                                    entry.SpontMinis)
                                 spontminis_set = True
                             else:
                                 parameters['SpontMinis'] = 0.0
                                 spontminis_set = True
-                        elif 'SpontMinis' in entry.CONTENTS.keys:
+                        elif 'SpontMinis' in keys:
                             import warnings
                             warnings.warn(
                                 "Connection '%s': SpontMinis was already set "
-                                "in previous block, IGNORING" % entry.NAME)
+                                "in previous block, IGNORING" % entry.name)
 
-                        if 'SynapseConfigure' in entry.CONTENTS.keys:
-                            conf = entry.CONTENTS.SynapseConfigure
+                        if 'SynapseConfigure' in keys:
+                            conf = entry.SynapseConfigure
                             # collect list of applicable configure blocks to be
                             # applied with a "hoc exec" statement
                             parameters.setdefault(
@@ -580,13 +582,13 @@ class SSim(object):
                        will not be exactly reproduced.
         """
         if t_stop is None:
-            t_stop = float(self.bc.entry_map['Default'].CONTENTS.Duration)
+            t_stop = float(self.bc.Run.Duration)
         if dt is None:
-            dt = float(self.bc.entry_map['Default'].CONTENTS.Dt)
+            dt = float(self.bc.Run.Dt)
         if forward_skip_value is None:
             try:
                 forward_skip_value = float(
-                    self.bc.entry_map['Default'].CONTENTS.ForwardSkip)
+                    self.bc.Run.ForwardSkip)
             except AttributeError:
                 forward_skip_value = None
 
