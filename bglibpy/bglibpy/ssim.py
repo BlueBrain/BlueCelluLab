@@ -68,7 +68,7 @@ class SSim(object):
             self.base_noise_seed = base_noise_seed
 
         self.connection_entries = \
-            self.bc_simulation.config.typed_entries("Connection")
+            self.bc_simulation.config.typed_sections("Connection")
         self.all_targets = self.bc_simulation.targets.available_targets()
         self.all_targets_dict = {}
         for target in self.all_targets:
@@ -80,7 +80,7 @@ class SSim(object):
         self.cells = {}
 
         self.neuronconfigure_entries = \
-            self.bc_simulation.config.typed_entries("NeuronConfigure")
+            self.bc_simulation.config.typed_sections("NeuronConfigure")
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
             for gid in self.all_targets_dict[entry.Target]:
@@ -387,14 +387,14 @@ class SSim(object):
         # Every noise stimulus gets a new seed
         noise_seed = self.base_noise_seed + gid
 
-        for entry in self.bc.entries:
+        for entry in self.bc.values():
             if entry.section_type == 'StimulusInject':
                 destination = entry.Target
                 gids_of_target = self.bc_simulation.get_target(destination)
                 if gid in gids_of_target:
                     # retrieve the stimulus to apply
                     stimulus_name = entry.Stimulus
-                    stimulus = self.bc.entry_map['Stimulus_' + stimulus_name]
+                    stimulus = self.bc['Stimulus_' + stimulus_name]
                     if stimulus.Pattern == 'Noise':
                         if add_noise_stimuli:
                             self._add_replay_noise(
