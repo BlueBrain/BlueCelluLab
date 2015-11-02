@@ -499,7 +499,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
-        nt.assert_true(rms_error > 25.0)
+        nt.assert_true(rms_error > 20.0)
 
     def teardown(self):
         """Teardown"""
