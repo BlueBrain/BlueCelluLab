@@ -4,11 +4,13 @@ option(ENABLE_XUNITS "Enable XUnits reports." ON)
 add_subdirectory(pylint)
 add_subdirectory(pep8)
 
-if (IS_DIRECTORY "/bgscratch")
-    set(NOSEATTRIBUTES "")
-else()
-    set(NOSEATTRIBUTES "-A \"not bgscratch\"")
-endif ()
+# if (IS_DIRECTORY "/bgscratch")
+#    set(NOSEATTRIBUTES "")
+# else()
+#     set(NOSEATTRIBUTES "-A \"not bgscratch\"")
+# endif ()
+
+set(NOSEATTRIBUTES "-A \"not bgscratch\"")
 
 configure_file(runtests.sh.in runtests.sh @ONLY)
 
