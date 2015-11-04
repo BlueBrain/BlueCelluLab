@@ -89,7 +89,7 @@ class Cell(object):
         self.pre_spiketrains = {}
         self.ips = {}
         self.syn_mini_netcons = {}
-        self.serialized = neuron.h.SerializedSections(self.cell.getCell())
+        self.serialized = None
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         # Be careful when removing this,
@@ -272,6 +272,11 @@ class Cell(object):
                    The requested hoc section
 
         """
+
+        # section are not serialized yet, do it now
+        if self.serialized is None:
+            self.serialized = neuron.h.SerializedSections(self.cell.getCell())
+
         sec_ref = self.serialized.isec2sec[int(section_id)]
         if sec_ref:
             return self.serialized.isec2sec[int(section_id)].sec
