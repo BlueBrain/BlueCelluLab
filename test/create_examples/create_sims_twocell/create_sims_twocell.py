@@ -214,6 +214,7 @@ def main():
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
 
+    """
     import pylab
     pylab.figure()
     time_bglibpy = ssim_bglibpy.get_time()
@@ -226,7 +227,7 @@ def main():
         label="BGLib")
     pylab.legend()
     pylab.show()
-
+    """
     # os.chdir("../../examples/sim_twocell_all")
     #ssim_bglib_all = bglibpy.SSim("BlueConfig", record_dt=record_dt)
     #pylab.plot(ssim_bglib_all.bc_simulation.reports.soma.time_range, ssim_bglib_all.bc_simulation.reports.soma.time_series(1), 'k-', label="BGLib all")
