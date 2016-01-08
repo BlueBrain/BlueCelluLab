@@ -16,15 +16,17 @@ Cell class
 # Since importing the neuron module is already a big security risk on it's
 # own, I'm ignoring this warning for the moment
 
-import numpy
 import re
 import math
-import bglibpy
 import os
+import Queue
+
+import numpy
+
+import bglibpy
 from bglibpy import tools
 from bglibpy.importer import neuron
 from bglibpy import psection
-import Queue
 from bglibpy import printv
 
 

@@ -86,10 +86,7 @@ class Simulation(object):
         #                        maxtime, neuron.h.t))
 
         if show_progress is None:
-            if bglibpy.VERBOSE_LEVEL > 1:
-                show_progress = True
-            else:
-                show_progress = False
+            show_progress = bglibpy.VERBOSE_LEVEL > 1
 
         if show_progress:
             self.progress_dt = maxtime / 100
@@ -143,7 +140,7 @@ class Simulation(object):
             for _ in range(0, 10):
                 neuron.h.fadvance()
             neuron.h.dt = save_dt
-            neuron.h.t = 0
+            neuron.h.t = 0.0
 
         # pylint: disable=W0703
         try:

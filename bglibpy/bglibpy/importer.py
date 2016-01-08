@@ -57,7 +57,7 @@ else:
 nrn_python_path = pathsconfig["NRNPYTHONPATH"]
 if nrn_python_path == '':
     try:
-        import neuron
+        import neuron  # pylint: disable=C0413
     except ImportError:
         print 'Unable to import neuron from default python path,' \
             'and NRNPYTHONPATH is not set either'
@@ -67,7 +67,7 @@ else:
         raise Exception('Inexistent NRNPYTHONPATH=%s' % nrn_python_path)
     sys.path.insert(0, nrn_python_path)
     try:
-        import neuron
+        import neuron  # pylint: disable=C0413
     except ImportError:
         print 'Unable to import neuron from NRNPYTHONPATH=%s' % nrn_python_path
         raise
@@ -121,7 +121,7 @@ neuron.h('p = new PythonObject()')
 bluepy_path = pathsconfig["BLUEPYPATH"]
 if bluepy_path == '':
     try:
-        import bluepy
+        import bluepy  # pylint: disable=C0413
     except ImportError:
         print 'Unable to import bluepy from default python path, \
                 and BLUEPYPATH was not set during build either'
@@ -131,7 +131,7 @@ else:
         raise Exception('Inexistent BLUEPYPATH=%s' % bluepy_path)
     sys.path.insert(0, bluepy_path)
     try:
-        import bluepy
+        import bluepy  # pylint: disable=C0413
     except ImportError:
         raise Exception('Unable to import bluepy from BLUEPYPATH=%s' %
                         bluepy_path)

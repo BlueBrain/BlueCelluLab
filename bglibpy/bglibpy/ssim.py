@@ -8,12 +8,13 @@
 
 """
 
-# pylint: disable=C0103, R0914, R0912, F0401
+# pylint: disable=C0103, R0914, R0912, F0401, R0101
+
+import collections
+import os
 
 from bglibpy import bluepy
 import bglibpy
-import collections
-import os
 from bglibpy import printv
 
 
@@ -285,10 +286,8 @@ class SSim(object):
                 pre_gid = syn_description[0]
                 if source and pre_gid not in source:
                     continue
-                if pre_gid in self.gids and interconnect_cells:
-                    real_synapse_connection = True
-                else:
-                    real_synapse_connection = False
+                real_synapse_connection = pre_gid in self.gids \
+                    and interconnect_cells
 
                 connection = None
                 if real_synapse_connection:

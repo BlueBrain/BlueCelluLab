@@ -2,17 +2,20 @@
 Static tools for bglibpy
 '''
 
+# pylint: disable=R0914, R0913
+
 import sys
 import inspect
 import multiprocessing
 import multiprocessing.pool
-import bglibpy
-from bglibpy import neuron
-import numpy
 import warnings
 import math
 import os
-# pylint: disable=R0914, R0913
+
+import numpy
+
+import bglibpy
+from bglibpy import neuron
 
 BLUECONFIG_KEYWORDS = [
     'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
