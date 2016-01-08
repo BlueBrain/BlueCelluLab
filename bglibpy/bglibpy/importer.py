@@ -121,7 +121,7 @@ neuron.h('p = new PythonObject()')
 bluepy_path = pathsconfig["BLUEPYPATH"]
 if bluepy_path == '':
     try:
-        import bluepy  # pylint: disable=C0413
+        import bluepy  # pylint: disable=C0413,C0411
     except ImportError:
         print 'Unable to import bluepy from default python path, \
                 and BLUEPYPATH was not set during build either'
@@ -131,7 +131,7 @@ else:
         raise Exception('Inexistent BLUEPYPATH=%s' % bluepy_path)
     sys.path.insert(0, bluepy_path)
     try:
-        import bluepy  # pylint: disable=C0413
+        import bluepy  # pylint: disable=C0413,C0411
     except ImportError:
         raise Exception('Unable to import bluepy from BLUEPYPATH=%s' %
                         bluepy_path)
