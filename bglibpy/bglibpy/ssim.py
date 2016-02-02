@@ -100,7 +100,7 @@ class SSim(object):
                          add_replay=False,
                          add_stimuli=False,
                          add_synapses=False,
-                         add_minis=False,
+                         add_minis=None,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
                          add_relativelinear_stimuli=False,
@@ -137,9 +137,11 @@ class SSim(object):
                        circuit to the cell
                        (This option only influence the 'creation' of synapses,
                        it doesn't add any connections)
+                       Default value is False
         add_minis : Boolean
                     Add synaptic minis to the synapses
                     (this requires add_synapses=True)
+                    Default value is False
         add_noise_stimuli : Boolean
                             Process the 'noise' stimuli blocks of the
                             BlueConfig,
@@ -177,10 +179,25 @@ class SSim(object):
         """
 
         if synapse_detail is not None:
+            printv(
+                'WARNING: SSim: synapse_detail is deprecated and will '
+                'removed from future release of BGLibPy', 2)
             if synapse_detail > 0:
+                if add_minis is False:
+                    raise Exception('SSim: synapse_detail >= 1 cannot be used'
+                                    ' with add_synapses == False')
                 add_synapses = True
             if synapse_detail > 1:
+                if add_minis is False:
+                    raise Exception('SSim: synapse_detail >= 2 cannot be used'
+                                    ' with add_minis == False')
                 add_minis = True
+
+        if add_synapses is None:
+            add_synapses = False
+
+        if add_minis is None:
+            add_minis = False
 
         if self.gids_instantiated:
             raise Exception("SSim: instantiate_gids() called twice on the \
