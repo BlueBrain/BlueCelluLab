@@ -10,6 +10,8 @@ endif ()
 
 if (BGP)
    set(NRNARCH powerpc64)
+elseif (BGQ)
+   set(NRNARCH powerpc64)
 else (BGP)
    set(NRNARCH ${ARCH})
 endif (BGP)
