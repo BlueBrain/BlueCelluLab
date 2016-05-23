@@ -4,7 +4,7 @@ Run Default
         Time    14:27:09
           svnPath https://bbpteam.epfl.ch/svn/bluebrain
           Version 1094
-           Prefix /bgscratch/bbp/release/02.04.12
+           Prefix /path/does/not/exist/bgscratch/bbp/release/02.04.12
    MorphologyPath ../circuit_twocell_example1/morphologies
        METypePath ../circuit_twocell_example1/ccells
 
