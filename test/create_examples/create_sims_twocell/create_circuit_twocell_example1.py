@@ -2,8 +2,6 @@
 
 """Test the BluePy extractor"""
 
-import sys
-sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 from bglibpy import bluepy
 import bluepy.extractor
 import shutil
@@ -12,6 +10,10 @@ import os
 def create_extracted_circuit(old_circuitname, output_path):
     "..."
     circuit = bluepy.Circuit(old_circuitname)
+
+    print '#########'
+    print circuit
+    print '#########'
 
     #gids = circuit.mvddb.select_gids(bluepy.targets.mvddb.Neuron.hyperColumn==2, bluepy.targets.mvddb.MType.name=="L5_TTPC1")[:2]
     # [76477, 76478]

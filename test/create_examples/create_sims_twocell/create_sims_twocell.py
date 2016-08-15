@@ -3,8 +3,6 @@
 """Test the BluePy extractor"""
 
 import sys
-sys.path = [
-    "/gpfs/bbp.cscs.ch/home/vangeit/local/lviz/python27env/lib/python2.7/site-packages"] + sys.path
 import bglibpy
 import soma2h5_v2_bglibpy
 
