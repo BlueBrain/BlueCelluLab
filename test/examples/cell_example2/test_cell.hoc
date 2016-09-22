@@ -130,4 +130,48 @@ public getHypAmp
 
 func getHypAmp(){return (-0.070557) }
 
+public re_init_rng                                                               
+objref rngList, rng                                                              
+proc re_init_rng() {local channelID                                               
+    objref rng                                                                   
+    rngList = new List()                                                          
+    channelID = 0                                                                 
+                                                                                  
+    forsec CellRef.somatic {                                                      
+        for (x, 0) {                                                             
+            rng = new Random()                                                   
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )         
+            channelID = channelID + 1                                             
+            rng.uniform(0,1)                                                      
+            setdata_StochKv(x)                                                   
+            setRNG_StochKv(rng)                                                  
+            rngList.append(rng)                                                  
+        }                                                                        
+    }                                                                            
+                                                                                   
+    forsec CellRef.basal {                                                         
+        for (x, 0) {                                                             
+            rng = new Random()                                                   
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )        
+            channelID = channelID + 1                                             
+            rng.uniform(0,1)                                                       
+            setdata_StochKv(x)                                                   
+            setRNG_StochKv(rng)                                                  
+            rngList.append(rng)                                                  
+        }                                                                        
+    }                                                                            
+                                                                                 
+    forsec CellRef.apical {                                                      
+        for (x, 0) {                                                             
+            rng = new Random()                                                   
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )        
+            channelID = channelID + 1                                            
+            rng.uniform(0,1)                                                     
+            setdata_StochKv(x)                                                   
+            setRNG_StochKv(rng)                                                  
+            rngList.append(rng)                                                  
+        }                                                                        
+    }                                                                            
+}                    
+
 endtemplate test_cell2

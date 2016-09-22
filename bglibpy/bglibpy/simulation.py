@@ -76,9 +76,19 @@ class Simulation(object):
             cell.init_callbacks()
 
     # pylint: disable=C0103,R0912,R0914
-    def run(self, maxtime, cvode=True, cvode_minstep=None, cvode_maxstep=None,
-            celsius=34, v_init=-65, dt=0.025, forward_skip=None,
-            forward_skip_value=False, show_progress=None):
+    def run(
+            self,
+            maxtime,
+            cvode=True,
+            cvode_minstep=None,
+            cvode_maxstep=None,
+            celsius=34,
+            v_init=-65,
+            dt=0.025,
+            forward_skip=None,
+            forward_skip_value=False,
+            show_progress=None,
+            use_random123_stochkv=False):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
@@ -114,7 +124,7 @@ class Simulation(object):
 
         for cell in self.cells:
             try:
-                cell.re_init_rng()
+                cell.re_init_rng(use_random123_stochkv=use_random123_stochkv)
             except AttributeError:
                 sys.exc_clear()
 

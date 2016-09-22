@@ -230,11 +230,29 @@ class Cell(object):
         """
         return self.secname_to_psection[secname].section_id
 
-    def re_init_rng(self):
+    def re_init_rng(self, use_random123_stochkv=None):
         """Reinitialize the random number generator for stochastic channels."""
 
         if not self.is_made_passive:
-            self.cell.re_init_rng()
+            if use_random123_stochkv:
+                channel_id = 0
+                for section in self.somatic:
+                    for seg in section:
+                        neuron.h.setdata_StochKv(seg.x, sec=section)
+                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        channel_id += 1
+                for section in self.basal:
+                    for seg in section:
+                        neuron.h.setdata_StochKv(seg.x, sec=section)
+                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        channel_id += 1
+                for section in self.apical:
+                    for seg in section:
+                        neuron.h.setdata_StochKv(seg.x, sec=section)
+                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        channel_id += 1
+            else:
+                self.cell.re_init_rng()
 
     def get_psection(self, section_id=None, secname=None):
         """Return a python section with the specified section id or name.
