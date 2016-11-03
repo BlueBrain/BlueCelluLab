@@ -107,8 +107,5 @@ class TestCellcSTUTBaseClass(object):
 
         voltage_ss = voltage[numpy.where(time > 150)]
 
-        print numpy.mean(voltage_ss)
-        print numpy.std(voltage_ss)
-
         nt.assert_almost_equal(numpy.mean(voltage_ss), -75.61918061202924)
         nt.assert_almost_equal(numpy.std(voltage_ss), 0.19192736450671288)
