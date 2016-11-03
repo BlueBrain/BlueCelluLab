@@ -261,19 +261,18 @@ def holding_current(
     """
 
     if gid is not None and circuit_path is not None:
-        bc = bglibpy.bluepy.load_circuit(circuit_path)
+        bc = bglibpy.bluepy.Circuit(circuit_path)
 
         m = bc.mvddb
         t_neuron = list(m.get_gids([gid]))[0]
         template_name = str(
             os.path.join(
-                bc.Run.METypePath,
+                bc.config.Run.METypePath,
                 t_neuron.METype +
                 '.hoc'))
         morphology_path = os.path.join(
-            os.path.split(
-                bc.Run.MorphologyPath)[0],
-            'ascii/')
+                bc.config.Run.MorphologyPath,
+                'ascii/')
     elif (gid is None or circuit_path is None) and (template_name is None or
                                                     morphology_path is None):
         raise Exception('User has to specify, or a gid and circuit path, '
