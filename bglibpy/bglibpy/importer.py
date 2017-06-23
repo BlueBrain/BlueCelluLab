@@ -142,10 +142,12 @@ bluepy_minor_version = int(bluepy_version.split(".")[1])
 
 if bluepy_major_version > 0 or bluepy_minor_version > 9:
     raise Exception(
+        'Version of BluePy used: %s, '
         'BGLibPy doesnt support support BluePy >= 0.10.0. '
         'After this version certain functionality is deprecated, and no'
         ' stable replacement is in place until BluePy is open sourced. '
-        'Please install BluePy == 0.9.0')
+        'Please install BluePy == 0.9.0' %
+        bluepy_version)
 
 
 def print_header():
