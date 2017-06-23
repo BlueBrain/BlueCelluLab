@@ -312,7 +312,8 @@ class Cell(object):
                 for mech in seg:
                     mech_names.add(mech.name())
             for mech_name in mech_names:
-                if mech_name not in ["k_ion", "na_ion", "ca_ion", "pas"]:
+                if mech_name not in ["k_ion", "na_ion", "ca_ion", "pas",
+                                     "ttx_ion"]:
                     neuron.h('uninsert %s' % mech_name, sec=section)
         self.is_made_passive = True
 
