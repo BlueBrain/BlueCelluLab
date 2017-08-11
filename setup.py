@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name="bglibpy",
-    version=1.0,
+    version=3.0,
     packages=['bglibpy'],
     author="Werner Van Geit",
     author_email="werner.vangeit@epfl.ch",
