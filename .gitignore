@@ -1,15 +1,5 @@
-build
-build_viz
-build_lviz
-build_lbgq
-build_hbpcol
-build.bbpsrv22
-build.bbpsrv25
-build.sh.viz
-build.sh.lviz
-build.sh.hbpcol
-build.sh
-builddoc.sh
+/modlib
+/x86_64
 *~
 .coverage
 *.log

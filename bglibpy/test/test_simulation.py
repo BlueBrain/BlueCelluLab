@@ -5,11 +5,13 @@
 
 """Nosetest for the Simulation class"""
 
+import os
 import numpy
 
 import nose.tools as nt
 import bglibpy
 
+script_dir = os.path.dirname(__file__)
 
 class TestCellBaseClass(object):
 
@@ -23,8 +25,8 @@ class TestCellBaseClass(object):
     def setup(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "examples/cell_example1/test_cell.hoc",
-            "examples/cell_example1")
+            "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+            "%s/examples/cell_example1" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         nt.assert_true(isinstance(self.sim, bglibpy.Simulation))
@@ -51,8 +53,8 @@ class TestCellcSTUTRandom123BaseClass(object):
     def setup(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "examples/cell_example_cstut/cSTUT_7.hoc",
-            "examples/cell_example_cstut")
+            "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
+            "%s/examples/cell_example_cstut" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         nt.assert_true(isinstance(self.sim, bglibpy.Simulation))
@@ -87,8 +89,8 @@ class TestCellcSTUTBaseClass(object):
     def setup(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "examples/cell_example_cstut/cSTUT_7.hoc",
-            "examples/cell_example_cstut")
+            "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
+            "%s/examples/cell_example_cstut" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         nt.assert_true(isinstance(self.sim, bglibpy.Simulation))

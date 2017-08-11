@@ -1,3 +1,0 @@
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/module.in ${CMAKE_CURRENT_BINARY_DIR}/bglibpy)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bglibpy DESTINATION ${MODULEPATH})

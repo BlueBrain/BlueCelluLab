@@ -5,13 +5,12 @@ Models simulated in N disticnt ways, all shoudl
 
 # pylint: disable=E1101,W0201
 
-#import sys
-#sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
-#sys.path = ["/home/vangeit/src/BGLibPy/test/ballstick_circuit_test"]+ sys.path
-
+import os
 import bglibpy
 import numpy
 import nose.tools as nt
+
+script_dir = os.path.dirname(__file__)
 
 try:
     import greensFunctionCalculator as gfc
@@ -21,8 +20,11 @@ except ImportError:
 
 cyl_surface = lambda diam, h: numpy.pi * diam * h
 
+
 class Params:
+
     """Simulation parameters"""
+
     def __init__(self):
         self.T_STOP = 200
         self.V_INIT = -75
@@ -35,17 +37,22 @@ class Params:
         self.SYN_G = 0.001
         self.SYN_LOC = 1.0
 
-        self.templatefile = "examples/ballstick_cell/ballstick.hoc"
-        self.morphfile = "examples/ballstick_cell/ballstick.asc"
+        self.templatefile = "%s/examples/ballstick_cell/ballstick.hoc" % script_dir
+        self.morphfile = "%s/examples/ballstick_cell/ballstick.asc" % script_dir
 
         cell = bglibpy.Cell(self.templatefile, self.morphfile)
-        self.soma_L, self.soma_D, self.soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma)
-        #print 'SOMA L=%f, diam=%f,surf=%f' % (self.soma_L, self.soma_D, self.soma_A)
+        self.soma_L, self.soma_D, self.soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
+            0.5, sec=cell.soma)
+        # print 'SOMA L=%f, diam=%f,surf=%f' % (self.soma_L, self.soma_D,
+        # self.soma_A)
 
-        self.dend0_L, self.dend0_D, self.dend0_A  = cell.basal[0].L, cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0])
+        self.dend0_L, self.dend0_D, self.dend0_A = cell.basal[0].L, cell.basal[
+            0].diam, bglibpy.neuron.h.area(
+            0.5, sec=cell.basal[0])
         self.dend0_NSEG = cell.basal[0].nseg
 
-        #print 'DENDRITE L=%f, diam=%f,surf=%f' % (self.dend0_L, self.dend0_D, self.dend0_A)
+        # print 'DENDRITE L=%f, diam=%f,surf=%f' % (self.dend0_L, self.dend0_D,
+        # self.dend0_A)
 
         ''' I assume uniform passive properties shared by the soma and dendrites '''
         self.CM = cell.soma.cm
@@ -56,7 +63,8 @@ class Params:
         self.d_derived = 10
         self.l_derived = self.soma_A / (2 * numpy.pi * self.d_derived / 2.0)
 
-def run_pyneuron(soma_l, soma_d, params) :
+
+def run_pyneuron(soma_l, soma_d, params):
     """Run ballstick with PyNeuron"""
     soma = bglibpy.neuron.h.Section()
     soma.L = soma_l
@@ -77,10 +85,10 @@ def run_pyneuron(soma_l, soma_d, params) :
     dend.cm = params.CM
     dend.Ra = params.RA
     dend.insert('pas')
-    for seg in dend :
+    for seg in dend:
         seg.e_pas = params.EL
-        seg.g_pas = 1.0/params.RM
-    dend.connect(soma, 0.5, 0) # mid-soma to begin-den
+        seg.g_pas = 1.0 / params.RM
+    dend.connect(soma, 0.5, 0)  # mid-soma to begin-den
 
     syn = bglibpy.neuron.h.ExpSyn(params.SYN_LOC, sec=dend)
     syn.tau = params.SYN_DECAY
@@ -101,8 +109,9 @@ def run_pyneuron(soma_l, soma_d, params) :
 
     bglibpy.neuron.h.finitialize(params.V_INIT)
     bglibpy.neuron.h.dt = params.DT
-    #print "PyNeuron: Soma L=%f, diam=%f, area=%f" % (soma.L, soma.diam, bglibpy.neuron.h.area(0.5, sec=soma))
-    #print "PyNeuron: Dend L=%f, diam=%f, area=%f" % (dend.L, dend.diam, bglibpy.neuron.h.area(0.5, sec=dend))
+    # print "PyNeuron: Soma L=%f, diam=%f, area=%f" % (soma.L, soma.diam, bglibpy.neuron.h.area(0.5, sec=soma))
+    # print "PyNeuron: Dend L=%f, diam=%f, area=%f" % (dend.L, dend.diam,
+    # bglibpy.neuron.h.area(0.5, sec=dend))
     bglibpy.neuron.run(params.T_STOP)
 
     voltage = numpy.array(v_vec)
@@ -113,6 +122,7 @@ def run_pyneuron(soma_l, soma_d, params) :
     del(nc)
 
     return time, voltage
+
 
 def run_pyneuron_with_template(params):
     """Run ballstick with PyNeuron and template"""
@@ -149,6 +159,7 @@ def run_pyneuron_with_template(params):
 
     return time, voltage
 
+
 def run_bglibpy(params):
     """Run ballstick with BGLibPy"""
     cell = bglibpy.Cell(params.templatefile, params.morphfile)
@@ -164,8 +175,9 @@ def run_bglibpy(params):
 
     sim = bglibpy.Simulation()
     sim.add_cell(cell)
-    #print "BGLibPy: Soma L=%f, diam=%f, area=%f" % (cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma))
-    #print "BGLibPy: Dend L=%f, diam=%f, area=%f" % (cell.basal[0].L, cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0]))
+    # print "BGLibPy: Soma L=%f, diam=%f, area=%f" % (cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma))
+    # print "BGLibPy: Dend L=%f, diam=%f, area=%f" % (cell.basal[0].L,
+    # cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0]))
     sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
     bglibpy_t = cell.get_time()
     bglibpy_v = cell.get_soma_voltage()
@@ -181,26 +193,25 @@ def run_bglibpy(params):
 
 def run_analytic(params):
     ''' write config file for Willem '''
-    f_name = 'examples/ballstick_cell/bs.cfg'
-    outF = open(f_name,'w')
+    f_name = '%s/examples/ballstick_cell/bs.cfg' % script_dir
+    outF = open(f_name, 'w')
     outF.write('[neuron]\n')
     outF.write('CM: %f\n' % (params.CM))
     outF.write('RM: %f\n' % (params.RM))
     outF.write('RA: %f\n' % (params.RA))
     outF.write('EL: %f\n\n' % (params.EL))
     outF.write('[soma]\n')
-    outF.write('D: ' + str(params.d_derived)+'\n')
-    outF.write('L: ' + str(params.l_derived)+'\n\n')
+    outF.write('D: ' + str(params.d_derived) + '\n')
+    outF.write('L: ' + str(params.l_derived) + '\n\n')
     outF.write('[morph]\n')
     outF.write('lengths: [%f]\n' % (params.dend0_L))
     outF.write('diams: [%f]\n' % (params.dend0_D))
     outF.close()
 
-    v_willem, t_willem = gfc.compute_system([[params.SYN_ACTIVATION_T]], params.T_STOP, params.DT, \
-                                       conffile_name=f_name, numsyn=1,\
-                                       syndend=[0], synloc=[params.SYN_LOC],\
-                                       gbar=[params.SYN_G], decay=[params.SYN_DECAY],\
-                                       E_rev=[params.SYN_E])
+    v_willem, t_willem = gfc.compute_system(
+        [[params.SYN_ACTIVATION_T]], params.T_STOP, params.DT,
+        conffile_name=f_name, numsyn=1, syndend=[0], synloc=[params.SYN_LOC],
+        gbar=[params.SYN_G], decay=[params.SYN_DECAY], E_rev=[params.SYN_E])
     return t_willem, v_willem
 
 
@@ -211,14 +222,17 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     Run the ball-and-stick model by 1. PyNEURON, 2. bglibpy, 3. analytic
     '''
 
-    params = Params() # define all the parameters
-    #print 'soma_A=%f, derived D=%f, L=%f -> A=%f' % (params.soma_A, d_derived, l_derived, cyl_surface(d_derived, l_derived))
+    params = Params()  # define all the parameters
+    # print 'soma_A=%f, derived D=%f, L=%f -> A=%f' % (params.soma_A,
+    # d_derived, l_derived, cyl_surface(d_derived, l_derived))
 
     ''' Run in pure PyNeuron, with using the template '''
-    pyneuron_t, pyneuron_v = run_pyneuron(params.l_derived, params.d_derived, params)
+    pyneuron_t, pyneuron_v = run_pyneuron(
+        params.l_derived, params.d_derived, params)
 
     ''' Run with template in PyNeuron '''
-    pyneuron_template_t, pyneuron_template_v = run_pyneuron_with_template(params)
+    pyneuron_template_t, pyneuron_template_v = run_pyneuron_with_template(
+        params)
 
     ''' Run with BGLibPy'''
     bglibpy_t, bglibpy_v = run_bglibpy(params)
@@ -227,17 +241,29 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     if gfc_imported:
         analytic_t, analytic_v = run_analytic(params)
         import pickle
-        with open("examples/ballstick_cell/analytic_expsyn.pickle", "w") as analytic_file:
+        with open("%s/examples/ballstick_cell/analytic_expsyn.pickle" % script_dir, "w") as analytic_file:
             pickle.dump((analytic_t, analytic_v), analytic_file)
     else:
         import pickle
-        with open("examples/ballstick_cell/analytic_expsyn.pickle", "r") as analytic_file:
+        with open("%s/examples/ballstick_cell/analytic_expsyn.pickle" % script_dir, "r") as analytic_file:
             analytic_t, analytic_v = pickle.load(analytic_file)
 
     nt.assert_equal(len(analytic_v), 8000)
-    pyneuron_rms_error = numpy.sqrt(numpy.mean((analytic_v-pyneuron_v[:len(analytic_v)])**2))
-    pyneuron_template_rms_error = numpy.sqrt(numpy.mean((analytic_v-pyneuron_template_v[:len(analytic_v)])**2))
-    bglibpy_rms_error = numpy.sqrt(numpy.mean((analytic_v-bglibpy_v[:len(analytic_v)])**2))
+    pyneuron_rms_error = numpy.sqrt(
+        numpy.mean(
+            (analytic_v -
+             pyneuron_v[
+                 :len(analytic_v)]) ** 2))
+    pyneuron_template_rms_error = numpy.sqrt(
+        numpy.mean(
+            (analytic_v -
+             pyneuron_template_v[
+                 :len(analytic_v)]) ** 2))
+    bglibpy_rms_error = numpy.sqrt(
+        numpy.mean(
+            (analytic_v -
+             bglibpy_v[
+                 :len(analytic_v)]) ** 2))
     nt.assert_true(pyneuron_rms_error < 0.1)
     nt.assert_true(pyneuron_template_rms_error < 0.1)
     nt.assert_true(bglibpy_rms_error < 0.1)
@@ -246,10 +272,15 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
         import pylab
         pylab.plot(bglibpy_t, bglibpy_v, 'g', label='BGLibPy')
         pylab.plot(pyneuron_t, pyneuron_v, 'b', label='PyNeuron')
-        pylab.plot(pyneuron_template_t, pyneuron_template_v, 'r', label='PyNeuron with template')
+        pylab.plot(
+            pyneuron_template_t,
+            pyneuron_template_v,
+            'r',
+            label='PyNeuron with template')
         pylab.plot(analytic_t, analytic_v, 'o-', label='Analytic')
         pylab.legend(loc=0)
         pylab.show()
+
 
 def test_ballstick_load():
     """Ballstick: Test if dimensions of ballstick load correctly"""
@@ -258,10 +289,14 @@ def test_ballstick_load():
     cell = bglibpy.Cell(params.templatefile, params.morphfile)
     nt.assert_true(abs(cell.soma.L - 19.6) < 0.001)
     nt.assert_true(abs(cell.soma.diam - 10.229) < 0.001)
-    nt.assert_true(abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001)
+    nt.assert_true(
+        abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001)
     nt.assert_true(abs(cell.basal[0].L - 200.0) < 0.001)
     nt.assert_true(abs(cell.basal[0].diam - 3.0) < 0.001)
-    nt.assert_true(abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001)
+    nt.assert_true(
+        abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) <
+        0.001)
+
 
 def main():
     """main"""

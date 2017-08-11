@@ -6,6 +6,7 @@
 """Unit tests for tools.py"""
 
 import os
+script_dir = os.path.dirname(__file__)
 
 import nose.tools as nt
 import bglibpy
@@ -87,14 +88,14 @@ def test_search_hyp_current_replay_imap():
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
     SS_voltage = bglibpy.calculate_SS_voltage_subprocess(
-        "examples/cell_example1/test_cell.hoc",
-        "examples/cell_example1",
+        "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+        "%s/examples/cell_example1" % script_dir,
         0)
     nt.assert_true(abs(SS_voltage - -73.9235504304) < 0.001)
 
     SS_voltage_stoch = bglibpy.calculate_SS_voltage_subprocess(
-        "examples/cell_example2/test_cell.hoc",
-        "examples/cell_example2",
+        "%s/examples/cell_example2/test_cell.hoc" % script_dir,
+        "%s/examples/cell_example2" % script_dir,
         0)
     nt.assert_true(abs(SS_voltage_stoch - -73.9235504304) < 0.001)
 
@@ -106,7 +107,7 @@ class TestTools(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_empty")
+        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
 
     def test_holding_current(self):
         """Tools: test holding_current"""

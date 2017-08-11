@@ -2,11 +2,13 @@
 
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
+import os
 import nose.tools as nt
 import numpy
 import bglibpy
-import os
 from nose.plugins.attrib import attr
+
+script_dir = os.path.dirname(__file__)
 
 # todo make two cell circuit independent of bgscratch
 
@@ -15,14 +17,14 @@ def test_parse_outdat():
     """SSim: Testing parsing of out.dat"""
     try:
         outdat = bglibpy.ssim._parse_outdat(
-            "examples/sim_twocell_empty/output_doesntexist")
+            "%s/examples/sim_twocell_empty/output_doesntexist" % script_dir)
     except IOError:
         nt.assert_true(True)
     else:
         nt.assert_true(False)
 
     outdat = bglibpy.ssim._parse_outdat(
-        "examples/sim_twocell_minis_replay/output")
+        "%s/examples/sim_twocell_minis_replay/output" % script_dir)
     nt.assert_true(45 in outdat[2])
 
 
@@ -33,7 +35,7 @@ class TestSSimBaseClass_twocell_empty(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_empty")
+        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglib = bglibpy.SSim("BlueConfig")
         self.ssim_bglibpy.instantiate_gids(
@@ -76,7 +78,7 @@ class TestSSimBaseClass_twocell_replay(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_replay")
+        os.chdir("%s/examples/sim_twocell_replay" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -143,7 +145,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_all")
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -188,7 +190,7 @@ class TestSSimBaseClass_twocell_all(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_all")
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -246,7 +248,7 @@ class TestSSimBaseClass_twocell_synapseid(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_synapseid")
+        os.chdir("%s/examples/sim_twocell_synapseid" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -304,7 +306,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_minis_replay")
+        os.chdir("%s/examples/sim_twocell_minis_replay" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -374,7 +376,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_noisestim")
+        os.chdir("%s/examples/sim_twocell_noisestim" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -444,7 +446,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_pulsestim")
+        os.chdir("%s/examples/sim_twocell_pulsestim" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
@@ -539,10 +541,10 @@ class TestSSimBaseClass_full(object):
                 'L6_TPC_L1'])
 
         import pickle
-        l23_btc = pickle.load(open('examples/mtype_lists/l23_btc_gids.pkl'))
+        l23_btc = pickle.load(open('examples/mtype_lists/l23_btc_gids.pkl' % script_dir))
         l23_several = pickle.load(
-            open('examples/mtype_lists/l23_several_gids.pkl'))
-        l56 = pickle.load(open('examples/mtype_lists/l56_gids.pkl'))
+            open('examples/mtype_lists/l23_several_gids.pkl' % script_dir))
+        l56 = pickle.load(open('examples/mtype_lists/l56_gids.pkl' % script_dir))
 
         # print 'len(L23): ', len(L23_BTC_gids)
         # print 'len(l23): ', len(l23_btc)
@@ -867,7 +869,7 @@ class TestSSimBaseClass_syns(object):
     def setup(self):
         """Setup"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_all")
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
         self.ssim = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim.instantiate_gids(
             [1],

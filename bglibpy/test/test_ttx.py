@@ -2,8 +2,11 @@
 
 # pylint: disable=
 
+import os
+
+script_dir = os.path.dirname(__file__)
+
 import nose.tools as nt
-from nose.plugins.attrib import attr
 
 import bglibpy
 
@@ -13,8 +16,11 @@ def test_allNaChannels():
 
     na_channelnames = ['Na']
 
-    cell = bglibpy.Cell("examples/cell_example_empty/test_cell.hoc",
-                        "examples/cell_example_empty")
+    cell = bglibpy.Cell(
+        "%s/examples/cell_example_empty/test_cell.hoc" %
+        script_dir,
+        "%s/examples/cell_example_empty" %
+        script_dir)
 
     for na_channelname in na_channelnames:
         cell.soma.insert(na_channelname)

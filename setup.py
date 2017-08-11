@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 """ bglibpy setup """
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup  # pylint: disable=E0611,F0401
+import setuptools
 
-setup(
+setuptools.setup(
     name="bglibpy",
-    version='@BGLIBPY_VERSION@',
+    version=1.0,
     packages=['bglibpy'],
-    package_data={'bglibpy': ['paths.config', '@NRNMECH_PATH@']},
     author="Werner Van Geit",
     author_email="werner.vangeit@epfl.ch",
     description="The Pythonic Blue Brain simulator access",

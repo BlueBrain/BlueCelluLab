@@ -1,31 +1,23 @@
-set(NRNMECH_PATH "nrnmech/libnrnmech.so") 
+add_subdirectory(nrnmech)
 
-add_subdirectory(bglibpy)
+set(HOC_LIBRARY_PATH "${HOCLIBPATH}:${NRNPATH}/share/nrn/lib/hoc/")
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py @ONLY) 
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt.in ${CMAKE_CURRENT_BINARY_DIR}/requirements.txt @ONLY) 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/versions.py.in ${CMAKE_CURRENT_BINARY_DIR}/versions.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/paths.config.in ${CMAKE_CURRENT_BINARY_DIR}/paths.config)
 
-add_custom_command(OUTPUT ${PYTHON_PACKAGE_FILE}
-    COMMAND ${CMAKE_COMMAND} -E tar czf ${PYTHON_PACKAGE_FILE} bglibpy/setup.py bglibpy/bglibpy/*.py bglibpy/bglibpy/${NRNMECH_PATH} bglibpy/bglibpy/paths.config
-    DEPENDS expand_PYTHON_PACKAGE_TMP_FILE ${PYTHON_PACKAGE_CONTENT_DIR} nrnmech
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+set(PYTHON_FILES __init__.py tools.py ssim.py cell.py simulation.py psection.py psegment.py plotwindow.py dendrogram.py importer.py connection.py synapse.py) 
+
+set(PYTHON_PACKAGE_TMP_FILE ${CMAKE_BINARY_DIR}/pythonfiles_tmp.tar.gz)
+set(PYTHON_PACKAGE_CONTENT_DIR  ${CMAKE_BINARY_DIR}/bglibpy)
+
+add_custom_command(OUTPUT ${PYTHON_PACKAGE_TMP_FILE}
+    COMMAND ${CMAKE_COMMAND} -E tar czf ${PYTHON_PACKAGE_TMP_FILE} *.py
+    DEPENDS ${PYTHON_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-option(ENABLE_PIP "Enable the use of pip to install the python package" ON)
-
-add_custom_target(python_package ALL DEPENDS ${PYTHON_PACKAGE_FILE})
-
-if (ENABLE_PIP)
-    install(CODE
-        "execute_process(COMMAND python -m pip.__main__ install ${PYTHON_PACKAGE_FILE} --upgrade)"
+add_custom_target(expand_PYTHON_PACKAGE_TMP_FILE
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${PYTHON_PACKAGE_TMP_FILE}
+    DEPENDS ${PYTHON_PACKAGE_TMP_FILE}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-else ()
-    install(CODE
-        "execute_process(COMMAND mkdir -p ${PYTHON_PACKAGE_INSTALL_DIR})"
-    )
-    install(CODE
-        "execute_process(
-        COMMAND env PYTHONPATH=${PYTHON_PACKAGE_INSTALL_DIR}:${PYTHONPATH} python setup.py install --prefix=${CMAKE_INSTALL_PREFIX} --force
-                WORKING_DIRECTORY ${PYTHON_PACKAGE_CONTENT_DIR})"
-    )
-endif ()

@@ -11,6 +11,7 @@ import os
 import random
 from nose.plugins.attrib import attr
 
+script_dir = os.path.dirname(__file__)
 
 class TestCellBaseClass1(object):
 
@@ -19,8 +20,8 @@ class TestCellBaseClass1(object):
     def setup(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "examples/cell_example1/test_cell.hoc",
-            "examples/cell_example1")
+            "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+            "%s/examples/cell_example1" % script_dir)
         nt.assert_true(isinstance(self.cell, bglibpy.Cell))
 
     def teardown(self):
@@ -140,7 +141,7 @@ class TestCellBaseClassSynapses(object):
     def setup(self):
         """Setup TestCellBaseClassSynapses"""
         self.prev_cwd = os.getcwd()
-        os.chdir("examples/sim_twocell_synapseid")
+        os.chdir("%s/examples/sim_twocell_synapseid" % script_dir)
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
