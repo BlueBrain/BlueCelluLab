@@ -2,7 +2,7 @@
 
 {load_file("Cell.hoc")}
 {load_file("TDistFunc.hoc")}
-begintemplate test_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell
+begintemplate test_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell
 public init, printInfo, delete_axon,  getCell, init_biophys, insertChannel
 public gid, CellRef, getThreshold, geom_nseg, gmechdistribute, biophys
 objref this, CellRef, gmechdistribute
@@ -128,4 +128,4 @@ public getHypAmp
 
 func getHypAmp(){return (-0.070557) }
 
-endtemplate test_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell
+endtemplate test_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell_cell
