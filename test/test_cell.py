@@ -12,6 +12,17 @@ import random
 from nose.plugins.attrib import attr
 
 
+def test_longname():
+    """Cell: Test loading cell with long name"""
+
+    cell = bglibpy.Cell(
+        "examples/cell_example1/test_cell_longname1.hoc",
+        "examples/cell_example1")
+    nt.assert_true(isinstance(cell, bglibpy.Cell))
+
+    del cell
+
+
 class TestCellBaseClass1(object):
 
     """First Cell test class"""
