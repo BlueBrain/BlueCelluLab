@@ -1,0 +1,13 @@
+{
+  "name": "BGLibpy",
+  "description": "The Pythonic Blue Brain simulator access",
+  "version": "2.5",
+  "repository": {
+    "type": "git",
+    "url": "https://bbpteam.epfl.ch/project/issues/projects/BGLPY",
+    "issuesurl": "https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags"
+  },
+  "author": "Werner Van Geit",
+  "contributors": ["Werner Van Geit", "Eilif Muller", "Benjamin Torben-Nielsen", "BBP"],
+  "license": "BBP-internal-confidential"
+}
