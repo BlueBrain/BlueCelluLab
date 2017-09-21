@@ -57,7 +57,7 @@ if (SPHINX_FOUND)
       message("Git found, enabling doc_upload target")
 
       set(NEWDOC_DIRECTORY 
-          "${CMAKE_CURRENT_BINARY_DIR}/Documentation/BGLibPy-${BGLIBPY_MAINVERSION}")
+          "${CMAKE_CURRENT_BINARY_DIR}/jekylltest/BGLibPy-${BGLIBPY_MAINVERSION}")
 
       configure_file(upload_doc.sh.in 
           ${CMAKE_CURRENT_BINARY_DIR}/upload_doc.sh
