@@ -21,7 +21,7 @@ setup(
               'visualization',
               'parameters',
               'BlueBrainProject'),
-    url="http://bluebrain.epfl.c://bbpteam.epfl.ch/project/issues/projects/BGLPY",
+    url="http://bbpteam.epfl.ch/project/issues/projects/BGLPY",
     download_url="https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags",
     classifiers=['Development Status :: 3 - Alpha',
                  'Environment :: Console',
