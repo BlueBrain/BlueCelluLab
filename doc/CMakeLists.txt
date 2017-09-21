@@ -24,8 +24,6 @@ if (SPHINX_FOUND)
   configure_file(source/conf.py.in 
       ${CMAKE_CURRENT_BINARY_DIR}/doc/source/conf.py)
 
-  set(ENV{PYTHONPATH} 
-      ENV{PYTHONPATH}:/home/vangeit/local/bglibpy/lib64/python2.6/site-packages/)
   add_custom_target(doc_html_python
       COMMAND ${CMAKE_MAKE_PROGRAM} html
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc")
