@@ -2,6 +2,9 @@
   "name": "BGLibpy",
   "description": "The Pythonic Blue Brain simulator access",
   "version": "2.5",
+  "scripts": {
+    "build_doc": "echo 'Documentation not yet available in this way.'"
+  },
   "repository": {
     "type": "git",
     "url": "https://bbpteam.epfl.ch/project/issues/projects/BGLPY",
