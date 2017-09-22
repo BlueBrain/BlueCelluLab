@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags"
-    "issueurl": "https://bbpteam.epfl.ch/project/issues/projects/BGLPY",
+    "issuesurl": "https://bbpteam.epfl.ch/project/issues/projects/BGLPY",
   },
   "author": "Werner Van Geit",
   "contributors": ["Werner Van Geit", "Eilif Muller", "Benjamin Torben-Nielsen", "BBP"],
