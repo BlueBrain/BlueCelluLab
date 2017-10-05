@@ -7,12 +7,12 @@ set -x
 ###
 # Get latest version of Documentation
 ###
-if [ ! -d "Documentation" ]
+if [ ! -d "jekylltest" ]
 then
     @GIT_EXECUTABLE@ clone "@DOCUMENTATION_REPO@"
-    cd Documentation
+    cd jekylltest
 else
-    cd Documentation
+    cd jekylltest
     @GIT_EXECUTABLE@ pull
 fi
 
