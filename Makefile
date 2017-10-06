@@ -4,8 +4,10 @@ all: install
 install:
 	pip -v install .
 test: clean unit
-unit: install install_test_requirements
-	cd bglibpy/tests; export HOC_LIBRARY_PATH=~/private/src/bbp/lib/hoclib; nosetests -a 'unit' -s -v -x --with-coverage --cover-xml --cover-package bglibpy;
+unit: install_tox
+	tox
+install_tox:
+	pip install tox
 clean:
 	find . -name "*.pyc" -exec rm -rf {} \;
 install_test_requirements:

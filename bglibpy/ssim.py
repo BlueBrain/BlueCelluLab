@@ -697,14 +697,17 @@ class SSim(object):
 def _parse_outdat2(path):
     """Parse the replay spiketrains in a out.dat formatted file
        pointed to by path"""
-    from bluepy.parsers.outdat import OutDat
-    if not os.path.exists(path):
-        raise IOError("Could not find presynaptic spike file at %s"
-                      % path)
-    od = OutDat(path)
-    # pylint: disable=W0212
-    return od._spikes_hash
-    # pylint: enable=W0212
+
+    return_dict = {}
+
+    with open(path) as outdat_file:
+        outdat_content = outdat_file.read()
+
+    for line in outdat_content.split('\n')[1:-1]:
+        spike_time, gid = line.split()
+        return_dict.setdefault(int(gid), []).append(float(spike_time))
+
+    return return_dict
 
 
 def _parse_outdat(path, outdat_name='out.dat'):
