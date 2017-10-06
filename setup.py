@@ -8,7 +8,7 @@ setuptools.setup(
     name="bglibpy",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    packages=['bglibpy'],
+    packages=setuptools.find_packages(exclude=('examples', )),
     author="Werner Van Geit",
     author_email="werner.vangeit@epfl.ch",
     description="The Pythonic Blue Brain simulator access",
@@ -32,4 +32,4 @@ setuptools.setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Utilities',
     ],
-) 
+)
