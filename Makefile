@@ -5,7 +5,7 @@ install:
 	pip -v install .
 test: clean unit
 unit: install_tox
-	tox
+	tox -v
 install_tox:
 	pip install tox
 clean:

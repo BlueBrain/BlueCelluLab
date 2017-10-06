@@ -1,11 +1,5 @@
 /modlib
 /x86_64
-*~
-.coverage
-*.log
-*.log.*
-*.pyc
-.bglib*
-*.rope*
-*#
 /.tox
+*.pyc
+/bglibpy.egg-info/
