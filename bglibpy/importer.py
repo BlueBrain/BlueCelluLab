@@ -19,10 +19,12 @@ import os
 
 import neuron
 
-mod_lib_path = os.environ["BGLIBPY_MOD_LIBRARY_PATH"]
-
-print neuron.__file__
-neuron.h.nrn_load_dll(mod_lib_path)
+if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
+    mod_lib_path = os.environ["BGLIBPY_MOD_LIBRARY_PATH"]
+    neuron.h.nrn_load_dll(mod_lib_path)
+else:
+    print "BGLIBPY_MOD_LIBRARY_PATH not found, continuing with pre-loading " \
+        "MOD files, assuming they have already been loaded"
 
 neuron.h.load_file("stdrun.hoc")
 neuron.h.load_file("Cell.hoc")
@@ -45,6 +47,7 @@ def print_header():
     """Print BGLibPy header to stdout"""
     print "Imported neuron from %s" % neuron.__file__
     print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
+    print 'BGLIBPY_MOD_LIBRARY_PATH: ', mod_lib_path
     print "Imported bluepy from %s" % bluepy.__file__
 
 print_header()

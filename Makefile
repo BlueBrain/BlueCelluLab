@@ -2,7 +2,7 @@ TEST_REQUIREMENTS=nose coverage
  
 all: install
 install:
-	pip -v install .
+	pip install -i https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple --upgrade .
 test: clean unit
 unit: install_tox
 	tox -v
