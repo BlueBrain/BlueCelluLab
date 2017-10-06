@@ -1,9 +1,5 @@
 import matplotlib.pyplot as plt
 
-import bglibpy
-import bglibpy.ssim
-import bluepy
-import neuron
 
 gids = [118583]#,118586 [107457]#
 t_stop=500
@@ -11,6 +7,11 @@ t_stop=500
 def test_compare_main_sim_vs_bglibpy_ssim() :
     ''' Replay a neuron with bglibpy.ssim.SSim and compare to the data from \
     the true cortical simulation performed on the BlueGene'''
+
+    import bglibpy
+    import bglibpy.ssim
+    import bluepy
+    import neuron
 
     blue_config_filename = '/bgscratch/bbp/release/23.07.12/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/knockout/control/BlueConfig'
     bc_sim = bglibpy.ssim.SSim(blue_config_filename)

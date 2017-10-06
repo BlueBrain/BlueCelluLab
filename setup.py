@@ -11,6 +11,8 @@ setuptools.setup(
     author_email="werner.vangeit@epfl.ch",
     description="The Pythonic Blue Brain simulator access",
     license="BBP-internal-confidential",
+    dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/bluepy/"],
+    install_requires=["bluepy[bbp]"],
     keywords=('computational neuroscience',
               'simulation',
               'analysis',

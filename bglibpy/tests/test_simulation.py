@@ -7,11 +7,12 @@
 
 import os
 import numpy
-
-import nose.tools as nt
 import bglibpy
 
+import nose.tools as nt
+
 script_dir = os.path.dirname(__file__)
+
 
 class TestCellBaseClass(object):
 

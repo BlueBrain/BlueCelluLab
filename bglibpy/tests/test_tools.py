@@ -6,10 +6,11 @@
 """Unit tests for tools.py"""
 
 import os
+import bglibpy
+
 script_dir = os.path.dirname(__file__)
 
 import nose.tools as nt
-import bglibpy
 from nose.plugins.attrib import attr
 
 

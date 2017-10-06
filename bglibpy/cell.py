@@ -32,6 +32,9 @@ from bglibpy import psection
 from bglibpy import printv
 
 
+example_dir = __file__
+
+
 class Cell(object):
 
     """Represents a BGLib Cell object."""
@@ -1219,7 +1222,7 @@ class Cell(object):
 
     def delete(self):
         """Delete the cell."""
-        if self.cell:
+        if hasattr(self, 'cell') and self.cell:
             if self.cell.getCell():
                 self.cell.getCell().clear()
 
@@ -1228,14 +1231,17 @@ class Cell(object):
             self.connections = None
             self.synapses = None
 
-        for recording in self.recordings:
-            del recording
+        if hasattr(self, 'recordings'):
+            for recording in self.recordings:
+                del recording
 
-        for voltage_recording in self.voltage_recordings:
-            del voltage_recording
+        if hasattr(self, 'voltage_recordings'):
+            for voltage_recording in self.voltage_recordings:
+                del voltage_recording
 
-        for persistent_object in self.persistent:
-            del persistent_object
+        if hasattr(self, 'persistent'):
+            for persistent_object in self.persistent:
+                del persistent_object
 
     @property
     def hsynapses(self):

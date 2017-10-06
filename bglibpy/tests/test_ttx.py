@@ -4,11 +4,12 @@
 
 import os
 
+import bglibpy
+
 script_dir = os.path.dirname(__file__)
 
 import nose.tools as nt
 
-import bglibpy
 
 
 def test_allNaChannels():
