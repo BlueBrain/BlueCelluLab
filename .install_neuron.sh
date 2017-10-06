@@ -11,7 +11,7 @@ then
     mkdir -p ${SRC_DIR}
     cd ${SRC_DIR}
     echo "Downloading NEURON 7.4 ..."
-    wget -q http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.tar.gz
+    wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.tar.gz
     tar xzf nrn-7.4.tar.gz
     cd nrn-7.4
     echo "Configuring NEURON ..."
