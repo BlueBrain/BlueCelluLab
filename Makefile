@@ -12,7 +12,19 @@ clean:
 	find . -name "*.pyc" -exec rm -rf {} \;
 install_test_requirements:
 	pip install -q $(TEST_REQUIREMENTS) --upgrade
-	
+doc: install
+	pip install -q sphinx sphinx-autobuild sphinx_rtd_theme -I
+	sphinx-apidoc -o docs/source bglibpy
+	cd docs; $(MAKE) clean; $(MAKE) html
+docpdf:                                                                         
+	pip install sphinx sphinx-autobuild -I
+	cd docs; $(MAKE) clean; $(MAKE) latexpdf
+docopen: doc
+	open docs/build/html/index.html
+devpi:
+	python setup.py sdist
+	upload2repo -t python -r release -f `ls dist/bglibpy-*.tar.gz` 
+
 # 	rm -rf build
 # 	rm -rf docs/build
 # 	rm -rf bluepyopt/tests/.coverage
