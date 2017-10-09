@@ -20,8 +20,8 @@ import os
 import neuron
 
 if 'HOC_LIBRARY_PATH' not in os.environ:
-    print "BGLibPy: HOC_LIBRARY_PATH not found, this is required to find " \
-        "Neurodamus. Did you install neurodamus correctly ?"
+    raise Exception("BGLibPy: HOC_LIBRARY_PATH not found, this is required to find " \
+        "Neurodamus. Did you install neurodamus correctly ?")
 
 
 if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
