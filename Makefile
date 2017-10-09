@@ -22,6 +22,7 @@ docpdf:
 docopen: doc
 	open docs/build/html/index.html
 devpi:
+	rm -rf dist
 	python setup.py sdist
 	upload2repo -t python -r release -f `ls dist/bglibpy-*.tar.gz` 
 
