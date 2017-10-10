@@ -17,10 +17,34 @@ import os
 # Load Neuron hoc files
 #####
 
+
+def _nrn_disable_banner():
+    """Disable Neuron banner"""
+
+    import imp
+    import ctypes
+
+    nrnpy_path = os.path.join(imp.find_module('neuron')[1])
+    import glob
+    hoc_so_list = \
+        glob.glob(os.path.join(nrnpy_path, 'hoc*.so'))
+
+    if len(hoc_so_list) != 1:
+        raise Exception(
+            'hoc shared library not found in %s' %
+            nrnpy_path)
+
+    hoc_so = hoc_so_list[0]
+    nrndll = ctypes.cdll[hoc_so]
+    ctypes.c_int.in_dll(nrndll, 'nrn_nobanner_').value = 1
+
+_nrn_disable_banner()
+
 import neuron
 
 if 'HOC_LIBRARY_PATH' not in os.environ:
-    raise Exception("BGLibPy: HOC_LIBRARY_PATH not found, this is required to find " \
+    raise Exception(
+        "BGLibPy: HOC_LIBRARY_PATH not found, this is required to find "
         "Neurodamus. Did you install neurodamus correctly ?")
 
 
@@ -55,4 +79,4 @@ def print_header():
     print 'BGLIBPY_MOD_LIBRARY_PATH: ', mod_lib_path
     print "Imported bluepy from %s" % bluepy.__file__
 
-print_header()
+# print_header()

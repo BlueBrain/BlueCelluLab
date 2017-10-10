@@ -4,3 +4,4 @@
 *.pyc
 /bglibpy.egg-info/
 /dist
+/jekylltest

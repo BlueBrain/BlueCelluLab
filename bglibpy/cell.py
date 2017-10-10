@@ -180,21 +180,27 @@ class Cell(object):
     @staticmethod
     def shorten_and_hash_string(label, keep_length=40, hash_length=9):
         """Convert string to a shorter string if required.
-        Args:
-            label: a string to be converted
-            keep_length: length of the original string to keep. Default is 40
-                characters.
-            hash_length: length of the hash to generate, should not be more then
-                20. Default is 9 characters.
-        Returns:
+
+        Parameters
+        ----------
+        label : string
+               a string to be converted
+        keep_length : int
+                     length of the original string to keep. Default is 40
+                     characters.
+        hash_length : int
+                     length of the hash to generate, should not be more then
+                     20. Default is 9 characters.
+
+        Returns
+        -------
+        new_label : string
             If the length of the original label is shorter than the sum of
             'keep_length' and 'hash_length' plus one the original string is
             returned. Otherwise, a string with structure <partial>_<hash> is
             returned, where <partial> is the first part of the original string
             with length equal to <keep_length> and the last part is a hash of
             'hash_length' characters, based on the original string.
-        Raises:
-            ValueError, if 'hash_length' exceeds 20.
         """
 
         if hash_length > 20:
@@ -209,27 +215,42 @@ class Cell(object):
 
     @staticmethod
     def check_compliance_with_neuron(template_name):
-        """Verify that a given name is compliant with the rules for a NEURON
-        template name: a name should be a non-empty alphanumeric string, and start
-        with a letter. Underscores are allowed. The length should not exceed 50
-        characters.
-        Returns:
-            True if compliant, false otherwise.
+        """Verify that a given name is compliant with the rules for a NEURON.
+
+        Parameters
+        ----------
+        template name : string
+                        a name should be a non-empty alphanumeric string,
+                        and start with a letter. Underscores are allowed.
+                        The length should not exceed 50 characters.
+
+        Returns
+        -------
+        compliant : boolean
+                   True if compliant, false otherwise.
         """
         max_len = 50
-        return (template_name and template_name[0].isalpha() and
+        return (template_name and
+                template_name[0].isalpha() and
                 template_name.replace('_', '').isalnum() and
                 len(template_name) <= max_len)
 
     @staticmethod
     def get_neuron_compliant_template_name(name):
         """Get template name that is compliant with NEURON based on given name.
-        Args:
-            name: string
-        Returns:
-            If `name' is NEURON-compliant, the same string is return. Otherwise,
-            hyphens are replaced by underscores and if appropriate, the string is
-            shortened. Leading numbers are removed.
+
+        Parameters
+        ----------
+        name : string
+              template_name to transform
+
+        Returns
+        -------
+        new_name : string
+                  If `name' is NEURON-compliant, the same string is return.
+                  Otherwise, hyphens are replaced by underscores and if
+                  appropriate, the string is shortened.
+                  Leading numbers are removed.
         """
         template_name = name
         if not Cell.check_compliance_with_neuron(template_name):
@@ -711,7 +732,18 @@ class Cell(object):
         return True
 
     def add_replay_delayed_weight(self, sid, delay, weight):
-        """Add a synaptic weight for sid that will be set with a time delay."""
+        """Add a synaptic weight for sid that will be set with a time delay.
+
+        Parameters
+        ----------
+        sid : int
+              synapse id
+        delay : float
+                synaptic delay
+        weight : float
+                 synaptic weight
+        """
+
         self.delayed_weights.put((delay, (sid, weight)))
 
     def pre_gids(self):
