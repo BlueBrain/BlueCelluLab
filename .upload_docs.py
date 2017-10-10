@@ -97,7 +97,7 @@ def main():
 
         if len(untracked_status) > 0:
             print('Committing doc changes')
-            sh.git('config', 'user.email', 'bbprelman@epfl.ch')
+            # sh.git('config', 'user.email', 'bbprelman@epfl.ch')
             sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
             print('Pushing doc changes')
             sh.git('push', 'origin', 'master')
