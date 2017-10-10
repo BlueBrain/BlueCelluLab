@@ -12,13 +12,12 @@ import sh
 
 
 metadata_template = \
-    """
----
+    """---
 packageurl: https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags
 major: {major_version}
 description: The Pythonic Blue Brain simulator access
-repository: https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags
-externaldoc:
+repository: ssh://bbpcode.epfl.ch/sim/BGLibPy.git
+externaldoc: https://bbpcode.epfl.ch/documentation/#BGLibpy
 updated: {date}
 maintainers: Werner Van Geit
 name: BGLibpy
