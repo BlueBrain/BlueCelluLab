@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 SRC_DIR=$1
 INSTALL_DIR=$2

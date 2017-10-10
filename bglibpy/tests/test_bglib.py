@@ -6,7 +6,7 @@
 """Unit tests for BGLib functionality"""
 
 import os
-import bglibpy 
+import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
@@ -30,7 +30,7 @@ class TestBGLibBaseClass1(object):
         del self.notaper_cell
 
     def test_tapering(self):
-        """Test if tapering in Cell.hoc works correctly"""
+        """BGLib: Test if tapering in Cell.hoc works correctly"""
         import numpy
         axon0_taper_diams = [segment.diam
                              for segment in self.taper_cell.axonal[0]]

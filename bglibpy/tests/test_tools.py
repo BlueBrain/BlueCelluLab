@@ -13,7 +13,7 @@ script_dir = os.path.dirname(__file__)
 import nose.tools as nt
 from nose.plugins.attrib import attr
 
-
+'''
 @attr('bgscratch')
 def test_search_hyp_current_replay_gidlist():
     """Tools: Test search_hyp_current_replay_gidlist"""
@@ -84,7 +84,7 @@ def test_search_hyp_current_replay_imap():
     nt.assert_true(hyp_currents[107461] == -1.5)
     import math
     nt.assert_true(math.isnan(hyp_currents[107462]))
-
+'''
 
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
@@ -111,7 +111,7 @@ class TestTools(object):
         os.chdir("%s/examples/sim_twocell_empty" % script_dir)
 
     def test_holding_current(self):
-        """Tools: test holding_current"""
+        """Tools: Test holding_current"""
 
         holding_current, holding_voltage = bglibpy.tools.holding_current(
             -80, 1, 'BlueConfig')

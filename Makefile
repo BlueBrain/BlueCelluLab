@@ -3,9 +3,10 @@ TEST_REQUIREMENTS=nose coverage
 all: install
 install:
 	pip install -i https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple --upgrade .
-test: clean unit
-unit: install_tox
+test: clean install_tox
 	tox -v
+test-gpfs: clean install_tox
+	tox -v -e py27-gpfs
 install_tox:
 	pip install tox
 clean:

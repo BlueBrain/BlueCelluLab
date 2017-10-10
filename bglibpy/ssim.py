@@ -630,8 +630,16 @@ class SSim(object):
     def get_mainsim_voltage_trace(self, gid=None):
         """Get the voltage trace from a cell from the main simulation"""
 
-        voltage = self.bc_simulation.v2.reports['soma'].get_gid(gid).values
+        voltage = self.bc_simulation.v2.reports[
+            'soma'].get_gid(gid).values
         return voltage
+
+    def get_mainsim_time_trace(self):
+        """Get the time trace from the main simulation"""
+
+        time = self.bc_simulation.v2.reports[
+            'soma'].get().index
+        return time
 
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary
