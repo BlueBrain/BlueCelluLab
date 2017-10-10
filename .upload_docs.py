@@ -20,7 +20,7 @@ repository: ssh://bbpcode.epfl.ch/sim/BGLibPy.git
 externaldoc: https://bbpcode.epfl.ch/documentation/#BGLibpy
 updated: {date}
 maintainers: Werner Van Geit
-name: BGLibpy
+name: BGLibPy
 license: BBP-internal-confidential
 issuesurl: https://bbpteam.epfl.ch/project/issues/projects/BGLPY
 version: {version}
