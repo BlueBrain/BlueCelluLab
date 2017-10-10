@@ -60,7 +60,8 @@ def main():
 
         doc_subdir = "BGLibPy-%s" % bglibpy_version
 
-        shutil.rmtree(doc_subdir)
+        if os.path.exists(doc_subdir):
+            shutil.rmtree(doc_subdir)
         shutil.copytree(doc_dir, doc_subdir)
 
         metadata_content = metadata_template.format(
@@ -82,11 +83,10 @@ def main():
             '--porcelain',
             '--untracked-files=no')
 
-        print('[%s]' % untracked_status)
-
         if len(untracked_status) > 0:
             print('Committing doc changes')
             sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
+            sh.git('push', 'origin', 'master')
         else:
             print('No doc changes found, not committing')
 
