@@ -25,7 +25,7 @@ docopen: doc
 devpi:
 	rm -rf dist
 	python setup.py sdist
-	upload2repo -t python -r release -f `ls dist/bglibpy-*.tar.gz` 
+	upload2repo -t python -r dev -f `ls dist/bglibpy-*.tar.gz` 
 
 # 	rm -rf build
 # 	rm -rf docs/build
