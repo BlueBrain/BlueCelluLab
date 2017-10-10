@@ -47,10 +47,12 @@ def main():
     doc_repo = sys.argv[1]
     doc_dir = sys.argv[2]
 
+    print('Cloning jekylltest')
     if not os.path.exists('jekylltest'):
         sh.git('clone', '-b', 'master', '--depth=1', doc_repo)
 
     with cd('jekylltest'):
+        print('Pulling latest jekulltest')
         sh.git('pull')
 
         import bglibpy
@@ -60,8 +62,12 @@ def main():
 
         doc_subdir = "BGLibPy-%s" % bglibpy_version
 
+        print('Doc subdir: %s' % doc_subdir)
+
         if os.path.exists(doc_subdir):
             shutil.rmtree(doc_subdir)
+
+        print('Copying %s to %s' % (doc_dir, doc_subdir))
         shutil.copytree(doc_dir, doc_subdir)
 
         metadata_content = metadata_template.format(
@@ -70,13 +76,19 @@ def main():
             date=datetime.datetime.now().strftime("%d/%m/%y"),
             version=bglibpy_version)
 
+        print('Created metadata: %s' % metadata_content)
+
         metadata_filename = os.path.join('_projects', doc_subdir)
 
         with open(metadata_filename, 'w') as metadata_file:
             metadata_file.write(metadata_content)
 
+        print('Wrote metadata to: %s' % metadata_filename)
+
         sh.git('add', metadata_filename)
         sh.git('add', doc_subdir)
+
+        print('Added doc to repo')
 
         untracked_status = sh.git(
             'status',
@@ -86,6 +98,7 @@ def main():
         if len(untracked_status) > 0:
             print('Committing doc changes')
             sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
+            print('Pushing doc changes')
             sh.git('push', 'origin', 'master')
         else:
             print('No doc changes found, not committing')
@@ -93,36 +106,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-'''
-cp - r ${DOC_DIRECTORY} ${DOC_SUBDIR}
-
-git add ${DOC_SUBDIR}
-
-python .. / .create_package_metadata.py
-
-repo_status = `git status - -porcelain - -untracked - files = no | head - 10`
-
-if [! -z "${repo_status}"]
-then
-    git commit - m "Added documentation for BGLibPy-${BGLIBPY_VERSION}"
-    # git push origin master
-fi
-'''
-
-# version_filename="@NEWDOC_DIRECTORY@/current_version.txt"
-
-###
-# Check if directory with latest version exists, and if it is up to date
-###
-# if [ ! -f ${version_filename} ]
-# then
-#    doc_uptodate="False"
-# else
-#    current_doc_version=`cat ${version_filename}`
-#    if [ ${current_doc_version} = "@BGLIBPY_VERSION@" ]
-#    then
-#        doc_uptodate="True"
-#    else
-#        doc_uptodate="False"
-#    fi
-# fi
