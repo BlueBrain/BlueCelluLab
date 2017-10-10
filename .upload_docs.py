@@ -52,7 +52,7 @@ def main():
         sh.git('clone', '-b', 'master', '--depth=1', doc_repo)
 
     with cd('jekylltest'):
-        print('Pulling latest jekulltest')
+        print('Pulling latest jekylltest')
         sh.git('pull')
 
         import bglibpy
