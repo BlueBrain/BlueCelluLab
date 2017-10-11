@@ -14,10 +14,10 @@ import sh
 
 metadata_template = \
     """---
-packageurl: https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy,tags
+packageurl: https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/bglibpy
 major: {major_version}
-description: The Pythonic Blue Brain simulator access
-repository: ssh://bbpcode.epfl.ch/sim/BGLibPy.git
+description: Simulate small amount of cells from large simulation
+repository: https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy
 externaldoc: https://bbpcode.epfl.ch/documentation/#BGLibpy
 updated: {date}
 maintainers: Werner Van Geit
