@@ -53,6 +53,7 @@ def main():
 
     with cd('jekylltest'):
         print('Pulling latest jekylltest ...')
+        sh.git('reset', '--hard', 'origin/master')
         sh.git('pull')
 
         import bglibpy
@@ -93,6 +94,8 @@ def main():
         sh.git('add', doc_subdir)
 
         print('Added doc to repo')
+
+        print(sh.git('log'))
 
         untracked_status = sh.git(
             'status',
