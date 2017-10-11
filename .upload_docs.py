@@ -7,6 +7,7 @@ import os
 import contextlib
 import datetime
 import shutil
+import glob
 
 import sh
 
@@ -63,8 +64,14 @@ def main():
 
         print('Doc subdir: %s' % doc_subdir)
 
-        if os.path.exists(doc_subdir):
-            shutil.rmtree(doc_subdir)
+        for old_dir in glob.glob('BGLib*'):
+            sh.git('rm', '-r', old_dir)
+
+        for old_metadata in glob.glob('_projects/BGLib*'):
+            sh.git('rm', old_metadata)
+
+        # if os.path.exists(doc_subdir):
+        #    shutil.rmtree(doc_subdir)
 
         print('Copying %s to %s' % (doc_dir, doc_subdir))
         shutil.copytree(doc_dir, doc_subdir)
@@ -105,4 +112,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
