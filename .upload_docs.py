@@ -95,7 +95,6 @@ def main():
 
         print('Added doc to repo')
 
-
         untracked_status = sh.git(
             'status',
             '--porcelain',
@@ -105,7 +104,6 @@ def main():
             print('Committing doc changes ...')
             sh.git('config', 'user.email', 'bbprelman@epfl.ch')
             sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
-            print('Git log:', sh.git('log', _tty_out=False))
 
             print('Pushing doc changes ...')
             sh.git('push', 'origin', 'master')
