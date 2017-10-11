@@ -52,7 +52,7 @@ def main():
         sh.git('clone', '-b', 'master', '--depth=1', doc_repo)
 
     with cd('jekylltest'):
-        print('Pulling latest jekylltest')
+        print('Pulling latest jekylltest ...')
         sh.git('pull')
 
         import bglibpy
@@ -64,16 +64,14 @@ def main():
 
         print('Doc subdir: %s' % doc_subdir)
 
-        for old_dir in glob.glob('BGLib*'):
+        print('Removing old doc ...')
+        for old_dir in glob.glob('BGLibPy-*'):
             sh.git('rm', '-r', old_dir)
 
-        for old_metadata in glob.glob('_projects/BGLib*'):
+        for old_metadata in glob.glob('_projects/BGLibPy-*'):
             sh.git('rm', old_metadata)
 
-        # if os.path.exists(doc_subdir):
-        #    shutil.rmtree(doc_subdir)
-
-        print('Copying %s to %s' % (doc_dir, doc_subdir))
+        print('Copying %s to %s ...' % (doc_dir, doc_subdir))
         shutil.copytree(doc_dir, doc_subdir)
 
         metadata_content = metadata_template.format(
@@ -102,10 +100,10 @@ def main():
             '--untracked-files=no')
 
         if len(untracked_status) > 0:
-            print('Committing doc changes')
+            print('Committing doc changes ...')
             # sh.git('config', 'user.email', 'bbprelman@epfl.ch')
             sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
-            print('Pushing doc changes')
+            print('Pushing doc changes ...')
             sh.git('push', 'origin', 'master')
         else:
             print('No doc changes found, not committing')
