@@ -65,50 +65,57 @@ def main():
 
         print('Doc subdir: %s' % doc_subdir)
 
-        print('Removing old doc ...')
-        for old_dir in glob.glob('BGLibPy-*'):
-            sh.git('rm', '-r', old_dir)
+        if not os.path.exists(doc_subdir):
+            print('Removing old docs ...')
+            for old_dir in glob.glob('BGLibPy-*'):
+                sh.git('rm', '-r', old_dir)
 
-        for old_metadata in glob.glob('_projects/BGLibPy-*'):
-            sh.git('rm', old_metadata)
+            for old_metadata in glob.glob('_projects/BGLibPy-*'):
+                sh.git('rm', old_metadata)
 
-        print('Copying %s to %s ...' % (doc_dir, doc_subdir))
-        shutil.copytree(doc_dir, doc_subdir)
+            print('Copying %s to %s ...' % (doc_dir, doc_subdir))
+            shutil.copytree(doc_dir, doc_subdir)
 
-        metadata_content = metadata_template.format(
-            major_version=bglibpy_major_version,
-            minor_version=bglibpy_minor_version,
-            date=datetime.datetime.now().strftime("%d/%m/%y"),
-            version=bglibpy_version)
+            metadata_content = metadata_template.format(
+                major_version=bglibpy_major_version,
+                minor_version=bglibpy_minor_version,
+                date=datetime.datetime.now().strftime("%d/%m/%y"),
+                version=bglibpy_version)
 
-        print('Created metadata: %s' % metadata_content)
+            print('Created metadata: %s' % metadata_content)
 
-        metadata_filename = os.path.join('_projects', doc_subdir)
+            metadata_filename = os.path.join('_projects', doc_subdir)
 
-        with open(metadata_filename, 'w') as metadata_file:
-            metadata_file.write(metadata_content)
+            with open(metadata_filename, 'w') as metadata_file:
+                metadata_file.write(metadata_content)
 
-        print('Wrote metadata to: %s' % metadata_filename)
+            print('Wrote metadata to: %s' % metadata_filename)
 
-        sh.git('add', metadata_filename)
-        sh.git('add', doc_subdir)
+            sh.git('add', metadata_filename)
+            sh.git('add', doc_subdir)
 
-        print('Added doc to repo')
+            print('Added doc to repo')
 
-        untracked_status = sh.git(
-            'status',
-            '--porcelain',
-            '--untracked-files=no')
+            untracked_status = sh.git(
+                'status',
+                '--porcelain',
+                '--untracked-files=no')
 
-        if len(untracked_status) > 0:
-            print('Committing doc changes ...')
-            sh.git('config', 'user.email', 'bbprelman@epfl.ch')
-            sh.git('commit', '-m', 'Added documentation for %s' % doc_subdir)
+            if len(untracked_status) > 0:
+                print('Committing doc changes ...')
+                sh.git('config', 'user.email', 'bbprelman@epfl.ch')
+                sh.git(
+                    'commit',
+                    '-m',
+                    'Added documentation for %s' %
+                    doc_subdir)
 
-            print('Pushing doc changes ...')
-            sh.git('push', 'origin', 'master')
+                print('Pushing doc changes ...')
+                sh.git('push', 'origin', 'master')
+            else:
+                print('No doc changes found, not committing')
         else:
-            print('No doc changes found, not committing')
+            print('Doc dir of version already exists, not uploading anything')
 
 if __name__ == '__main__':
     main()
