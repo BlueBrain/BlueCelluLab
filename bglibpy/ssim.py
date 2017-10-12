@@ -17,6 +17,8 @@ from bglibpy import bluepy
 import bglibpy
 from bglibpy import printv
 
+from bluepy.v2.enums import Synapse as BLPSynapse
+
 
 class SSim(object):
 
@@ -52,7 +54,8 @@ class SSim(object):
         self.dt = dt
         self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
-        self.bc_simulation = bluepy.Simulation(blueconfig_filename)
+        self.bc_simulation = bluepy.Simulation(blueconfig_filename).v2
+        self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
         if base_seed is None:
             try:
@@ -69,19 +72,19 @@ class SSim(object):
             self.base_noise_seed = base_noise_seed
 
         self.connection_entries = \
-            self.bc_simulation.config.typed_sections("Connection")
-        self.all_targets = self.bc_simulation.targets.available_targets()
+            self.bc_simulation.config.get("Connection", {})
+        self.all_targets = self.bc_circuit.cells.targets
         self.all_targets_dict = {}
         for target in self.all_targets:
             self.all_targets_dict[target] = \
-                self.bc_simulation.get_target(target)
+                self.bc_circuit.cells.ids(target)
 
         self.gids = []
         self.templates = []
         self.cells = {}
 
         self.neuronconfigure_entries = \
-            self.bc_simulation.config.typed_sections("NeuronConfigure")
+            self.bc_simulation.config.get("NeuronConfigure", {})
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
             for gid in self.all_targets_dict[entry.Target]:
@@ -252,8 +255,9 @@ class SSim(object):
                       projection=None):
         """Instantiate all the synapses"""
         for gid in self.gids:
-            syn_descriptions = self.bc_simulation.circuit.get_presynaptic_data(
-                gid, projection)
+            syn_descriptions = self.get_syn_descriptions(
+                gid,
+                projection=projection)
 
             if intersect_pre_gids is not None:
                 syn_descriptions = [syn_description for syn_description in
@@ -276,6 +280,44 @@ class SSim(object):
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
+    def get_syn_descriptions(self, gid, projection=None):
+        """Get synapse description arrays from bluepy"""
+        syn_descriptions = []
+
+        all_properties = [
+            BLPSynapse.PRE_GID,
+            BLPSynapse.AXONAL_DELAY,
+            BLPSynapse.POST_SECTION_ID,
+            '_POST_SEGMENT_ID',
+            '_POST_DISTANCE',
+            BLPSynapse.PRE_SECTION_ID,
+            '_PRE_SEGMENT_ID',
+            '_PRE_DISTANCE',
+            BLPSynapse.G_SYNX,
+            BLPSynapse.U_SYN,
+            BLPSynapse.D_SYN,
+            BLPSynapse.F_SYN,
+            BLPSynapse.DTC,
+            BLPSynapse.TYPE]
+
+        if projection is None:
+            synapses = self.bc_circuit.connectome.afferent_synapses(
+                gid,
+                properties=all_properties)
+        else:
+            synapses = self.bc_circuit.projection(
+                projection).afferent_synapses(gid)
+
+        for (syn_gid, syn_id), synapse in synapses.iterrows():
+            if gid != gid:
+                raise Exception(
+                    "BGLibPy SSim: synapse gid doesnt match with cell gid !")
+            else:
+                syn_description = synapse.values
+                syn_descriptions.append(syn_description)
+
+        return syn_descriptions
+
     # pylint: disable=R0913
     def _add_connections(
             self,
@@ -287,7 +329,7 @@ class SSim(object):
         """Instantiate the (replay and real) connections in the network"""
         if outdat_path is None:
             outdat_path = os.path.join(
-                self.bc.Run.OutputRoot,
+                self.bc['Run']['Default']['OutputRoot'],
                 'out.dat')
 
         if add_replay:
@@ -347,7 +389,8 @@ class SSim(object):
         self.templates = []
         self.cells = {}
 
-        bgc_morph_path = self.bc.Run.MorphologyPath
+        bgc_morph_path = self.bc['Run']['Default']['MorphologyPath']
+        ccells_path = self.bc['Run']['Default']['METypePath']
         # backwards compatible
         if bgc_morph_path[-3:] == "/h5":
             bgc_morph_path = bgc_morph_path[:-3]
@@ -357,8 +400,9 @@ class SSim(object):
         for gid in self.gids:
             # Fetch the template for this GID
             template_name_of_gid = self._fetch_template_name(gid)
-            full_template_name_of_gid = (self.bc.Run.METypePath + '/' +
-                                         template_name_of_gid + '.hoc')
+            full_template_name_of_gid = os.path.join(
+                ccells_path,
+                template_name_of_gid + '.hoc')
             printv('Added gid %d from template %s' %
                    (gid, full_template_name_of_gid), 1)
 
@@ -377,8 +421,10 @@ class SSim(object):
 
         syn_type = syn_description[13]
 
-        connection_parameters = self.\
-            _evaluate_connection_parameters(syn_description[0], gid, syn_type)
+        connection_parameters = self. _evaluate_connection_parameters(
+            syn_description[0],
+            gid,
+            syn_type)
 
         if connection_parameters["add_synapse"]:
             self.add_single_synapse(gid, syn_id, syn_description,
@@ -476,10 +522,10 @@ class SSim(object):
                                                   connection_modifiers,
                                                   self.base_seed)
 
-    @staticmethod
-    def check_connection_contents(contents):
+    def check_connection_contents(self, contents):
         """Check the contents of a connection block,
            to see if we support all the fields"""
+
         allowed_keys = set(['Weight', 'SynapseID', 'SpontMinis',
                             'SynapseConfigure', 'Source',
                             'Destination', 'Delay', 'CreateMode'])
@@ -504,10 +550,10 @@ class SSim(object):
         parameters['add_synapse'] = True
         spontminis_set = False
 
-        for entry in self.connection_entries:
+        for entry_name, entry in self.connection_entries.items():
             self.check_connection_contents(entry)
-            src = entry.Source
-            dest = entry.Destination
+            src = entry['Source']
+            dest = entry['Destination']
 
             if src in self.all_targets_dict and dest in self.all_targets_dict:
                 if pre_gid in self.all_targets_dict[src] and \
@@ -517,30 +563,30 @@ class SSim(object):
                     keys = set(entry.keys())
 
                     if 'SynapseID' in keys:
-                        if int(entry.SynapseID) != syn_type:
+                        if int(entry['SynapseID']) != syn_type:
                             apply_parameters = False
 
                     if 'Delay' in keys:
                         parameters.setdefault('DelayWeights', []).append((
-                            float(entry.Delay),
-                            float(entry.Weight)))
+                            float(entry['Delay']),
+                            float(entry['Weight'])))
                         apply_parameters = False
 
                     if apply_parameters:
                         if 'CreateMode' in keys:
-                            if entry.CreateMode == 'NoCreate':
+                            if entry['CreateMode'] == 'NoCreate':
                                 parameters['add_synapse'] = False
                             else:
                                 raise Exception('Connection %s: Unknown '
                                                 'CreateMode option %s'
-                                                % (entry.name,
-                                                   entry.CreateMode))
+                                                % (entry_name,
+                                                   entry['CreateMode']))
                         if 'Weight' in keys:
-                            parameters['Weight'] = float(entry.Weight)
+                            parameters['Weight'] = float(entry['Weight'])
                         if not spontminis_set:
                             if 'SpontMinis' in keys:
                                 parameters['SpontMinis'] = float(
-                                    entry.SpontMinis)
+                                    entry['SpontMinis'])
                                 spontminis_set = True
                             else:
                                 parameters['SpontMinis'] = 0.0
@@ -549,10 +595,10 @@ class SSim(object):
                             import warnings
                             warnings.warn(
                                 "Connection '%s': SpontMinis was already set "
-                                "in previous block, IGNORING" % entry.name)
+                                "in previous block, IGNORING" % entry_name)
 
                         if 'SynapseConfigure' in keys:
-                            conf = entry.SynapseConfigure
+                            conf = entry['SynapseConfigure']
                             # collect list of applicable configure blocks to be
                             # applied with a "hoc exec" statement
                             parameters.setdefault(
@@ -630,14 +676,14 @@ class SSim(object):
     def get_mainsim_voltage_trace(self, gid=None):
         """Get the voltage trace from a cell from the main simulation"""
 
-        voltage = self.bc_simulation.v2.reports[
+        voltage = self.bc_simulation.reports[
             'soma'].get_gid(gid).values
         return voltage
 
     def get_mainsim_time_trace(self):
         """Get the time trace from the main simulation"""
 
-        time = self.bc_simulation.v2.reports[
+        time = self.bc_simulation.reports[
             'soma'].get().index
         return time
 
@@ -662,11 +708,13 @@ class SSim(object):
 
     def _fetch_template_name(self, gid):
         """Get the template name of a gid"""
-        neurons = self.bc_simulation.circuit.mvddb.load_gids([gid], pbar=False)
-        if neurons[0]:
-            template_name = str(neurons[0].METype)
+
+        if gid in self.bc_circuit.cells.ids():
+            cell = self.bc_circuit.cells.get(gid)
         else:
             raise Exception("Gid %d not found in circuit" % gid)
+
+        template_name = str(cell['me_combo'])
 
         return template_name
 
@@ -696,7 +744,7 @@ class SSim(object):
         # be moved to BluePy
         gids = []
         for mtype in mtypes:
-            gids += self.bc_simulation.circuit.mvddb.select_gids(
+            gids += self.bc_circuit.mvddb.select_gids(
                 bluepy.targets.mvddb.MType.name == mtype)
         # pylint: enable=W0511, E1101
         return gids
