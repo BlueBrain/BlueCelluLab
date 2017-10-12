@@ -88,6 +88,16 @@ def main():
 
             print('Removing old docs ...')
 
+            import glob
+            for subdir in glob.glob('BGLibPy-*'):
+                sh.git('rm', '-r', '--ignore-unmatch', subdir)
+                sh.git(
+                    'rm',
+                    '--ignore-unmatch',
+                    os.path.join(
+                        '_projects',
+                        subdir))
+
             sh.git('rm', '-r', '--ignore-unmatch', doc_subdir)
             sh.git('rm', '--ignore-unmatch', metadata_filename)
 
