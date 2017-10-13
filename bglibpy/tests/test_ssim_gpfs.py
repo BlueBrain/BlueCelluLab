@@ -25,7 +25,7 @@ v6_test_bc_1_path = os.path.join(
     "BlueConfig")
 
 
-@attr('gpfs')
+@attr('gpfs', 'v5')
 class TestSSimBaseClass_full_run(object):
 
     """Class to test SSim with full circuit"""
@@ -67,7 +67,7 @@ class TestSSimBaseClass_full_run(object):
         nt.assert_true(rms_error < 2.0)
 
 
-@attr('gpfs')
+@attr('gpfs', 'v5')
 class TestSSimBaseClass_full_realconn(object):
 
     """Class to test SSim with full circuit and multiple cells """ \

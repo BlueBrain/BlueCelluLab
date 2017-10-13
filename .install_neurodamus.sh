@@ -23,8 +23,9 @@ then
     rm -rf lib/modlib/hdf*.mod
     rm -rf lib/modlib/MemUsage*.mod
 
-    which nrnivmodl
-    nrnivmodl lib/modlib
+    echo "Running nrnivmodl ..."
+    
+    nrnivmodl lib/modlib >nrnivmodl.log 2>&1
 
     touch -f ${INSTALL_DIR}/.install_finished
     echo "Neurodamus successfully installed"

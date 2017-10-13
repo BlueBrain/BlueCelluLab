@@ -206,6 +206,7 @@ class TestSSimBaseClass_twocell_all(object):
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
+
         nt.assert_true(rms_error < 1.0)
 
     def test_pre_gids(self):

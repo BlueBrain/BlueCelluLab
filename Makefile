@@ -10,7 +10,8 @@ test-gpfs: clean install_tox
 install_tox:
 	pip install tox
 clean:
-	find . -name "*.pyc" -exec rm -rf {} \;
+	@find . -name "*.pyc" -exec rm -rf {} \;
+	@find . -name "*.png" -exec rm -rf {} \;
 install_test_requirements:
 	pip install -q $(TEST_REQUIREMENTS) --upgrade
 doc: install

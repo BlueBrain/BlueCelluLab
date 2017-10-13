@@ -58,7 +58,7 @@ class SSim(object):
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
 
-        if 'MEComboInfoFile' in self.bc['Run']['Default']:
+        if 'MEComboInfoFile' in self.bc.Run:
             self.use_mecombotsv = True
             self.mecombo_emodels = self.get_mecombo_emodels()
         else:
@@ -66,8 +66,8 @@ class SSim(object):
             self.mecombo_emodels = None
 
         if base_seed is None:
-            if 'BaseSeed' in self.bc['Run']['Default']:
-                self.base_seed = self.bc['Run']['Default']['BaseSeed']
+            if 'BaseSeed' in self.bc.Run:
+                self.base_seed = int(self.bc.Run['BaseSeed'])
             else:
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
@@ -78,8 +78,7 @@ class SSim(object):
         else:
             self.base_noise_seed = base_noise_seed
 
-        self.connection_entries = \
-            self.bc_simulation.config.get("Connection", {})
+        self.connection_entries = self.bc.typed_sections('Connection')
         self.all_targets = self.bc_circuit.cells.targets
         self.all_targets_dict = {}
         for target in self.all_targets:
@@ -90,7 +89,7 @@ class SSim(object):
         self.cells = {}
 
         self.neuronconfigure_entries = \
-            self.bc_simulation.config.get("NeuronConfigure", {})
+            self.bc.typed_sections("NeuronConfigure")
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
             for gid in self.all_targets_dict[entry.Target]:
@@ -335,7 +334,7 @@ class SSim(object):
         """Instantiate the (replay and real) connections in the network"""
         if outdat_path is None:
             outdat_path = os.path.join(
-                self.bc['Run']['Default']['OutputRoot'],
+                self.bc.Run['OutputRoot'],
                 'out.dat')
 
         if add_replay:
@@ -394,8 +393,8 @@ class SSim(object):
         self.gids = gids
         self.cells = {}
 
-        bgc_morph_path = self.bc['Run']['Default']['MorphologyPath']
-        ccells_path = self.bc['Run']['Default']['METypePath']
+        bgc_morph_path = self.bc.Run['MorphologyPath']
+        ccells_path = self.bc.Run['METypePath']
         # backwards compatible
         if bgc_morph_path[-3:] == "/h5":
             bgc_morph_path = bgc_morph_path[:-3]
@@ -454,38 +453,39 @@ class SSim(object):
         # Every noise stimulus gets a new seed
         noise_seed = self.base_noise_seed + gid
 
-        for entry_type, entry_type_dict in self.bc.items():
-            for entry_name, entry in entry_type_dict.items():
-                if entry_type == 'StimulusInject':
-                    destination = entry['Target']
-                    gids_of_target = self.bc_circuit.cells.ids(destination)
-                    if gid in gids_of_target:
-                        # retrieve the stimulus to apply
-                        stimulus_name = entry['Stimulus']
-                        stimulus = self.bc['Stimulus'][stimulus_name]
-                        if stimulus['Pattern'] == 'Noise':
-                            if add_noise_stimuli:
-                                self._add_replay_noise(
-                                    gid, stimulus, noise_seed=noise_seed)
-                            noise_seed += 1
-                        elif stimulus['Pattern'] == 'Hyperpolarizing':
-                            if add_hyperpolarizing_stimuli:
-                                self._add_replay_hypamp_injection(
-                                    gid,
-                                    stimulus)
-                        elif stimulus['Pattern'] == 'Pulse':
-                            if add_pulse_stimuli:
-                                self._add_pulse(gid, stimulus)
-                        elif stimulus['Pattern'] == 'RelativeLinear':
-                            if add_relativelinear_stimuli:
-                                self._add_relativelinear(gid, stimulus)
-                        elif stimulus['Pattern'] == 'SynapseReplay':
-                            printv("Found stimulus with pattern %s, ignoring" %
-                                   stimulus['Pattern'], 1)
-                        else:
-                            raise Exception("Found stimulus with pattern %s, "
-                                            "not supported" %
-                                            stimulus.Pattern)
+        for entry in self.bc.values():
+            if entry.section_type == 'StimulusInject':
+                destination = entry.Target
+                gids_of_target = self.bc_circuit.cells.ids(destination)
+                if gid in gids_of_target:
+                    # retrieve the stimulus to apply
+                    stimulus_name = entry.Stimulus
+                    # bluepy magic to add underscore Stimulus underscore
+                    # stimulus_name
+                    stimulus = self.bc['Stimulus_%s' % stimulus_name]
+                    if stimulus.Pattern == 'Noise':
+                        if add_noise_stimuli:
+                            self._add_replay_noise(
+                                gid, stimulus, noise_seed=noise_seed)
+                        noise_seed += 1
+                    elif stimulus.Pattern == 'Hyperpolarizing':
+                        if add_hyperpolarizing_stimuli:
+                            self._add_replay_hypamp_injection(
+                                gid,
+                                stimulus)
+                    elif stimulus.Pattern == 'Pulse':
+                        if add_pulse_stimuli:
+                            self._add_pulse(gid, stimulus)
+                    elif stimulus.Pattern == 'RelativeLinear':
+                        if add_relativelinear_stimuli:
+                            self._add_relativelinear(gid, stimulus)
+                    elif stimulus.Pattern == 'SynapseReplay':
+                        printv("Found stimulus with pattern %s, ignoring" %
+                               stimulus['Pattern'], 1)
+                    else:
+                        raise Exception("Found stimulus with pattern %s, "
+                                        "not supported" %
+                                        stimulus.Pattern)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
@@ -558,7 +558,8 @@ class SSim(object):
         parameters['add_synapse'] = True
         spontminis_set = False
 
-        for entry_name, entry in self.connection_entries.items():
+        for entry in self.connection_entries:
+            entry_name = entry.name
             self.check_connection_contents(entry)
             src = entry['Source']
             dest = entry['Destination']
@@ -652,13 +653,13 @@ class SSim(object):
                        will not be exactly reproduced.
         """
         if t_stop is None:
-            t_stop = float(self.bc['Run']['Default']['Duration'])
+            t_stop = float(self.bc.Run['Duration'])
         if dt is None:
-            dt = float(self.bc['Run']['Default']['Dt'])
+            dt = float(self.bc.Run['Dt'])
         if forward_skip_value is None:
-            if 'ForwardSkip' in self.bc['Run']['Default']:
+            if 'ForwardSkip' in self.bc.Run:
                 forward_skip_value = float(
-                    self.bc['Run']['Default']['ForwardSkip'])
+                    self.bc.Run['ForwardSkip'])
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
@@ -682,15 +683,13 @@ class SSim(object):
     def get_mainsim_voltage_trace(self, gid=None):
         """Get the voltage trace from a cell from the main simulation"""
 
-        voltage = self.bc_simulation.reports[
-            'soma'].get_gid(gid).values
+        voltage = self.bc_simulation.report('soma').get_gid(gid).values
         return voltage
 
     def get_mainsim_time_trace(self):
         """Get the time trace from the main simulation"""
 
-        time = self.bc_simulation.reports[
-            'soma'].get().index
+        time = self.bc_simulation.report('soma').get().index
         return time
 
     def get_voltage_traces(self):
@@ -716,7 +715,7 @@ class SSim(object):
     def get_mecombo_emodels(self):
         """Create a dict matching me_combo names to template_names"""
 
-        mecombo_filename = self.bc['Run']['Default']['MEComboInfoFile']
+        mecombo_filename = self.bc['Run']['MEComboInfoFile']
 
         with open(mecombo_filename) as mecombo_file:
             mecombo_content = mecombo_file.read()
