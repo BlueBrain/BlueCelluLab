@@ -57,11 +57,18 @@ class SSim(object):
         self.bc_simulation = bluepy.Simulation(blueconfig_filename).v2
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
+
+        if 'MEComboInfoFile' in self.bc['Run']['Default']:
+            self.use_mecombotsv = True
+            self.mecombo_emodels = self.get_mecombo_emodels()
+        else:
+            self.use_mecombotsv = False
+            self.mecombo_emodels = None
+
         if base_seed is None:
-            try:
-                self.base_seed = \
-                    int(self.bc.Run.BaseSeed)
-            except AttributeError:
+            if 'BaseSeed' in self.bc['Run']['Default']:
+                self.base_seed = self.bc['Run']['Default']['BaseSeed']
+            else:
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
             self.base_seed = base_seed
@@ -80,7 +87,6 @@ class SSim(object):
                 self.bc_circuit.cells.ids(target)
 
         self.gids = []
-        self.templates = []
         self.cells = {}
 
         self.neuronconfigure_entries = \
@@ -313,7 +319,7 @@ class SSim(object):
                 raise Exception(
                     "BGLibPy SSim: synapse gid doesnt match with cell gid !")
             else:
-                syn_description = synapse.values
+                syn_description = synapse[all_properties].values
                 syn_descriptions.append(syn_description)
 
         return syn_descriptions
@@ -386,7 +392,6 @@ class SSim(object):
     def _add_cells(self, gids):
         """Instantiate cells from a gid list"""
         self.gids = gids
-        self.templates = []
         self.cells = {}
 
         bgc_morph_path = self.bc['Run']['Default']['MorphologyPath']
@@ -399,10 +404,10 @@ class SSim(object):
 
         for gid in self.gids:
             # Fetch the template for this GID
-            template_name_of_gid = self._fetch_template_name(gid)
+            emodel_name_of_gid = self.fetch_emodel_name(gid)
             full_template_name_of_gid = os.path.join(
                 ccells_path,
-                template_name_of_gid + '.hoc')
+                emodel_name_of_gid + '.hoc')
             printv('Added gid %d from template %s' %
                    (gid, full_template_name_of_gid), 1)
 
@@ -449,35 +454,38 @@ class SSim(object):
         # Every noise stimulus gets a new seed
         noise_seed = self.base_noise_seed + gid
 
-        for entry in self.bc.values():
-            if entry.section_type == 'StimulusInject':
-                destination = entry.Target
-                gids_of_target = self.bc_simulation.get_target(destination)
-                if gid in gids_of_target:
-                    # retrieve the stimulus to apply
-                    stimulus_name = entry.Stimulus
-                    stimulus = self.bc['Stimulus_' + stimulus_name]
-                    if stimulus.Pattern == 'Noise':
-                        if add_noise_stimuli:
-                            self._add_replay_noise(
-                                gid, stimulus, noise_seed=noise_seed)
-                        noise_seed += 1
-                    elif stimulus.Pattern == 'Hyperpolarizing':
-                        if add_hyperpolarizing_stimuli:
-                            self._add_replay_hypamp_injection(gid, stimulus)
-                    elif stimulus.Pattern == 'Pulse':
-                        if add_pulse_stimuli:
-                            self._add_pulse(gid, stimulus)
-                    elif stimulus.Pattern == 'RelativeLinear':
-                        if add_relativelinear_stimuli:
-                            self._add_relativelinear(gid, stimulus)
-                    elif stimulus.Pattern == 'SynapseReplay':
-                        printv("Found stimulus with pattern %s, ignoring" %
-                               stimulus.Pattern, 1)
-                    else:
-                        raise Exception("Found stimulus with pattern %s, "
-                                        "not supported" %
-                                        stimulus.Pattern)
+        for entry_type, entry_type_dict in self.bc.items():
+            for entry_name, entry in entry_type_dict.items():
+                if entry_type == 'StimulusInject':
+                    destination = entry['Target']
+                    gids_of_target = self.bc_circuit.cells.ids(destination)
+                    if gid in gids_of_target:
+                        # retrieve the stimulus to apply
+                        stimulus_name = entry['Stimulus']
+                        stimulus = self.bc['Stimulus'][stimulus_name]
+                        if stimulus['Pattern'] == 'Noise':
+                            if add_noise_stimuli:
+                                self._add_replay_noise(
+                                    gid, stimulus, noise_seed=noise_seed)
+                            noise_seed += 1
+                        elif stimulus['Pattern'] == 'Hyperpolarizing':
+                            if add_hyperpolarizing_stimuli:
+                                self._add_replay_hypamp_injection(
+                                    gid,
+                                    stimulus)
+                        elif stimulus['Pattern'] == 'Pulse':
+                            if add_pulse_stimuli:
+                                self._add_pulse(gid, stimulus)
+                        elif stimulus['Pattern'] == 'RelativeLinear':
+                            if add_relativelinear_stimuli:
+                                self._add_relativelinear(gid, stimulus)
+                        elif stimulus['Pattern'] == 'SynapseReplay':
+                            printv("Found stimulus with pattern %s, ignoring" %
+                                   stimulus['Pattern'], 1)
+                        else:
+                            raise Exception("Found stimulus with pattern %s, "
+                                            "not supported" %
+                                            stimulus.Pattern)
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
@@ -644,15 +652,13 @@ class SSim(object):
                        will not be exactly reproduced.
         """
         if t_stop is None:
-            t_stop = float(self.bc.Run.Duration)
+            t_stop = float(self.bc['Run']['Default']['Duration'])
         if dt is None:
-            dt = float(self.bc.Run.Dt)
+            dt = float(self.bc['Run']['Default']['Dt'])
         if forward_skip_value is None:
-            try:
+            if 'ForwardSkip' in self.bc['Run']['Default']:
                 forward_skip_value = float(
-                    self.bc.Run.ForwardSkip)
-            except AttributeError:
-                forward_skip_value = None
+                    self.bc['Run']['Default']['ForwardSkip'])
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
@@ -706,7 +712,25 @@ class SSim(object):
 
     # Auxialliary methods ###
 
-    def _fetch_template_name(self, gid):
+    def get_mecombo_emodels(self):
+        """Create a dict matching me_combo names to template_names"""
+
+        mecombo_filename = self.bc['Run']['Default']['MEComboInfoFile']
+
+        with open(mecombo_filename) as mecombo_file:
+            mecombo_content = mecombo_file.read()
+
+        mecombo_emodels = {}
+
+        for line in mecombo_content.split('\n')[1:-1]:
+            mecombo_info = line.split()
+            emodel = mecombo_info[4]
+            me_combo = mecombo_info[5]
+            mecombo_emodels[me_combo] = emodel
+
+        return mecombo_emodels
+
+    def fetch_emodel_name(self, gid):
         """Get the template name of a gid"""
 
         if gid in self.bc_circuit.cells.ids():
@@ -714,9 +738,14 @@ class SSim(object):
         else:
             raise Exception("Gid %d not found in circuit" % gid)
 
-        template_name = str(cell['me_combo'])
+        me_combo = str(cell['me_combo'])
 
-        return template_name
+        if self.use_mecombotsv:
+            emodel_name = self.mecombo_emodels[me_combo]
+        else:
+            emodel_name = me_combo
+
+        return emodel_name
 
     def get_gids_of_mtypes(self, mtypes=None):
         """

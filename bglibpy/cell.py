@@ -646,31 +646,31 @@ class Cell(object):
             # delay = float(stimulus.Delay) +
             #        float(stimulus.Offset)
             raise Exception("Found stimulus with pattern %s and Offset, "
-                            "not supported" % stimulus.Pattern)
+                            "not supported" % stimulus['Pattern'])
         else:
-            delay = float(stimulus.Delay)
+            delay = float(stimulus['Delay'])
 
         tstim.train(delay,
-                    float(stimulus.Duration),
-                    float(stimulus.AmpStart),
-                    float(stimulus.Frequency),
-                    float(stimulus.Width))
+                    float(stimulus['Duration']),
+                    float(stimulus['AmpStart']),
+                    float(stimulus['Frequency']),
+                    float(stimulus['Width']))
         self.persistent.append(tstim)
 
     def add_replay_hypamp(self, stimulus):
         """Inject hypamp for the replay."""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        tstim.pulse(float(stimulus.Delay),
-                    float(stimulus.Duration), self.hypamp)
+        tstim.pulse(float(stimulus['Delay']),
+                    float(stimulus['Duration']), self.hypamp)
         self.persistent.append(tstim)
 
     def add_replay_relativelinear(self, stimulus):
         """Add a relative linear stimulus."""
 
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        delay = float(stimulus.Delay)
-        duration = float(stimulus.Duration)
-        amp = (float(stimulus.PercentStart) / 100.0) * self.threshold
+        delay = float(stimulus['Delay'])
+        duration = float(stimulus['Duration'])
+        amp = (float(stimulus['PercentStart']) / 100.0) * self.threshold
         tstim.pulse(delay, duration, amp)
         self.persistent.append(tstim)
 
@@ -680,10 +680,10 @@ class Cell(object):
 
     def add_replay_noise(self, stimulus, noise_seed=0):
         """Add a replay noise stimulus."""
-        mean = (float(stimulus.MeanPercent) * self.threshold) / 100.0
-        variance = (float(stimulus.Variance) * self.threshold) / 100.0
-        delay = float(stimulus.Delay)
-        duration = float(stimulus.Duration)
+        mean = (float(stimulus['MeanPercent']) * self.threshold) / 100.0
+        variance = (float(stimulus['Variance']) * self.threshold) / 100.0
+        delay = float(stimulus['Delay'])
+        duration = float(stimulus['Duration'])
         self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration,
                             noise_seed)
         printv("Added noise stimulus to gid %d: "

@@ -168,8 +168,6 @@ class TestCellBaseClassSynapses(object):
             cell1_info_dict_expected = pickle.load(cell_info_dict_file)
 
         cell1_info_dict = self.ssim_bglibpy.cells[1].info_dict
-        print cell1_info_dict
-        print cell1_info_dict_expected
         nt.assert_equal(cell1_info_dict, cell1_info_dict_expected)
 
     def teardown(self):
