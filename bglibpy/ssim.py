@@ -707,8 +707,9 @@ class SSim(object):
 
     def __del__(self):
         """Destructor"""
-        for gid in self.cells:
-            self.cells[gid].delete()
+        if hasattr(self, 'cells'):
+            for gid in self.cells:
+                self.cells[gid].delete()
 
     # Auxialliary methods ###
 
