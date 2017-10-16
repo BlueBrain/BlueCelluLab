@@ -399,20 +399,26 @@ class SSim(object):
         if bgc_morph_path[-3:] == "/h5":
             bgc_morph_path = bgc_morph_path[:-3]
 
-        path_of_morphology = bgc_morph_path + '/ascii'
+        morph_dir = os.path.join(bgc_morph_path, 'ascii')
 
         for gid in self.gids:
             # Fetch the template for this GID
-            emodel_name_of_gid = self.fetch_emodel_name(gid)
-            full_template_name_of_gid = os.path.join(
+            emodel_name, morph_name = \
+                self.fetch_emodel_morph_name(gid)
+            full_template_name = os.path.join(
                 ccells_path,
-                emodel_name_of_gid + '.hoc')
-            printv('Added gid %d from template %s' %
-                   (gid, full_template_name_of_gid), 1)
+                emodel_name + '.hoc')
 
-            self.cells[gid] = bglibpy.Cell(full_template_name_of_gid,
-                                           path_of_morphology, gid=gid,
-                                           record_dt=self.record_dt)
+            morph_filename = '%s.%s' % \
+                (morph_name, 'asc')
+
+            printv('Added gid %d from template %s' %
+                   (gid, full_template_name), 1)
+
+            self.cells[gid] = bglibpy.Cell(full_template_name,
+                                           morph_filename, gid=gid,
+                                           record_dt=self.record_dt,
+                                           morph_dir=morph_dir)
 
             if gid in self.neuronconfigure_expressions:
                 for expression in self.neuronconfigure_expressions[gid]:
@@ -715,7 +721,7 @@ class SSim(object):
     def get_mecombo_emodels(self):
         """Create a dict matching me_combo names to template_names"""
 
-        mecombo_filename = self.bc['Run']['MEComboInfoFile']
+        mecombo_filename = self.bc.Run['MEComboInfoFile']
 
         with open(mecombo_filename) as mecombo_file:
             mecombo_content = mecombo_file.read()
@@ -730,7 +736,7 @@ class SSim(object):
 
         return mecombo_emodels
 
-    def fetch_emodel_name(self, gid):
+    def fetch_emodel_morph_name(self, gid):
         """Get the template name of a gid"""
 
         if gid in self.bc_circuit.cells.ids():
@@ -739,13 +745,14 @@ class SSim(object):
             raise Exception("Gid %d not found in circuit" % gid)
 
         me_combo = str(cell['me_combo'])
+        morph_name = str(cell['morphology'])
 
         if self.use_mecombotsv:
             emodel_name = self.mecombo_emodels[me_combo]
         else:
             emodel_name = me_combo
 
-        return emodel_name
+        return emodel_name, morph_name
 
     def get_gids_of_mtypes(self, mtypes=None):
         """
@@ -786,7 +793,20 @@ def _parse_outdat2(path):
     import bluepy.v2.impl.spike_report
     spikes = bluepy.v2.impl.spike_report.SpikeReport(path)
 
-    return {gid: spikes.get_gid(gid) for gid in spikes.gids}
+    outdat = {}
+
+    for gid in spikes.gids:
+        spike_times = spikes.get_gid(gid)
+        if any(spike_times < 0):
+            printv(
+                'WARNING: SSim: Found negative spike times in out.dat ! '
+                'Discarding these', 2)
+
+        spike_times = spike_times[spike_times >= 0]
+
+        outdat[gid] = spike_times
+
+    return outdat
 
 
 def _parse_outdat(path, outdat_name='out.dat'):

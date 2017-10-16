@@ -8,7 +8,7 @@ tox_args='--recreate -e py27-test'
 if [ "${os}" = "cscsviz" ]
 then
 	. /opt/rh/python27/enable
-    tox_args="${tox_args}-v5"
+    tox_args="${tox_args}-v5-proj64"
 elif [ "${os}" = "Ubuntu-16.04" ]
 then
 	tox_args="${tox_args}-upload_docs-devpi"

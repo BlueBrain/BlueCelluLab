@@ -127,7 +127,7 @@ class TestSSimBaseClass_proj64_full_run(object):
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
             """with forwardskip """ \
-            """gives the same output trace as on BGQ"""
+            """gives the same output trace as on BGQ for proj64"""
         gid = 1
         self.ssim.instantiate_gids(
             [gid],
@@ -139,8 +139,8 @@ class TestSSimBaseClass_proj64_full_run(object):
 
         time_bglibpy = self.ssim.get_time()
         voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
-        nt.assert_equal(len(time_bglibpy), 2500)
-        nt.assert_equal(len(voltage_bglibpy), 2500)
+        nt.assert_equal(len(time_bglibpy), 5000)
+        nt.assert_equal(len(voltage_bglibpy), 5000)
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gid)[:len(voltage_bglibpy)]
@@ -149,7 +149,7 @@ class TestSSimBaseClass_proj64_full_run(object):
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_true(rms_error < 2.0)
+        nt.assert_true(rms_error < 0.001)
 
 
 '''
