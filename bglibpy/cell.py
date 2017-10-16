@@ -42,7 +42,7 @@ class Cell(object):
     used_template_names = []
 
     def __init__(self, template_filename, morphology_name,
-                 gid=0, record_dt=None, morph_dir=None):
+                 gid=0, record_dt=None, template_format=None, morph_dir=None):
         """ Constructor.
 
         Parameters
@@ -73,18 +73,18 @@ class Cell(object):
         self.template_name, self.template_content = \
             self._load_template(template_filename)
 
-        if morph_dir is None:
+        if template_format == 'v6':
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
                 gid,
+                morph_dir,
                 morphology_name)
         else:
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
                 gid,
-                morph_dir,
                 morphology_name)
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
@@ -411,7 +411,7 @@ class Cell(object):
         except IndexError:
             raise IndexError(
                 "BGLibPy get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_name)) 
+                (section_id, self.morphology_name))
         if sec_ref:
             return self.serialized.isec2sec[int(section_id)].sec
         else:

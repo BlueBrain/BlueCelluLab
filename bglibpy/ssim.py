@@ -415,10 +415,20 @@ class SSim(object):
             printv('Added gid %d from template %s' %
                    (gid, full_template_name), 1)
 
-            self.cells[gid] = bglibpy.Cell(full_template_name,
-                                           morph_filename, gid=gid,
-                                           record_dt=self.record_dt,
-                                           morph_dir=morph_dir)
+            if self.use_mecombotsv:
+                self.cells[gid] = bglibpy.Cell(full_template_name,
+                                               morph_filename, gid=gid,
+                                               record_dt=self.record_dt,
+                                               morph_dir=morph_dir,
+                                               template_format='v6')
+            else:
+                self.cells[gid] = bglibpy.Cell(
+                    full_template_name,
+                    os.path.join(
+                        morph_dir,
+                        morph_filename),
+                    gid=gid,
+                    record_dt=self.record_dt)
 
             if gid in self.neuronconfigure_expressions:
                 for expression in self.neuronconfigure_expressions[gid]:
@@ -800,9 +810,9 @@ def _parse_outdat2(path):
         if any(spike_times < 0):
             printv(
                 'WARNING: SSim: Found negative spike times in out.dat ! '
-                'Discarding these', 2)
+                'Clipping them to 0', 2)
 
-        spike_times = spike_times[spike_times >= 0]
+        spike_times = spike_times.clip(min=0.0)
 
         outdat[gid] = spike_times
 
