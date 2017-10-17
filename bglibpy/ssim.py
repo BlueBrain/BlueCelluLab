@@ -811,8 +811,7 @@ def _parse_outdat2(path):
             printv(
                 'WARNING: SSim: Found negative spike times in out.dat ! '
                 'Clipping them to 0', 2)
-
-        spike_times = spike_times.clip(min=0.0)
+            spike_times = spike_times.clip(min=0.0)
 
         outdat[gid] = spike_times
 
