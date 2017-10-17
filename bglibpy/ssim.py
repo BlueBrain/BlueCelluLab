@@ -764,6 +764,14 @@ class SSim(object):
 
         return emodel_name, morph_name
 
+    def get_gids_of_targets(self, targets=None):
+
+        gids = []
+        for target in targets:
+            gids.extend(self.bc_circuit.cells.ids(target))
+
+        return gids
+
     def get_gids_of_mtypes(self, mtypes=None):
         """
         Helper function that, provided a BlueConfig, returns all the GIDs \
@@ -785,14 +793,12 @@ class SSim(object):
             List of all GIDs associated with one of the specified M-types
 
         """
-        # pylint: disable=W0511, E1101
-        # TODO: this functionality doesn't belong here, and should over time
-        # be moved to BluePy
         gids = []
         for mtype in mtypes:
-            gids += self.bc_circuit.mvddb.select_gids(
-                bluepy.targets.mvddb.MType.name == mtype)
-        # pylint: enable=W0511, E1101
+            gids.extend(
+                self.bc_circuit.cells.get({bluepy.v2.Cell.MTYPE: mtype}).
+                index.values)
+
         return gids
 
 

@@ -3,10 +3,13 @@
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
 import os
-import nose.tools as nt
 import numpy
-import bglibpy
+import itertools
+
+import nose.tools as nt
 from nose.plugins.attrib import attr
+
+import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
@@ -152,20 +155,14 @@ class TestSSimBaseClass_proj64_full_run(object):
         nt.assert_true(rms_error < 0.5)
 
 
-
-'''
-
-@attr('bgscratch')
+@attr('gpfs', 'v5', 'debugtest')
 class TestSSimBaseClass_full(object):
 
     """Class to test SSim with full circuit"""
 
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim(
-            "/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/"
-            "SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/"
-            "Control_Mg0p5/BlueConfig")
+        self.ssim = bglibpy.ssim.SSim(renccv2_bc_1_path)
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -174,107 +171,84 @@ class TestSSimBaseClass_full(object):
 
     def test_generate_mtype_list(self):
         """SSim: Test generate_mtype_list"""
-        L23_BTC_gids = self.ssim.get_gids_of_mtypes(mtypes=['L23_BTC'])
-        L2_several_gids = self.ssim.get_gids_of_mtypes(
-            mtypes=[
-                'L23_BTC',
-                'L23_LBC'])
-        L56_gids = self.ssim.get_gids_of_mtypes(
-            mtypes=[
-                'L5_TTPC1',
-                'L6_TPC_L1'])
 
         import pickle
-        l23_btc = pickle.load(
-            open(
-                'examples/mtype_lists/l23_btc_gids.pkl' %
-                script_dir))
-        l23_several = pickle.load(
-            open('examples/mtype_lists/l23_several_gids.pkl' % script_dir))
-        l56 = pickle.load(
-            open(
-                'examples/mtype_lists/l56_gids.pkl' %
-                script_dir))
 
-        # print 'len(L23): ', len(L23_BTC_gids)
-        # print 'len(l23): ', len(l23_btc)
+        mtypes_list = [
+            ['L23_BTC'], ['L23_BTC', 'L23_LBC'], ['L5_TTPC1', 'L6_TPC_L1']]
 
-        nt.eq_(
-            len(L23_BTC_gids),
-            len(l23_btc),
-            "len of the list should be the same")
-        nt.eq_(
-            len(L2_several_gids),
-            len(l23_several),
-            "len of the list should be the same")
-        nt.eq_(len(L56_gids), len(l56), "len of the list should be the same")
+        for mtypes in mtypes_list:
+            mtypes_gids = self.ssim.get_gids_of_mtypes(mtypes=mtypes)
+
+            mtypes_filename = os.path.join(
+                script_dir, 'examples/mtype_lists', '%s.%s' %
+                ('_'.join(mtypes), 'pkl'))
+            # with open(mtypes_filename, 'w') as mtypes_file:
+            #    pickle.dump(mtypes_gids, mtypes_file)
+            with open(mtypes_filename) as mtypes_file:
+                expected_gids = pickle.load(mtypes_file)
+
+            nt.assert_equal(expected_gids, mtypes_gids)
 
     def test_evaluate_connection_parameters(self):
         """SSim: Check if Connection block parsers yield expected output"""
 
-        # check a TTPC1 pair
-        pre_gid, post_gid = list(
-            self.ssim.bc_simulation.get_target("L5_TTPC1"))[:2]
-        syn_type = list(self.ssim.bc_simulation.get_target("L5_TTPC1"))[13]
+        target_params = [
+            ('L5_TTPC1',
+             'L5_TTPC1',
+             {'SpontMinis': 0.067000000000000004,
+              'add_synapse': True,
+              'SynapseConfigure': ['%s.mg = 1.0',
+                                   '%s.Use *= 0.185409696687',
+                                   '%s.NMDA_ratio = 0.4',
+                                   '%s.NMDA_ratio = 0.71'],
+              'Weight': 1.0}),
+            ('L5_MC',
+             'L5_MC',
+             {'SpontMinis': 0.012,
+              'add_synapse': True,
+              'SynapseConfigure': ['%s.e_GABAA = -80.0 %s.e_GABAB = -75.8354310081',
+                                   '%s.Use *= 0.437475790642'],
+              'Weight': 1.0}),
+            ('L5_LBC',
+             'L5_LBC',
+             {'SpontMinis': 0.012,
+              'add_synapse': True,
+              'SynapseConfigure': ['%s.e_GABAA = -80.0 %s.e_GABAB = -75.8354310081',
+                                   '%s.Use *= 0.437475790642'],
+              'Weight': 1.0}),
+            ('L1_HAC',
+             'L23_PC',
+             {'SpontMinis': 0.012,
+              'add_synapse': True,
+              'SynapseConfigure': [
+                  '%s.e_GABAA = -80.0 %s.e_GABAB = -75.8354310081',
+                  '%s.Use *= 0.437475790642',
+                  '%s.GABAB_ratio = 0.75'],
+              'Weight': 1.0})
+        ]
 
-        params = self.ssim._evaluate_connection_parameters(
-            pre_gid,
-            post_gid,
-            syn_type)
+        for pre_target, post_target, params in target_params:
+            pre_gid, post_gid, syn_ids = list(itertools.islice(
+                self.ssim.bc_circuit.connectome.iter_connections(
+                    pre_target, post_target, return_synapse_ids=True), 1))[0]
+            syn_id = syn_ids[0][1]
 
-        # checking a few sanity cases
+            syn_desc = self.ssim.get_syn_descriptions(post_gid)[syn_id]
 
-        nt.assert_equal(
-            params,
-            {'SpontMinis': 0.067000000000000004, 'add_synapse': True,
-             'SynapseConfigure':
-             ['%s.NMDA_ratio = 0.4 %s.mg = 0.5', '%s.NMDA_ratio = 0.71'],
-             'Weight': 2.3500000000000001})
+            nt.assert_equal(pre_gid, syn_desc[0])
+            syn_type = syn_desc[13]
 
-        pre_gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
-        syn_type = list(self.ssim.bc_simulation.get_target("L5_MC"))[13]
-        params = self.ssim._evaluate_connection_parameters(
-            pre_gid,
-            post_gid,
-            syn_type)
-        nt.assert_equal(params,
-                        {'SpontMinis': 0.012,
-                         'add_synapse': True,
-                         'SynapseConfigure': ['%s.e_GABAA = -80.0'],
-                         'Weight': 2.0})
-
-        pre_gid = list(self.ssim.bc_simulation.get_target("L5_LBC"))[0]
-        syn_type = list(self.ssim.bc_simulation.get_target("L5_LBC"))[13]
-        params = self.ssim._evaluate_connection_parameters(
-            pre_gid,
-            post_gid,
-            syn_type)
-        nt.assert_equal(params,
-                        {'SpontMinis': 0.012,
-                         'add_synapse': True,
-                         'SynapseConfigure': ['%s.e_GABAA = -80.0'],
-                         'Weight': 0.67000000000000004})
-
-        pre_gid = list(self.ssim.bc_simulation.get_target("L1_HAC"))[0]
-        syn_type = list(self.ssim.bc_simulation.get_target("L1_HAC"))[13]
-        params = self.ssim._evaluate_connection_parameters(
-            pre_gid,
-            post_gid,
-            syn_type)
-        nt.assert_equal(
-            params, {
-                'SpontMinis': 0.012,
-                'add_synapse': True,
-                'SynapseConfigure': [
-                    '%s.e_GABAA = -80.0',
-                    '%s.GABAB_ratio = 0.75'],
-                'Weight': 2.0})
+            nt.assert_equal(params, self.ssim._evaluate_connection_parameters(
+                pre_gid,
+                post_gid,
+                syn_type))
 
     def test_add_single_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
-        gid = list(self.ssim.bc_simulation.get_target("L5_MC"))[0]
+        gid = self.ssim.get_gids_of_targets(['L5_MC'])[0]
         self.ssim.instantiate_gids([gid], synapse_detail=0)
-        pre_datas = self.ssim.bc_simulation.circuit.get_presynaptic_data(gid)
+        pre_datas = numpy.array(self.ssim.get_syn_descriptions(gid))
         # get second inh synapse (first fails)
         inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
         sid = inh_synapses[0][1]
@@ -301,6 +275,8 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(
             self.ssim.cells[gid].synapses[sid].hsynapse.tau_r_GABAA,
             1.0)
+
+'''
 
 @attr('bgscratch')
 class TestSSimBaseClass_full_neuronconfigure(object):
