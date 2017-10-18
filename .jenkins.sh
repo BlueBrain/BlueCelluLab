@@ -3,6 +3,9 @@
 set -e
 set -x
 
+git config --global http.proxy http://bbpproxy.epfl.ch:80/
+git config --global https.proxy http://bbpproxy.epfl.ch:80/
+
 tox_args='--recreate -e py27-test'
 
 if [ "${os}" = "cscsviz" ]
