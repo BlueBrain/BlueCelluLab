@@ -3,7 +3,7 @@
 set -e
 set -x
 
-tox_args='-e py27-test'
+tox_args='--recreate -e py27-test'
 
 if [ "${os}" = "cscsviz" ]
 then
