@@ -10,9 +10,8 @@ import os
 import random
 import bglibpy
 
-from nose.plugins.attrib import attr
-
 script_dir = os.path.dirname(__file__)
+
 
 def test_longname():
     """Cell: Test loading cell with long name"""
@@ -145,7 +144,6 @@ class TestCellBaseClass1(object):
             nt.assert_true(distance_euclid == distance_hand)
 
 
-@attr('bgscratch')
 class TestCellBaseClassSynapses(object):
 
     """TestCellBaseClassSynapses"""
