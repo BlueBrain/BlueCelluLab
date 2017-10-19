@@ -143,8 +143,8 @@ def main():
                 sh.git(
                     'commit',
                     '-m',
-                    'Added documentation for %s' %
-                    doc_subdir)
+                    'Added documentation for BGLibPy version %s' %
+                    bglibpy_version)
 
                 print('Pushing doc changes ...')
                 sh.git('push', 'origin', 'master')
