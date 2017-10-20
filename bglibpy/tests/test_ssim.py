@@ -239,8 +239,8 @@ class TestSSimBaseClass_twocell_all_mvr(object):
         """Setup"""
         self.prev_cwd = os.getcwd()
         os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
-        self.voltage_bglib_all = self.ssim_bglib.get_mainsim_voltage_trace(
+        self.ssim_bglib_all = bglibpy.SSim("BlueConfig")
+        self.voltage_bglib_all = self.ssim_bglib_all.get_mainsim_voltage_trace(
             gid=1)
         os.chdir(self.prev_cwd)
 
@@ -260,9 +260,6 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
-
-        # voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_traces()[1][
-        #    0:len(voltage_bglib_mvr)]
 
         rms_error = numpy.sqrt(
             numpy.mean(
@@ -307,7 +304,7 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglib
+        del self.ssim_bglib_all
         del self.ssim_bglibpy_mvr
         del self.ssim_bglib_mvr
         os.chdir(self.prev_cwd)
