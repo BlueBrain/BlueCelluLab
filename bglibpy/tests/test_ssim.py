@@ -4,6 +4,7 @@
 
 import os
 import nose.tools as nt
+# from nose.plugins.attrib import attr
 import numpy
 import bglibpy
 
@@ -227,6 +228,88 @@ class TestSSimBaseClass_twocell_all(object):
         """Teardown"""
         del self.ssim_bglibpy
         del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
+
+class TestSSimBaseClass_twocell_all_mvr(object):
+
+    """Class to test SSim with two cell circuit"""
+
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.voltage_bglib_all = self.ssim_bglib.get_mainsim_voltage_trace(
+            gid=1)
+        os.chdir(self.prev_cwd)
+
+        self.prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_twocell_all_mvr" % script_dir)
+        self.ssim_bglibpy_mvr = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy_mvr.instantiate_gids(
+            [1],
+            synapse_detail=2,
+            add_stimuli=True,
+            add_replay=True)
+        self.ssim_bglibpy_mvr.run()
+        self.voltage_bglib_mvr = \
+            self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(gid=1)
+
+        self.ssim_bglib_mvr = bglibpy.SSim("BlueConfig")
+
+    def test_mvr_trace_diff(self):
+        """SSim: make sure MVR generates diff in neurodamus"""
+
+        # voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_traces()[1][
+        #    0:len(voltage_bglib_mvr)]
+
+        rms_error = numpy.sqrt(
+            numpy.mean(
+                (self.voltage_bglib_all - self.voltage_bglib_mvr) ** 2))
+
+        nt.assert_true(rms_error > 10)
+
+        '''
+        import matplotlib
+        matplotlib.use('Agg')
+
+        import matplotlib.pyplot as plt
+        plt.plot(self.voltage_bglib_all, label='No MVR')
+        plt.plot(self.voltage_bglib_mvr, label='MVR')
+
+        plt.legend()
+        plt.savefig('mvr.png')
+        '''
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of """ \
+            """BGLibPy for two cell circuit and spike replay, """ \
+            """minis and noisy stimulus and mvr"""
+
+        nt.assert_equal(len(self.voltage_bglib_mvr), 1000)
+
+        voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_traces()[1][
+            0:len(self.voltage_bglib_mvr)]
+
+        rms_error = numpy.sqrt(
+            numpy.mean(
+                (voltage_bglibpy_mvr - self.voltage_bglib_mvr) ** 2))
+
+        nt.assert_true(rms_error < 1.0)
+
+    def test_synapseconfigure(self):
+        """SSim: Test if synapseconfigure with mvr works correctly"""
+
+        nt.assert_equal(
+            '%s.Nrrp = 3.0', self.ssim_bglibpy_mvr.cells[1].synapses[0].
+            synapseconfigure_cmds[-1])
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglib
+        del self.ssim_bglibpy_mvr
+        del self.ssim_bglib_mvr
         os.chdir(self.prev_cwd)
 
 

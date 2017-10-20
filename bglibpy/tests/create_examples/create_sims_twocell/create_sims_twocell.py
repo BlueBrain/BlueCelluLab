@@ -101,6 +101,7 @@ def main():
         ('replay', True),
         ('minis_replay', True),
         ('all', True),
+        ('all_mvr', True),
         ('neuronconfigure', True),
         ('synapseid', True),
         ('realconn', False)
@@ -114,6 +115,10 @@ def main():
 
         with open(template_path) as template_file:
             blueconfig_template = template_file.read()
+
+        print('###########')
+        print(sim_name)
+        print('###########')
 
         create_extracted_simulation(
             output_path,
