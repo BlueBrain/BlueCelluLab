@@ -32,13 +32,19 @@ BlueConfig with only spike replay and minis enabled
 BlueConfig.all.template
 BlueConfig with all the above enabled
 
+BlueConfig.all_mvr.template
+BlueConfig with all the above enabled, and mvr tested
+
 
 Creating the two_cell circuit and simulations in the test directory
 ===================================================================
 
-Login to the viz cluster
+Login to the cscs viz cluster
 Change the working directory to the directory that contains the create_sims_twocell.py script
-Make sure bglibpy and pybinreports are in your python environment.
+Look at the run.sh script for an example on how to run the creation process
+
+In short:
+Make sure bglibpy is in your python environment.
 Make sure the ReportingLib is in your environment.
 Change the neurodamus path in templates/run.sh.template so that it points to a compiled 'special'
-Execute "python create_sims_twocell.py"
+Execute "./run.sh"
