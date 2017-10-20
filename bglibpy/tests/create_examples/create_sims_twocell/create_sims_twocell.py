@@ -2,9 +2,7 @@
 
 """Test the BluePy extractor"""
 
-import sys
 import bglibpy
-import soma2h5_v2_bglibpy
 
 import os
 
@@ -72,11 +70,13 @@ def create_extracted_simulation(
 
     import subprocess
     print os.getcwd()
+    print "Running Neurodamus ..."
     subprocess.call("./run.sh")
+    print "Neurodamus finished"
 
     os.chdir("output")
 
-    soma2h5_v2_bglibpy.main(os.path.join(os.getcwd(), 'soma.bbp'))
+    # soma2h5_v2_bglibpy.main(os.path.join(os.getcwd(), 'soma.bbp'))
 
     os.chdir("..")
 
@@ -210,9 +210,9 @@ def main():
         [1, 2], synapse_detail=2, add_stimuli=True, add_replay=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
+    """
     ssim_bglib = bglibpy.SSim("BlueConfig")
 
-    """
     import pylab
     pylab.figure()
     time_bglibpy = ssim_bglibpy.get_time()
