@@ -1,0 +1,155 @@
+Dependencies
+============
+
+.. _dependencies:
+
+The main dependencies of BGLibPy are::
+
+    Python 2.7 (no 3.x for now)
+    Neuron
+    Neurodamus
+    BluePy
+
+Ideally follow the installation instructions of these tools, or use 
+pre-installed versions.
+
+Python 2.7
+----------
+
+Modern Linux systems will have Python 2.7 installed.
+On CSCS BBP viz it is advised to use the Redhat Software collection:
+
+. /opt/rh/python27/enable
+
+Python 3.0 is not supported yet. This will be implemented once BluePy and 
+its dependencies support Python 3.0.
+
+Neuron
+------
+
+NEURON should have been compiled with Python support. MPI support is not a 
+requirement.
+
+Versions that are supported:
+- 7.4
+- 7.5
+- Latest git commit from https://github.com/nrnhines/nrn 
+  (Before being release the BGLibPy package is tested against this release)
+
+Possibly ways to acquire NEURON are:
+
+Pre-installed modules
+~~~~~~~~~~~~~~~~~~~~~
+There is a package on CSCS viz: nix/hpc/neuron
+
+Due to an open issue (https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818),
+it's not possible to use this package on the CSCS BBP viz for the moment.
+
+Installing from source
+~~~~~~~~~~~~~~~~~~~~~~
+
+It's not too difficult to install NEURON from source in your home directory.
+If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
+
+    SRC_DIR=$HOME/src
+    INSTALL_DIR=$HOME/local
+
+    mkdir -p ${SRC_DIR}
+    cd ${SRC_DIR}
+    if [ ! -d nrn ]
+    then
+        echo "Downloading NEURON from github ..."
+        git clone https://github.com/nrnhines/nrn.git
+    else                                                                         
+        echo "Neuron already downloaded"                                         
+    fi                                                                           
+    cd nrn
+    echo "Preparing NEURON ..."
+    ./build.sh
+    echo "Configuring NEURON ..."                                                
+    ./configure --prefix=${INSTALL_DIR} --without-x --with-nrnpython --disable-rx3d
+    echo "Installing NEURON ..."
+    make -j4 install
+    
+    export PATH="${INSTALL_DIR}/x86_64/bin":${PATH}
+    export PYTHONPATH="${INSTALL_DIR}/lib/python":${PYTHONPATH}
+
+    echo "Testing NEURON import ...."
+    python -c 'import neuron'
+                                                                                 
+    echo "NEURON successfully installed"
+    echo "Set your PATH at login to: ${INSTALL_DIR}/x86_64/bin:\${PATH}"
+    echo "Set your PYTHONPATH at login to: ${INSTALL_DIR}/lib/python:\${PYTHONPATH}"
+
+(The above code is based on a script called '.install_neuron.sh' in the BGLibPy
+git repo)
+
+Linux package
+~~~~~~~~~~~~~
+
+There is a deb package available for debian-flavoured linux machines. The 
+commands to install this package are ::
+
+    apt-get update
+	apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
+	wget https://bootstrap.pypa.io/get-pip.py
+	python get-pip.py
+	wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
+	dpkg -i nrn-7.4.x86_64.deb
+	rm nrn-7.4.x86_64.deb
+
+    export PYTHONPATH=/usr/local/nrn/lib/python:$PYTHONPATH
+
+(Has to be run with sudo. The PYTHONPATH export has to be run at every login)
+
+Neurodamus
+----------
+
+It's not necessary to fully install Neurodamus to use it with BGLibPy. 
+The only required components are
+1. the HOC code (lib/hoclib subdir of neurodamus source).
+2. the 'scientific' MOD files (ion channels, synapses, etc. 
+   This doesn't include the 'technical' MOD files like hdf5 readers)
+
+Installing from source
+~~~~~~~~~~~~~~~~~~~~~~
+
+First get the Neurodamus source using git::
+
+    git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
+
+The HOC code is located in the directory lib/hoclib of the newly created 'bbp'
+subdir. Set the HOC_LIBRARY_PATH (add this to your login script if necessary)::
+
+    export HOC_LIBRARY_PATH=`pwd`/bbp/lib/hoclib
+
+For the MOD files. Place all the MOD files (ion channels, synapses, etc.) in
+a single directory. 
+Then, in the directory from where you want to run BGLibPy, run 
+
+    nrnivmodl path_to_your_mod_dir
+
+If you want to run a classical BBP somatosensory cortex simulation, you can
+get the MOD files from lib/modlib directory from the repo you downloaded above.
+You only have to remove some files to make the compilation easier::
+
+    rm -rf lib/modlib/Bin*.mod                                             
+    rm -rf lib/modlib/HDF*.mod 
+    rm -rf lib/modlib/hdf*.mod
+    rm -rf lib/modlib/MemUsage*.mod
+
+(The above code is based on a script called '.install_neurodamus.sh' in the 
+BGLibPy git repo)
+
+Pre-installed modules
+~~~~~~~~~~~~~~~~~~~~~
+
+The packages containing Neurodamus on CSCS viz won't work because they would
+use the nix/hpc/neuron package which is broken as mentioned in this open issue:
+https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818
+
+BluePy
+~~~~~~
+
+You won't have to manually install BluePy, it is automaticall installed by
+the pip-install of BGLibPy.

@@ -14,11 +14,7 @@ BGLibPy documentation build configuration file, created by
 # serve to show the default.
 
 import sys
-#import os
 
-#import sys
-
-# sys.path.insert(0, '${PYTHON_PACKAGE_INSTALL_DIR}')
 import bglibpy
 
 # If extensions (or modules to document with autodoc) are in another directory,

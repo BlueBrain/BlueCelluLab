@@ -13,6 +13,7 @@ of in-silico whole-cell patching experiments.
    :maxdepth: 2
 
    installation
+   dependencies
    tutorial
    api
 
