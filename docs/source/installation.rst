@@ -17,7 +17,7 @@ Pip install bglibpy from the BBP Devpi server::
 
 Pip will install automatically the BluePy dependency. However you will still
 have to load/install NEURON with Python support, and compile the MOD files of 
-the circuit you want to use (for details :ref:`dependencies` below). 
+the circuit you want to use (for details see the :ref:`dependencies` section). 
 
 Hopefully this installation went smoothly. If it didn't, please create a Jira 
 ticket, and explain as detailed as possible the problems you encountered::

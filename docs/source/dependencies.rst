@@ -1,7 +1,7 @@
+.. _dependencies:
+
 Dependencies
 ============
-
-.. _dependencies:
 
 The main dependencies of BGLibPy are::
 
