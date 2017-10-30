@@ -50,11 +50,11 @@ The code of BGLibPy can installed on any POSIX system that supports
 pip-installable python code.
 
 However, the dependencies have stricter requirement:
-* BluePy depends on several packages for which only binary packages are 
+- BluePy depends on several packages for which only binary packages are 
   available from the BBP dev server. The installation has only been tested on
   BBP Linux machines. It also depends on Brion which is e.g. not compatible
   with Mac OS X for the moment.
-* A full installation of Neurodamus requires the hdf5 library, and the BBP
+- A full installation of Neurodamus requires the hdf5 library, and the BBP
   reporting library. Installation of these might not be trivial, but for 
   BGLibPy it is not necessary to install Neurodamus fully. See the Neurodamus
   section on the :ref:`dependencies` page for more details.

@@ -5,7 +5,7 @@ Dependencies
 
 The main dependencies of BGLibPy are::
 
-    Python 2.7 (no 3.x for now)
+    Python 2.7 (not 2.6, no 3.x for now)
     Neuron
     Neurodamus
     BluePy
