@@ -72,14 +72,14 @@ If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
     make -j4 install
     
     export PATH="${INSTALL_DIR}/x86_64/bin":${PATH}
-    export PYTHONPATH="${INSTALL_DIR}/lib/python":${PYTHONPATH}
+    export PYTHONPATH="${INSTALL_DIR}/lib64/python":${PYTHONPATH}
 
     echo "Testing NEURON import ...."
     python -c 'import neuron'
                                                                                  
     echo "NEURON successfully installed"
     echo "Set your PATH at login to: ${INSTALL_DIR}/x86_64/bin:\${PATH}"
-    echo "Set your PYTHONPATH at login to: ${INSTALL_DIR}/lib/python:\${PYTHONPATH}"
+    echo "Set your PYTHONPATH at login to: ${INSTALL_DIR}/lib64/python:\${PYTHONPATH}"
 
 (The above code is based on a script called '.install_neuron.sh' in the BGLibPy
 git repo)
@@ -151,5 +151,16 @@ https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818
 BluePy
 ~~~~~~
 
-You won't have to manually install BluePy, it is automaticall installed by
+You won't have to manually install BluePy, it is automatically installed by
 the pip-install of BGLibPy.
+
+In case you get an error like::
+
+    'Could not find a version that satisfies the requirement ...'
+
+Check if there are wheels available for the dependencies of BluePy 
+One common problem with this is that the Python binary you are using isn't 
+compiled with::
+
+    --enable-unicode=ucs4e
+
