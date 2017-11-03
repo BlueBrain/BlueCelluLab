@@ -332,12 +332,9 @@ class SSim(object):
             source=None,
             dest=None):
         """Instantiate the (replay and real) connections in the network"""
-        if outdat_path is None:
-            outdat_path = os.path.join(
-                self.bc.Run['OutputRoot'],
-                'out.dat')
-
         if add_replay:
+            if outdat_path is None:
+                outdat_path = os.path.join(self.bc.Run['OutputRoot'], 'out.dat')
             pre_spike_trains = _parse_outdat2(outdat_path)
 
         for post_gid in self.gids:
