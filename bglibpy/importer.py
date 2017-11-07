@@ -51,9 +51,9 @@ if 'HOC_LIBRARY_PATH' not in os.environ:
 if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
     mod_lib_path = os.environ["BGLIBPY_MOD_LIBRARY_PATH"]
     neuron.h.nrn_load_dll(mod_lib_path)
-else:
-    print "BGLibPY: BGLIBPY_MOD_LIBRARY_PATH not found, continuing without " \
-        "pre-loading MOD files, assuming they have already been loaded"
+# else:
+#    print "WARNING: BGLIBPY_MOD_LIBRARY_PATH not found, continuing without " \
+#        "pre-loading MOD files, assuming they have already been loaded"
 
 neuron.h.load_file("stdrun.hoc")
 neuron.h.load_file("Cell.hoc")
