@@ -303,22 +303,45 @@ class SSim(object):
             BLPSynapse.D_SYN,
             BLPSynapse.F_SYN,
             BLPSynapse.DTC,
-            BLPSynapse.TYPE]
+            BLPSynapse.TYPE,
+            BLPSynapse.NRRP]
 
         if projection is None:
-            synapses = self.bc_circuit.connectome.afferent_synapses(
+            connectome = self.bc_circuit.connectome
+        else:
+            connectome = self.bc_circuit.projection(projection)
+
+        try:
+            # Get properties with Nrrp
+            synapses = connectome.afferent_synapses(
                 gid,
                 properties=all_properties)
-        else:
-            synapses = self.bc_circuit.projection(
-                projection).afferent_synapses(gid)
+            nrrp_defined = True
+        except bluepy.exceptions.BluePyError as e:
+            if str(e.args) == "('Missing NRN version',)":
+                # Get properties without Nrrp
+                synapses = connectome.afferent_synapses(
+                    gid,
+                    properties=all_properties[:-1])
+                nrrp_defined = False
+            else:
+                raise
 
         for (syn_gid, syn_id), synapse in synapses.iterrows():
             if gid != gid:
                 raise Exception(
                     "BGLibPy SSim: synapse gid doesnt match with cell gid !")
             else:
-                syn_description = synapse[all_properties].values
+                if nrrp_defined:
+                    syn_description = synapse[all_properties].values[1:14]
+                    syn_description.append(None)  # 14, dummy value
+                    syn_description.append(None)  # 15, dummy value
+                    syn_description.append(None)  # 16, dummy value
+                    syn_description.append(
+                        synapse[all_properties].values[14])  # 17, Nrrp
+                else:
+                    # old behavior
+                    syn_description = synapse[all_properties].values
                 syn_descriptions.append(syn_description)
 
         return syn_descriptions
@@ -334,7 +357,9 @@ class SSim(object):
         """Instantiate the (replay and real) connections in the network"""
         if add_replay:
             if outdat_path is None:
-                outdat_path = os.path.join(self.bc.Run['OutputRoot'], 'out.dat')
+                outdat_path = os.path.join(
+                    self.bc.Run['OutputRoot'],
+                    'out.dat')
             pre_spike_trains = _parse_outdat2(outdat_path)
 
         for post_gid in self.gids:

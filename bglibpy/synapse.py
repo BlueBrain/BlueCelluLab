@@ -61,6 +61,14 @@ class Synapse(object):
         self.syn_DTC = syn_description[12]
         self.syn_type = int(syn_description[13])
 
+        if len(syn_description) == 18:
+            if syn_description[17] <= 0:
+                raise ValueError(
+                    'Invalid value for Nrrp found:'
+                    ' %s at synapse %d in gid %d' %
+                    (syn_description[17], self.sid, self.gid))
+            self.Nrrp = int(syn_description[17])
+
         self.post_segx = location
 
         # pylint: enable = C0103
@@ -94,6 +102,9 @@ class Synapse(object):
         self.hsynapse.Use = abs(self.syn_U)
         self.hsynapse.Dep = abs(self.syn_D)
         self.hsynapse.Fac = abs(self.syn_F)
+
+        if hasattr(self, 'Nrrp'):
+            self.hsynapse.Nrrp = self.Nrrp
 
         rndd = bglibpy.neuron.h.Random()
         self.randseed1 = sid * 100000 + 100
