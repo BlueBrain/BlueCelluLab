@@ -450,9 +450,7 @@ class SSim(object):
             else:
                 self.cells[gid] = bglibpy.Cell(
                     full_template_name,
-                    os.path.join(
-                        morph_dir,
-                        morph_filename),
+                    morph_dir,
                     gid=gid,
                     record_dt=self.record_dt)
 
