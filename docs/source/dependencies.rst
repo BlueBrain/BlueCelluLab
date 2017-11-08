@@ -16,18 +16,37 @@ pre-installed versions.
 Python 2.7
 ----------
 
-Modern Linux systems will have Python 2.7 installed.
-On CSCS BBP viz it is advised to use the Redhat Software collection:
-
-. /opt/rh/python27/enable
+Modern Linux systems will have Python 2.7 installed. However, CSCS viz still 
+has Python 2.6 as default.
 
 Python 3.0 is not supported yet. This will be implemented once BluePy and 
 its dependencies support Python 3.0.
 
+Possibly ways to acquire Python 2.7 on CSCS viz are:
+
+Pre-installed modules
+~~~~~~~~~~~~~~~~~~~~~
+
+If you want to use the NEURON NIX package mentioned below, you have to use this 
+package to load Python ::
+    
+    module load nix/python/2.7-light
+
+Beware that are still some open issues with this NIX Python. E.g. installing
+pip packages from source:
+https://bbpteam.epfl.ch/project/issues/browse/BBPP10-763
+
+Redhat Software Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On CSCS BBP viz it is also possible to use the Redhat Software collection ::
+
+    . /opt/rh/python27/enable
+
 Neuron
 ------
 
-NEURON should have been compiled with Python support. MPI support is not a 
+NEURON should be compiled with Python support. MPI support is not a 
 requirement.
 
 Versions that are supported:
@@ -40,10 +59,18 @@ Possibly ways to acquire NEURON are:
 
 Pre-installed modules
 ~~~~~~~~~~~~~~~~~~~~~
-There is a package on CSCS viz: nix/hpc/neuron
 
 Due to an open issue (https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818),
-it's not possible to use this package on the CSCS BBP viz for the moment.
+it's not possible to use the nix/hpc/neuron or HPC production package on the 
+CSCS BBP viz for the moment.
+
+However, there is a temporary fix. Loading all of the following modules 
+should work ::
+
+    module load nix/hpc/neuron-nomultisend
+    module load nix/python/2.7-light
+    module load nix/dev-env-gcc
+
 
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -119,7 +146,8 @@ First get the Neurodamus source using git::
     git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
 
 The HOC code is located in the directory lib/hoclib of the newly created 'bbp'
-subdir. Set the HOC_LIBRARY_PATH (add this to your login script if necessary)::
+subdir. Set the HOC_LIBRARY_PATH (add the resolved path to your login script 
+if necessary) ::
 
     export HOC_LIBRARY_PATH=`pwd`/bbp/lib/hoclib
 
@@ -163,4 +191,3 @@ One common problem with this is that the Python binary you are using isn't
 compiled with::
 
     --enable-unicode=ucs4e
-
