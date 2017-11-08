@@ -318,7 +318,11 @@ class SSim(object):
                 properties=all_properties)
             nrrp_defined = True
         except bluepy.exceptions.BluePyError as e:
-            if str(e.args) == "('Missing NRN version',)":
+            # This is ugly and should be replaced. Waiting for BluePy to
+            # provide a better way to detect this situation
+            if str(e.args) == "('Missing NRN version',)" or \
+                    str(e.args) ==  "('Trying to fetch Synapse.NRRP from " \
+                    "NRN version 3 (required: >=5)',)":
                 # Get properties without Nrrp
                 synapses = connectome.afferent_synapses(
                     gid,
