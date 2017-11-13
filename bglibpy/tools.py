@@ -10,7 +10,6 @@ import multiprocessing
 import multiprocessing.pool
 import warnings
 import math
-import os
 
 import numpy
 
@@ -229,10 +228,10 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
     return SS_voltage
 
 
-def holding_current_subprocess(v_hold, template_name, morphology_path):
+def holding_current_subprocess(v_hold, cell_kwargs):
     """Subprocess wrapper of holding_current"""
 
-    cell = bglibpy.Cell(template_name, morphology_path)
+    cell = bglibpy.Cell(**cell_kwargs)
 
     vclamp = bglibpy.neuron.h.SEClamp(.5, sec=cell.soma)
     vclamp.rs = 0.01
@@ -253,34 +252,19 @@ def holding_current_subprocess(v_hold, template_name, morphology_path):
 def holding_current(
         v_hold,
         gid=None,
-        circuit_path=None,
-        template_name=None,
-        morphology_path=None):
+        circuit_path=None):
     """
     Calculate the holding current necessary for a given holding voltage
     """
 
     if gid is not None and circuit_path is not None:
-        bc = bglibpy.bluepy.Circuit(circuit_path)
+        ssim = bglibpy.SSim(circuit_path)
 
-        m = bc.mvddb
-        t_neuron = list(m.get_gids([gid]))[0]
-        template_name = str(
-            os.path.join(
-                bc.config.Run.METypePath,
-                t_neuron.METype +
-                '.hoc'))
-        morphology_path = os.path.join(
-                bc.config.Run.MorphologyPath,
-                'ascii/')
-    elif (gid is None or circuit_path is None) and (template_name is None or
-                                                    morphology_path is None):
-        raise Exception('User has to specify, or a gid and circuit path, '
-                        'or hoc template and a morphology path')
+        cell_kwargs = ssim.fetch_cell_kwargs(gid)
+
     pool = multiprocessing.Pool(processes=1)
     i_hold, v_control = pool.apply(
-        holding_current_subprocess, [
-            v_hold, template_name, morphology_path])
+        holding_current_subprocess, [v_hold, cell_kwargs])
     pool.terminate()
 
     return i_hold, v_control

@@ -103,6 +103,15 @@ class SSim(object):
                 lambda: collections.defaultdict(
                     lambda: None))
 
+        self.emodels_dir = self.bc.Run['METypePath']
+        self.morph_dir = self.bc.Run['MorphologyPath']
+
+        # backwards compatible
+        if self.morph_dir[-3:] == "/h5":
+            self.morph_dir = self.morph_dir[:-3]
+
+        self.morph_dir = os.path.join(self.morph_dir, 'ascii')
+
     # pylint: disable=R0913
     def instantiate_gids(self, gids, synapse_detail=None,
                          add_replay=False,
@@ -419,40 +428,15 @@ class SSim(object):
         self.gids = gids
         self.cells = {}
 
-        bgc_morph_path = self.bc.Run['MorphologyPath']
-        ccells_path = self.bc.Run['METypePath']
-        # backwards compatible
-        if bgc_morph_path[-3:] == "/h5":
-            bgc_morph_path = bgc_morph_path[:-3]
-
-        morph_dir = os.path.join(bgc_morph_path, 'ascii')
-
         for gid in self.gids:
-            # Fetch the template for this GID
-            emodel_name, morph_name = \
-                self.fetch_emodel_morph_name(gid)
-            full_template_name = os.path.join(
-                ccells_path,
-                emodel_name + '.hoc')
+            printv(
+                'Adding gid %d from emodel %s and morph %s' %
+                (gid,
+                 self.fetch_emodel_name(gid),
+                 self.fetch_morph_name(gid)),
+                1)
 
-            morph_filename = '%s.%s' % \
-                (morph_name, 'asc')
-
-            printv('Added gid %d from template %s' %
-                   (gid, full_template_name), 1)
-
-            if self.use_mecombotsv:
-                self.cells[gid] = bglibpy.Cell(full_template_name,
-                                               morph_filename, gid=gid,
-                                               record_dt=self.record_dt,
-                                               morph_dir=morph_dir,
-                                               template_format='v6')
-            else:
-                self.cells[gid] = bglibpy.Cell(
-                    full_template_name,
-                    morph_dir,
-                    gid=gid,
-                    record_dt=self.record_dt)
+            self.cells[gid] = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
 
             if gid in self.neuronconfigure_expressions:
                 for expression in self.neuronconfigure_expressions[gid]:
@@ -770,23 +754,65 @@ class SSim(object):
 
         return mecombo_emodels
 
-    def fetch_emodel_morph_name(self, gid):
-        """Get the template name of a gid"""
-
+    def fetch_gid_cell_info(self, gid):
+        """Fetch bluepy cell info of a gid"""
         if gid in self.bc_circuit.cells.ids():
-            cell = self.bc_circuit.cells.get(gid)
+            cell_info = self.bc_circuit.cells.get(gid)
         else:
             raise Exception("Gid %d not found in circuit" % gid)
 
-        me_combo = str(cell['me_combo'])
-        morph_name = str(cell['morphology'])
+        return cell_info
+
+    def fetch_emodel_name(self, gid):
+        """Get the emodel path of a gid"""
+
+        cell_info = self.fetch_gid_cell_info(gid)
+
+        me_combo = str(cell_info['me_combo'])
 
         if self.use_mecombotsv:
             emodel_name = self.mecombo_emodels[me_combo]
         else:
             emodel_name = me_combo
 
-        return emodel_name, morph_name
+        return emodel_name
+
+    def fetch_morph_name(self, gid):
+        """Get the morph name of a gid"""
+
+        cell_info = self.fetch_gid_cell_info(gid)
+
+        morph_name = str(cell_info['morphology'])
+
+        return morph_name
+
+    def fetch_cell_kwargs(self, gid):
+        """Get the kwargs to instantiate a gid's Cell object"""
+        emodel_path = os.path.join(
+            self.emodels_dir,
+            self.fetch_emodel_name(gid) +
+            '.hoc')
+
+        morph_filename = '%s.%s' % \
+            (self.fetch_morph_name(gid), 'asc')
+
+        if self.use_mecombotsv:
+            cell_kwargs = {
+                'template_filename': emodel_path,
+                'morphology_name': morph_filename,
+                'gid': gid,
+                'record_dt': self.record_dt,
+                'morph_dir': self.morph_dir,
+                'template_format': 'v6'}
+        else:
+            cell_kwargs = {
+                'template_filename': emodel_path,
+                'morphology_name': self.morph_dir,
+                'gid': gid,
+                'record_dt': self.record_dt
+            }
+
+        return cell_kwargs
 
     def get_gids_of_targets(self, targets=None):
 
