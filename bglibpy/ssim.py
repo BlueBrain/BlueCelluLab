@@ -348,8 +348,11 @@ class SSim(object):
                     "BGLibPy SSim: synapse gid doesnt match with cell gid !")
             else:
                 if nrrp_defined:
+                    old_syn_description = synapse[all_properties].values[:14]
+                    nrrp = synapse[all_properties].values[14]
+                    ext_syn_description = numpy.array([-1, -1, -1, nrrp])
                     # 14 - 16 are dummy values, 17 is Nrrp
-                    syn_description = numpy.concatenate(synapse[all_properties].values[:14], [None, None, None, synapse[all_properties].values[14]])
+                    syn_description = numpy.append(old_syn_description, ext_syn_description)
                 else:
                     # old behavior
                     syn_description = synapse[all_properties].values
