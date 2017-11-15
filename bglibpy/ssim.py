@@ -13,6 +13,8 @@
 import collections
 import os
 
+import numpy
+
 from bglibpy import bluepy
 import bglibpy
 from bglibpy import printv
@@ -346,12 +348,8 @@ class SSim(object):
                     "BGLibPy SSim: synapse gid doesnt match with cell gid !")
             else:
                 if nrrp_defined:
-                    syn_description = synapse[all_properties].values[1:14]
-                    syn_description.append(None)  # 14, dummy value
-                    syn_description.append(None)  # 15, dummy value
-                    syn_description.append(None)  # 16, dummy value
-                    syn_description.append(
-                        synapse[all_properties].values[14])  # 17, Nrrp
+                    # 14 - 16 are dummy values, 17 is Nrrp
+                    syn_description = numpy.concatenate(synapse[all_properties].values[:14], [None, None, None, synapse[all_properties].values[14]])
                 else:
                     # old behavior
                     syn_description = synapse[all_properties].values
