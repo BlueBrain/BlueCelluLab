@@ -2,6 +2,7 @@
 
 # pylint: disable=
 
+
 import os
 
 import bglibpy
@@ -9,7 +10,7 @@ import bglibpy
 script_dir = os.path.dirname(__file__)
 
 import nose.tools as nt
-
+# from nose.plugins.attrib import attr
 
 
 def test_allNaChannels():
@@ -45,3 +46,47 @@ def test_allNaChannels():
         nt.assert_not_equal(voltage_nottx1[-1], voltage_ttx[-1])
 
         nt.assert_equal(voltage_nottx1[-1], voltage_nottx2[-1])
+
+
+# @attr('debugtest')
+def test_allNaChannels_v6a():
+    """TTX: Testing ttx enabling in v6a cell"""
+
+    cell = bglibpy.Cell(
+        "%s/examples/cell_example_empty/test_cell_v6a.hoc" %
+        script_dir,
+        "%s/examples/cell_example_empty" %
+        script_dir)
+
+    cell.add_step(0, 1000, .1)
+    sim = bglibpy.Simulation()
+    sim.add_cell(cell)
+
+    sim.run(10)
+    # time_nottx1 = cell.get_time()
+    voltage_nottx1 = cell.get_soma_voltage()
+
+    cell.enable_ttx()
+    sim.run(10)
+    # time_ttx = cell.get_time()
+    voltage_ttx = cell.get_soma_voltage()
+
+    cell.disable_ttx()
+    sim.run(10)
+    voltage_nottx2 = cell.get_soma_voltage()
+
+    '''
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    plt.plot(time_nottx1, voltage_nottx1, label='no ttx')
+    plt.plot(time_ttx, voltage_ttx, label='ttx')
+    plt.legend()
+    plt.savefig('ttx.png')
+    '''
+
+    # Check if voltage changed due to enable_ttx
+
+    nt.assert_not_equal(voltage_nottx1[-1], voltage_ttx[-1])
+
+    nt.assert_equal(voltage_nottx1[-1], voltage_nottx2[-1])

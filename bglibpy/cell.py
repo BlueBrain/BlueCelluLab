@@ -434,12 +434,34 @@ class Cell(object):
     def enable_ttx(self):
         """Add TTX to the bath (i.e. block the Na channels)"""
 
-        self.cell.getCell().enable_ttx()
+        if hasattr(self.cell.getCell(), 'enable_ttx'):
+            self.cell.getCell().enable_ttx()
+        else:
+            self._default_enable_ttx()
 
     def disable_ttx(self):
         """Add TTX to the bath (i.e. block the Na channels)"""
 
-        self.cell.getCell().disable_ttx()
+        if hasattr(self.cell.getCell(), 'disable_ttx'):
+            self.cell.getCell().disable_ttx()
+        else:
+            self._default_disable_ttx()
+
+    def _default_enable_ttx(self):
+        """Default enable_ttx implementation"""
+
+        for section in self.all:
+            if not neuron.h.ismembrane("TTXDynamicsSwitch"):
+                section.insert('TTXDynamicsSwitch')
+            section.ttxo_level_TTXDynamicsSwitch = 1.0
+
+    def _default_disable_ttx(self):
+        """Default disable_ttx implementation"""
+
+        for section in self.all:
+            if not neuron.h.ismembrane("TTXDynamicsSwitch"):
+                section.insert('TTXDynamicsSwitch')
+            section.ttxo_level_TTXDynamicsSwitch = 1e-14
 
     def execute_neuronconfigure(self, expression, sections=None):
         """Execute a statement from a BlueConfig NeuronConfigure block.
