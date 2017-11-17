@@ -28,11 +28,6 @@ v6_test_bc_1_path = os.path.join(
     "circuits/S1HL-200um/20171002/simulations/003",
     "BlueConfig")
 
-v6_test_bc_2_path = os.path.join(
-    proj64_path,
-    "home/vangeit/simulations/S1HL-200um_20171002_003",
-    "BlueConfig")
-
 v6_test_bc_3_path = os.path.join(proj64_path,
                                  "home/king/sim/Basic",
                                  "BlueConfig")
@@ -191,7 +186,12 @@ class TestSSimBaseClass_proj64_mvr_run(object):
                 add_replay=True,
                 add_stimuli=True)
 
-            nt.assert_true(hasattr(self.ssim.cells[gid].synapses[1], 'Nrrp'))
+            # Point check of one synapse
+            # Manual examination of nrn.h5 showed it has to have Nrrp == 3
+            if gid == 29561:
+                one_synapse = self.ssim.cells[gid].synapses[150]
+                nt.assert_true(hasattr(one_synapse, 'Nrrp'))
+                nt.assert_equal(one_synapse.Nrrp, 3)
 
             self.ssim.run(500)
 
@@ -222,49 +222,6 @@ class TestSSimBaseClass_proj64_mvr_run(object):
             nt.assert_less(rms_error, 10.0)
 
             del self.ssim
-
-
-@attr('gpfs')
-class TestSSimBaseClass_proj64_full_run_2(object):
-
-    """Class to test SSim with full circuit"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = bglibpy.ssim.SSim(v6_test_bc_2_path, record_dt=0.1)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
-
-    def teardown(self):
-        """Teardown"""
-        del self.ssim
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation run """ \
-            """with forwardskip and hypam/threshold current """ \
-            """gives the same output trace as on BGQ for proj64"""
-        gid = 8709
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
-
-        self.ssim.run(500)
-
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
-        nt.assert_equal(len(time_bglibpy), 5000)
-        nt.assert_equal(len(voltage_bglibpy), 5000)
-
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
-
-        rms_error = numpy.sqrt(
-            numpy.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
-
-        nt.assert_true(rms_error < 0.5)
-
 
 @attr('gpfs', 'v5')
 class TestSSimBaseClass_full(object):
