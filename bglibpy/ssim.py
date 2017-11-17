@@ -62,10 +62,14 @@ class SSim(object):
 
         if 'MEComboInfoFile' in self.bc.Run:
             self.use_mecombotsv = True
-            self.mecombo_emodels = self.get_mecombo_emodels()
+            self.mecombo_emodels, \
+                self.mecombo_thresholds, \
+                self.mecombo_hypamps = self.get_mecombo_emodels()
         else:
             self.use_mecombotsv = False
             self.mecombo_emodels = None
+            self.mecombo_thresholds = None
+            self.mecombo_hypamps = None
 
         if base_seed is None:
             if 'BaseSeed' in self.bc.Run:
@@ -352,7 +356,9 @@ class SSim(object):
                     nrrp = synapse[all_properties].values[14]
                     ext_syn_description = numpy.array([-1, -1, -1, nrrp])
                     # 14 - 16 are dummy values, 17 is Nrrp
-                    syn_description = numpy.append(old_syn_description, ext_syn_description)
+                    syn_description = numpy.append(
+                        old_syn_description,
+                        ext_syn_description)
                 else:
                     # old behavior
                     syn_description = synapse[all_properties].values
@@ -746,14 +752,25 @@ class SSim(object):
             mecombo_content = mecombo_file.read()
 
         mecombo_emodels = {}
+        mecombo_thresholds = {}
+        mecombo_hypamps = {}
 
         for line in mecombo_content.split('\n')[1:-1]:
-            mecombo_info = line.split()
+            mecombo_info = line.split('\t')
             emodel = mecombo_info[4]
             me_combo = mecombo_info[5]
+            try:
+                threshold = float(mecombo_info[6])
+            except ValueError:
+                threshold = 0.0
+                printv('WARNING: No threshold found for me-model %s, '
+                       'replacing with 0.0!' % me_combo, 2)
+            hypamp = float(mecombo_info[7])
             mecombo_emodels[me_combo] = emodel
+            mecombo_thresholds[me_combo] = threshold
+            mecombo_hypamps[me_combo] = hypamp
 
-        return mecombo_emodels
+        return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
 
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
@@ -764,12 +781,19 @@ class SSim(object):
 
         return cell_info
 
-    def fetch_emodel_name(self, gid):
-        """Get the emodel path of a gid"""
+    def fetch_mecombo_name(self, gid):
+        """Fetch mecombo name for a certain gid"""
 
         cell_info = self.fetch_gid_cell_info(gid)
 
         me_combo = str(cell_info['me_combo'])
+
+        return me_combo
+
+    def fetch_emodel_name(self, gid):
+        """Get the emodel path of a gid"""
+
+        me_combo = self.fetch_mecombo_name(gid)
 
         if self.use_mecombotsv:
             emodel_name = self.mecombo_emodels[me_combo]
@@ -798,13 +822,19 @@ class SSim(object):
             (self.fetch_morph_name(gid), 'asc')
 
         if self.use_mecombotsv:
+            me_combo = self.fetch_mecombo_name(gid)
+            extra_values = {
+                'threshold_current': self.mecombo_thresholds[me_combo],
+                'holding_current': self.mecombo_hypamps[me_combo]
+            }
             cell_kwargs = {
                 'template_filename': emodel_path,
                 'morphology_name': morph_filename,
                 'gid': gid,
                 'record_dt': self.record_dt,
                 'morph_dir': self.morph_dir,
-                'template_format': 'v6'}
+                'template_format': 'v6',
+                'extra_values': extra_values}
         else:
             cell_kwargs = {
                 'template_filename': emodel_path,

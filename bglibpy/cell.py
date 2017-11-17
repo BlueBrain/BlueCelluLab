@@ -42,7 +42,8 @@ class Cell(object):
     used_template_names = []
 
     def __init__(self, template_filename, morphology_name,
-                 gid=0, record_dt=None, template_format=None, morph_dir=None):
+                 gid=0, record_dt=None, template_format=None, morph_dir=None,
+                 extra_values=None):
         """ Constructor.
 
         Parameters
@@ -135,15 +136,20 @@ class Cell(object):
         self.secname_to_hsection = {}
         self.secname_to_psection = {}
 
-        try:
-            self.hypamp = self.cell.getHypAmp()
-        except AttributeError:
-            self.hypamp = None
+        self.extra_values = extra_values
+        if template_format == 'v6':
+            self.hypamp = self.extra_values['holding_current']
+            self.threshold = self.extra_values['threshold_current']
+        else:
+            try:
+                self.hypamp = self.cell.getHypAmp()
+            except AttributeError:
+                self.hypamp = None
 
-        try:
-            self.threshold = self.cell.getThreshold()
-        except AttributeError:
-            self.threshold = None
+            try:
+                self.threshold = self.cell.getThreshold()
+            except AttributeError:
+                self.threshold = None
 
         # Keep track of when a cell is made passive by make_passive()
         # Used to know when re_init_rng() can be executed

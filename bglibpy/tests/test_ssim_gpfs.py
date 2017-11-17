@@ -33,9 +33,9 @@ v6_test_bc_2_path = os.path.join(
     "home/vangeit/simulations/S1HL-200um_20171002_003",
     "BlueConfig")
 
-v6_test_bc_mvr1_path = os.path.join(proj35_path,
-        'MVR/nrrp_fit_full/' \
-        'simulations/11066-15970/nrrp9/BlueConfig')
+v6_test_bc_3_path = os.path.join(proj64_path,
+                                 "home/king/sim/Basic",
+                                 "BlueConfig")
 
 
 @attr('gpfs', 'v5')
@@ -164,7 +164,7 @@ class TestSSimBaseClass_proj64_full_run(object):
 
         nt.assert_true(rms_error < 0.5)
 
-'''
+
 @attr('gpfs', 'proj64', 'debugtest')
 class TestSSimBaseClass_proj64_mvr_run(object):
 
@@ -172,39 +172,56 @@ class TestSSimBaseClass_proj64_mvr_run(object):
 
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim(v6_test_bc_mvr1_path, record_dt=0.1)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        self.ssim = None
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        pass
 
     def test_run(self):
-        """SSim: Check if a full replay of a simulation with MVR run """ \
-            """gives the same output trace for proj64"""
-        gid = 15970
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
+        """SSim: Check if a full replay of a simulation """ \
+            """gives the same output trace for O1v6a"""
+        gids = [29561, 127275, 105081, 41625]
+        for i, gid in enumerate(gids):
+            self.ssim = bglibpy.ssim.SSim(v6_test_bc_3_path, record_dt=0.1)
 
-        self.ssim.run(500)
+            self.ssim.instantiate_gids(
+                [gid],
+                synapse_detail=2,
+                add_replay=True,
+                add_stimuli=True)
 
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
-        nt.assert_equal(len(time_bglibpy), 5000)
-        nt.assert_equal(len(voltage_bglibpy), 5000)
+            nt.assert_true(hasattr(self.ssim.cells[gid].synapses[1], 'Nrrp'))
 
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
+            self.ssim.run(500)
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
+            time_bglibpy = self.ssim.get_time()
+            voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+            nt.assert_equal(len(time_bglibpy), 5000)
+            nt.assert_equal(len(voltage_bglibpy), 5000)
 
-        nt.assert_true(rms_error < 0.5)
-'''
+            voltage_bglib = self.ssim.get_mainsim_voltage_trace(
+                gid)[:len(voltage_bglibpy)]
+
+            '''
+            time_bgliby = self.ssim.get_mainsim_time_trace()[
+                :len(voltage_bglibpy)]
+
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            plt.plot(time_bglibpy, voltage_bglibpy, 'o', label='bglibpy')
+            plt.plot(time_bgliby, voltage_bglibpy, label='neurodamus')
+            plt.legend()
+            plt.savefig('O1v6a_%d.png' % i)
+            '''
+            rms_error = numpy.sqrt(
+                numpy.mean(
+                    (voltage_bglibpy - voltage_bglib) ** 2))
+
+            nt.assert_less(rms_error, 10.0)
+
+            del self.ssim
 
 
 @attr('gpfs')
