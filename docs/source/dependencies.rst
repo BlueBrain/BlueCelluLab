@@ -36,6 +36,21 @@ Beware that are still some open issues with this NIX Python. E.g. installing
 pip packages from source:
 https://bbpteam.epfl.ch/project/issues/browse/BBPP10-763
 
+The nix module provides a very old version of pip 
+(https://bbpteam.epfl.ch/project/issues/browse/HPCTM-1060)
+So you should first create a new virtualenv and upgrade pip inside::
+
+    virtualenv testenv
+    . testenv/bin/activate
+    pip install pip --upgrade
+
+Every time you use the software you will first have to load the virtualenv 
+by executing (if you're in another directory, make sure your point to the 
+correct location of the activate script)::
+    
+    . testenv/bin/activate
+
+
 Redhat Software Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,6 +86,13 @@ should work ::
     module load nix/python/2.7-light
     module load nix/dev-env-gcc
 
+In case you get something like::
+
+    Module 'nix/git/2.5.4' conflicts with the currently loaded module(s) 'git/1.8.4.3'
+
+Disable the git module first::
+
+    module unload git
 
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
