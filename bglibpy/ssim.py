@@ -122,7 +122,7 @@ class SSim(object):
     def instantiate_gids(self, gids, synapse_detail=None,
                          add_replay=False,
                          add_stimuli=False,
-                         add_synapses=False,
+                         add_synapses=None,
                          add_minis=None,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
@@ -234,9 +234,6 @@ class SSim(object):
                                     ' with add_minis == False')
                 add_minis = True
 
-        if add_synapses is None:
-            add_synapses = False
-
         if add_minis is None:
             add_minis = False
 
@@ -246,13 +243,15 @@ class SSim(object):
         else:
             self.gids_instantiated = True
 
-        if pre_spike_trains:
+        if pre_spike_trains or add_replay:
             if add_synapses is not None and add_synapses is False:
                 raise Exception("SSim: you need to set add_synapses to True "
-                                "if you want to specify pre_spike_trains")
-
-        if add_synapses is None:
-            add_synapses = False
+                                "if you want to specify use add_replay or "
+                                "pre_spike_trains")
+            add_synapses = True
+        else:
+            if add_synapses is None:
+                add_synapses = False
 
         self._add_cells(gids)
         if add_stimuli:

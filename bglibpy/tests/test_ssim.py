@@ -272,7 +272,6 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
         self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [1],
-            add_synapses=True,
             add_stimuli=False,
             add_replay=False,
             add_minis=False,
