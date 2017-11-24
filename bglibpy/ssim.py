@@ -129,7 +129,9 @@ class SSim(object):
                          add_relativelinear_stimuli=False,
                          add_pulse_stimuli=False,
                          intersect_pre_gids=None,
-                         interconnect_cells=True):
+                         interconnect_cells=True,
+                         pre_spike_trains=None,
+                         projection=None):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -153,6 +155,8 @@ class SSim(object):
         add_replay : Boolean
                      Add presynaptic spiketrains from the large simulation
                      throws an exception if this is set when synapse_detail < 1
+                     If pre_spike_trains is combined with this option the
+                     spiketrains will be merged
         add_stimuli : Boolean
                       Add the same stimuli as in the large simulation
         add_synapses : Boolean
@@ -199,6 +203,20 @@ class SSim(object):
                              for those presynaptic cells that are not in the
                              network that's instantiated.
                              This option requires add_synapses=True
+        pre_spike_trains : dict
+                           A dictionary with keys the presynaptic gids, and
+                           values the list of spike timings of the
+                           presynaptic cells with the given gids.
+                           If this option is used in combination with
+                           add_replay=True, the spike trains for the same
+                           gids will be automatically merged
+        projection: string
+                    Name of the projection where all information about synapses
+                    come from. Mixing different projections is not possible
+                    at the moment.
+                    Beware, this option might disappear in the future if
+                    BluePy unifies the API to get the synapse information for
+                    a certain gid.
         """
 
         if synapse_detail is not None:
@@ -228,6 +246,14 @@ class SSim(object):
         else:
             self.gids_instantiated = True
 
+        if pre_spike_trains:
+            if add_synapses is not None and add_synapses is False:
+                raise Exception("SSim: you need to set add_synapses to True "
+                                "if you want to specify pre_spike_trains")
+
+        if add_synapses is None:
+            add_synapses = False
+
         self._add_cells(gids)
         if add_stimuli:
             add_noise_stimuli = True
@@ -246,13 +272,14 @@ class SSim(object):
                 add_pulse_stimuli=add_pulse_stimuli)
         if add_synapses:
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
-                               add_minis=add_minis)
-        if add_replay or interconnect_cells:
+                               add_minis=add_minis, projection=projection)
+        if add_replay or interconnect_cells or pre_spike_trains:
             if add_replay and synapse_detail < 1:
                 raise Exception("SSim: add_replay option can not be used if "
                                 "synapse_detail < 1")
             self._add_connections(add_replay=add_replay,
-                                  interconnect_cells=interconnect_cells)
+                                  interconnect_cells=interconnect_cells,
+                                  user_pre_spike_trains=pre_spike_trains)
 
     # pylint: enable=R0913
 
@@ -366,6 +393,30 @@ class SSim(object):
 
         return syn_descriptions
 
+    @staticmethod
+    def merge_pre_spike_trains(*train_dicts):
+        """Merge presynaptic spike train dicts"""
+
+        ret_dict = None
+
+        for train_dict in train_dicts:
+            if train_dict is not None:
+                if ret_dict is None:
+                    ret_dict = train_dict.copy()
+                    continue
+                else:
+                    # Not super efficient, but out.dats to tend not to be
+                    # very large
+                    for pre_gid, train in train_dict.items():
+                        ret_dict.setdefault(pre_gid, []).extend(train)
+
+        if ret_dict is not None:
+            for pre_gid, train in ret_dict.items():
+                if train is not None:
+                    ret_dict[pre_gid] = numpy.array(sorted(train))
+
+        return ret_dict
+
     # pylint: disable=R0913
     def _add_connections(
             self,
@@ -373,7 +424,8 @@ class SSim(object):
             interconnect_cells=None,
             outdat_path=None,
             source=None,
-            dest=None):
+            dest=None,
+            user_pre_spike_trains=None):
         """Instantiate the (replay and real) connections in the network"""
         if add_replay:
             if outdat_path is None:
@@ -381,6 +433,12 @@ class SSim(object):
                     self.bc.Run['OutputRoot'],
                     'out.dat')
             pre_spike_trains = _parse_outdat2(outdat_path)
+        else:
+            pre_spike_trains = None
+
+        pre_spike_trains = self.merge_pre_spike_trains(
+            pre_spike_trains,
+            user_pre_spike_trains)
 
         for post_gid in self.gids:
             if dest and post_gid not in dest:
@@ -406,7 +464,7 @@ class SSim(object):
                             post_gid %d, syn_id %d" % (pre_gid,
                                                        post_gid,
                                                        syn_id), 5)
-                elif add_replay:
+                elif pre_spike_trains is not None:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     connection = bglibpy.Connection(
                         self.cells[post_gid].synapses[syn_id],

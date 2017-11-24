@@ -4,7 +4,7 @@
 
 import os
 import nose.tools as nt
-# from nose.plugins.attrib import attr
+from nose.plugins.attrib import attr
 import numpy
 import bglibpy
 
@@ -24,6 +24,36 @@ def test_parse_outdat():
     outdat = bglibpy.ssim._parse_outdat(
         "%s/examples/sim_twocell_minis_replay/output" % script_dir)
     nt.assert_true(45 in outdat[2])
+
+
+@attr('debugtest')
+def test_merge_pre_spike_trains():
+    """SSim: Testing merge_pre_spike_trains"""
+
+    train1 = {1: [5, 100], 2: [5, 8, 120]}
+    train2 = {2: [7], 3: [8]}
+    train3 = {1: [5, 100]}
+
+    trains_merged = {1: [5, 5, 100, 100], 2: [5, 7, 8, 120], 3: [8]}
+
+    numpy.testing.assert_equal(
+        None,
+        bglibpy.ssim.SSim.merge_pre_spike_trains(None))
+    numpy.testing.assert_equal(
+        train1,
+        bglibpy.ssim.SSim.merge_pre_spike_trains(train1))
+    numpy.testing.assert_equal(
+        train1,
+        bglibpy.ssim.SSim.merge_pre_spike_trains(
+            None,
+            train1))
+    numpy.testing.assert_equal(
+        trains_merged,
+        bglibpy.ssim.SSim.merge_pre_spike_trains(
+            train1,
+            None,
+            train2,
+            train3))
 
 
 class TestSSimBaseClass_twocell_empty(object):
@@ -223,6 +253,57 @@ class TestSSimBaseClass_twocell_all(object):
             """cell circuit"""
 
         nt.assert_equal(self.ssim_bglibpy.cells[1].pre_gids(), [2])
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy
+        del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
+
+class TestSSimBaseClass_twocell_all_presynspiketrains(object):
+
+    """Class to test SSim with two cell circuit"""
+
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.ssim_bglibpy.instantiate_gids(
+            [1],
+            add_synapses=True,
+            add_stimuli=False,
+            add_replay=False,
+            add_minis=False,
+            pre_spike_trains={2: [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]})
+        self.ssim_bglibpy.run()
+
+        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+
+    def test_compare_traces(self):
+        """SSim: Compare the output traces of BGLib against those of """ \
+            """BGLibPy for two cell circuit and and pre_spike_train"""
+
+        time_bglibpy = self.ssim_bglibpy.get_time()
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1]
+
+        '''
+        import matplotlib
+        matplotlib.use('Agg')
+
+        import matplotlib.pyplot as plt
+
+        plt.plot(time_bglibpy, voltage_bglibpy)
+        plt.savefig('test.png')
+        '''
+
+        epsp_level = numpy.max(
+            voltage_bglibpy[
+                (time_bglibpy < 20) & (
+                    time_bglibpy > 10)])
+
+        nt.assert_greater(epsp_level, -66)
 
     def teardown(self):
         """Teardown"""

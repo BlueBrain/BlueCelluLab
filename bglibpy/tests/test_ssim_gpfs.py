@@ -160,7 +160,7 @@ class TestSSimBaseClass_proj64_full_run(object):
         nt.assert_true(rms_error < 0.5)
 
 
-@attr('gpfs', 'proj64', 'debugtest')
+@attr('gpfs', 'proj64')
 class TestSSimBaseClass_proj64_mvr_run(object):
 
     """Class to test SSim with full mvr circuit"""
