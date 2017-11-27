@@ -4,7 +4,7 @@
 
 import os
 import nose.tools as nt
-from nose.plugins.attrib import attr
+# from nose.plugins.attrib import attr
 import numpy
 import bglibpy
 
@@ -26,7 +26,6 @@ def test_parse_outdat():
     nt.assert_true(45 in outdat[2])
 
 
-@attr('debugtest')
 def test_merge_pre_spike_trains():
     """SSim: Testing merge_pre_spike_trains"""
 
@@ -258,6 +257,50 @@ class TestSSimBaseClass_twocell_all(object):
         """Teardown"""
         del self.ssim_bglibpy
         del self.ssim_bglib
+        os.chdir(self.prev_cwd)
+
+
+def rms(trace1, trace2):
+    """Calculate rms error"""
+
+    rms = numpy.sqrt(numpy.mean((trace1 - trace2) ** 2))
+    return rms
+
+
+class TestSSimBaseClass_twocell_all_intersect(object):
+
+    """Class to test SSim with two cell circuit"""
+
+    def setup(self):
+        """Setup"""
+        self.prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_twocell_all" % script_dir)
+
+    def test_compare_traces(self):
+        """SSim: Check trace generated using intersect_pre_gid"""
+
+        traces = {}
+
+        for option, intersect in [('intersect', [2]),
+                                  ('no_intersect', None),
+                                  ('wrong_intersect', [3])]:
+            ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+            ssim_bglibpy.instantiate_gids(
+                [1],
+                synapse_detail=1,
+                add_synapses=True,
+                add_replay=True,
+                intersect_pre_gids=intersect)
+            ssim_bglibpy.run()
+
+            traces[option] = ssim_bglibpy.get_voltage_traces()[1]
+
+        nt.assert_true(rms(traces['intersect'], traces['no_intersect']) == 0.0)
+        nt.assert_true(
+            rms(traces['intersect'], traces['wrong_intersect']) > 0.0)
+
+    def teardown(self):
+        """Teardown"""
         os.chdir(self.prev_cwd)
 
 

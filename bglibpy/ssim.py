@@ -18,6 +18,7 @@ import numpy
 from bglibpy import bluepy
 import bglibpy
 from bglibpy import printv
+from bglibpy import tools
 
 from bluepy.v2.enums import Synapse as BLPSynapse
 
@@ -273,9 +274,9 @@ class SSim(object):
             self._add_synapses(intersect_pre_gids=intersect_pre_gids,
                                add_minis=add_minis, projection=projection)
         if add_replay or interconnect_cells or pre_spike_trains:
-            if add_replay and synapse_detail < 1:
+            if add_replay and not add_synapses:
                 raise Exception("SSim: add_replay option can not be used if "
-                                "synapse_detail < 1")
+                                "add_synapses is False")
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells,
                                   user_pre_spike_trains=pre_spike_trains)
@@ -301,15 +302,16 @@ class SSim(object):
                       projection=None):
         """Instantiate all the synapses"""
         for gid in self.gids:
-            syn_descriptions = self.get_syn_descriptions(
+            syn_descriptions = self.get_syn_descriptions_dict(
                 gid,
                 projection=projection)
 
             if intersect_pre_gids is not None:
-                syn_descriptions = [syn_description for syn_description in
-                                    syn_descriptions
+                syn_descriptions = {syn_id: syn_description
+                                    for syn_id, syn_description in
+                                    syn_descriptions.items()
                                     if syn_description[0] in
-                                    intersect_pre_gids]
+                                    intersect_pre_gids}
 
             # Check if there are any presynaptic cells, otherwise skip adding
             # synapses
@@ -318,7 +320,7 @@ class SSim(object):
                     "Warning: No presynaptic cells found for gid %d, "
                     "no synapses added" % gid, 2)
             else:
-                for syn_id, syn_description in enumerate(syn_descriptions):
+                for syn_id, syn_description in syn_descriptions.items():
                     self._instantiate_synapse(gid, syn_id, syn_description,
                                               add_minis=add_minis)
                 printv("Added %d synapses for gid %d" %
@@ -326,9 +328,19 @@ class SSim(object):
                 if add_minis:
                     printv("Added minis for gid %d" % gid, 2)
 
+    @tools.deprecated("get_syn_descriptions_dict")
     def get_syn_descriptions(self, gid, projection=None):
         """Get synapse description arrays from bluepy"""
-        syn_descriptions = []
+
+        syn_descriptions = [v for _, v in sorted(self.get_syn_descriptions_dict(
+            gid,
+            projection=projection).items())]
+
+        return syn_descriptions
+
+    def get_syn_descriptions_dict(self, gid, projection=None):
+        """Get synapse descriptions dict from bluepy, Keys are synapse ids"""
+        syn_descriptions_dict = {}
 
         all_properties = [
             BLPSynapse.PRE_GID,
@@ -376,21 +388,25 @@ class SSim(object):
             if gid != gid:
                 raise Exception(
                     "BGLibPy SSim: synapse gid doesnt match with cell gid !")
+            if syn_id in syn_descriptions_dict:
+                raise Exception(
+                    "BGLibPy SSim: trying to synapse id %d twice !" %
+                    syn_descriptions_dict)
+            if nrrp_defined:
+                old_syn_description = synapse[all_properties].values[:14]
+                nrrp = synapse[all_properties].values[14]
+                ext_syn_description = numpy.array([-1, -1, -1, nrrp])
+                # 14 - 16 are dummy values, 17 is Nrrp
+                syn_description = numpy.append(
+                    old_syn_description,
+                    ext_syn_description)
             else:
-                if nrrp_defined:
-                    old_syn_description = synapse[all_properties].values[:14]
-                    nrrp = synapse[all_properties].values[14]
-                    ext_syn_description = numpy.array([-1, -1, -1, nrrp])
-                    # 14 - 16 are dummy values, 17 is Nrrp
-                    syn_description = numpy.append(
-                        old_syn_description,
-                        ext_syn_description)
-                else:
-                    # old behavior
-                    syn_description = synapse[all_properties].values
-                syn_descriptions.append(syn_description)
+                # old behavior
+                syn_description = synapse[all_properties].values
 
-        return syn_descriptions
+            syn_descriptions_dict[syn_id] = syn_description
+
+        return syn_descriptions_dict
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts):
