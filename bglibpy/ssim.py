@@ -332,9 +332,12 @@ class SSim(object):
     def get_syn_descriptions(self, gid, projection=None):
         """Get synapse description arrays from bluepy"""
 
-        syn_descriptions = [v for _, v in sorted(self.get_syn_descriptions_dict(
-            gid,
-            projection=projection).items())]
+        syn_descriptions = [
+            v for _,
+            v in sorted(
+                self.get_syn_descriptions_dict(
+                    gid,
+                    projection=projection).items())] 
 
         return syn_descriptions
 
@@ -377,9 +380,10 @@ class SSim(object):
                     str(e.args) ==  "('Trying to fetch Synapse.NRRP from " \
                     "NRN version 3 (required: >=5)',)":
                 # Get properties without Nrrp
+                all_properties = all_properties[:-1]
                 synapses = connectome.afferent_synapses(
                     gid,
-                    properties=all_properties[:-1])
+                    properties=all_properties)
                 nrrp_defined = False
             else:
                 raise
