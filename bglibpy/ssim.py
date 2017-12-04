@@ -31,7 +31,7 @@ class SSim(object):
     # pylint: disable=R0913
 
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None,
-                 base_seed=None, base_noise_seed=None):
+                 base_seed=None, base_noise_seed=None, rng_mode=None):
         """Object dealing with BlueConfig configured Small Simulations
 
         Parameters
@@ -72,18 +72,11 @@ class SSim(object):
             self.mecombo_thresholds = None
             self.mecombo_hypamps = None
 
-        if base_seed is None:
-            if 'BaseSeed' in self.bc.Run:
-                self.base_seed = int(self.bc.Run['BaseSeed'])
-            else:
-                self.base_seed = 0  # in case the seed is not set, it's 0
-        else:
-            self.base_seed = base_seed
-
-        if base_noise_seed is None:
-            self.base_noise_seed = 0
-        else:
-            self.base_noise_seed = base_noise_seed
+        self.rng_settings = bglibpy.RNGSettings(
+            rng_mode,
+            self.bc,
+            base_seed=base_seed,
+            base_noise_seed=base_noise_seed)
 
         self.connection_entries = self.bc.typed_sections('Connection')
         self.all_targets = self.bc_circuit.cells.targets
@@ -118,6 +111,18 @@ class SSim(object):
             self.morph_dir = self.morph_dir[:-3]
 
         self.morph_dir = os.path.join(self.morph_dir, 'ascii')
+
+    @property
+    def base_seed(self):
+        """Baseseed of sim"""
+
+        return self.rng_settings.base_seed
+
+    @property
+    def base_noise_seed(self):
+        """Baseseed of noise stimuli in sim"""
+
+        return self.rng_settings.base_noise_seed
 
     # pylint: disable=R0913
     def instantiate_gids(self, gids, synapse_detail=None,
@@ -337,7 +342,7 @@ class SSim(object):
             v in sorted(
                 self.get_syn_descriptions_dict(
                     gid,
-                    projection=projection).items())] 
+                    projection=projection).items())]
 
         return syn_descriptions
 

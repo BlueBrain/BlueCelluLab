@@ -15,15 +15,16 @@ del get_versions
 
 # pylint: disable=W0401, W0611
 
-from .importer import *
-from .tools import *
-from .cell import Cell
-from .connection import Connection
-from .synapse import Synapse
-from .plotwindow import PlotWindow
-from .dendrogram import Dendrogram
-from .psection import PSection
-from .psegment import PSegment
-from .simulation import Simulation
-from .ssim import SSim
-from .versions import *
+from .importer import *  # NOQA
+from .tools import *  # NOQA
+from .cell import Cell  # NOQA
+from .connection import Connection  # NOQA
+from .synapse import Synapse  # NOQA
+from .plotwindow import PlotWindow  # NOQA
+from .dendrogram import Dendrogram  # NOQA
+from .psection import PSection  # NOQA
+from .psegment import PSegment  # NOQA
+from .simulation import Simulation  # NOQA
+from .rngsettings import RNGSettings  # NOQA
+from .ssim import SSim  # NOQA
+from .versions import *  # NOQA
