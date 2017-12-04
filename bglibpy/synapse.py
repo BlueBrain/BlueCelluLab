@@ -15,7 +15,7 @@ class Synapse(object):
     """ Class that represents a synapse in BGLibPy """
 
     def __init__(self, cell, location, sid, syn_description,
-                 connection_parameters, base_seed):
+                 connection_parameters, base_seed, rng_settings=None):
         """
         Constructor
 
@@ -34,6 +34,9 @@ class Synapse(object):
         base_seed : float
                     Base seed of the simulation, the seeds for this synapse
                     will be derived from this
+        rng_settings: RNGSettings
+                      RNGsettings object specifying details about
+                      random generator
         """
         self.persistent = []
 
@@ -61,6 +64,16 @@ class Synapse(object):
         self.syn_DTC = syn_description[12]
         self.syn_type = int(syn_description[13])
 
+        if rng_settings is None:
+            self.rng_setting = bglibpy.RNGSettings(
+                mode='Compatibility',
+                base_seed=base_seed)
+        else:
+            if base_seed is not None:
+                raise Exception('Synapse: base_seed and RNGSettings cant '
+                                'be used together')
+            self.rng_settings = rng_settings
+
         if len(syn_description) == 18:
             if syn_description[17] <= 0:
                 raise ValueError(
@@ -86,7 +99,36 @@ class Synapse(object):
 
             self.hsynapse.tau_d_GABAA = self.syn_DTC
             rng = bglibpy.neuron.h.Random()
-            rng.MCellRan4(sid * 100000 + 100, self.cell.gid + 250 + base_seed)
+            if self.rng_settings.mode == "Compatibility":
+                rng.MCellRan4(
+                    sid *
+                    100000 +
+                    100,
+                    self.cell.gid +
+                    250 +
+                    self.rng_settings.base_seed)
+            elif self.rng_settings.mode == "MCellRan4":
+                rng.MCellRan4(
+                    sid *
+                    100000 +
+                    100,
+                    self.cell.gid +
+                    250 +
+                    base_seed +
+                    self.rng_settings.synapse_seed)
+            elif self.rng_settings.mode == "Random123":
+                rng.Random123(
+                    self.cell.gid +
+                    250,
+                    sid +
+                    100,
+                    self.rng_settings.synapse_seed +
+                    450)
+            else:
+                raise ValueError(
+                    "Synapse: unknown RNG mode: %s" %
+                    self.rng_settings.mode)
+
             rng.lognormal(0.2, 0.1)
             self.hsynapse.tau_r_GABAA = rng.repick()
         else:

@@ -16,7 +16,7 @@ class RNGSettings(object):
 
     def __init__(
             self,
-            rng_mode=None,
+            mode=None,
             blueconfig=None,
             base_seed=None,
             base_noise_seed=None):
@@ -25,33 +25,37 @@ class RNGSettings(object):
 
         Parameters
         ----------
-        rng_mode : str
+        mode : str
                    String with rng mode, if not specified mode is taken from
                    BlueConfig
         blueconfig: bluepy blueconfig object
                     object received from blueconfig representing the BlueConfig
                     of the sim
+        base_seed: float
+                   base seed for entire sim
+        base_noise_seed: float
+                         base seed for the noise stimuli
         """
 
-        if rng_mode is None:
-            if 'RNGMode' in blueconfig.Run:
-                self.rng_mode = blueconfig.Run['RNGMode']
+        if mode is None:
+            if blueconfig and 'RNGMode' in blueconfig.Run:
+                self.mode = blueconfig.Run['RNGMode']
             else:
-                self.rng_mode = "UpdatedMCell"
+                self.mode = "UpdatedMCell"
 
         else:
-            self.rng_mode = rng_mode
+            self.mode = mode
 
-        accepted_rng_modes = ['UpdatedMCell', 'Compatibility', 'Random123']
-        if self.rng_mode not in accepted_rng_modes:
+        accepted_modes = ['UpdatedMCell', 'Compatibility', 'Random123']
+        if self.mode not in accepted_modes:
             raise ValueError(
                 "SSim: RNG mode %s not in accepted list: %s" %
-                (self.rng_mode, accepted_rng_modes))
+                (self.mode, accepted_modes))
 
-        printv("Setting rng mode to: %s" % self.rng_mode, 50)
+        printv("Setting rng mode to: %s" % self.mode, 50)
 
         if base_seed is None:
-            if 'BaseSeed' in blueconfig.Run:
+            if blueconfig and 'BaseSeed' in blueconfig.Run:
                 self.base_seed = int(blueconfig.Run['BaseSeed'])
             else:
                 self.base_seed = 0  # in case the seed is not set, it's 0
