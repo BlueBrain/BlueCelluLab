@@ -13,15 +13,8 @@ clean:
 	@find . -name "*.pyc" -exec rm -rf {} \;
 install_test_requirements:
 	pip install -q $(TEST_REQUIREMENTS) --upgrade
-doc: install
-	pip install -q sphinx sphinx-autobuild sphinx_rtd_theme -I
-	sphinx-apidoc -o docs/source bglibpy
-	cd docs; $(MAKE) clean; $(MAKE) html
-docpdf:                                                                         
-	pip install sphinx sphinx-autobuild -I
-	cd docs; $(MAKE) clean; $(MAKE) latexpdf
-docopen: doc
-	open docs/build/html/index.html
+doc: clean install_tox
+	tox -v -e py27-docs
 devpi:
 	rm -rf dist
 	python setup.py sdist

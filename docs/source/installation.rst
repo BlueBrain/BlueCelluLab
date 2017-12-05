@@ -40,16 +40,18 @@ and run pip from inside the newly created BGLibPy subdirectory
     pip install -i https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple --upgrade .
 
 If you run into permission issues when downloading the BGLibPy repo, make sure
-your Kerberos ticket is up-to-date (run 'kinit'). If the problem persist asked
+your `Kerberos <https://bbpteam.epfl.ch/project/spaces/display/BLGTST/Kerberos+Authentication>`_ 
+ticket is up-to-date (run 'kinit'). If the problem persist asked
 to be added to the bbp-user-bglibpy permission group.
 
 Supported systems
 -----------------
 
-The code of BGLibPy can installed on any POSIX system that supports 
+The code of BGLibPy can be installed on any POSIX system that supports 
 pip-installable python code.
 
 However, the dependencies have stricter requirement:
+
 - BluePy depends on several packages for which only binary packages are 
   available from the BBP dev server. The installation has only been tested on
   BBP Linux machines. It also depends on Brion which is e.g. not compatible
