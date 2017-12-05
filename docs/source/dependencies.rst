@@ -222,3 +222,7 @@ One common problem with this is that the Python binary you are using isn't
 compiled with::
 
     --enable-unicode=ucs4e
+
+If you have problems with Brain / LibFlatIndex dependencies of BluePy, and
+you don't need to read voltage reports from neurodamus simulations, one
+option would be to drop the '[bbp]' when pip installing BGLibPy or BluePy. 
