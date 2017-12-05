@@ -22,6 +22,12 @@ has Python 2.6 as default.
 Python 3.0 is not supported yet. This will be implemented once BluePy and 
 its dependencies support Python 3.0.
 
+Make sure you're using a recent version of pip. It's best to run ::
+
+    pip install pip --upgrade
+
+before installing anything else using pip.
+
 Possibly ways to acquire Python 2.7 on CSCS viz are:
 
 Pre-installed modules
@@ -98,7 +104,8 @@ Disable the git module first::
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
 
-It's not too difficult to install NEURON from source in your home directory.
+It's not too difficult to install NEURON from source in your home directory on
+CSCS viz.
 If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
 
     SRC_DIR=$HOME/src
@@ -210,7 +217,7 @@ In case you get an error like::
 
     'Could not find a version that satisfies the requirement ...'
 
-Check if there are wheels available for the dependencies of BluePy 
+Check if there are wheels available for the dependencies of BluePy.
 One common problem with this is that the Python binary you are using isn't 
 compiled with::
 
