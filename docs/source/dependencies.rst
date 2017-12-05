@@ -65,6 +65,7 @@ NEURON should be compiled with Python support. MPI support is not a
 requirement.
 
 Versions that are supported:
+
 - 7.4
 - 7.5
 - Latest git commit from https://github.com/nrnhines/nrn 
@@ -140,12 +141,12 @@ There is a deb package available for debian-flavoured linux machines. The
 commands to install this package are ::
 
     apt-get update
-	apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
-	wget https://bootstrap.pypa.io/get-pip.py
-	python get-pip.py
-	wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
-	dpkg -i nrn-7.4.x86_64.deb
-	rm nrn-7.4.x86_64.deb
+    apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
+    wget https://bootstrap.pypa.io/get-pip.py
+    python get-pip.py
+    wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
+    dpkg -i nrn-7.4.x86_64.deb
+    rm nrn-7.4.x86_64.deb
 
     export PYTHONPATH=/usr/local/nrn/lib/python:$PYTHONPATH
 
@@ -155,7 +156,8 @@ Neurodamus
 ----------
 
 It's not necessary to fully install Neurodamus to use it with BGLibPy. 
-The only required components are
+The only required components are:
+
 1. the HOC code (lib/hoclib subdir of neurodamus source).
 2. the 'scientific' MOD files (ion channels, synapses, etc. 
    This doesn't include the 'technical' MOD files like hdf5 readers)
@@ -173,9 +175,9 @@ if necessary) ::
 
     export HOC_LIBRARY_PATH=`pwd`/bbp/lib/hoclib
 
-For the MOD files. Place all the MOD files (ion channels, synapses, etc.) in
+Place all the MOD files (ion channels, synapses, etc.) in
 a single directory. 
-Then, in the directory from where you want to run BGLibPy, run 
+Then, in the directory from where you want to run BGLibPy, run::
 
     nrnivmodl path_to_your_mod_dir
 
