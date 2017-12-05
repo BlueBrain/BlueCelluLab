@@ -43,7 +43,7 @@ class Cell(object):
 
     def __init__(self, template_filename, morphology_name,
                  gid=0, record_dt=None, template_format=None, morph_dir=None,
-                 extra_values=None):
+                 extra_values=None, rng_settings=None):
         """ Constructor.
 
         Parameters
@@ -99,6 +99,8 @@ class Cell(object):
         # Set the gid of the cell
         self.cell.getCell().gid = gid
         self.gid = gid
+
+        self.rng_settings = rng_settings
 
         self.recordings = {}  # Recordings in this cell
         self.voltage_recordings = {}  # Voltage recordings in this cell
@@ -725,32 +727,73 @@ class Cell(object):
                "delay=%f, duration=%f, amp=%f " %
                (self.gid, delay, duration, amp), 50)
 
-    def add_replay_noise(self, stimulus, noise_seed=0):
+    def add_replay_noise(
+            self,
+            stimulus,
+            noise_seed=None,
+            noisestim_count=None):
         """Add a replay noise stimulus."""
         mean = (float(stimulus['MeanPercent']) * self.threshold) / 100.0
         variance = (float(stimulus['Variance']) * self.threshold) / 100.0
         delay = float(stimulus['Delay'])
         duration = float(stimulus['Duration'])
-        self.add_noise_step(self.soma, 0.5, mean, variance, delay, duration,
-                            noise_seed)
+        self.add_noise_step(
+            self.soma,
+            0.5,
+            mean,
+            variance,
+            delay,
+            duration,
+            seed=noise_seed,
+            noisestim_count=noisestim_count)
+
         printv("Added noise stimulus to gid %d: "
                "delay=%f, duration=%f, mean=%f, variance=%f" %
                (self.gid, delay, duration, mean, variance), 50)
+
+    def _get_noise_step_rand(self, noisestim_count):
+        """Return rng for noise step stimulus"""
+
+        if self.rng_settings.mode == "Compatibility":
+            rng = neuron.h.Random(self.gid + noisestim_count)
+        elif self.rng_settings.mode == "UpdatedMCell":
+            rng = neuron.h.Random()
+            rng.MCellRan4(
+                noisestim_count * 10000 + 100,
+                self.rng_settings.base_seed +
+                self.rng_settings.stimulus_seed +
+                self.gid * 1000)
+        elif self.rng_settings.mode == "Random123":
+            rng = neuron.h.Random()
+            rng.Random123(
+                noisestim_count + 100,
+                self.rng_setting.stimulus_seed + 500,
+                self.gid + 300)
+        else:
+            raise ValueError(
+                "Cell: Unknown rng mode: %s" %
+                self.rng_settings.mode)
+
+        return rng
 
     def add_noise_step(self, section,
                        segx,
                        mean, variance,
                        delay,
-                       duration, seed):
+                       duration, seed=None, noisestim_count=None):
         """Inject a step current with noise on top."""
-        rand = bglibpy.neuron.h.Random(seed)
+        if seed is not None:
+            rand = bglibpy.neuron.h.Random(seed)
+        else:
+            rand = self._get_noise_step_rand(noisestim_count)
+
         tstim = bglibpy.neuron.h.TStim(segx, rand, sec=section)
         tstim.noise(delay, duration, mean, variance)
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
     def add_replay_synapse(self, synapse_id, syn_description,
-                           connection_modifiers, base_seed):
+                           connection_modifiers, base_seed=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise False.
@@ -853,8 +896,11 @@ class Cell(object):
         return netcon
 
     def add_replay_minis(self, sid, syn_description, connection_parameters,
-                         base_seed):
+                         base_seed=None):
         """Add minis from the replay."""
+
+        if base_seed is None:
+            base_seed = self.rng_settings.base_seed
         weight = syn_description[8]
         post_sec_id = syn_description[2]
         post_seg_id = syn_description[3]
@@ -880,19 +926,48 @@ class Cell(object):
                 NetCon(self.ips[sid], self.synapses[sid].hsynapse,
                        -30, delay, weight * weight_scalar)
 
-            exprng = bglibpy.neuron.h.Random()
-            exp_seed1 = sid * 100000 + 200
-            exp_seed2 = self.gid + 250 + base_seed
-            exprng.MCellRan4(exp_seed1, exp_seed2)
-            exprng.negexp(1.0)
-            self.persistent.append(exprng)
-            uniformrng = bglibpy.neuron.h.Random()
-            uniform_seed1 = sid * 100000 + 300
-            uniform_seed2 = self.gid + 250 + base_seed
-            uniformrng.MCellRan4(uniform_seed1, uniform_seed2)
-            uniformrng.uniform(0.0, 1.0)
-            self.persistent.append(uniformrng)
-            self.ips[sid].setRNGs(exprng, uniformrng)
+            if self.rng_settings.mode == 'Random123':
+                self.ips[sid].setRNG(
+                    sid + 200,
+                    self.gid + 250,
+                    self.rng_settings.minis_seed + 300,
+                    sid + 200,
+                    self.gid + 250,
+                    self.rng_settings.minis_seed + 350)
+            else:
+                exprng = bglibpy.neuron.h.Random()
+                self.persistent.append(exprng)
+
+                uniformrng = bglibpy.neuron.h.Random()
+                self.persistent.append(uniformrng)
+
+                if self.rng_settings.mode == 'Compatibility':
+                    exp_seed1 = sid * 100000 + 200
+                    exp_seed2 = self.gid + 250 + base_seed + \
+                        self.rng_settings.minis_seed
+                    uniform_seed1 = sid * 100000 + 300
+                    uniform_seed2 = self.gid + 250 + base_seed + \
+                        self.rng_settings.minis_seed
+                elif self.rng_settings.mode == "UpdatedMCell":
+                    exp_seed1 = sid * 1000 + 200
+                    exp_seed2 = self.gid + 250 + base_seed + \
+                        self.rng_settings.minis_seed
+                    uniform_seed1 = sid * 1000 + 300
+                    uniform_seed2 = self.gid + 250 + base_seed + \
+                        self.rng_settings.minis_seed
+                else:
+                    raise ValueError(
+                        "Cell: Unknown rng mode: %s" %
+                        self.rng_settings.mode)
+
+                exprng.MCellRan4(exp_seed1, exp_seed2)
+                exprng.negexp(1.0)
+
+                uniformrng.MCellRan4(uniform_seed1, uniform_seed2)
+                uniformrng.uniform(0.0, 1.0)
+
+                self.ips[sid].setRNGs(exprng, uniformrng)
+
             tbins_vec = bglibpy.neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
             rate_vec = bglibpy.neuron.h.Vector(1)
@@ -901,9 +976,6 @@ class Cell(object):
             self.persistent.append(rate_vec)
             self.ips[sid].setTbins(tbins_vec)
             self.ips[sid].setRate(rate_vec)
-            # print "Added minis gid:%d, sid:%d, rate:%f, seed:%d,%d/%d,%d" % \
-            # (self.gid, sid, spont_minis_rate, exp_seed1, exp_seed2, \
-            # uniform_seed1, uniform_seed2)
 
     def initialize_synapses(self):
         """Initialize the synapses."""

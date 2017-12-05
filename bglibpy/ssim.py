@@ -564,7 +564,7 @@ class SSim(object):
         """
         # check in which StimulusInjects the gid is a target
         # Every noise stimulus gets a new seed
-        noise_seed = self.base_noise_seed + gid
+        noisestim_count = 0
 
         for entry in self.bc.values():
             if entry.section_type == 'StimulusInject':
@@ -579,8 +579,10 @@ class SSim(object):
                     if stimulus.Pattern == 'Noise':
                         if add_noise_stimuli:
                             self._add_replay_noise(
-                                gid, stimulus, noise_seed=noise_seed)
-                        noise_seed += 1
+                                gid,
+                                stimulus,
+                                noisestim_count=noisestim_count)
+                        noisestim_count += 1
                     elif stimulus.Pattern == 'Hyperpolarizing':
                         if add_hyperpolarizing_stimuli:
                             self._add_replay_hypamp_injection(
@@ -612,16 +614,21 @@ class SSim(object):
         """Add injections from the replay"""
         self.cells[gid].add_pulse(stimulus)
 
-    def _add_replay_noise(self, gid, stimulus, noise_seed=None):
+    def _add_replay_noise(
+            self,
+            gid,
+            stimulus,
+            noisestim_count=None):
         """Add noise injection from the replay"""
-        self.cells[gid].add_replay_noise(stimulus, noise_seed=noise_seed)
+        self.cells[gid].add_replay_noise(
+            stimulus,
+            noisestim_count=noisestim_count)
 
     def add_replay_minis(self, gid, syn_id, syn_description, syn_parameters):
         """Add minis from the replay"""
         self.cells[gid].add_replay_minis(syn_id,
                                          syn_description,
-                                         syn_parameters,
-                                         self.base_seed)
+                                         syn_parameters)
 
     def add_single_synapse(self, gid, syn_id,
                            syn_description, connection_modifiers):
@@ -640,8 +647,7 @@ class SSim(object):
         """
         return self.cells[gid].add_replay_synapse(syn_id,
                                                   syn_description,
-                                                  connection_modifiers,
-                                                  self.base_seed)
+                                                  connection_modifiers)
 
     def check_connection_contents(self, contents):
         """Check the contents of a connection block,
@@ -916,13 +922,16 @@ class SSim(object):
                 'record_dt': self.record_dt,
                 'morph_dir': self.morph_dir,
                 'template_format': 'v6',
-                'extra_values': extra_values}
+                'extra_values': extra_values,
+                'rng_settings': self.rng_settings
+            }
         else:
             cell_kwargs = {
                 'template_filename': emodel_path,
                 'morphology_name': self.morph_dir,
                 'gid': gid,
-                'record_dt': self.record_dt
+                'record_dt': self.record_dt,
+                'rng_settings': self.rng_settings
             }
 
         return cell_kwargs

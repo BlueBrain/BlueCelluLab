@@ -7,6 +7,7 @@ Class that represents a synapse in BGLibPy
          Do not distribute without further notice.
 """
 
+import bglibpy
 from bglibpy import printv
 
 
@@ -32,7 +33,7 @@ class RNGSettings(object):
                     object received from blueconfig representing the BlueConfig
                     of the sim
         base_seed: float
-                   base seed for entire sim
+                   base seed for entire sim, overrides blueconfig value
         base_noise_seed: float
                          base seed for the noise stimuli
         """
@@ -41,7 +42,7 @@ class RNGSettings(object):
             if blueconfig and 'RNGMode' in blueconfig.Run:
                 self.mode = blueconfig.Run['RNGMode']
             else:
-                self.mode = "UpdatedMCell"
+                self.mode = "Compatibility"
 
         else:
             self.mode = mode
@@ -61,6 +62,30 @@ class RNGSettings(object):
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
             self.base_seed = base_seed
+
+        if self.mode == 'Random123':
+            rng = bglibpy.neuron.h.Random()
+            rng.Random123_globalindex(self.base_seed)
+
+        if blueconfig and 'SynapseSeed' in blueconfig.Run:
+            self.synapse_seed = int(blueconfig.Run['SynapseSeed'])
+        else:
+            self.synapse_seed = 0
+
+        if blueconfig and 'IonChannelSeed' in blueconfig.Run:
+            self.ionchannel_seed = int(blueconfig.Run['IonChannelSeed'])
+        else:
+            self.ionchannel_seed = 0
+
+        if blueconfig and 'StimulusSeed' in blueconfig.Run:
+            self.stimulus_seed = int(blueconfig.Run['StimulusSeed'])
+        else:
+            self.stimulus_seed = 0
+
+        if blueconfig and 'MinisSeed' in blueconfig.Run:
+            self.minis_seed = int(blueconfig.Run['MinisSeed'])
+        else:
+            self.minis_seed = 0
 
         if base_noise_seed is None:
             self.base_noise_seed = 0
