@@ -22,6 +22,12 @@ has Python 2.6 as default.
 Python 3.0 is not supported yet. This will be implemented once BluePy and 
 its dependencies support Python 3.0.
 
+Make sure you're using a recent version of pip. It's best to run ::
+
+    pip install pip --upgrade
+
+before installing anything else using pip.
+
 Possibly ways to acquire Python 2.7 on CSCS viz are:
 
 Pre-installed modules
@@ -65,6 +71,7 @@ NEURON should be compiled with Python support. MPI support is not a
 requirement.
 
 Versions that are supported:
+
 - 7.4
 - 7.5
 - Latest git commit from https://github.com/nrnhines/nrn 
@@ -97,7 +104,8 @@ Disable the git module first::
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
 
-It's not too difficult to install NEURON from source in your home directory.
+It's not too difficult to install NEURON from source in your home directory on
+CSCS viz.
 If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
 
     SRC_DIR=$HOME/src
@@ -140,12 +148,12 @@ There is a deb package available for debian-flavoured linux machines. The
 commands to install this package are ::
 
     apt-get update
-	apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
-	wget https://bootstrap.pypa.io/get-pip.py
-	python get-pip.py
-	wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
-	dpkg -i nrn-7.4.x86_64.deb
-	rm nrn-7.4.x86_64.deb
+    apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
+    wget https://bootstrap.pypa.io/get-pip.py
+    python get-pip.py
+    wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
+    dpkg -i nrn-7.4.x86_64.deb
+    rm nrn-7.4.x86_64.deb
 
     export PYTHONPATH=/usr/local/nrn/lib/python:$PYTHONPATH
 
@@ -155,7 +163,8 @@ Neurodamus
 ----------
 
 It's not necessary to fully install Neurodamus to use it with BGLibPy. 
-The only required components are
+The only required components are:
+
 1. the HOC code (lib/hoclib subdir of neurodamus source).
 2. the 'scientific' MOD files (ion channels, synapses, etc. 
    This doesn't include the 'technical' MOD files like hdf5 readers)
@@ -173,9 +182,9 @@ if necessary) ::
 
     export HOC_LIBRARY_PATH=`pwd`/bbp/lib/hoclib
 
-For the MOD files. Place all the MOD files (ion channels, synapses, etc.) in
+Place all the MOD files (ion channels, synapses, etc.) in
 a single directory. 
-Then, in the directory from where you want to run BGLibPy, run 
+Then, in the directory from where you want to run BGLibPy, run::
 
     nrnivmodl path_to_your_mod_dir
 
@@ -208,8 +217,12 @@ In case you get an error like::
 
     'Could not find a version that satisfies the requirement ...'
 
-Check if there are wheels available for the dependencies of BluePy 
+Check if there are wheels available for the dependencies of BluePy.
 One common problem with this is that the Python binary you are using isn't 
 compiled with::
 
     --enable-unicode=ucs4e
+
+If you have problems with Brain / LibFlatIndex dependencies of BluePy, and
+you don't need to read voltage reports from neurodamus simulations, one
+option would be to drop the '[bbp]' when pip installing BGLibPy or BluePy. 

@@ -709,9 +709,14 @@ class Cell(object):
     def add_replay_hypamp(self, stimulus):
         """Inject hypamp for the replay."""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        tstim.pulse(float(stimulus['Delay']),
-                    float(stimulus['Duration']), self.hypamp)
+        delay = float(stimulus['Delay'])
+        duration = float(stimulus['Duration'])
+        amp = self.hypamp
+        tstim.pulse(delay, duration, amp)
         self.persistent.append(tstim)
+        printv("Added hypamp stimulus to gid %d: "
+               "delay=%f, duration=%f, amp=%f" %
+               (self.gid, delay, duration, amp), 50)
 
     def add_replay_relativelinear(self, stimulus):
         """Add a relative linear stimulus."""
