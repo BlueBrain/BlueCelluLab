@@ -8,6 +8,7 @@ Class that represents a synapse in BGLibPy
 """
 
 import bglibpy
+# from bglibpy.tools import printv
 
 
 class Synapse(object):
@@ -138,10 +139,13 @@ class Synapse(object):
             self.hsynapse.Nrrp = self.Nrrp
 
         if self.rng_settings.mode == "Random123":
+            self.randseed1 = self.cell.gid + 250
+            self.randseed2 = self.sid + 100
+            self.randseed3 = self.rng_settings.synapse_seed + 300
             self.hsynapse.setRNG(
-                self.cell.gid + 250,
-                self.sid + 100,
-                self.rng_setting.synapse_seed + 300)
+                self.randseed1,
+                self.randseed2,
+                self.randseed3)
         else:
             rndd = bglibpy.neuron.h.Random()
             self.randseed1 = sid * 100000 + 100
@@ -156,6 +160,7 @@ class Synapse(object):
                 raise ValueError(
                     "Synapse: unknown RNG mode: %s" %
                     self.rng_settings.mode)
+            self.randseed3 = None  # Not used in this case
             rndd.MCellRan4(self.randseed1, self.randseed2)
             rndd.uniform(0, 1)
             self.hsynapse.setRNG(rndd)
@@ -169,7 +174,10 @@ class Synapse(object):
             for cmd in self.connection_parameters['SynapseConfigure']:
                 self.synapseconfigure_cmds.append(cmd)
                 cmd = cmd.replace('%s', '\n%(syn)s')
-                bglibpy.neuron.h(cmd % {'syn': self.hsynapse.hname()})
+                hoc_cmd = cmd % {'syn': self.hsynapse.hname()}
+                bglibpy.neuron.h(hoc_cmd)
+                # printv("Executed hoc command: %s" % hoc_cmd, 50)
+                # printv("Use: %f" % self.hsynapse.Use, 50)
 
     def is_inhibitory(self):
         """
@@ -225,6 +233,7 @@ class Synapse(object):
         synapse_dict['syn_type'] = self.syn_type
         synapse_dict['randseed1'] = self.randseed1
         synapse_dict['randseed2'] = self.randseed2
+        synapse_dict['randseed3'] = self.randseed3
         synapse_dict['synapseconfigure_cmds'] = self.synapseconfigure_cmds
 
         # Parameters of the mod mechanism

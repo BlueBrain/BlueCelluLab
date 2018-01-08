@@ -22,6 +22,7 @@ import os
 import Queue
 import hashlib
 import string
+import json
 
 import numpy
 
@@ -772,7 +773,7 @@ class Cell(object):
             rng = neuron.h.Random()
             rng.Random123(
                 noisestim_count + 100,
-                self.rng_setting.stimulus_seed + 500,
+                self.rng_settings.stimulus_seed + 500,
                 self.gid + 300)
         else:
             raise ValueError(
@@ -822,7 +823,7 @@ class Cell(object):
         self.synapses[synapse_id] = synapse
 
         printv('Added synapse to cell %d: %s' %
-               (self.gid, synapse.info_dict), 50)
+               (self.gid, json.dumps(synapse.info_dict)), 50)
 
         return True
 
@@ -932,7 +933,7 @@ class Cell(object):
                        -30, delay, weight * weight_scalar)
 
             if self.rng_settings.mode == 'Random123':
-                self.ips[sid].setRNG(
+                self.ips[sid].setRNGs(
                     sid + 200,
                     self.gid + 250,
                     self.rng_settings.minis_seed + 300,

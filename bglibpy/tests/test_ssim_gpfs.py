@@ -33,6 +33,13 @@ v6_test_bc_3_path = os.path.join(proj64_path,
                                  "BlueConfig")
 
 
+v6_test_bc_rnd123_1_path = os.path.join(proj64_path,
+                                        "home/vangeit/simulations/",
+                                        "random123_tests/",
+                                        "random123_tests_newneurod_rnd123",
+                                        "BlueConfig")
+
+
 @attr('gpfs', 'v5')
 class TestSSimBaseClass_full_run(object):
 
@@ -118,8 +125,8 @@ class TestSSimBaseClass_full_realconn(object):
         nt.assert_true(rms_error < 2.0)
 
 
-@attr('gpfs', 'proj64')
-class TestSSimBaseClass_proj64_full_run(object):
+@attr('gpfs', 'v6')
+class TestSSimBaseClass_v6_full_run(object):
 
     """Class to test SSim with full circuit"""
 
@@ -135,7 +142,7 @@ class TestSSimBaseClass_proj64_full_run(object):
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
             """with forwardskip """ \
-            """gives the same output trace as on BGQ for proj64"""
+            """gives the same output trace as on BGQ for v6"""
         gid = 8709
         self.ssim.instantiate_gids(
             [gid],
@@ -160,8 +167,8 @@ class TestSSimBaseClass_proj64_full_run(object):
         nt.assert_true(rms_error < 0.5)
 
 
-@attr('gpfs', 'proj64')
-class TestSSimBaseClass_proj64_mvr_run(object):
+@attr('gpfs', 'v6')
+class TestSSimBaseClass_v6_mvr_run(object):
 
     """Class to test SSim with full mvr circuit"""
 
@@ -204,14 +211,14 @@ class TestSSimBaseClass_proj64_mvr_run(object):
                 gid)[:len(voltage_bglibpy)]
 
             '''
-            time_bgliby = self.ssim.get_mainsim_time_trace()[
+            time_bglib = self.ssim.get_mainsim_time_trace()[
                 :len(voltage_bglibpy)]
 
             import matplotlib
             matplotlib.use('Agg')
             import matplotlib.pyplot as plt
             plt.plot(time_bglibpy, voltage_bglibpy, 'o', label='bglibpy')
-            plt.plot(time_bgliby, voltage_bglibpy, label='neurodamus')
+            plt.plot(time_bglib, voltage_bglib, label='neurodamus')
             plt.legend()
             plt.savefig('O1v6a_%d.png' % i)
             '''
@@ -222,6 +229,75 @@ class TestSSimBaseClass_proj64_mvr_run(object):
             nt.assert_less(rms_error, 10.0)
 
             del self.ssim
+
+
+@attr('gpfs', 'v6', 'debugtest')
+class TestSSimBaseClass_v6_rnd123_1(object):
+
+    """Class to test SSim with 1000 cell random123 circuit"""
+
+    def setup(self):
+        """Setup"""
+        self.ssim = None
+
+    def teardown(self):
+        """Teardown"""
+        pass
+
+    def test_run(self):
+        """SSim: Check if a full replay with random 123 of a simulation """ \
+            """gives the same output trace for O1v6a"""
+        # gids = [1326, 67175, 160384]
+        gids = [1326, 67175, 160384]
+        # gids = [160384]
+        # bglibpy.set_verbose(100)
+        for gid in gids:
+            self.ssim = bglibpy.ssim.SSim(
+                v6_test_bc_rnd123_1_path,
+                record_dt=0.1)
+
+            self.ssim.instantiate_gids(
+                [gid],
+                add_synapses=True,
+                add_replay=True,
+                add_minis=True,
+                add_stimuli=True)
+
+            self.ssim.run(200)
+
+            time_bglibpy = self.ssim.get_time()
+            voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+            nt.assert_equal(len(time_bglibpy), 2000)
+            nt.assert_equal(len(voltage_bglibpy), 2000)
+
+            voltage_bglib = self.ssim.get_mainsim_voltage_trace(
+                gid)[:len(voltage_bglibpy)]
+
+            '''
+
+            time_bglib = self.ssim.get_mainsim_time_trace()[
+                :len(voltage_bglibpy)]
+
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
+            plt.plot(time_bglibpy, voltage_bglibpy, label='bglibpy %d' % gid)
+            plt.plot(time_bglib, voltage_bglib, label='neurodamus %d' % gid)
+            plt.legend()
+            plt.savefig('O1v6a_rng_%d.png' % gid)
+            # import pickle
+            # pickle.dump(plt.gcf(), open('O1v6a_rng_%d.pickle' % gid, 'wb'))
+            # plt.clear()
+            '''
+
+            rms_error = numpy.sqrt(
+                numpy.mean(
+                    (voltage_bglibpy - voltage_bglib) ** 2))
+
+            nt.assert_less(rms_error, 10.0)
+
+            del self.ssim
+
 
 @attr('gpfs', 'v5')
 class TestSSimBaseClass_full(object):

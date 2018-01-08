@@ -162,10 +162,13 @@ class TestCellBaseClassSynapses(object):
 
         import pickle
 
+        cell1_info_dict = self.ssim_bglibpy.cells[1].info_dict
+
+        # with open('cell1_info_dict.pickle', 'w') as cell_info_dict_file:
+        #     pickle.dump(cell1_info_dict, cell_info_dict_file)
+
         with open('cell1_info_dict.pickle', 'r') as cell_info_dict_file:
             cell1_info_dict_expected = pickle.load(cell_info_dict_file)
-
-        cell1_info_dict = self.ssim_bglibpy.cells[1].info_dict
 
         # from pprint import pprint
         # pprint(cell1_info_dict)

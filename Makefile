@@ -11,6 +11,7 @@ install_tox:
 	pip install tox
 clean:
 	@find . -name "*.pyc" -exec rm -rf {} \;
+	rm -rf *.png
 install_test_requirements:
 	pip install -q $(TEST_REQUIREMENTS) --upgrade
 doc: clean install_tox
