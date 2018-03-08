@@ -15,6 +15,7 @@ script_dir = os.path.dirname(__file__)
 
 proj1_path = "/gpfs/bbp.cscs.ch/project/proj1/"
 proj35_path = "/gpfs/bbp.cscs.ch/project/proj35/"
+proj42_path = "/gpfs/bbp.cscs.ch/project/proj42/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
 
 # Example ReNCCv2 sim used in BluePy use cases
@@ -38,6 +39,11 @@ v6_test_bc_rnd123_1_path = os.path.join(proj64_path,
                                         "random123_tests/",
                                         "random123_tests_newneurod_rnd123",
                                         "BlueConfig")
+
+hip20180219_1_path = os.path.join(
+    proj42_path,
+    "circuits/O1/20180219",
+    "CircuitConfig")
 
 
 @attr('gpfs', 'v5')
@@ -123,6 +129,33 @@ class TestSSimBaseClass_full_realconn(object):
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         nt.assert_true(rms_error < 2.0)
+
+
+'''
+Reenable this once the MOD files are separated out of neurodamus
+@attr('gpfs', 'hip', 'debugtest')
+class TestSSimBaseClass_hip_20180219(object):
+
+    """Class to test SSim with full circuit and multiple cells """ \
+        """instantiate with real connections"""
+
+    def setup(self):
+        """Setup"""
+        self.ssim = bglibpy.ssim.SSim(hip20180219_1_path)
+        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim
+
+    def test_run(self):
+        """SSim: Check if a hippocampal cell can be instantiated"""
+        gid = 1111
+        self.ssim.instantiate_gids(
+            [gid],
+            add_synapses=True)
+        print(self.ssim.cells[gid])
+'''
 
 
 @attr('gpfs', 'v6')
@@ -231,7 +264,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
             del self.ssim
 
 
-@attr('gpfs', 'v6', 'debugtest')
+@attr('gpfs', 'v6')
 class TestSSimBaseClass_v6_rnd123_1(object):
 
     """Class to test SSim with 1000 cell random123 circuit"""
@@ -351,14 +384,16 @@ class TestSSimBaseClass_full(object):
              'L5_MC',
              {'SpontMinis': 0.012,
               'add_synapse': True,
-              'SynapseConfigure': ['%s.e_GABAA = -80.0 %s.e_GABAB = -75.8354310081',
+              'SynapseConfigure': ['%s.e_GABAA = -80.0 '
+                                   '%s.e_GABAB = -75.8354310081',
                                    '%s.Use *= 0.437475790642'],
               'Weight': 1.0}),
             ('L5_LBC',
              'L5_LBC',
              {'SpontMinis': 0.012,
               'add_synapse': True,
-              'SynapseConfigure': ['%s.e_GABAA = -80.0 %s.e_GABAB = -75.8354310081',
+              'SynapseConfigure': ['%s.e_GABAA = -80.0 '
+                                   '%s.e_GABAB = -75.8354310081',
                                    '%s.Use *= 0.437475790642'],
               'Weight': 1.0}),
             ('L1_HAC',
@@ -419,6 +454,7 @@ class TestSSimBaseClass_full(object):
         nt.assert_equal(
             self.ssim.cells[gid].synapses[sid].hsynapse.tau_r_GABAA,
             1.0)
+
 
 '''
 

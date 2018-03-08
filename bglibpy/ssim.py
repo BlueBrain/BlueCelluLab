@@ -382,7 +382,7 @@ class SSim(object):
             # This is ugly and should be replaced. Waiting for BluePy to
             # provide a better way to detect this situation
             if str(e.args) == "('Missing NRN version',)" or \
-                    str(e.args) ==  "('Trying to fetch Synapse.NRRP from " \
+                    str(e.args) == "('Trying to fetch Synapse.NRRP from " \
                     "NRN version 3 (required: >=5)',)":
                 # Get properties without Nrrp
                 all_properties = all_properties[:-1]
@@ -760,7 +760,8 @@ class SSim(object):
                        enabled if BlueConfig has a ForwardSkip value)
         forward_skip_value : float
                        Overwrite the ForwardSkip value in the BlueConfig. If
-                       this is set to None, the value in the BlueConfig is used.
+                       this is set to None, the value in the BlueConfig is
+                       used.
         cvode : boolean
                 Force the simulation to run in variable timestep. Not possible
                 when there are stochastic channels in the neuron model. When
@@ -853,7 +854,12 @@ class SSim(object):
                 threshold = 0.0
                 printv('WARNING: No threshold found for me-model %s, '
                        'replacing with 0.0!' % me_combo, 2)
-            hypamp = float(mecombo_info[7])
+            try:
+                hypamp = float(mecombo_info[7])
+            except ValueError:
+                hypamp = 0.0
+                printv('WARNING: No hypamp found for me-model %s, '
+                       'replacing with 0.0!' % me_combo, 2)
             mecombo_emodels[me_combo] = emodel
             mecombo_thresholds[me_combo] = threshold
             mecombo_hypamps[me_combo] = hypamp

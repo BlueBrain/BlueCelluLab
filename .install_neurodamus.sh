@@ -13,6 +13,10 @@ then
     then
         echo "Downloading neurodamus ..."
         git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
+		# Example on how to use a branch below
+		# cd bbp
+		# git checkout sandbox/king/hippocampus
+		# cd ..
     else
         echo "Neurodamus already downloaded"
     fi
