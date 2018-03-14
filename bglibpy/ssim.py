@@ -372,26 +372,30 @@ class SSim(object):
         else:
             connectome = self.bc_circuit.projection(projection)
 
-        try:
+        nrn_h5_path = os.path.join(connectome._impl._prefix, 'nrn.h5')
+        nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
+
+        if nrn_h5_version == 5:
             # Get properties with Nrrp
             synapses = connectome.afferent_synapses(
                 gid,
                 properties=all_properties)
             nrrp_defined = True
-        except bluepy.exceptions.BluePyError as e:
-            # This is ugly and should be replaced. Waiting for BluePy to
-            # provide a better way to detect this situation
-            if str(e.args) == "('Missing NRN version',)" or \
-                    str(e.args) == "('Trying to fetch Synapse.NRRP from " \
-                    "NRN version 3 (required: >=5)',)":
-                # Get properties without Nrrp
-                all_properties = all_properties[:-1]
-                synapses = connectome.afferent_synapses(
-                    gid,
-                    properties=all_properties)
-                nrrp_defined = False
-            else:
-                raise
+            printv('Version of nrn.h5 file is 5, enabling multivesicular '
+                   'release', 50)
+        elif nrn_h5_version is None or nrn_h5_version < 5:
+            # Get properties without Nrrp
+            all_properties = all_properties[:-1]
+            synapses = connectome.afferent_synapses(
+                gid,
+                properties=all_properties)
+            nrrp_defined = False
+            printv('Version of nrn.h5 file not specified or smaller than 5, '
+                   'DISABLING multivesicular release', 50)
+        else:
+            raise ValueError(
+                'Unknown nrn.h5 version "%s" for %s' %
+                (nrn_h5_version, nrn_h5_path))
 
         for (syn_gid, syn_id), synapse in synapses.iterrows():
             if gid != gid:
@@ -995,6 +999,30 @@ class SSim(object):
                 index.values)
 
         return gids
+
+    @staticmethod
+    def get_nrn_h5_version(nrn_h5_path):
+        """Get version of nrn.h5 file"""
+
+        import h5py
+        nrn_h5 = h5py.File(nrn_h5_path)
+
+        if 'info' not in nrn_h5 or 'version' not in nrn_h5['info'].attrs:
+            version = None
+        else:
+            version_value = nrn_h5['info'].attrs['version']
+
+            if version_value == 5 or version_value == [5]:
+                version = 5
+            elif version_value == 3 or version_value == [3]:
+                version = 3
+            elif version_value == 4 or version_value == [4]:
+                version = 4
+            else:
+                return ValueError('Unknown version in nrn.h5: %s' %
+                                  str(version_value))
+
+        return version
 
 
 def _parse_outdat2(path):

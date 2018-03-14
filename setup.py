@@ -13,9 +13,12 @@ setuptools.setup(
     author_email="werner.vangeit@epfl.ch",
     description="The Pythonic Blue Brain simulator access",
     license="BBP-internal-confidential",
-    dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/bluepy/"],
-    extras_require={"bbp": ["bluepy[bbp]>=0.11.10.dev1", "brain", "pybinreports>=0.4"]},
-    install_requires=["bluepy>=0.11.10.dev1", "bluepy-configfile>=0.1.2.dev1"],
+    dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
+                      "dev/+simple/bluepy/"],
+    extras_require={"bbp": ["bluepy[bbp]>=0.11.10.dev1", "brain",
+                            "pybinreports>=0.4"]},
+    install_requires=["bluepy>=0.11.10.dev1",
+                      "bluepy-configfile>=0.1.2.dev1", "h5py"],
     tests_require=["bluepy[bbp]>=0.11.10.dev1", "brain"],
     keywords=(
         'computational neuroscience',

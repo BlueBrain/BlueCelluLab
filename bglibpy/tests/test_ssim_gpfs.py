@@ -46,7 +46,7 @@ hip20180219_1_path = os.path.join(
     "CircuitConfig")
 
 
-@attr('gpfs', 'v5')
+@attr('gpfs', 'v5', 'debugtest')
 class TestSSimBaseClass_full_run(object):
 
     """Class to test SSim with full circuit"""
