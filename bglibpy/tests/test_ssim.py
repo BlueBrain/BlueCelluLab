@@ -55,6 +55,47 @@ def test_merge_pre_spike_trains():
             train3))
 
 
+class TestSSimBaseClass_twocell_forwardskip(object):
+
+    """Class to test SSim with two cell circuit"""
+
+    def setup(self):
+        """Setup"""
+        self.gid = 1
+        self.prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
+        self.ssim_bglibpy = bglibpy.SSim("BlueConfig")
+        self.ssim_bglibpy.instantiate_gids(
+            [self.gid],
+            add_synapses=True,
+            add_minis=True,
+            add_stimuli=True,
+            add_replay=True)
+        self.ssim_bglibpy.run(forward_skip=True, forward_skip_value=5000)
+
+    def test_compare_traces(self):
+        """SSim: Test get_time_trace and get_voltage_trace return pos values"""
+
+        time = self.ssim_bglibpy.get_time()
+        voltage = self.ssim_bglibpy.get_voltage_traces()[self.gid]
+        time_trace = self.ssim_bglibpy.get_time_trace()
+        voltage_trace = self.ssim_bglibpy.get_voltage_trace(self.gid)
+
+        time_len = len(time)
+        time_trace_len = len(time_trace)
+        nt.assert_equal(len(time[numpy.where(time >= 0.0)]), time_trace_len)
+        nt.assert_equal(len(time[numpy.where(time < 0.0)]), 10)
+
+        nt.assert_equal(len(voltage), time_len)
+
+        nt.assert_equal(len(voltage_trace), time_trace_len)
+
+    def teardown(self):
+        """Teardown"""
+        del self.ssim_bglibpy
+        os.chdir(self.prev_cwd)
+
+
 class TestSSimBaseClass_twocell_empty(object):
 
     """Class to test SSim with two cell circuit"""
@@ -79,7 +120,7 @@ class TestSSimBaseClass_twocell_empty(object):
         voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -130,7 +171,7 @@ class TestSSimBaseClass_twocell_replay(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -144,7 +185,7 @@ class TestSSimBaseClass_twocell_replay(object):
         voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
 
         voltage_bglibpy_withoutreplay = \
-            self.ssim_bglibpy_withoutreplay.get_voltage_traces()[1][
+            self.ssim_bglibpy_withoutreplay.get_voltage_trace(1)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -188,7 +229,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -230,7 +271,7 @@ class TestSSimBaseClass_twocell_all(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -293,7 +334,7 @@ class TestSSimBaseClass_twocell_all_intersect(object):
                 intersect_pre_gids=intersect)
             ssim_bglibpy.run()
 
-            traces[option] = ssim_bglibpy.get_voltage_traces()[1]
+            traces[option] = ssim_bglibpy.get_voltage_trace(1)
 
         nt.assert_true(rms(traces['intersect'], traces['no_intersect']) == 0.0)
         nt.assert_true(
@@ -327,8 +368,8 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and and pre_spike_train"""
 
-        time_bglibpy = self.ssim_bglibpy.get_time()
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1]
+        time_bglibpy = self.ssim_bglibpy.get_time_trace()
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)
 
         '''
         import matplotlib
@@ -409,7 +450,7 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
         nt.assert_equal(len(self.voltage_bglib_mvr), 1000)
 
-        voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_traces()[1][
+        voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_trace(1)[
             0:len(self.voltage_bglib_mvr)]
 
         rms_error = numpy.sqrt(
@@ -460,7 +501,7 @@ class TestSSimBaseClass_twocell_synapseid(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         os.chdir("../sim_twocell_all")
@@ -524,7 +565,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -538,7 +579,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
 
         voltage_bglibpy_withoutminis = \
-            self.ssim_bglibpy_withoutminis.get_voltage_traces()[1][
+            self.ssim_bglibpy_withoutminis.get_voltage_trace(1)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -590,7 +631,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -604,7 +645,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
         voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
 
         voltage_bglibpy_withoutstim = \
-            self.ssim_bglibpy_withoutstim.get_voltage_traces()[1][
+            self.ssim_bglibpy_withoutstim.get_voltage_trace(1)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -656,7 +697,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_traces()[1][
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -672,7 +713,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
 
         voltage_bglibpy_withoutstim = \
-            self.ssim_bglibpy_withoutstim.get_voltage_traces()[1][
+            self.ssim_bglibpy_withoutstim.get_voltage_trace(1)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(

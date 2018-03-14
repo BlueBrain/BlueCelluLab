@@ -812,6 +812,7 @@ class SSim(object):
         time = self.bc_simulation.report('soma').get().index
         return time
 
+    @tools.deprecated("get_voltage_trace")
     def get_voltage_traces(self):
         """Get the voltage traces from all the cells as a dictionary
            based on gid"""
@@ -820,9 +821,25 @@ class SSim(object):
             vm[gid] = self.cells[gid].get_soma_voltage()
         return vm
 
+    @tools.deprecated("get_time_trace")
     def get_time(self):
         """Get the time vector for the recordings"""
         return self.cells[self.gids[0]].get_time()
+
+    def get_time_trace(self):
+        """Get the time vector for the recordings, negative times removed"""
+
+        time = self.cells[self.gids[0]].get_time()
+        pos_time = time[numpy.where(time >= 0.0)]
+        return pos_time
+
+    def get_voltage_trace(self, gid):
+        """Get the voltage vector for the gid, negative times removed"""
+
+        time = self.get_time_trace()
+        voltage = self.cells[gid].get_soma_voltage()
+        pos_voltage = voltage[numpy.where(time >= 0.0)]
+        return pos_voltage
 
     def __del__(self):
         """Destructor"""

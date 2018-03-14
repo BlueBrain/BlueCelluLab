@@ -415,8 +415,8 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
 
     ssim.cells[gid].add_ramp(0, tstop, step_level, step_level)
     ssim.run(t_stop=tstop)
-    time = ssim.get_time()
-    voltage = ssim.get_voltage_traces()[gid]
+    time = ssim.get_time_trace()
+    voltage = ssim.get_voltage_trace(gid)
     SS_voltage = numpy.mean(voltage[numpy.where(
         (time < tstop) & (time > tstart))])
     printv("%s: Calculated SS voltage for gid %d "

@@ -283,7 +283,8 @@ class Cell(object):
                                                          keep_length=40,
                                                          hash_length=9)
             printv(
-                "Converted template name %s to %s to make it NEURON compliant" %
+                "Converted template name %s to %s to make it "
+                "NEURON compliant" %
                 (name, template_name), 50)
         return template_name
 
@@ -315,8 +316,9 @@ class Cell(object):
                 new_template_name = template_name
                 while new_template_name in Cell.used_template_names:
                     new_template_name = "%s_x" % new_template_name
-                    new_template_name = Cell.get_neuron_compliant_template_name(
-                        new_template_name)
+                    new_template_name = \
+                        Cell.get_neuron_compliant_template_name(
+                            new_template_name)
 
                 template_name = new_template_name
 
@@ -594,9 +596,9 @@ class Cell(object):
         if dt:
             # This float_epsilon stuff is some magic from M. Hines to make
             # the time points fall exactly on the dts
-            # recording.record(eval(var_name),
-            # (1.0+neuron.h.float_epsilon)/(1.0/dt))
-            recording.record(eval(var_name), dt)
+            recording.record(eval(var_name),
+                             (1.0 + neuron.h.float_epsilon) / (1.0 / dt))
+            # recording.record(eval(var_name), dt)
         else:
             recording.record(eval(var_name))
         self.recordings[var_name] = recording
@@ -857,7 +859,7 @@ class Cell(object):
         return list(pre_gid_list)
 
     def pre_gid_synapse_ids(self, pre_gid):
-        """List of synapse_id's of synapses a cell uses to connect to this cell.
+        """List of synapse_ids of synapses a cell uses to connect to this cell.
 
         Parameters
         ----------

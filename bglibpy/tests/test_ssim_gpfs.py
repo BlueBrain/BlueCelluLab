@@ -73,8 +73,8 @@ class TestSSimBaseClass_full_run(object):
 
         self.ssim.run(500)
 
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
         nt.assert_equal(len(time_bglibpy), 2500)
         nt.assert_equal(len(voltage_bglibpy), 2500)
 
@@ -116,8 +116,8 @@ class TestSSimBaseClass_full_realconn(object):
             add_stimuli=True,
             interconnect_cells=True)
         self.ssim.run(200)
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gids[0]]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gids[0])
         nt.assert_equal(len(time_bglibpy), 1000)
         nt.assert_equal(len(voltage_bglibpy), 1000)
 
@@ -185,8 +185,8 @@ class TestSSimBaseClass_v6_full_run(object):
 
         self.ssim.run(500)
 
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
         nt.assert_equal(len(time_bglibpy), 5000)
         nt.assert_equal(len(voltage_bglibpy), 5000)
 
@@ -235,8 +235,8 @@ class TestSSimBaseClass_v6_mvr_run(object):
 
             self.ssim.run(500)
 
-            time_bglibpy = self.ssim.get_time()
-            voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+            time_bglibpy = self.ssim.get_time_trace()
+            voltage_bglibpy = self.ssim.get_voltage_trace(gid)
             nt.assert_equal(len(time_bglibpy), 5000)
             nt.assert_equal(len(voltage_bglibpy), 5000)
 
@@ -298,8 +298,8 @@ class TestSSimBaseClass_v6_rnd123_1(object):
 
             self.ssim.run(200)
 
-            time_bglibpy = self.ssim.get_time()
-            voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+            time_bglibpy = self.ssim.get_time_trace()
+            voltage_bglibpy = self.ssim.get_voltage_trace(gid)
             nt.assert_equal(len(time_bglibpy), 2000)
             nt.assert_equal(len(voltage_bglibpy), 2000)
 
@@ -487,8 +487,8 @@ class TestSSimBaseClass_full_neuronconfigure(object):
             add_replay=True,
             add_stimuli=True)
         self.ssim.run(500)
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
         nt.assert_equal(len(time_bglibpy), 5000)
         nt.assert_equal(len(voltage_bglibpy), 5000)
 
@@ -533,8 +533,8 @@ class TestSSimBaseClass_full_connection_delay(object):
             add_replay=True,
             add_stimuli=True)
         self.ssim.run(500)
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
         nt.assert_equal(len(time_bglibpy), 5000)
         nt.assert_equal(len(voltage_bglibpy), 5000)
 
@@ -576,8 +576,8 @@ class TestSSimBaseClass_full_forwardskip(object):
             add_replay=True,
             add_stimuli=True)
         self.ssim.run(100)
-        time_bglibpy = self.ssim.get_time()
-        voltage_bglibpy = self.ssim.get_voltage_traces()[gid]
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
         nt.assert_equal(len(time_bglibpy), 1001)
         nt.assert_equal(len(voltage_bglibpy), 1001)
 

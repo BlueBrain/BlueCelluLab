@@ -10,6 +10,10 @@ import os
 import random
 import bglibpy
 
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
+
 script_dir = os.path.dirname(__file__)
 
 
