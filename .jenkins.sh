@@ -13,6 +13,7 @@ then
 	. /opt/rh/python27/enable
     tox_args="${tox_args}-v5-v6-upload_docs-devpi"
 elif [ "${os}" = "cscsviz" ]
+then
 	. /opt/rh/python27/enable
     tox_args="${tox_args}-v5-v6"
 elif [ "${os}" = "Ubuntu-16.04" ]
