@@ -8,10 +8,13 @@ git config --global https.proxy http://bbpproxy.epfl.ch:80/
 
 tox_args='--recreate -e py27-test'
 
-if [ "${os}" = "cscsviz" ] || [ "${os}" = "bb5" ]
+if [ "${os}" = "bb5" ]
 then
 	. /opt/rh/python27/enable
     tox_args="${tox_args}-v5-v6-upload_docs-devpi"
+elif [ "${os}" = "cscsviz" ]
+	. /opt/rh/python27/enable
+    tox_args="${tox_args}-v5-v6"
 elif [ "${os}" = "Ubuntu-16.04" ]
 then
 	tox_args="${tox_args}"
