@@ -29,7 +29,10 @@ v6_test_bc_1_path = os.path.join(
     "circuits/S1HL-200um/20171002/simulations/003",
     "BlueConfig")
 
-v6_test_bc_3_path = os.path.join(proj64_path,
+# v6_test_bc_3_path = os.path.join(proj64_path,
+#                                 "home/king/sim/Basic",
+#                                 "BlueConfig")
+v6_test_bc_4_path = os.path.join(proj64_path,
                                  "home/king/sim/Basic",
                                  "BlueConfig")
 
@@ -200,7 +203,8 @@ class TestSSimBaseClass_v6_full_run(object):
         nt.assert_true(rms_error < 0.5)
 
 
-@attr('gpfs', 'v6')
+'''
+@attr('gpfs', 'v6', 'debugtest')
 class TestSSimBaseClass_v6_mvr_run(object):
 
     """Class to test SSim with full mvr circuit"""
@@ -218,7 +222,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
             """gives the same output trace for O1v6a"""
         gids = [29561, 127275, 105081, 41625]
         for i, gid in enumerate(gids):
-            self.ssim = bglibpy.ssim.SSim(v6_test_bc_3_path, record_dt=0.1)
+            self.ssim = bglibpy.ssim.SSim(v6_test_bc_4_path, record_dt=0.1)
 
             self.ssim.instantiate_gids(
                 [gid],
@@ -243,7 +247,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
             voltage_bglib = self.ssim.get_mainsim_voltage_trace(
                 gid)[:len(voltage_bglibpy)]
 
-            '''
+            """
             time_bglib = self.ssim.get_mainsim_time_trace()[
                 :len(voltage_bglibpy)]
 
@@ -254,7 +258,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
             plt.plot(time_bglib, voltage_bglib, label='neurodamus')
             plt.legend()
             plt.savefig('O1v6a_%d.png' % i)
-            '''
+            """
             rms_error = numpy.sqrt(
                 numpy.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
@@ -262,6 +266,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
             nt.assert_less(rms_error, 10.0)
 
             del self.ssim
+'''
 
 
 @attr('gpfs', 'v6')
