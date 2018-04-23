@@ -1005,22 +1005,22 @@ class SSim(object):
         """Get version of nrn.h5 file"""
 
         import h5py
-        nrn_h5 = h5py.File(nrn_h5_path)
-
-        if 'info' not in nrn_h5 or 'version' not in nrn_h5['info'].attrs:
-            version = None
-        else:
-            version_value = nrn_h5['info'].attrs['version']
-
-            if version_value == 5 or version_value == [5]:
-                version = 5
-            elif version_value == 3 or version_value == [3]:
-                version = 3
-            elif version_value == 4 or version_value == [4]:
-                version = 4
+        with h5py.File(nrn_h5_path, 'r') as nrn_h5:
+            if 'info' not in nrn_h5 or 'version' not in nrn_h5['info'].attrs:
+                version = None
             else:
-                return ValueError('Unknown version in nrn.h5: %s' %
-                                  str(version_value))
+                version_value = nrn_h5['info'].attrs['version']
+
+                if version_value == 5 or version_value == [5]:
+                    version = 5
+                elif version_value == 3 or version_value == [3]:
+                    version = 3
+                elif version_value == 4 or version_value == [4]:
+                    version = 4
+                else:
+                    raise ValueError(
+                       'Unknown version in nrn.h5: %s' % str(version_value)
+                    )
 
         return version
 
