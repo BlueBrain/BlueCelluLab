@@ -106,6 +106,8 @@ class SSim(object):
         self.emodels_dir = self.bc.Run['METypePath']
         self.morph_dir = self.bc.Run['MorphologyPath']
 
+        bglibpy.neuron.h.tstop = float(self.bc.Run['Duration'])
+
         # backwards compatible
         if self.morph_dir[-3:] == "/h5":
             self.morph_dir = self.morph_dir[:-3]
@@ -1019,7 +1021,7 @@ class SSim(object):
                     version = 4
                 else:
                     raise ValueError(
-                       'Unknown version in nrn.h5: %s' % str(version_value)
+                        'Unknown version in nrn.h5: %s' % str(version_value)
                     )
 
         return version
