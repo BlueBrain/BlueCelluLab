@@ -106,7 +106,10 @@ class SSim(object):
         self.emodels_dir = self.bc.Run['METypePath']
         self.morph_dir = self.bc.Run['MorphologyPath']
 
-        bglibpy.neuron.h.tstop = float(self.bc.Run['Duration'])
+        # Make sure tstop is set correctly, because it is used by the
+        # TStim noise stimulus
+        if 'Duration' in self.bc.Run:
+            bglibpy.neuron.h.tstop = float(self.bc.Run['Duration'])
 
         # backwards compatible
         if self.morph_dir[-3:] == "/h5":
