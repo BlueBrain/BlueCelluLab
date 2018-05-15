@@ -17,7 +17,8 @@ from nose.plugins.attrib import attr
 @attr('bgscratch')
 def test_search_hyp_current_replay_gidlist():
     """Tools: Test search_hyp_current_replay_gidlist"""
-    blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"
+    blueconfig_location = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/"
+    "simulations/SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/control/BlueConfig"
     #gids = [107462, 107461]
     gid = 107461
     precision = .5
@@ -86,6 +87,7 @@ def test_search_hyp_current_replay_imap():
     nt.assert_true(math.isnan(hyp_currents[107462]))
 '''
 
+
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
     SS_voltage = bglibpy.calculate_SS_voltage_subprocess(
@@ -110,13 +112,19 @@ class TestTools(object):
         self.prev_cwd = os.getcwd()
         os.chdir("%s/examples/sim_twocell_empty" % script_dir)
 
+    @attr('debugtest')
     def test_holding_current(self):
         """Tools: Test holding_current"""
 
-        holding_current, holding_voltage = bglibpy.tools.holding_current(
-            -80, 1, 'BlueConfig')
-        nt.assert_almost_equal(holding_current, -0.08019584734739738)
-        nt.assert_almost_equal(holding_voltage, -80)
+        gid = 1
+        expected_voltage = -80
+        for expected_current, ttx in [
+            (-0.08019584734739738, False),
+                (-0.08019289690395226, True)]:
+            holding_current, holding_voltage = bglibpy.tools.holding_current(
+                expected_voltage, gid, 'BlueConfig', enable_ttx=ttx)
+            nt.assert_almost_equal(holding_current, expected_current)
+            nt.assert_almost_equal(holding_voltage, expected_voltage)
 
     def teardown(self):
         """Teardown"""

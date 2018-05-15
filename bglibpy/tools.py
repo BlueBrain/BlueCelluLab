@@ -228,10 +228,13 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
     return SS_voltage
 
 
-def holding_current_subprocess(v_hold, cell_kwargs):
+def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
     """Subprocess wrapper of holding_current"""
 
     cell = bglibpy.Cell(**cell_kwargs)
+
+    if enable_ttx:
+        cell.enable_ttx()
 
     vclamp = bglibpy.neuron.h.SEClamp(.5, sec=cell.soma)
     vclamp.rs = 0.01
@@ -252,7 +255,8 @@ def holding_current_subprocess(v_hold, cell_kwargs):
 def holding_current(
         v_hold,
         gid=None,
-        circuit_path=None):
+        circuit_path=None,
+        enable_ttx=False):
     """
     Calculate the holding current necessary for a given holding voltage
     """
@@ -264,7 +268,7 @@ def holding_current(
 
     pool = multiprocessing.Pool(processes=1)
     i_hold, v_control = pool.apply(
-        holding_current_subprocess, [v_hold, cell_kwargs])
+        holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs])
     pool.terminate()
 
     return i_hold, v_control
