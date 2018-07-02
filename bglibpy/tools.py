@@ -5,6 +5,7 @@ Static tools for bglibpy
 # pylint: disable=R0914, R0913
 
 import sys
+import os
 import inspect
 import multiprocessing
 import multiprocessing.pool
@@ -19,7 +20,19 @@ from bglibpy import neuron
 BLUECONFIG_KEYWORDS = [
     'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
 
+
 VERBOSE_LEVEL = 0
+ENV_VERBOSE_LEVEL = None
+
+def set_verbose_from_env():
+    """Get verbose level from environment"""
+    bglibpy.ENV_VERBOSE_LEVEL = os.environ.get('BGLIBPY_VERBOSE_LEVEL')
+    
+    if bglibpy.ENV_VERBOSE_LEVEL is not None:
+        bglibpy.ENV_VERBOSE_LEVEL = int(bglibpy.ENV_VERBOSE_LEVEL)
+        set_verbose(int(bglibpy.ENV_VERBOSE_LEVEL))
+
+set_verbose_from_env()
 
 
 def get_release_ccells():

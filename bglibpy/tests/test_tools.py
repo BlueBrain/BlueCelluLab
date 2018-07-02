@@ -112,7 +112,6 @@ class TestTools(object):
         self.prev_cwd = os.getcwd()
         os.chdir("%s/examples/sim_twocell_empty" % script_dir)
 
-    @attr('debugtest')
     def test_holding_current(self):
         """Tools: Test holding_current"""
 
