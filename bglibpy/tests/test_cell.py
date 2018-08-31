@@ -5,10 +5,13 @@
 """Unit tests for Cell.py"""
 
 import nose.tools as nt
+from nose.plugins.attrib import attr
+
 import math
 import os
 import random
 import bglibpy
+
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -183,3 +186,62 @@ class TestCellBaseClassSynapses(object):
         """Teardown TestCellBaseClassSynapses"""
         os.chdir(self.prev_cwd)
         del self.ssim_bglibpy
+
+
+@attr('debugtest')
+class TestCellBaseClassVClamp(object):
+
+    """First Cell test class"""
+
+    def setup(self):
+        """Setup"""
+        self.cell = bglibpy.Cell(
+            "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+            "%s/examples/cell_example1" % script_dir)
+        nt.assert_true(isinstance(self.cell, bglibpy.Cell))
+
+    def teardown(self):
+        """Teardown"""
+        del self.cell
+
+    def test_add_voltage_clamp(self):
+        """Cell: Test add_voltage_clamp"""
+
+        level = -90
+        duration = 50
+        rs = .1
+        vclamp = self.cell.add_voltage_clamp(
+            duration=duration,
+            level=level,
+            current_record_name='test_vclamp',
+            rs=rs)
+
+        nt.assert_equal(vclamp.amp1, level)
+        nt.assert_equal(vclamp.dur1, duration)
+        nt.assert_equal(vclamp.dur2, 0)
+        nt.assert_equal(vclamp.dur3, 0)
+        nt.assert_equal(vclamp.rs, rs)
+
+        sim = bglibpy.Simulation()
+        sim.add_cell(self.cell)
+        sim.run(100, dt=.1, cvode=False)
+
+        time = self.cell.get_time()
+        current = self.cell.get_recording('test_vclamp')
+        import numpy
+
+        voltage = numpy.array(self.cell.get_soma_voltage())
+
+        print(voltage)
+        print(voltage[numpy.where((time < duration) & (time > .9 * duration))])
+        print(numpy.mean(
+                voltage
+                [numpy.where((time < duration) & (time > .8 * duration))],
+                level))
+
+        import matplotlib
+        matplotlib.use('Agg')
+
+        import matplotlib.pyplot as plt
+        plt.plot(time, voltage)
+        plt.savefig('vclamp1.png')

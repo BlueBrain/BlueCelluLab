@@ -124,8 +124,9 @@ class Cell(object):
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
+        self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
-                            dt=record_dt)
+                            dt=self.record_dt)
         self.cell_dendrograms = []
         self.plot_windows = []
 
@@ -597,11 +598,16 @@ class Cell(object):
             # This float_epsilon stuff is some magic from M. Hines to make
             # the time points fall exactly on the dts
             recording.record(eval(var_name),
-                             (1.0 + neuron.h.float_epsilon) / (1.0 / dt))
-            # recording.record(eval(var_name), dt)
+                             self.get_precise_record_dt(dt))
         else:
             recording.record(eval(var_name))
         self.recordings[var_name] = recording
+
+    @staticmethod
+    def get_precise_record_dt(dt):
+        """Get a more precise record_dt to make time points faill on dts"""
+
+        return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
     def add_recordings(self, var_names, dt=None):
         """Add a list of recordings to the cell.
@@ -1254,6 +1260,37 @@ class Cell(object):
 
         self.add_ramp(*args, **kwargs)
 
+    def add_voltage_clamp(
+            self, duration, level, rs=None, section=None, segx=0.5,
+            current_record_name=None, current_record_dt=None):
+        """Add a voltage clamp"""
+
+        if section is None:
+            section = self.soma
+        if current_record_dt is None:
+            current_record_dt = self.record_dt
+        vclamp = neuron.h.SEClamp(segx, sec=section)
+        self.persistent.append(vclamp)
+
+        vclamp.amp1 = level
+        vclamp.dur1 = duration
+
+        if rs is not None:
+            vclamp.rs = rs
+
+        current = neuron.h.Vector()
+        if current_record_dt is None:
+            current.record(vclamp._ref_i)
+        else:
+            current.record(
+                vclamp._ref_i,
+                self.get_precise_record_dt(current_record_dt))
+
+        self.recordings[current_record_name] = current
+
+        return vclamp
+
+    @tools.deprecated("add_voltage_clamp")
     def addVClamp(self, stop_time, level):
         """Add a voltage clamp."""
         vclamp = neuron.h.SEClamp(0.5, sec=self.soma)
