@@ -694,7 +694,7 @@ class Cell(object):
         numpy array : array with the recording var_name variable values
 
         """
-        return self.recordings[var_name].to_python()
+        return numpy.array(self.recordings[var_name])
 
     def add_pulse(self, stimulus):
         """Inject pulse stimulus for replay."""
@@ -1261,9 +1261,34 @@ class Cell(object):
         self.add_ramp(*args, **kwargs)
 
     def add_voltage_clamp(
-            self, duration, level, rs=None, section=None, segx=0.5,
+            self, stop_time, level, rs=None, section=None, segx=0.5,
             current_record_name=None, current_record_dt=None):
-        """Add a voltage clamp"""
+        """Add a voltage clamp
+
+        Parameters
+        ----------
+
+        stop_time : float
+            Time at which voltage clamp should stop
+        level : float
+            Voltage level of the vc (in mV)
+        rs: float
+            Series resistance of the vc (in MOhm)
+        section: NEURON object
+            Object representing the section to place the vc
+        segx: float
+            Segment x coordinate to place the vc
+        current_record_name: str
+            Name of the recording that will store the current
+        current_record_dt: float
+            Timestep to use for the recording of the current
+
+        Returns
+        -------
+
+        SEClamp (NEURON) object of the created vc
+
+        """
 
         if section is None:
             section = self.soma
@@ -1273,7 +1298,7 @@ class Cell(object):
         self.persistent.append(vclamp)
 
         vclamp.amp1 = level
-        vclamp.dur1 = duration
+        vclamp.dur1 = stop_time
 
         if rs is not None:
             vclamp.rs = rs
@@ -1318,11 +1343,11 @@ class Cell(object):
 
     def get_time(self):
         """Get the time vector."""
-        return numpy.array(self.get_recording('neuron.h._ref_t'))
+        return self.get_recording('neuron.h._ref_t')
 
     def get_soma_voltage(self):
         """Get a vector of the soma voltage."""
-        return numpy.array(self.get_recording('self.soma(0.5)._ref_v'))
+        return self.get_recording('self.soma(0.5)._ref_v')
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell."""

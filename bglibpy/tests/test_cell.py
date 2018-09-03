@@ -208,40 +208,49 @@ class TestCellBaseClassVClamp(object):
         """Cell: Test add_voltage_clamp"""
 
         level = -90
-        duration = 50
+        stop_time = 50
+        total_time = 200
         rs = .1
         vclamp = self.cell.add_voltage_clamp(
-            duration=duration,
+            stop_time=stop_time,
             level=level,
             current_record_name='test_vclamp',
             rs=rs)
 
         nt.assert_equal(vclamp.amp1, level)
-        nt.assert_equal(vclamp.dur1, duration)
+        nt.assert_equal(vclamp.dur1, stop_time)
         nt.assert_equal(vclamp.dur2, 0)
         nt.assert_equal(vclamp.dur3, 0)
         nt.assert_equal(vclamp.rs, rs)
 
         sim = bglibpy.Simulation()
         sim.add_cell(self.cell)
-        sim.run(100, dt=.1, cvode=False)
+        sim.run(total_time, dt=.1, cvode=False)
 
         time = self.cell.get_time()
         current = self.cell.get_recording('test_vclamp')
         import numpy
 
-        voltage = numpy.array(self.cell.get_soma_voltage())
+        voltage = self.cell.get_soma_voltage()
 
-        print(voltage)
-        print(voltage[numpy.where((time < duration) & (time > .9 * duration))])
-        print(numpy.mean(
-                voltage
-                [numpy.where((time < duration) & (time > .8 * duration))],
-                level))
+        voltage_vc_end = numpy.mean(
+            voltage[numpy.where((time < stop_time) & (time > .9 * stop_time))])
 
-        import matplotlib
-        matplotlib.use('Agg')
+        nt.assert_true(abs(voltage_vc_end - level) < .1)
 
-        import matplotlib.pyplot as plt
-        plt.plot(time, voltage)
-        plt.savefig('vclamp1.png')
+        voltage_end = numpy.mean(
+            voltage
+            [numpy.where((time < total_time) & (time > .9 * total_time))])
+
+        nt.assert_true(abs(voltage_end - (-73)) < 1)
+
+        current_vc_end = numpy.mean(
+            current[numpy.where((time < stop_time) & (time > .9 * stop_time))])
+
+        nt.assert_true(abs(current_vc_end - (-.1)) < .01)
+
+        current_after_vc_end = numpy.mean(
+            current[
+                numpy.where((time > stop_time) & (time < 1.1 * stop_time))])
+
+        nt.assert_equal(current_after_vc_end, 0.0)
