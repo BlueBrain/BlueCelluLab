@@ -26,7 +26,8 @@ then
     rm -rf lib/modlib/HDF*.mod
     rm -rf lib/modlib/hdf*.mod
     rm -rf lib/modlib/MemUsage*.mod
-
+    rm -rf lib/modlib/SpikeWriter*.mod
+    
     echo "Running nrnivmodl ..."
     
     nrnivmodl lib/modlib >nrnivmodl.log 2>&1
