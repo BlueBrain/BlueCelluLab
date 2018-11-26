@@ -38,6 +38,7 @@ def _nrn_disable_banner():
     nrndll = ctypes.cdll[hoc_so]
     ctypes.c_int.in_dll(nrndll, 'nrn_nobanner_').value = 1
 
+
 _nrn_disable_banner()
 
 import neuron
@@ -55,17 +56,24 @@ if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
 #    print "WARNING: BGLIBPY_MOD_LIBRARY_PATH not found, continuing without " \
 #        "pre-loading MOD files, assuming they have already been loaded"
 
+neuron.h('objref simConfig')
+
 neuron.h.load_file("stdrun.hoc")
+neuron.h.load_file("defvar.hoc")
+neuron.h.default_var("simulator", "NEURON")
 neuron.h.load_file("Cell.hoc")
 neuron.h.load_file("TDistFunc.hoc")
 neuron.h.load_file("SerializedSections.hoc")
-neuron.h.load_file("RNGSettings.hoc")
 neuron.h.load_file("TStim.hoc")
 neuron.h.load_file("ShowProgress.hoc")
+neuron.h.load_file("SimSettings.hoc")
+neuron.h.load_file("RNGSettings.hoc")
+
 neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 neuron.h('objref p')
 neuron.h('p = new PythonObject()')
 
+neuron.h('simConfig = new SimSettings()')
 
 import bluepy
 bluepy_version = bluepy.__version__
