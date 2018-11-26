@@ -377,7 +377,7 @@ class SSim(object):
         else:
             connectome = self.bc_circuit.projection(projection)
 
-        nrn_h5_path = os.path.join(connectome._impl._prefix, 'nrn.h5')
+        nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
         nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
 
         if nrn_h5_version == 5:
