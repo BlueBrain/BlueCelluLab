@@ -5,7 +5,7 @@ Dependencies
 
 The main dependencies of BGLibPy are::
 
-    Python 2.7 (not 2.6, no 3.x for now)
+    Python 2.7+ or 3.5+ 
     Neuron
     Neurodamus
     BluePy
@@ -18,9 +18,6 @@ Python 2.7
 
 Modern Linux systems will have Python 2.7 installed. However, CSCS viz still 
 has Python 2.6 as default.
-
-Python 3.0 is not supported yet. This will be implemented once BluePy and 
-its dependencies support Python 3.0.
 
 Make sure you're using a recent version of pip. It's best to run ::
 

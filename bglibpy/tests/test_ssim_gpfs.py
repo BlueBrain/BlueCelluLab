@@ -354,8 +354,6 @@ class TestSSimBaseClass_full(object):
     def test_generate_mtype_list(self):
         """SSim: Test generate_mtype_list"""
 
-        import pickle
-
         mtypes_list = [
             ['L23_BTC'], ['L23_BTC', 'L23_LBC'], ['L5_TTPC1', 'L6_TPC_L1']]
 
@@ -364,13 +362,12 @@ class TestSSimBaseClass_full(object):
 
             mtypes_filename = os.path.join(
                 script_dir, 'examples/mtype_lists', '%s.%s' %
-                ('_'.join(mtypes), 'pkl'))
-            # with open(mtypes_filename, 'w') as mtypes_file:
-            #    pickle.dump(mtypes_gids, mtypes_file)
-            with open(mtypes_filename) as mtypes_file:
-                expected_gids = pickle.load(mtypes_file)
+                ('_'.join(mtypes), 'txt'))
+            # numpy.savetxt(mtypes_filename, mtypes_gids)
+            expected_gids = numpy.loadtxt(mtypes_filename)
 
-            nt.assert_equal(expected_gids, mtypes_gids)
+            numpy.testing.assert_array_equal(
+                expected_gids, mtypes_gids)
 
     def test_evaluate_connection_parameters(self):
         """SSim: Check if Connection block parsers yield expected output"""
@@ -430,12 +427,12 @@ class TestSSimBaseClass_full(object):
 
     def test_add_single_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
-        gid = self.ssim.get_gids_of_targets(['L5_MC'])[0]
+        gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
         pre_datas = numpy.array(self.ssim.get_syn_descriptions(gid))
         # get second inh synapse (first fails)
         inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
-        sid = inh_synapses[0][1]
+        sid = int(inh_synapses[0][1])
         syn_params = pre_datas[sid, :]
         connection_modifiers = {
             'SynapseConfigure': [
