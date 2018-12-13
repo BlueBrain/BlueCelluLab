@@ -13,10 +13,10 @@ The main dependencies of BGLibPy are::
 Ideally follow the installation instructions of these tools, or use 
 pre-installed versions.
 
-Python 2.7
-----------
+Python
+------
 
-Modern Linux systems will have Python 2.7 installed. However, CSCS viz still 
+Modern Linux systems will have Python 2.7 or 3 installed. However, CSCS viz still 
 has Python 2.6 as default.
 
 Make sure you're using a recent version of pip. It's best to run ::
