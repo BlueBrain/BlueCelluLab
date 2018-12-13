@@ -6,23 +6,22 @@ set -x
 git config --global http.proxy http://bbpproxy.epfl.ch:80/
 git config --global https.proxy http://bbpproxy.epfl.ch:80/
 
-tox_args='-v --recreate -e py27-test'
+tox_args='-v --recreate'
 
 if [ "${os}" = "bb5" ]
 then
-	. /opt/rh/python27/enable
-    tox_args="${tox_args}-v5-v6-upload_docs-devpi"
+	. /opt/rh/rh-python36/enable
+    tox_args="${tox_args} -e py3-test-v5-v6-upload_docs-devpi"
 elif [ "${os}" = "cscsviz" ]
 then
 	. /opt/rh/python27/enable
-    tox_args="${tox_args}-v5-v6"
-elif [ "${os}" = "Ubuntu-16.04" ]
+    tox_args="${tox_args} -e py27-test-v5-v6"
+elif  [ "${os}" = "Ubuntu-18.04" ]
 then
-	tox_args="${tox_args}"
+    tox_args="${tox_args} -e py3-test"
+else
+    tox_args="${tox_args} -e py27-test"
 fi
-
-which python
-python --version
 
 cd $WORKSPACE
 

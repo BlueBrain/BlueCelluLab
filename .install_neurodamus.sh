@@ -12,11 +12,7 @@ then
     if [ ! -d ${INSTALL_DIR}/bbp ]
     then
         echo "Downloading neurodamus ..."
-        git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
-		# Example on how to use a branch below
-		# cd bbp
-		# git checkout sandbox/king/hippocampus
-		# cd ..
+        git clone --depth 1 ssh://vangeit@bbpcode.epfl.ch/sim/neurodamus/bbp.git
     else
         echo "Neurodamus already downloaded"
     fi

@@ -167,20 +167,21 @@ class TestCellBaseClassSynapses(object):
     def test_info_dict(self):
         """Cell: Test if info_dict is working as expected"""
 
-        import pickle
-
         cell1_info_dict = self.ssim_bglibpy.cells[1].info_dict
 
-        # with open('cell1_info_dict.pickle', 'w') as cell_info_dict_file:
-        #     pickle.dump(cell1_info_dict, cell_info_dict_file)
+        import pprint
+        cell1_info_dict_str = pprint.pformat(cell1_info_dict)
 
-        with open('cell1_info_dict.pickle', 'r') as cell_info_dict_file:
-            cell1_info_dict_expected = pickle.load(cell_info_dict_file)
+        # with open('cell1_info_dict.txt', 'w') as cell_info_dict_file:
+        #    cell_info_dict_file.write(cell1_info_dict_str)
 
-        # from pprint import pprint
-        # pprint(cell1_info_dict)
-        # pprint(cell1_info_dict_expected)
-        nt.assert_equal(cell1_info_dict, cell1_info_dict_expected)
+        with open('cell1_info_dict.txt', 'r') as cell_info_dict_file:
+            cell1_info_dict_expected_str = cell_info_dict_file.read()
+
+        # print(cell1_info_dict_str)
+
+        # print(cell1_info_dict_expected_str)
+        nt.assert_equal(cell1_info_dict_str, cell1_info_dict_expected_str)
 
     def teardown(self):
         """Teardown TestCellBaseClassSynapses"""

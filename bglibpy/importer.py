@@ -83,9 +83,7 @@ bluepy_minor_version = int(bluepy_version.split(".")[1])
 
 def print_header():
     """Print BGLibPy header to stdout"""
-    print "Imported neuron from %s" % neuron.__file__
-    print 'HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"]
-    print 'BGLIBPY_MOD_LIBRARY_PATH: ', mod_lib_path
-    print "Imported bluepy from %s" % bluepy.__file__
-
-# print_header()
+    print("Imported neuron from %s" % neuron.__file__)
+    print('HOC_LIBRARY_PATH: ', os.environ["HOC_LIBRARY_PATH"])
+    print('BGLIBPY_MOD_LIBRARY_PATH: ', mod_lib_path)
+    print("Imported bluepy from %s" % bluepy.__file__)

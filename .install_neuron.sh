@@ -4,6 +4,7 @@ set -e
 
 SRC_DIR=$1
 INSTALL_DIR=$2
+PYTHON_BIN=$3
 
 if [ ! -e ${INSTALL_DIR}/.install_finished ]
 then
@@ -17,7 +18,7 @@ then
     if [ ! -d nrn ]                                               
     then
         echo "Downloading NEURON from github ..."
-        git clone https://github.com/nrnhines/nrn.git >download.log 2>&1
+        git clone --depth 1 https://github.com/nrnhines/nrn.git >download.log 2>&1
     else                                                                         
         echo "Neuron already downloaded"
     fi
@@ -25,7 +26,7 @@ then
     echo "Preparing NEURON ..."
     ./build.sh >buildsh.log 2>&1
     echo "Configuring NEURON ..."
-    ./configure --prefix=${INSTALL_DIR} --without-x --with-nrnpython=python --disable-rx3d >configure.log 2>&1
+    PYTHON_BLD=${PYTHON_BIN} ./configure --prefix=${INSTALL_DIR} --without-x --with-nrnpython=${PYTHON_BIN} --disable-rx3d >configure.log 2>&1
     echo "Installing NEURON ..."
     make -j4 install >makeinstall.log 2>&1
 

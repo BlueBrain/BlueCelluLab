@@ -24,13 +24,15 @@ BLUECONFIG_KEYWORDS = [
 VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL = None
 
+
 def set_verbose_from_env():
     """Get verbose level from environment"""
     bglibpy.ENV_VERBOSE_LEVEL = os.environ.get('BGLIBPY_VERBOSE_LEVEL')
-    
+
     if bglibpy.ENV_VERBOSE_LEVEL is not None:
         bglibpy.ENV_VERBOSE_LEVEL = int(bglibpy.ENV_VERBOSE_LEVEL)
         set_verbose(int(bglibpy.ENV_VERBOSE_LEVEL))
+
 
 set_verbose_from_env()
 
@@ -98,7 +100,7 @@ def printv(message, verbose_level):
                       higher or equal to this number
     """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
-        print message
+        print(message)
 
 
 def printv_err(message, verbose_level):
@@ -119,8 +121,8 @@ def printv_err(message, verbose_level):
 def _me():
     """Used for debgugging. Reads the stack and provides info about which
     function called"""
-    print 'Call -> from %s::%s' % \
-        (inspect.stack()[1][1], inspect.stack()[1][3])
+    print('Call -> from %s::%s' %
+          (inspect.stack()[1][1], inspect.stack()[1][3]))
 
 
 def load_nrnmechanisms(libnrnmech_path):
@@ -304,7 +306,7 @@ def search_hyp_current(template_name, morphology_name, target_voltage,
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
         template_name, morphology_name, med_current)
-    print "Detected voltage: ", new_target_voltage
+    printv("Detected voltage: %f" % new_target_voltage, 1)
     if abs(new_target_voltage - target_voltage) < .5:
         return med_current
     elif new_target_voltage > target_voltage:
@@ -363,12 +365,12 @@ def search_threshold_current(template_name, morphology_name, hyp_level,
                              inj_start, inj_stop, min_current, max_current):
     """Search current necessary to reach threshold"""
     med_current = min_current + abs(min_current - max_current) / 2
-    print "Med current %d" % med_current
+    printv("Med current %d" % med_current, 1)
 
     spike_detected = detect_spike_step(
         template_name, morphology_name, hyp_level, inj_start, inj_stop,
         med_current)
-    print "Spike threshold detection at: ", med_current, "nA", spike_detected
+    printv("Spike threshold detection at: %f nA" % med_current, 1)
 
     if abs(max_current - min_current) < .01:
         return max_current

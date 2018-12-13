@@ -126,7 +126,7 @@ class Simulation(object):
             try:
                 cell.re_init_rng(use_random123_stochkv=use_random123_stochkv)
             except AttributeError:
-                sys.exc_clear()
+                pass
 
         neuron.h.dt = dt
         neuron.h.steps_per_ms = 1.0 / dt

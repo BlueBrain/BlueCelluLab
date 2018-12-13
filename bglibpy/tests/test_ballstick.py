@@ -18,7 +18,8 @@ try:
 except ImportError:
     gfc_imported = False
 
-cyl_surface = lambda diam, h: numpy.pi * diam * h
+
+def cyl_surface(diam, h): return numpy.pi * diam * h
 
 
 class Params:
@@ -37,12 +38,15 @@ class Params:
         self.SYN_G = 0.001
         self.SYN_LOC = 1.0
 
-        self.templatefile = "%s/examples/ballstick_cell/ballstick.hoc" % script_dir
-        self.morphfile = "%s/examples/ballstick_cell/ballstick.asc" % script_dir
+        self.templatefile = \
+            "%s/examples/ballstick_cell/ballstick.hoc" % script_dir
+        self.morphfile = \
+            "%s/examples/ballstick_cell/ballstick.asc" % script_dir
 
         cell = bglibpy.Cell(self.templatefile, self.morphfile)
-        self.soma_L, self.soma_D, self.soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
-            0.5, sec=cell.soma)
+        self.soma_L, self.soma_D, self.soma_A = \
+            cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
+                0.5, sec=cell.soma)
         # print 'SOMA L=%f, diam=%f,surf=%f' % (self.soma_L, self.soma_D,
         # self.soma_A)
 
@@ -54,7 +58,7 @@ class Params:
         # print 'DENDRITE L=%f, diam=%f,surf=%f' % (self.dend0_L, self.dend0_D,
         # self.dend0_A)
 
-        ''' I assume uniform passive properties shared by the soma and dendrites '''
+        # I assume uniform passive properties shared by the soma and dendrites
         self.CM = cell.soma.cm
         self.RM = 1.0 / cell.soma(0.5).g_pas
         self.RA = cell.soma.Ra
@@ -109,9 +113,6 @@ def run_pyneuron(soma_l, soma_d, params):
 
     bglibpy.neuron.h.finitialize(params.V_INIT)
     bglibpy.neuron.h.dt = params.DT
-    # print "PyNeuron: Soma L=%f, diam=%f, area=%f" % (soma.L, soma.diam, bglibpy.neuron.h.area(0.5, sec=soma))
-    # print "PyNeuron: Dend L=%f, diam=%f, area=%f" % (dend.L, dend.diam,
-    # bglibpy.neuron.h.area(0.5, sec=dend))
     bglibpy.neuron.run(params.T_STOP)
 
     voltage = numpy.array(v_vec)
@@ -175,9 +176,6 @@ def run_bglibpy(params):
 
     sim = bglibpy.Simulation()
     sim.add_cell(cell)
-    # print "BGLibPy: Soma L=%f, diam=%f, area=%f" % (cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(0.5, sec=cell.soma))
-    # print "BGLibPy: Dend L=%f, diam=%f, area=%f" % (cell.basal[0].L,
-    # cell.basal[0].diam, bglibpy.neuron.h.area(0.5, sec=cell.basal[0]))
     sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
     bglibpy_t = cell.get_time()
     bglibpy_v = cell.get_soma_voltage()
@@ -217,36 +215,34 @@ def run_analytic(params):
 
 def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     """Ballstick: Test ballstick with expsyn between pyneuron and bglibpy"""
-    '''
+
+    """
     The real stuff, part I
     Run the ball-and-stick model by 1. PyNEURON, 2. bglibpy, 3. analytic
-    '''
+    """
 
     params = Params()  # define all the parameters
-    # print 'soma_A=%f, derived D=%f, L=%f -> A=%f' % (params.soma_A,
-    # d_derived, l_derived, cyl_surface(d_derived, l_derived))
 
-    ''' Run in pure PyNeuron, with using the template '''
+    # Run in pure PyNeuron, with using the template
     pyneuron_t, pyneuron_v = run_pyneuron(
         params.l_derived, params.d_derived, params)
 
-    ''' Run with template in PyNeuron '''
+    # Run with template in PyNeuron
     pyneuron_template_t, pyneuron_template_v = run_pyneuron_with_template(
         params)
 
-    ''' Run with BGLibPy'''
+    # Run with BGLibPy
     bglibpy_t, bglibpy_v = run_bglibpy(params)
 
-    ''' Run with analytic solution'''
+    # Run with analytic solution
+    analytic_expsyn_path = \
+        "%s/examples/ballstick_cell/analytic_expsyn.txt" % script_dir
+
     if gfc_imported:
         analytic_t, analytic_v = run_analytic(params)
-        import pickle
-        with open("%s/examples/ballstick_cell/analytic_expsyn.pickle" % script_dir, "w") as analytic_file:
-            pickle.dump((analytic_t, analytic_v), analytic_file)
+        numpy.savetxt(analytic_expsyn_path, (analytic_t, analytic_v))
     else:
-        import pickle
-        with open("%s/examples/ballstick_cell/analytic_expsyn.pickle" % script_dir, "r") as analytic_file:
-            analytic_t, analytic_v = pickle.load(analytic_file)
+        analytic_t, analytic_v = numpy.loadtxt(analytic_expsyn_path)
 
     nt.assert_equal(len(analytic_v), 8000)
     pyneuron_rms_error = numpy.sqrt(

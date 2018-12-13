@@ -19,7 +19,10 @@ Cell class
 import re
 import math
 import os
-import Queue
+try:
+    import queue as queue
+except ImportError:
+    import Queue as queue
 import hashlib
 import string
 import json
@@ -135,7 +138,7 @@ class Cell(object):
 
         # As long as no PlotWindow or active Dendrogram exist, don't update
         self.plot_callback_necessary = False
-        self.delayed_weights = Queue.PriorityQueue()
+        self.delayed_weights = queue.PriorityQueue()
         self.secname_to_isec = {}
         self.secname_to_hsection = {}
         self.secname_to_psection = {}
@@ -293,7 +296,8 @@ class Cell(object):
     def _load_template(template_filename):
         """Open a cell template. If template name already exists, rename it."""
 
-        template_content = open(template_filename, "r").read()
+        with open(template_filename) as template_file:
+            template_content = template_file.read()
 
         match = re.search(r"begintemplate\s*(\S*)", template_content)
         template_name = match.group(1)
@@ -573,9 +577,9 @@ class Cell(object):
             distance = 1 - distance
 
         if distance < 0:
-            print "WARNING: synlocation_to_segx found negative distance \
-                    at curr_sec(%s) syn_offset: %f" \
-                        % (neuron.h.secname(sec=curr_sec), syn_offset)
+            printv("WARNING: synlocation_to_segx found negative distance \
+                    at curr_sec(%s) syn_offset: %f"
+                   % (neuron.h.secname(sec=curr_sec), syn_offset), 1)
             return 0
         else:
             return distance
@@ -820,8 +824,8 @@ class Cell(object):
 
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None:
-            print 'WARNING: add_single_synapse: skipping a synapse at \
-                        isec %d ipt %f' % (isec, ipt)
+            printv('WARNING: add_single_synapse: skipping a synapse at \
+                        isec %d ipt %f' % (isec, ipt), 1)
             return False
 
         synapse = bglibpy.Synapse(
@@ -1099,7 +1103,7 @@ class Cell(object):
                     secnumber = int(self.cell.getCell().nSecAxonalOrig +
                                     self.cell.getCell().nSecSoma +
                                     self.cell.getCell().nSecBasal + apicnumber)
-                    print apicnumber, secnumber
+                    printv(apicnumber, secnumber, 1)
                 else:
                     raise Exception(
                         "somaticbranches: No apic or \
@@ -1432,11 +1436,11 @@ class Cell(object):
         cell_info = {}
 
         cell_info['synapses'] = {}
-        for sid, synapse in self.synapses.iteritems():
+        for sid, synapse in self.synapses.items():
             cell_info['synapses'][sid] = synapse.info_dict
 
         cell_info['connections'] = {}
-        for sid, connection in self.connections.iteritems():
+        for sid, connection in self.connections.items():
             cell_info['connections'][sid] = connection.info_dict
 
         return cell_info
@@ -1469,7 +1473,7 @@ class Cell(object):
         """Contains a dictionary of all the hoc synapses
         in the cell with as key the gid"""
         return dict((gid, synapse.hsynapse) for (gid, synapse)
-                    in self.synapses.iteritems())
+                    in self.synapses.items())
 
     def __del__(self):
         self.delete()

@@ -759,7 +759,7 @@ class TestSSimBaseClass_syns(object):
                 self.ssim.cells[gid].hsynapses[3].Use,
                 float))
         import warnings
-        with warnings.catch_warnings(True) as w:
+        with warnings.catch_warnings(record=True) as w:
             nt.assert_true(isinstance(self.ssim.cells[gid].syns[4].Use, float))
             nt.assert_true(len(w) == 1)
             nt.assert_true(issubclass(w[-1].category, DeprecationWarning))
