@@ -12,7 +12,7 @@ then
     if [ ! -d ${INSTALL_DIR}/bbp ]
     then
         echo "Downloading neurodamus ..."
-        git clone --depth 1 ssh://vangeit@bbpcode.epfl.ch/sim/neurodamus/bbp.git
+        git clone --depth 1 ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
     else
         echo "Neurodamus already downloaded"
     fi
