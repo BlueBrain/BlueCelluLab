@@ -33,7 +33,8 @@ setuptools.setup(
         'License :: Proprietary',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Utilities',
     ],
 )
