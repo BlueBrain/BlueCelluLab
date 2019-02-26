@@ -115,7 +115,10 @@ class SSim(object):
         if self.morph_dir[-3:] == "/h5":
             self.morph_dir = self.morph_dir[:-3]
 
-        self.morph_dir = os.path.join(self.morph_dir, 'ascii')
+        # latest circuits don't have asc dir
+        asc_dir = os.path.join(self.morph_dir, 'ascii')
+        if os.path.exists(asc_dir):
+            self.morph_dir = asc_dir
 
     @property
     def base_seed(self):
