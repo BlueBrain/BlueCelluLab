@@ -876,13 +876,13 @@ class SSim(object):
             me_combo = mecombo_info[5]
             try:
                 threshold = float(mecombo_info[6])
-            except ValueError:
+            except (ValueError, IndexError):
                 threshold = 0.0
                 printv('WARNING: No threshold found for me-model %s, '
                        'replacing with 0.0!' % me_combo, 2)
             try:
                 hypamp = float(mecombo_info[7])
-            except ValueError:
+            except (ValueError, IndexError):
                 hypamp = 0.0
                 printv('WARNING: No hypamp found for me-model %s, '
                        'replacing with 0.0!' % me_combo, 2)
