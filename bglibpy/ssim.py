@@ -380,30 +380,39 @@ class SSim(object):
         else:
             connectome = self.bc_circuit.projection(projection)
 
-        nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
-        nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
-
-        if nrn_h5_version == 5:
-            # Get properties with Nrrp
+        if isinstance(connectome._impl,
+                      bluepy.v2.impl.connectome_sonata.SonataConnectome):
             synapses = connectome.afferent_synapses(
                 gid,
                 properties=all_properties)
             nrrp_defined = True
-            printv('Version of nrn.h5 file is 5, enabling multivesicular '
-                   'release', 50)
-        elif nrn_h5_version is None or nrn_h5_version < 5:
-            # Get properties without Nrrp
-            all_properties = all_properties[:-1]
-            synapses = connectome.afferent_synapses(
-                gid,
-                properties=all_properties)
-            nrrp_defined = False
-            printv('Version of nrn.h5 file not specified or smaller than 5, '
-                   'DISABLING multivesicular release', 50)
+            printv('Using sonata style synapse file, not nrn.h5', 50)
         else:
-            raise ValueError(
-                'Unknown nrn.h5 version "%s" for %s' %
-                (nrn_h5_version, nrn_h5_path))
+            nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
+            nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
+
+            if nrn_h5_version == 5:
+                # Get properties with Nrrp
+                synapses = connectome.afferent_synapses(
+                    gid,
+                    properties=all_properties)
+                nrrp_defined = True
+                printv('Version of nrn.h5 file is 5, enabling multivesicular '
+                       'release', 50)
+            elif nrn_h5_version is None or nrn_h5_version < 5:
+                # Get properties without Nrrp
+                all_properties = all_properties[:-1]
+                synapses = connectome.afferent_synapses(
+                    gid,
+                    properties=all_properties)
+                nrrp_defined = False
+                printv(
+                    'Version of nrn.h5 file not specified or smaller than 5, '
+                    'DISABLING multivesicular release', 50)
+            else:
+                raise ValueError(
+                    'Unknown nrn.h5 version "%s" for %s' %
+                    (nrn_h5_version, nrn_h5_path))
 
         for (syn_gid, syn_id), synapse in synapses.iterrows():
             if gid != gid:
