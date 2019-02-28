@@ -557,6 +557,10 @@ class Cell(object):
             syn_offset = 0.0
 
         curr_sec = self.get_hsection(isec)
+        if curr_sec is None:
+            raise Exception(
+                "No section found at isec=%d in gid %d" %
+                (isec, self.gid))
         length = curr_sec.L
 
         # access section to compute the distance
