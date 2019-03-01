@@ -380,8 +380,9 @@ class SSim(object):
         else:
             connectome = self.bc_circuit.projection(projection)
 
-        if isinstance(connectome._impl,
-                      bluepy.v2.impl.connectome_sonata.SonataConnectome):
+        if hasattr(bluepy.v2.impl, 'connectome') and \
+                isinstance(connectome._impl,
+                           bluepy.v2.impl.connectome_sonata.SonataConnectome):
             synapses = connectome.afferent_synapses(
                 gid,
                 properties=all_properties)
