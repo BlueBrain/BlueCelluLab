@@ -81,7 +81,7 @@ class Synapse(object):
                     'Value not strictly larger than 0.0 found for Nrrp:'
                     ' %s at synapse %d in gid %d' %
                     (syn_description[17], self.sid, self.cell.gid))
-            if syn_description[17] != int(syn_description):
+            if syn_description[17] != int(syn_description[17]):
                 raise ValueError(
                     'Non-integer value for Nrrp found:'
                     ' %s at synapse %d in gid %d' %
