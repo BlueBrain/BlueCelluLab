@@ -78,9 +78,14 @@ class Synapse(object):
         if len(syn_description) == 18:
             if syn_description[17] <= 0:
                 raise ValueError(
-                    'Invalid value for Nrrp found:'
+                    'Value not strictly larger than 0.0 found for Nrrp:'
                     ' %s at synapse %d in gid %d' %
-                    (syn_description[17], self.sid, self.gid))
+                    (syn_description[17], self.sid, self.cell.gid))
+            if syn_description[17] != int(syn_description):
+                raise ValueError(
+                    'Non-integer value for Nrrp found:'
+                    ' %s at synapse %d in gid %d' %
+                    (syn_description[17], self.sid, self.cell.gid))
             self.Nrrp = int(syn_description[17])
 
         self.post_segx = location
