@@ -10,6 +10,8 @@ Class that represents a synapse in BGLibPy
 import bglibpy
 from bglibpy import printv
 
+default_rng_mode = "Compatibility"
+
 
 class RNGSettings(object):
 
@@ -42,8 +44,7 @@ class RNGSettings(object):
             if blueconfig and 'RNGMode' in blueconfig.Run:
                 self.mode = blueconfig.Run['RNGMode']
             else:
-                self.mode = "Compatibility"
-
+                self.mode = default_rng_mode
         else:
             self.mode = mode
 
