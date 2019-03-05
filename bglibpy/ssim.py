@@ -380,13 +380,15 @@ class SSim(object):
         else:
             connectome = self.bc_circuit.projection(projection)
 
-        if hasattr(bluepy.v2.impl, 'connectome') and \
+        using_sonata = False
+        if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
                 isinstance(connectome._impl,
                            bluepy.v2.impl.connectome_sonata.SonataConnectome):
             synapses = connectome.afferent_synapses(
                 gid,
                 properties=all_properties)
             nrrp_defined = True
+            using_sonata = True
             printv('Using sonata style synapse file, not nrn.h5', 50)
         else:
             nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
@@ -415,10 +417,16 @@ class SSim(object):
                     'Unknown nrn.h5 version "%s" for %s' %
                     (nrn_h5_version, nrn_h5_path))
 
-        for (syn_gid, syn_id), synapse in synapses.iterrows():
-            if gid != gid:
-                raise Exception(
-                    "BGLibPy SSim: synapse gid doesnt match with cell gid !")
+
+        for index, synapse in synapses.iterrows():
+            if using_sonata:
+                syn_id = index
+            else:
+                syn_gid, syn_id = index
+                if syn_gid != gid:
+                    raise Exception(
+                        "BGLibPy SSim: synapse gid doesnt match with "
+                        "cell gid !")
             if syn_id in syn_descriptions_dict:
                 raise Exception(
                     "BGLibPy SSim: trying to synapse id %d twice !" %
