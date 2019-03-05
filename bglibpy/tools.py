@@ -25,6 +25,19 @@ VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL = None
 
 
+def set_verbose(level=1):
+    """Set the verbose level of BGLibPy
+
+       Parameters
+       ----------
+       level : int
+               Verbose level, the higher the more verbosity.
+               Level 0 means 'completely quiet', except if some very serious
+               errors or warnings are encountered.
+    """
+    bglibpy.VERBOSE_LEVEL = level
+
+
 def set_verbose_from_env():
     """Get verbose level from environment"""
     bglibpy.ENV_VERBOSE_LEVEL = os.environ.get('BGLIBPY_VERBOSE_LEVEL')
@@ -45,19 +58,6 @@ def get_release_ccells():
 def get_release_morphologies():
     """Return the path to the release morphologies directory."""
     return "/bgscratch/bbp/release/morphologies/31.05.12"
-
-
-def set_verbose(level=1):
-    """Set the verbose level of BGLibPy
-
-       Parameters
-       ----------
-       level : int
-               Verbose level, the higher the more verbosity.
-               Level 0 means 'completely quiet', except if some very serious
-               errors or warnings are encountered.
-    """
-    bglibpy.VERBOSE_LEVEL = level
 
 
 class deprecated(object):
