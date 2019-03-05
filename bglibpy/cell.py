@@ -838,8 +838,13 @@ class Cell(object):
 
         self.synapses[synapse_id] = synapse
 
-        printv('Added synapse to cell %d: %s' %
-               (self.gid, json.dumps(synapse.info_dict)), 50)
+        printv(
+            'Added synapse to cell %d: %s' %
+            (self.gid,
+             json.dumps(
+                 synapse.info_dict,
+                 cls=tools.NumpyEncoder)),
+            50)
 
         return True
 

@@ -11,6 +11,7 @@ import multiprocessing
 import multiprocessing.pool
 import warnings
 import math
+import json
 
 import numpy
 
@@ -654,3 +655,10 @@ def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600,
             pool.terminate()
             yield (None, None)
     pool.terminate()
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
