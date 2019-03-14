@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" bglibpy setup """
+""" BGLibPy setup """
 
 import setuptools
 import versioneer
