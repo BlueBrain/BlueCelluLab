@@ -145,7 +145,8 @@ class SSim(object):
                          intersect_pre_gids=None,
                          interconnect_cells=True,
                          pre_spike_trains=None,
-                         projection=None):
+                         projection=None,
+                         projections=None):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -284,8 +285,11 @@ class SSim(object):
                 add_relativelinear_stimuli=add_relativelinear_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli)
         if add_synapses:
-            self._add_synapses(intersect_pre_gids=intersect_pre_gids,
-                               add_minis=add_minis, projection=projection)
+            self._add_synapses(
+                intersect_pre_gids=intersect_pre_gids,
+                add_minis=add_minis,
+                projection=projection,
+                projections=projections)
         if add_replay or interconnect_cells or pre_spike_trains:
             if add_replay and not add_synapses:
                 raise Exception("SSim: add_replay option can not be used if "
@@ -312,12 +316,12 @@ class SSim(object):
             printv("Added stimuli for gid %d" % gid, 2)
 
     def _add_synapses(self, intersect_pre_gids=None, add_minis=None,
-                      projection=None):
+                      projection=None, projections=None):
         """Instantiate all the synapses"""
         for gid in self.gids:
             syn_descriptions = self.get_syn_descriptions_dict(
                 gid,
-                projection=projection)
+                projection=projection, projections=projections)
 
             if intersect_pre_gids is not None:
                 syn_descriptions = {syn_id: syn_description
@@ -342,7 +346,7 @@ class SSim(object):
                     printv("Added minis for gid %d" % gid, 2)
 
     @tools.deprecated("get_syn_descriptions_dict")
-    def get_syn_descriptions(self, gid, projection=None):
+    def get_syn_descriptions(self, gid, projection=None, projections=None):
         """Get synapse description arrays from bluepy"""
 
         syn_descriptions = [
@@ -350,13 +354,22 @@ class SSim(object):
             v in sorted(
                 self.get_syn_descriptions_dict(
                     gid,
-                    projection=projection).items())]
+                    projection=projection,
+                    projections=projections).items())]
 
         return syn_descriptions
 
-    def get_syn_descriptions_dict(self, gid, projection=None):
+    def get_syn_descriptions_dict(
+            self, gid, projection=None, projections=None):
         """Get synapse descriptions dict from bluepy, Keys are synapse ids"""
         syn_descriptions_dict = {}
+
+        if projection is not None:
+            if projections is None:
+                projections = [projection]
+            else:
+                raise ValueError(
+                    'Cant combine projection and projections arguemnt')
 
         all_properties = [
             BLPSynapse.PRE_GID,
@@ -364,9 +377,9 @@ class SSim(object):
             BLPSynapse.POST_SECTION_ID,
             '_POST_SEGMENT_ID',
             '_POST_DISTANCE',
-            BLPSynapse.PRE_SECTION_ID,
-            '_PRE_SEGMENT_ID',
-            '_PRE_DISTANCE',
+            BLPSynapse.POST_SECTION_ID,
+            '_POST_SEGMENT_ID',
+            '_POST_DISTANCE',
             BLPSynapse.G_SYNX,
             BLPSynapse.U_SYN,
             BLPSynapse.D_SYN,
@@ -375,75 +388,89 @@ class SSim(object):
             BLPSynapse.TYPE,
             BLPSynapse.NRRP]
 
-        if projection is None:
-            connectome = self.bc_circuit.connectome
+        if projections is None:
+            connectomes = [self.bc_circuit.connectome]
         else:
-            connectome = self.bc_circuit.projection(projection)
+            connectomes = [
+                self.bc_circuit.projection(this_projection)
+                for this_projection in projections]
 
-        using_sonata = False
-        if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
+        all_synapses = None
+        for connectome in connectomes:
+            using_sonata = False
+            if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
                 isinstance(connectome._impl,
                            bluepy.v2.impl.connectome_sonata.SonataConnectome):
-            synapses = connectome.afferent_synapses(
-                gid,
-                properties=all_properties)
-            nrrp_defined = True
-            using_sonata = True
-            printv('Using sonata style synapse file, not nrn.h5', 50)
-        else:
-            nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
-            nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
-
-            if nrn_h5_version == 5:
-                # Get properties with Nrrp
                 synapses = connectome.afferent_synapses(
                     gid,
                     properties=all_properties)
                 nrrp_defined = True
-                printv('Version of nrn.h5 file is 5, enabling multivesicular '
-                       'release', 50)
-            elif nrn_h5_version is None or nrn_h5_version < 5:
-                # Get properties without Nrrp
-                all_properties = all_properties[:-1]
-                synapses = connectome.afferent_synapses(
-                    gid,
-                    properties=all_properties)
-                nrrp_defined = False
-                printv(
-                    'Version of nrn.h5 file not specified or smaller than 5, '
-                    'DISABLING multivesicular release', 50)
+                using_sonata = True
+                printv('Using sonata style synapse file, not nrn.h5', 50)
             else:
-                raise ValueError(
-                    'Unknown nrn.h5 version "%s" for %s' %
-                    (nrn_h5_version, nrn_h5_path))
+                nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
+                nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
 
+                if nrn_h5_version == 5:
+                    # Get properties with Nrrp
+                    synapses = connectome.afferent_synapses(
+                        gid,
+                        properties=all_properties)
+                    nrrp_defined = True
+                    printv(
+                        'Version of nrn.h5 file is 5, enabling multivesicular '
+                        'release', 50)
+                elif nrn_h5_version is None or nrn_h5_version < 5:
+                    # Get properties without Nrrp
+                    all_properties = all_properties[:-1]
+                    synapses = connectome.afferent_synapses(
+                        gid,
+                        properties=all_properties)
+                    nrrp_defined = False
+                    printv(
+                        'Version of nrn.h5 file not specified or smaller '
+                        'than 5, '
+                        'DISABLING multivesicular release', 50)
+                else:
+                    raise ValueError(
+                        'Unknown nrn.h5 version "%s" for %s' %
+                        (nrn_h5_version, nrn_h5_path))
 
-        for index, synapse in synapses.iterrows():
-            if using_sonata:
-                syn_id = index
+            if all_synapses is None:
+                all_synapses = synapses
             else:
-                syn_gid, syn_id = index
-                if syn_gid != gid:
+                all_synapses = all_synapses.append(synapses)
+
+        if all_synapses is None:
+            printv('No synapses found', 5)
+        else:
+            printv('Adding a total of %d synapses' % all_synapses.shape[0], 5)
+            for index, synapse in all_synapses.iterrows():
+                if using_sonata:
+                    syn_id = index
+                else:
+                    syn_gid, syn_id = index
+                    if syn_gid != gid:
+                        raise Exception(
+                            "BGLibPy SSim: synapse gid doesnt match with "
+                            "cell gid !")
+                if syn_id in syn_descriptions_dict:
                     raise Exception(
-                        "BGLibPy SSim: synapse gid doesnt match with "
-                        "cell gid !")
-            if syn_id in syn_descriptions_dict:
-                raise Exception(
-                    "BGLibPy SSim: trying to synapse id %d twice !" %
-                    syn_descriptions_dict)
-            if nrrp_defined:
-                old_syn_description = synapse[all_properties].values[:14]
-                nrrp = synapse[all_properties].values[14]
-                ext_syn_description = numpy.array([-1, -1, -1, nrrp])
-                # 14 - 16 are dummy values, 17 is Nrrp
-                syn_description = numpy.append(
-                    old_syn_description,
-                    ext_syn_description)
-            else:
-                # old behavior
-                syn_description = synapse[all_properties].values
+                        "BGLibPy SSim: trying to synapse id %d twice !" %
+                        syn_descriptions_dict)
+                if nrrp_defined:
+                    old_syn_description = synapse[all_properties].values[:14]
+                    nrrp = synapse[all_properties].values[14]
+                    ext_syn_description = numpy.array([-1, -1, -1, nrrp])
+                    # 14 - 16 are dummy values, 17 is Nrrp
+                    syn_description = numpy.append(
+                        old_syn_description,
+                        ext_syn_description)
+                else:
+                    # old behavior
+                    syn_description = synapse[all_properties].values
 
-            syn_descriptions_dict[syn_id] = syn_description
+                syn_descriptions_dict[syn_id] = syn_description
 
         return syn_descriptions_dict
 
@@ -899,14 +926,14 @@ class SSim(object):
                 threshold = float(mecombo_info[6])
             except (ValueError, IndexError):
                 threshold = 0.0
-                printv('WARNING: No threshold found for me-model %s, '
-                       'replacing with 0.0!' % me_combo, 2)
+                # printv('WARNING: No threshold found for me-model %s, '
+                #       'replacing with 0.0!' % me_combo, 2)
             try:
                 hypamp = float(mecombo_info[7])
             except (ValueError, IndexError):
                 hypamp = 0.0
-                printv('WARNING: No hypamp found for me-model %s, '
-                       'replacing with 0.0!' % me_combo, 2)
+                # printv('WARNING: No hypamp found for me-model %s, '
+                #       'replacing with 0.0!' % me_combo, 2)
             mecombo_emodels[me_combo] = emodel
             mecombo_thresholds[me_combo] = threshold
             mecombo_hypamps[me_combo] = hypamp
