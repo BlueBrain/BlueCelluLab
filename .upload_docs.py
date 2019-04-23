@@ -46,6 +46,8 @@ def main():
     doc_repo = sys.argv[1]
     doc_dir = sys.argv[2]
 
+    doc_dir = os.path.abspath(doc_dir)
+
     print('Cloning jekylltest')
     if not os.path.exists('jekylltest'):
         sh.git('clone', '-b', 'master', '--depth=1', doc_repo)
@@ -152,6 +154,7 @@ def main():
                 print('No doc changes found, not committing')
         else:
             print('Doc dir of version already exists, not uploading anything')
+
 
 if __name__ == '__main__':
     main()
