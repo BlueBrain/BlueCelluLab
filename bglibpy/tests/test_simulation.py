@@ -74,7 +74,11 @@ class TestCellcSTUTRandom123BaseClass(object):
 
         voltage_ss = voltage[numpy.where(time > 150)]
 
-        nt.assert_almost_equal(numpy.mean(voltage_ss), -75.5400762008)
+        # Lowered precision because of
+        # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
+        # in nrn repo
+        nt.assert_almost_equal(
+            numpy.mean(voltage_ss), -75.5400762008, places=6)
         nt.assert_almost_equal(numpy.std(voltage_ss), 0.142647101877)
 
 
@@ -110,5 +114,9 @@ class TestCellcSTUTBaseClass(object):
 
         voltage_ss = voltage[numpy.where(time > 150)]
 
-        nt.assert_almost_equal(numpy.mean(voltage_ss), -75.61918061202924)
+        # Lowered precision because of
+        # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
+        # in nrn repo
+        nt.assert_almost_equal(
+            numpy.mean(voltage_ss), -75.61918061202924, places=6)
         nt.assert_almost_equal(numpy.std(voltage_ss), 0.19192736450671288)
