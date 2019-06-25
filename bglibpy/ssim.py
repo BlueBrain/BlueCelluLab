@@ -377,9 +377,6 @@ class SSim(object):
             BLPSynapse.POST_SECTION_ID,
             '_POST_SEGMENT_ID',
             '_POST_DISTANCE',
-            BLPSynapse.POST_SECTION_ID,
-            '_POST_SEGMENT_ID',
-            '_POST_DISTANCE',
             BLPSynapse.G_SYNX,
             BLPSynapse.U_SYN,
             BLPSynapse.D_SYN,
@@ -459,8 +456,8 @@ class SSim(object):
                         "BGLibPy SSim: trying to synapse id %d twice !" %
                         syn_descriptions_dict)
                 if nrrp_defined:
-                    old_syn_description = synapse[all_properties].values[:14]
-                    nrrp = synapse[all_properties].values[14]
+                    old_syn_description = synapse[all_properties].values[:11]
+                    nrrp = synapse[all_properties].values[11]
                     ext_syn_description = numpy.array([-1, -1, -1, nrrp])
                     # 14 - 16 are dummy values, 17 is Nrrp
                     syn_description = numpy.append(
@@ -469,6 +466,9 @@ class SSim(object):
                 else:
                     # old behavior
                     syn_description = synapse[all_properties].values
+
+                syn_description = numpy.insert(
+                    syn_description, [5, 5, 5], [-1, -1, -1])
 
                 syn_descriptions_dict[syn_id] = syn_description
 
