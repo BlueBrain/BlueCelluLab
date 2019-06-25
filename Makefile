@@ -21,3 +21,5 @@ devpi:
 	python setup.py sdist
 	upload2repo -t python -r dev -f `ls dist/bglibpy-*.tar.gz` 
 	-upload2repo -t python -r release -f `ls dist/bglibpy-*.tar.gz`
+toxbinlinks:
+	cd ${TOX_ENVBINDIR}; find $(TOX_NRNBINDIR) -type f -exec ln -sf \{\} . \;

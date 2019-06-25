@@ -55,7 +55,10 @@ class TestCellBaseClass1(object):
                 bglibpy.neuron.nrn.Section))
         nt.assert_true(math.fabs(self.cell.threshold - 0.184062) < 0.00001)
         nt.assert_true(math.fabs(self.cell.hypamp - -0.070557) < 0.00001)
-        nt.assert_true(math.fabs(self.cell.soma.diam - 13.78082) < 0.00001)
+        # Lowered precision because of commit
+        # 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
+        # in nrn simulator repo
+        nt.assert_true(math.fabs(self.cell.soma.diam - 13.78082) < 0.0001)
         nt.assert_true(math.fabs(self.cell.soma.L - 19.21902) < 0.00001)
         nt.assert_true(math.fabs(self.cell.basal[2].diam - 0.595686) < 0.00001)
         nt.assert_true(math.fabs(self.cell.basal[2].L - 178.96164) < 0.00001)

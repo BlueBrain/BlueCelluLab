@@ -428,7 +428,7 @@ class Cell(object):
             raise IndexError(
                 "BGLibPy get_hsection: section-id %s not found in %s" %
                 (section_id, self.morphology_name))
-        if sec_ref:
+        if sec_ref is not None:
             return self.serialized.isec2sec[int(section_id)].sec
         else:
             return None
@@ -1456,8 +1456,8 @@ class Cell(object):
 
     def delete(self):
         """Delete the cell."""
-        if hasattr(self, 'cell') and self.cell:
-            if self.cell.getCell():
+        if hasattr(self, 'cell') and self.cell is not None:
+            if self.cell.getCell() is not None:
                 self.cell.getCell().clear()
 
             self.fih_plots = None
