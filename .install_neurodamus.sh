@@ -12,7 +12,7 @@ then
 
     echo "Downloading neurodamus core ..." 
     rm -rf neurodamus-core
-    git clone ssh://bbpcode.epfl.ch/sim/neurodamus-core
+    git clone --depth 1 ssh://bbpcode.epfl.ch/sim/neurodamus-core
     
     echo "Downloading neocortex channels ..."
     rm -rf neocortex
