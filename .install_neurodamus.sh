@@ -12,11 +12,11 @@ then
 
     echo "Downloading neurodamus core ..." 
     rm -rf neurodamus-core
-    git clone ssh://vangeit@bbpcode.epfl.ch/sim/neurodamus-core
+    git clone ssh://bbpcode.epfl.ch/sim/neurodamus-core
     
     echo "Downloading neocortex channels ..."
     rm -rf neocortex
-    git clone --depth 1 --recursive ssh://vangeit@bbpcode.epfl.ch/sim/models/neocortex
+    git clone --depth 1 --recursive ssh://bbpcode.epfl.ch/sim/models/neocortex
  
     # Remove the 4 lines below once these mod files are part of the channel repos
     cp neurodamus-core/mod/netstim_inhpoisson.mod neocortex/mod/v5
