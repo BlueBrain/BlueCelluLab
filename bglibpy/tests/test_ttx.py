@@ -10,13 +10,13 @@ import bglibpy
 script_dir = os.path.dirname(__file__)
 
 import nose.tools as nt
-# from nose.plugins.attrib import attr
+from nose.plugins.attrib import attr
 
 
 def test_allNaChannels():
     """TTX: Testing ttx enabling"""
 
-    na_channelnames = ['Na']
+    na_channelnames = ['NaTs2_t']
 
     cell = bglibpy.Cell(
         "%s/examples/cell_example_empty/test_cell.hoc" %
@@ -48,7 +48,7 @@ def test_allNaChannels():
         nt.assert_equal(voltage_nottx1[-1], voltage_nottx2[-1])
 
 
-# @attr('debugtest')
+@attr('v6')
 def test_allNaChannels_v6a():
     """TTX: Testing ttx enabling in v6a cell"""
 
