@@ -66,9 +66,7 @@ def main():
             major_version=bglibpy_major_version,
             minor_version=bglibpy_minor_version,
             date=datetime.datetime.now().strftime("%d/%m/%y"),
-            version='%d.%d' %
-            (int(bglibpy_major_version),
-             int(bglibpy_minor_version)))
+            version=bglibpy_version)
 
         print('Created metadata: %s' % metadata_content)
 
