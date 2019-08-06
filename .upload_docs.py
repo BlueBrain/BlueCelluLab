@@ -43,17 +43,11 @@ def cd(dir_name):
 
 def main():
     """Main"""
-    doc_repo = sys.argv[1]
-    doc_dir = sys.argv[2]
+    doc_dir = sys.argv[1]
 
     doc_dir = os.path.abspath(doc_dir)
 
-    print('Cloning jekylltest')
-    if not os.path.exists('jekylltest'):
-        sh.git('clone', '-b', 'master', '--depth=1', doc_repo)
-
-    with cd('jekylltest'):
-
+    with cd(doc_dir):
         print('Reading BGLibPy version ...')
         import bglibpy
         bglibpy_version = bglibpy.__version__
@@ -61,99 +55,30 @@ def main():
             bglibpy.__version__.split('.')
         print('BGLibPy version is: %s' % bglibpy_version)
 
-        doc_subdir = "BGLibPy-%d.%d" % (int(bglibpy_major_version),
-                                        int(bglibpy_minor_version))
-
-        print('Doc subdir: %s' % doc_subdir)
-
-        finished_filename = os.path.join(doc_subdir, '.doc_version')
+        finished_filename = '.doc_version'
 
         if os.path.exists(finished_filename):
             os.remove(finished_filename)
 
-        metadata_filename = os.path.join('_projects', doc_subdir)
+        metadata_filename = 'metadata.md'
 
-        print('Pulling latest jekylltest ...')
-        sh.git('reset', '--hard', 'origin/master')
-        sh.git('pull')
+        metadata_content = metadata_template.format(
+            major_version=bglibpy_major_version,
+            minor_version=bglibpy_minor_version,
+            date=datetime.datetime.now().strftime("%d/%m/%y"),
+            version=bglibpy_version)
 
-        bglibpy_prev_version = None
+        print('Created metadata: %s' % metadata_content)
 
-        if os.path.exists(finished_filename):
-            with open(finished_filename) as finished_file:
-                bglibpy_prev_version = finished_file.read()
+        with open(metadata_filename, 'w') as metadata_file:
+            metadata_file.write(metadata_content)
 
-        print("Previous BGLibPy version: %s" % bglibpy_prev_version)
+        print('Wrote metadata to: %s' % metadata_filename)
 
-        if bglibpy_prev_version is None or \
-                bglibpy_prev_version != bglibpy_version:
+        with open(finished_filename, 'w') as finished_file:
+            finished_file.write(bglibpy_version)
 
-            print('Removing old docs ...')
-
-            '''
-            import glob
-            for subdir in glob.glob('BGLibPy-*'):
-                sh.git('rm', '-r', '--ignore-unmatch', subdir)
-                sh.git(
-                    'rm',
-                    '--ignore-unmatch',
-                    os.path.join(
-                        '_projects',
-                        subdir))
-            '''
-
-            sh.git('rm', '-r', '--ignore-unmatch', doc_subdir)
-            sh.git('rm', '--ignore-unmatch', metadata_filename)
-
-            print('Copying %s to %s ...' % (doc_dir, doc_subdir))
-            shutil.copytree(doc_dir, doc_subdir)
-
-            metadata_content = metadata_template.format(
-                major_version=bglibpy_major_version,
-                minor_version=bglibpy_minor_version,
-                date=datetime.datetime.now().strftime("%d/%m/%y"),
-                version='%d.%d' %
-                (int(bglibpy_major_version),
-                 int(bglibpy_minor_version)))
-
-            print('Created metadata: %s' % metadata_content)
-
-            with open(metadata_filename, 'w') as metadata_file:
-                metadata_file.write(metadata_content)
-
-            print('Wrote metadata to: %s' % metadata_filename)
-
-            with open(finished_filename, 'w') as finished_file:
-                finished_file.write(bglibpy_version)
-
-            print('Wrote doc version info to: %s' % finished_filename)
-
-            sh.git('add', metadata_filename)
-            sh.git('add', doc_subdir)
-            sh.git('add', finished_filename)
-
-            print('Added doc to repo')
-
-            untracked_status = sh.git(
-                'status',
-                '--porcelain',
-                '--untracked-files=no')
-
-            if len(untracked_status) > 0:
-                print('Committing doc changes ...')
-                sh.git('config', 'user.email', 'bbprelman@epfl.ch')
-                sh.git(
-                    'commit',
-                    '-m',
-                    'Added documentation for BGLibPy version %s' %
-                    bglibpy_version)
-
-                print('Pushing doc changes ...')
-                sh.git('push', 'origin', 'master')
-            else:
-                print('No doc changes found, not committing')
-        else:
-            print('Doc dir of version already exists, not uploading anything')
+        print('Wrote doc version info to: %s' % finished_filename)
 
 
 if __name__ == '__main__':
