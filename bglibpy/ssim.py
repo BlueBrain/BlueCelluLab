@@ -392,7 +392,7 @@ class SSim(object):
                 self.bc_circuit.projection(this_projection)
                 for this_projection in projections]
 
-        all_synapses = None
+        all_synapse_sets = []
         for connectome in connectomes:
             using_sonata = False
             if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
@@ -433,44 +433,53 @@ class SSim(object):
                         'Unknown nrn.h5 version "%s" for %s' %
                         (nrn_h5_version, nrn_h5_path))
 
-            if all_synapses is None:
-                all_synapses = synapses
-            else:
-                all_synapses = all_synapses.append(synapses)
+            all_synapse_sets.append(synapses)
 
-        if all_synapses is None:
+        if all_synapse_sets is []:
             printv('No synapses found', 5)
         else:
-            printv('Adding a total of %d synapses' % all_synapses.shape[0], 5)
-            for index, synapse in all_synapses.iterrows():
-                if using_sonata:
-                    syn_id = index
-                else:
-                    syn_gid, syn_id = index
-                    if syn_gid != gid:
+            printv(
+                'Adding a total of %d synapse sets' %
+                len(all_synapse_sets), 5)
+
+            for synapse_set in all_synapse_sets:
+
+                printv(
+                    'Adding a total of %d synapses for this set' %
+                    synapse_set.shape[0], 5)
+
+                syn_id = 0
+                for index, synapse in synapse_set.iterrows():
+                    if using_sonata:
+                        syn_id += 1
+                    else:
+                        syn_gid, syn_id = index
+                        if syn_gid != gid:
+                            raise Exception(
+                                "BGLibPy SSim: synapse gid doesnt match with "
+                                "cell gid !")
+                    if syn_id in syn_descriptions_dict:
                         raise Exception(
-                            "BGLibPy SSim: synapse gid doesnt match with "
-                            "cell gid !")
-                if syn_id in syn_descriptions_dict:
-                    raise Exception(
-                        "BGLibPy SSim: trying to synapse id %d twice !" %
-                        syn_descriptions_dict)
-                if nrrp_defined:
-                    old_syn_description = synapse[all_properties].values[:11]
-                    nrrp = synapse[all_properties].values[11]
-                    ext_syn_description = numpy.array([-1, -1, -1, nrrp])
-                    # 14 - 16 are dummy values, 17 is Nrrp
-                    syn_description = numpy.append(
-                        old_syn_description,
-                        ext_syn_description)
-                else:
-                    # old behavior
-                    syn_description = synapse[all_properties].values
+                            "BGLibPy SSim: trying to add "
+                            "synapse id %d twice !" %
+                            syn_descriptions_dict)
+                    if nrrp_defined:
+                        old_syn_description = \
+                            synapse[all_properties].values[:11]
+                        nrrp = synapse[all_properties].values[11]
+                        ext_syn_description = numpy.array([-1, -1, -1, nrrp])
+                        # 14 - 16 are dummy values, 17 is Nrrp
+                        syn_description = numpy.append(
+                            old_syn_description,
+                            ext_syn_description)
+                    else:
+                        # old behavior
+                        syn_description = synapse[all_properties].values
 
-                syn_description = numpy.insert(
-                    syn_description, [5, 5, 5], [-1, -1, -1])
+                    syn_description = numpy.insert(
+                        syn_description, [5, 5, 5], [-1, -1, -1])
 
-                syn_descriptions_dict[syn_id] = syn_description
+                    syn_descriptions_dict[syn_id] = syn_description
 
         return syn_descriptions_dict
 
