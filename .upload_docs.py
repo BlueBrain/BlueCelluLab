@@ -6,10 +6,6 @@ import sys
 import os
 import contextlib
 import datetime
-import shutil
-
-import sh
-
 
 metadata_template = \
     """---
