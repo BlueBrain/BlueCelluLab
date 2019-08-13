@@ -180,6 +180,7 @@ class Synapse(object):
                 self.synapseconfigure_cmds.append(cmd)
                 cmd = cmd.replace('%s', '\n%(syn)s')
                 hoc_cmd = cmd % {'syn': self.hsynapse.hname()}
+                hoc_cmd = '{%s}' % hoc_cmd
                 bglibpy.neuron.h(hoc_cmd)
                 # printv("Executed hoc command: %s" % hoc_cmd, 50)
                 # printv("Use: %f" % self.hsynapse.Use, 50)
