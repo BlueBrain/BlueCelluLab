@@ -27,4 +27,3 @@ from .psegment import PSegment  # NOQA
 from .simulation import Simulation  # NOQA
 from .rngsettings import RNGSettings  # NOQA
 from .ssim import SSim  # NOQA
-from .versions import *  # NOQA
