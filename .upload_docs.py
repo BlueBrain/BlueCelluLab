@@ -47,8 +47,8 @@ def main():
         print('Reading BGLibPy version ...')
         import bglibpy
         bglibpy_version = bglibpy.__version__
-        bglibpy_major_version, bglibpy_minor_version, _ = \
-            bglibpy.__version__.split('.')
+        bglibpy_major_version = bglibpy.__version__.split('.')[0]
+        bglibpy_minor_version = bglibpy.__version__.split('.')[1]
         print('BGLibPy version is: %s' % bglibpy_version)
 
         finished_filename = '.doc_version'
