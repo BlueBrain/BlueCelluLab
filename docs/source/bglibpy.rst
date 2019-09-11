@@ -92,14 +92,6 @@ bglibpy\.tools module
     :undoc-members:
     :show-inheritance:
 
-bglibpy\.versions module
-------------------------
-
-.. automodule:: bglibpy.versions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------
