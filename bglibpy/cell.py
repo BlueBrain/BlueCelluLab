@@ -815,7 +815,7 @@ class Cell(object):
         self.persistent.append(tstim)
 
     def add_replay_synapse(self, synapse_id, syn_description,
-                           connection_modifiers, base_seed=None):
+                           connection_modifiers, base_seed=None, popids=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise False.
@@ -834,7 +834,7 @@ class Cell(object):
 
         synapse = bglibpy.Synapse(
             self, location, synapse_id, syn_description,
-            connection_modifiers, base_seed)
+            connection_modifiers, base_seed, popids=popids)
 
         self.synapses[synapse_id] = synapse
 
@@ -922,9 +922,18 @@ class Cell(object):
 
         return netcon
 
-    def add_replay_minis(self, sid, syn_description, connection_parameters,
-                         base_seed=None):
+    def add_replay_minis(self, syn_id, syn_description, connection_parameters,
+                         base_seed=None, popids=None):
         """Add minis from the replay."""
+
+        if popids is None:
+            # Default values in Neurodamus
+            source_popid = 0
+            target_popid = 0
+        else:
+            source_popid, target_popid = popids
+
+        proj_name, sid = syn_id
 
         if base_seed is None:
             base_seed = self.rng_settings.base_seed
@@ -944,23 +953,25 @@ class Cell(object):
         if 'SpontMinis' in connection_parameters:
             # add the *minis*: spontaneous synaptic events
             spont_minis_rate = connection_parameters['SpontMinis']
-            self.ips[sid] = bglibpy.neuron.h.\
+            self.ips[syn_id] = bglibpy.neuron.h.\
                 InhPoissonStim(location,
                                sec=self.get_hsection(post_sec_id))
 
             delay = 0.1
-            self.syn_mini_netcons[sid] = bglibpy.neuron.h.\
-                NetCon(self.ips[sid], self.synapses[sid].hsynapse,
+            self.syn_mini_netcons[syn_id] = bglibpy.neuron.h.\
+                NetCon(self.ips[syn_id], self.synapses[syn_id].hsynapse,
                        -30, delay, weight * weight_scalar)
 
             if self.rng_settings.mode == 'Random123':
-                self.ips[sid].setRNGs(
+                seed2 = source_popid * 65536 + target_popid \
+                    + self.rng_settings.minis_seed
+                self.ips[syn_id].setRNGs(
                     sid + 200,
                     self.gid + 250,
-                    self.rng_settings.minis_seed + 300,
+                    seed2 + 300,
                     sid + 200,
                     self.gid + 250,
-                    self.rng_settings.minis_seed + 350)
+                    seed2 + 350)
             else:
                 exprng = bglibpy.neuron.h.Random()
                 self.persistent.append(exprng)
@@ -977,10 +988,12 @@ class Cell(object):
                         self.rng_settings.minis_seed
                 elif self.rng_settings.mode == "UpdatedMCell":
                     exp_seed1 = sid * 1000 + 200
-                    exp_seed2 = self.gid + 250 + base_seed + \
+                    exp_seed2 = source_popid * 16777216 + self.gid + 250 + \
+                        base_seed + \
                         self.rng_settings.minis_seed
                     uniform_seed1 = sid * 1000 + 300
-                    uniform_seed2 = self.gid + 250 + base_seed + \
+                    uniform_seed2 = source_popid * 16777216 + self.gid + 250 \
+                        + base_seed + \
                         self.rng_settings.minis_seed
                 else:
                     raise ValueError(
@@ -993,7 +1006,7 @@ class Cell(object):
                 uniformrng.MCellRan4(uniform_seed1, uniform_seed2)
                 uniformrng.uniform(0.0, 1.0)
 
-                self.ips[sid].setRNGs(exprng, uniformrng)
+                self.ips[syn_id].setRNGs(exprng, uniformrng)
 
             tbins_vec = bglibpy.neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
@@ -1001,8 +1014,8 @@ class Cell(object):
             rate_vec.x[0] = spont_minis_rate
             self.persistent.append(tbins_vec)
             self.persistent.append(rate_vec)
-            self.ips[sid].setTbins(tbins_vec)
-            self.ips[sid].setRate(rate_vec)
+            self.ips[syn_id].setTbins(tbins_vec)
+            self.ips[syn_id].setRate(rate_vec)
 
     def initialize_synapses(self):
         """Initialize the synapses."""

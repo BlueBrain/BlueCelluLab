@@ -15,8 +15,8 @@ class Synapse(object):
 
     """ Class that represents a synapse in BGLibPy """
 
-    def __init__(self, cell, location, sid, syn_description,
-                 connection_parameters, base_seed):
+    def __init__(self, cell, location, syn_id, syn_description,
+                 connection_parameters, base_seed, popids=None):
         """
         Constructor
 
@@ -26,7 +26,7 @@ class Synapse(object):
                Cell that contains the synapse
         location : float in [0, 1]
                    Location on the section this synapse is placed
-        sid : integer
+        syn_id : (string,integer)
               Synapse identifier
         syn_description : list of floats
                           Parameters of the synapse
@@ -43,11 +43,17 @@ class Synapse(object):
 
         self.cell = cell
         self.post_gid = cell.gid
-        self.sid = sid
+        self.syn_id = syn_id
+        self.projection, self.sid = self.syn_id
         self.syn_description = syn_description
         self.connection_parameters = connection_parameters
         self.hsynapse = None
 
+        if popids is not None:
+            self.source_popid, self.dest_popid = popids
+        else:
+            # Default in Neurodamus
+            self.source_popid, self.dest_popid = 0, 0
         # pylint: disable = C0103
 
         self.pre_gid = int(syn_description[0])
@@ -107,18 +113,28 @@ class Synapse(object):
             rng = bglibpy.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
-                    sid * 100000 + 100,
+                    self.sid * 100000 + 100,
                     self.cell.gid + 250 + self.rng_settings.base_seed)
             elif self.rng_settings.mode == "UpdatedMCell":
                 rng.MCellRan4(
-                    sid * 100000 + 100,
-                    self.cell.gid + 250 + self.rng_settings.base_seed +
+                    self.sid * 1000 + 100,
+                    self.source_popid *
+                    16777216 +
+                    self.cell.gid +
+                    250 +
+                    self.rng_settings.base_seed +
                     self.rng_settings.synapse_seed)
             elif self.rng_settings.mode == "Random123":
                 rng.Random123(
-                    self.cell.gid + 250,
-                    sid + 100,
-                    self.rng_settings.synapse_seed + 450)
+                    self.cell.gid +
+                    250,
+                    self.sid +
+                    100,
+                    self.source_popid *
+                    65536 +
+                    self.target_popid +
+                    self.rng_settings.synapse_seed +
+                    450)
             else:
                 raise ValueError(
                     "Synapse: unknown RNG mode: %s" %
@@ -146,20 +162,23 @@ class Synapse(object):
         if self.rng_settings.mode == "Random123":
             self.randseed1 = self.cell.gid + 250
             self.randseed2 = self.sid + 100
-            self.randseed3 = self.rng_settings.synapse_seed + 300
+            self.randseed3 = self.source_popid * 65536 + self.target_tpopid + \
+                self.rng_settings.synapse_seed + 300
             self.hsynapse.setRNG(
                 self.randseed1,
                 self.randseed2,
                 self.randseed3)
         else:
             rndd = bglibpy.neuron.h.Random()
-            self.randseed1 = sid * 100000 + 100
             if self.rng_settings.mode == "Compatibility":
+                self.randseed1 = self.sid * 100000 + 100
                 self.randseed2 = self.cell.gid + \
                     250 + self.rng_settings.base_seed
             elif self.rng_settings.mode == "UpdatedMCell":
-                self.randseed2 = self.cell.gid + 250 + \
-                    self.rng_settings.base_seed + \
+                self.randseed1 = self.sid * 1000 + 100
+                self.randseed2 = self.source_popid * 16777216 + \
+                    self.cell.gid + \
+                    250 + self.rng_settings.base_seed + \
                     self.rng_settings.synapse_seed
             else:
                 raise ValueError(
@@ -171,7 +190,7 @@ class Synapse(object):
             self.hsynapse.setRNG(rndd)
             self.persistent.append(rndd)
 
-        self.hsynapse.synapseID = sid
+        self.hsynapse.synapseID = self.sid
 
         self.synapseconfigure_cmds = []
         # hoc exec synapse configure blocks
@@ -225,7 +244,7 @@ class Synapse(object):
 
         synapse_dict = {}
 
-        synapse_dict['synapse_id'] = self.sid
+        synapse_dict['synapse_id'] = self.syn_id
         synapse_dict['pre_cell_id'] = self.pre_gid
         synapse_dict['post_cell_id'] = self.post_gid
         synapse_dict['post_sec_id'] = self.isec

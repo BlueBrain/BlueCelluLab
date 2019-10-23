@@ -142,6 +142,7 @@ class SSim(object):
                          add_hyperpolarizing_stimuli=False,
                          add_relativelinear_stimuli=False,
                          add_pulse_stimuli=False,
+                         add_projections=False,
                          intersect_pre_gids=None,
                          interconnect_cells=True,
                          pre_spike_trains=None,
@@ -268,6 +269,13 @@ class SSim(object):
             if add_synapses is None:
                 add_synapses = False
 
+        if add_projections:
+            if projections is not None:
+                raise ValueError('SSim: projections and add_projections '
+                                 'can not be used at the same time')
+            projections = [proj.name
+                           for proj in self.bc.typed_sections('Projection')]
+
         self._add_cells(gids)
         if add_stimuli:
             add_noise_stimuli = True
@@ -288,6 +296,7 @@ class SSim(object):
             self._add_synapses(
                 intersect_pre_gids=intersect_pre_gids,
                 add_minis=add_minis,
+                add_projections=add_projections,
                 projection=projection,
                 projections=projections)
         if add_replay or interconnect_cells or pre_spike_trains:
@@ -315,35 +324,61 @@ class SSim(object):
                 add_pulse_stimuli=add_pulse_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
-    def _add_synapses(self, intersect_pre_gids=None, add_minis=None,
-                      projection=None, projections=None):
+    def _add_synapses(
+            self, intersect_pre_gids=None, add_minis=None,
+            add_projections=None, projection=None, projections=None):
         """Instantiate all the synapses"""
+
+        if add_projections or (projection is None and projections is None):
+            add_local_synapses = True
+        else:
+            add_local_synapses = False
+
+        if projection is None and projections is None:
+            add_projection_synapses = False
+        else:
+            add_projection_synapses = True
+
         for gid in self.gids:
-            syn_descriptions = self.get_syn_descriptions_dict(
-                gid,
-                projection=projection, projections=projections)
+            if add_local_synapses:
+                self._add_gid_synapses(
+                    gid, intersect_pre_gids=intersect_pre_gids,
+                    add_minis=add_minis)
+            if add_projection_synapses:
+                self._add_gid_synapses(
+                    gid, intersect_pre_gids=intersect_pre_gids,
+                    add_minis=add_minis,
+                    projection=projection,
+                    projections=projections)
 
-            if intersect_pre_gids is not None:
-                syn_descriptions = {syn_id: syn_description
-                                    for syn_id, syn_description in
-                                    syn_descriptions.items()
-                                    if syn_description[0] in
-                                    intersect_pre_gids}
+    def _add_gid_synapses(self, gid, intersect_pre_gids=None, add_minis=None,
+                          projection=None, projections=None):
+        syn_descriptions_popids = self.get_syn_descriptions_dict(
+            gid,
+            projection=projection, projections=projections)
 
-            # Check if there are any presynaptic cells, otherwise skip adding
-            # synapses
-            if syn_descriptions is None:
-                printv(
-                    "Warning: No presynaptic cells found for gid %d, "
-                    "no synapses added" % gid, 2)
-            else:
-                for syn_id, syn_description in syn_descriptions.items():
-                    self._instantiate_synapse(gid, syn_id, syn_description,
-                                              add_minis=add_minis)
-                printv("Added %d synapses for gid %d" %
-                       (len(syn_descriptions), gid), 2)
-                if add_minis:
-                    printv("Added minis for gid %d" % gid, 2)
+        if intersect_pre_gids is not None:
+            syn_descriptions_popids = {syn_id: syn_description_popids
+                                       for syn_id, syn_description_popids in
+                                       syn_descriptions_popids.items()
+                                       if syn_description_popids[0] in
+                                       intersect_pre_gids}
+
+        # Check if there are any presynaptic cells, otherwise skip adding
+        # synapses
+        if syn_descriptions_popids is None:
+            printv(
+                "Warning: No presynaptic cells found for gid %d, "
+                "no synapses added" % gid, 2)
+        else:
+            for syn_id, (syn_description,
+                         popids) in syn_descriptions_popids.items():
+                self._instantiate_synapse(gid, syn_id, syn_description,
+                                          add_minis=add_minis, popids=popids)
+            printv("Added %d synapses for gid %d" %
+                   (len(syn_descriptions_popids), gid), 2)
+            if add_minis:
+                printv("Added minis for gid %d" % gid, 2)
 
     @tools.deprecated("get_syn_descriptions_dict")
     def get_syn_descriptions(self, gid, projection=None, projections=None):
@@ -386,15 +421,16 @@ class SSim(object):
             BLPSynapse.NRRP]
 
         if projections is None:
-            connectomes = [self.bc_circuit.connectome]
+            connectomes = {'': self.bc_circuit.connectome}
         else:
-            connectomes = [
-                self.bc_circuit.projection(this_projection)
-                for this_projection in projections]
+            connectomes = {
+                this_projection: self.bc_circuit.projection(this_projection)
+                for this_projection in projections}
 
-        all_synapse_sets = []
-        for connectome in connectomes:
+        all_synapse_sets = {}
+        for proj_name, connectome in connectomes.items():
             using_sonata = False
+
             if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
                 isinstance(connectome._impl,
                            bluepy.v2.impl.connectome_sonata.SonataConnectome):
@@ -433,7 +469,7 @@ class SSim(object):
                         'Unknown nrn.h5 version "%s" for %s' %
                         (nrn_h5_version, nrn_h5_path))
 
-            all_synapse_sets.append(synapses)
+            all_synapse_sets[proj_name] = synapses
 
         if all_synapse_sets is []:
             printv('No synapses found', 5)
@@ -442,27 +478,36 @@ class SSim(object):
                 'Adding a total of %d synapse sets' %
                 len(all_synapse_sets), 5)
 
-            for synapse_set in all_synapse_sets:
+            for proj_name, synapse_set in all_synapse_sets.items():
+                if proj_name in [proj.name
+                                 for proj in self.bc.typed_sections(
+                                     'Projection')]:
+                    source_popid = \
+                        int(self.bc['Projection_' + proj_name]['PopulationID'])
+                else:
+                    source_popid = 0
+                # ATM hard coded in neurodamus
+                target_popid = 0
+                popids = (source_popid, target_popid)
 
                 printv(
-                    'Adding a total of %d synapses for this set' %
-                    synapse_set.shape[0], 5)
+                    'Adding a total of %d synapses for set %s' %
+                    (synapse_set.shape[0], proj_name), 5)
 
-                syn_id = 0
-                for index, synapse in synapse_set.iterrows():
-                    if using_sonata:
-                        syn_id += 1
-                    else:
+                for syn_id, (index, synapse) in enumerate(
+                        synapse_set.iterrows()):
+                    if not using_sonata:
                         syn_gid, syn_id = index
                         if syn_gid != gid:
                             raise Exception(
                                 "BGLibPy SSim: synapse gid doesnt match with "
                                 "cell gid !")
-                    if syn_id in syn_descriptions_dict:
+                    syn_id_proj = (proj_name, syn_id)
+                    if syn_id_proj in syn_descriptions_dict:
                         raise Exception(
                             "BGLibPy SSim: trying to add "
-                            "synapse id %d twice !" %
-                            syn_descriptions_dict)
+                            "synapse id %s twice !" %
+                            syn_id_proj)
                     if nrrp_defined:
                         old_syn_description = \
                             synapse[all_properties].values[:11]
@@ -479,7 +524,8 @@ class SSim(object):
                     syn_description = numpy.insert(
                         syn_description, [5, 5, 5], [-1, -1, -1])
 
-                    syn_descriptions_dict[syn_id] = syn_description
+                    syn_descriptions_dict[syn_id_proj] = \
+                        syn_description, popids
 
         return syn_descriptions_dict
 
@@ -563,7 +609,7 @@ class SSim(object):
                         stim_dt=self.dt)
                     printv(
                         "Added replay connection from pre_gid %d to "
-                        "post_gid %d, syn_id %d" %
+                        "post_gid %d, syn_id %s" %
                         (pre_gid, post_gid, syn_id), 5)
 
                 if connection is not None:
@@ -598,7 +644,7 @@ class SSim(object):
                     self.cells[gid].execute_neuronconfigure(expression)
 
     def _instantiate_synapse(self, gid, syn_id, syn_description,
-                             add_minis=None):
+                             add_minis=None, popids=None):
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
 
@@ -611,10 +657,20 @@ class SSim(object):
 
         if connection_parameters["add_synapse"]:
             self.add_single_synapse(gid, syn_id, syn_description,
-                                    connection_parameters)
+                                    connection_parameters, popids=popids)
             if add_minis:
-                self.add_replay_minis(gid, syn_id, syn_description,
-                                      connection_parameters)
+                printv(
+                    'Adding minis for %s %s %s' %
+                    (str(syn_id),
+                     str(syn_description),
+                        str(connection_parameters)), 50)
+
+                self.add_replay_minis(
+                    gid,
+                    syn_id,
+                    syn_description,
+                    connection_parameters,
+                    popids=popids)
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
@@ -690,14 +746,15 @@ class SSim(object):
             stimulus,
             noisestim_count=noisestim_count)
 
-    def add_replay_minis(self, gid, syn_id, syn_description, syn_parameters):
+    def add_replay_minis(self, gid, syn_id, syn_description,
+                         syn_parameters, popids=None):
         """Add minis from the replay"""
         self.cells[gid].add_replay_minis(syn_id,
                                          syn_description,
-                                         syn_parameters)
+                                         syn_parameters, popids=popids)
 
     def add_single_synapse(self, gid, syn_id,
-                           syn_description, connection_modifiers):
+                           syn_description, connection_modifiers, popids=None):
         """Add a replay synapse on the cell
 
         Parameters
@@ -711,9 +768,8 @@ class SSim(object):
         connection_modifiers: dict
               Connection modifiers for the synapse
         """
-        return self.cells[gid].add_replay_synapse(syn_id,
-                                                  syn_description,
-                                                  connection_modifiers)
+        return self.cells[gid].add_replay_synapse(
+            syn_id, syn_description, connection_modifiers, popids=popids)
 
     def check_connection_contents(self, contents):
         """Check the contents of a connection block,
