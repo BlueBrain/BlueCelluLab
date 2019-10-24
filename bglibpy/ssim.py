@@ -361,7 +361,7 @@ class SSim(object):
             syn_descriptions_popids = {syn_id: syn_description_popids
                                        for syn_id, syn_description_popids in
                                        syn_descriptions_popids.items()
-                                       if syn_description_popids[0] in
+                                       if syn_description_popids[0][0] in
                                        intersect_pre_gids}
 
         # Check if there are any presynaptic cells, otherwise skip adding
