@@ -597,9 +597,9 @@ class SSim(object):
                         pre_cell=self.cells[pre_gid],
                         stim_dt=self.dt)
                     printv("Added real connection between pre_gid %d and \
-                            post_gid %d, syn_id %d" % (pre_gid,
+                            post_gid %d, syn_id %s" % (pre_gid,
                                                        post_gid,
-                                                       syn_id), 5)
+                                                       str(syn_id)), 5)
                 elif pre_spike_trains is not None:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     connection = bglibpy.Connection(

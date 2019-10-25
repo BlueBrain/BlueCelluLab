@@ -417,8 +417,8 @@ class TestSSimBaseClass_full(object):
 
             syn_desc = self.ssim.get_syn_descriptions(post_gid)[syn_id]
 
-            nt.assert_equal(pre_gid, syn_desc[0])
-            syn_type = syn_desc[13]
+            nt.assert_equal(pre_gid, syn_desc[0][0])
+            syn_type = syn_desc[0][13]
 
             nt.assert_equal(params, self.ssim._evaluate_connection_parameters(
                 pre_gid,
@@ -429,7 +429,8 @@ class TestSSimBaseClass_full(object):
         """SSim: Check if SynapseConfigure works correctly"""
         gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
-        pre_datas = numpy.array(self.ssim.get_syn_descriptions(gid))
+        pre_datas = numpy.array(
+            [x[0] for x in self.ssim.get_syn_descriptions(gid)])
         # get second inh synapse (first fails)
         inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
         sid = int(inh_synapses[0][1])
@@ -442,19 +443,19 @@ class TestSSimBaseClass_full(object):
             'Weight': 2.0}
         self.ssim.add_single_synapse(
             gid,
-            sid,
+            ('', sid),
             syn_params,
             connection_modifiers)
 
         nt.assert_equal(
-            self.ssim.cells[gid].synapses[sid].hsynapse.e_GABAA, -80.6)
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAA, -80.6)
         nt.assert_equal(
-            self.ssim.cells[gid].synapses[sid].hsynapse.e_GABAB, -101.0)
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAB, -101.0)
         nt.assert_equal(
-            self.ssim.cells[gid].synapses[sid].hsynapse.tau_d_GABAA,
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_d_GABAA,
             10.0)
         nt.assert_equal(
-            self.ssim.cells[gid].synapses[sid].hsynapse.tau_r_GABAA,
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_r_GABAA,
             1.0)
 
 
