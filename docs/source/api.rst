@@ -1,14 +1,13 @@
 API Documentation
 =================
 
-.. autosummary::   
+.. autosummary::
    :nosignatures:
    :toctree: bglibpy
 
-   bglibpy.cell                                                                    
-   bglibpy.connection                                                           
-   bglibpy.simulation                                                              
-   bglibpy.ssim
-   bglibpy.synapse                                                               
-   bglibpy.tools                                                                                                                                                      
-
+   bglibpy.cell.Cell
+   bglibpy.connection.Connection
+   bglibpy.simulation.Simulation
+   bglibpy.ssim.SSim
+   bglibpy.synapse.Synapse
+   bglibpy.tools

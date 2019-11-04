@@ -37,7 +37,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
-              'numpydoc']
+              'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BGLibPy'
-copyright = u'2012, BBP'
+#copyright = u'2012, BBP'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -99,37 +99,8 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 autosummary_generate = True
-autodoc_default_options = ['show-inheritance']
+autodoc_default_options = {'members': True, 'show-inheritance': True}
 autoclass_content = 'both'
-numpydoc_show_class_members = False
-
-def _pelita_member_filter(parent_name, item_names):
-    """
-    Filter a list of autodoc items for which to generate documentation.
-
-    Include only imports that come from the documented module or its
-    submodules.
-
-    """
-    filtered_names = []
-
-    if parent_name not in sys.modules:
-        return item_names
-    module = sys.modules[parent_name]
-
-    for item_name in item_names:
-        item = getattr(module, item_name, None)
-        location = getattr(item, '__module__', None)
-
-        if location is None or (location + ".").startswith(parent_name + "."):
-            filtered_names.append(item_name)
-
-    return filtered_names
-
-# Using undocumented features of Jinja, not nice...
-from jinja2.defaults import DEFAULT_NAMESPACE
-DEFAULT_NAMESPACE['pelita_member_filter'] = _pelita_member_filter
-
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -148,7 +119,7 @@ html_theme = 'sphinx-bluebrain-theme'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = project
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -165,7 +136,7 @@ html_theme = 'sphinx-bluebrain-theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -192,7 +163,7 @@ html_last_updated_fmt = '%H:%M %b %d, %Y'
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True

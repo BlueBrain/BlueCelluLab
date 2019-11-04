@@ -272,7 +272,7 @@ class Cell(object):
         Returns
         -------
         new_name : string
-                  If `name' is NEURON-compliant, the same string is return.
+                  If `name` is NEURON-compliant, the same string is return.
                   Otherwise, hyphens are replaced by underscores and if
                   appropriate, the string is shortened.
                   Leading numbers are removed.

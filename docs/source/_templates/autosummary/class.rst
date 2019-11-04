@@ -1,5 +1,4 @@
-{{ fullname }}
-{{ underline }}
+{{ objname | escape | underline}}
 
 .. currentmodule:: {{ module }}
 
@@ -9,7 +8,6 @@
    .. rubric:: Methods
 
    .. autosummary::
-      :toctree:
       :nosignatures:
    {% for item in methods %}
       ~{{ name }}.{{ item }}
@@ -20,8 +18,6 @@
    .. rubric:: Attributes
 
    .. autosummary::
-      :toctree:
-      :nosignatures:
    {% for item in attributes %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
