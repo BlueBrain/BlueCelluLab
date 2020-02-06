@@ -455,7 +455,8 @@ class SSim(object):
                         'release', 50)
                 elif nrn_h5_version is None or nrn_h5_version < 5:
                     # Get properties without Nrrp
-                    all_properties = all_properties[:-1]
+                    if BLPSynapse.NRRP in all_properties:
+                        all_properties.remove(BLPSynapse.NRRP)
                     synapses = connectome.afferent_synapses(
                         gid,
                         properties=all_properties)
