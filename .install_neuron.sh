@@ -18,7 +18,7 @@ then
     if [ ! -d nrn ]                                               
     then
         echo "Downloading NEURON from github ..."
-        git clone --depth 1 https://github.com/nrnhines/nrn.git >download.log 2>&1
+        git clone --depth 100 https://github.com/nrnhines/nrn.git >download.log 2>&1
         git checkout 73236b12977118ae0a98d7dbbed60973994cdaee
     else                                                                         
         echo "Neuron already downloaded"
