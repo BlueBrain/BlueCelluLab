@@ -19,9 +19,6 @@ then
     then
         echo "Downloading NEURON from github ..."
         git clone https://github.com/nrnhines/nrn.git >download.log 2>&1
-        cd nrn
-        git checkout ec82c7f8da1f7665a40bab3914183b74c670f12f
-        cd ..
     else                                                                         
         echo "Neuron already downloaded"
     fi

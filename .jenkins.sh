@@ -37,6 +37,11 @@ fi
 pip install pip --upgrade
 pip install tox --upgrade   
 
+if  [ "${os}" = "Ubuntu-16.04" ]
+then
+    # Newer virtualenv creates problem with tox on ubuntu-16.04 or py27
+    pip install virtualenv==16.7.9
+fi
 
 #####
 # Tests
