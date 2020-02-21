@@ -16,6 +16,7 @@ script_dir = os.path.dirname(__file__)
 proj1_path = "/gpfs/bbp.cscs.ch/project/proj1/"
 proj35_path = "/gpfs/bbp.cscs.ch/project/proj35/"
 proj42_path = "/gpfs/bbp.cscs.ch/project/proj42/"
+proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
 
 # Example ReNCCv2 sim used in BluePy use cases
@@ -42,6 +43,12 @@ v6_test_bc_rnd123_1_path = os.path.join(proj64_path,
                                         "random123_tests/",
                                         "random123_tests_newneurod_rnd123",
                                         "BlueConfig")
+
+test_thalamus_path = os.path.join(proj55_path,
+                                  "tuncel/simulations/release",
+                                  "2020-02-04",
+                                  "bglibpy-thal-test-with-projections",
+                                  "BlueConfig")
 
 hip20180219_1_path = os.path.join(
     proj42_path,
@@ -267,6 +274,57 @@ class TestSSimBaseClass_v6_mvr_run(object):
 
             del self.ssim
 '''
+
+
+@attr('gpfs', 'thal')
+class TestSSimBaseClass_thalamus(object):
+    """Class to test SSim for thalamus with 5 cells of interest"""
+
+    def setup(self):
+        """Setup"""
+        self.ssim = None
+
+    def teardown(self):
+        """Teardown"""
+        pass
+
+    def test_run(self):
+        """SSim: Check if replay of thalamus simulation for the cells of
+        interest gives similar output to the main simulation
+        """
+
+        gids = [35089, 37922, 38466, 40190, 42227]
+
+        for gid in gids:
+
+            ssim = bglibpy.ssim.SSim(
+                        test_thalamus_path,
+                        record_dt=0.1)
+
+            ssim.instantiate_gids(
+                [gid],
+                add_synapses=True,
+                add_minis=True,
+                add_stimuli=True,
+                add_noise_stimuli=True,
+                add_hyperpolarizing_stimuli=True,
+                add_replay=True,
+                add_projections=True,
+                synapse_detail=2
+                )
+            ssim.run(3000)
+
+            time_bglibpy = ssim.get_time_trace()
+            voltage_bglibpy = ssim.get_voltage_trace(gid)
+
+            voltage_bglib = ssim.get_mainsim_voltage_trace(
+                    gid)[:len(voltage_bglibpy)]
+
+            rms_error = numpy.sqrt(
+                    numpy.mean(
+                        (voltage_bglibpy - voltage_bglib) ** 2))
+
+            nt.assert_less(rms_error, 0.055)
 
 
 @attr('gpfs', 'v6')
