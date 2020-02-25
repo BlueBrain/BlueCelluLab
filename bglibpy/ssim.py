@@ -834,20 +834,17 @@ class SSim(object):
                                                    entry['CreateMode']))
                         if 'Weight' in keys:
                             parameters['Weight'] = float(entry['Weight'])
-                        if not spontminis_set:
-                            if 'SpontMinis' in keys:
-                                parameters['SpontMinis'] = float(
-                                    entry['SpontMinis'])
-                                spontminis_set = True
-                            else:
-                                parameters['SpontMinis'] = 0.0
-                                spontminis_set = True
-                        elif 'SpontMinis' in keys:
-                            import warnings
-                            warnings.warn(
-                                "Connection '%s': SpontMinis was already set "
-                                "in previous block, IGNORING" % entry_name)
-
+                        if spontminis_set:
+                            printv("Spontminis value was set previously. "
+                                   "Overriding it with the corresponding "
+                                   "value of Connection %s" % entry_name, 1)
+                        if 'SpontMinis' in keys:
+                            parameters['SpontMinis'] = float(
+                                entry['SpontMinis'])
+                            spontminis_set = True
+                        else:
+                            parameters['SpontMinis'] = 0.0
+                            spontminis_set = True
                         if 'SynapseConfigure' in keys:
                             conf = entry['SynapseConfigure']
                             # collect list of applicable configure blocks to be
