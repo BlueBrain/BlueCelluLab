@@ -843,7 +843,6 @@ class SSim(object):
                                 entry['SpontMinis'])
                             spontminis_set = True
                         else:
-                            parameters['SpontMinis'] = 0.0
                             spontminis_set = True
                         if 'SynapseConfigure' in keys:
                             conf = entry['SynapseConfigure']
