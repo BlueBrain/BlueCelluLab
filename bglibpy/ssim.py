@@ -798,7 +798,6 @@ class SSim(object):
         """
         parameters = {}
         parameters['add_synapse'] = True
-        spontminis_set = False
 
         for entry in self.connection_entries:
             entry_name = entry.name
@@ -834,16 +833,12 @@ class SSim(object):
                                                    entry['CreateMode']))
                         if 'Weight' in keys:
                             parameters['Weight'] = float(entry['Weight'])
-                        if spontminis_set:
-                            printv("Spontminis value was set previously. "
-                                   "Overriding it with the corresponding "
-                                   "value of Connection %s" % entry_name, 1)
+                        
                         if 'SpontMinis' in keys:
                             parameters['SpontMinis'] = float(
                                 entry['SpontMinis'])
-                            spontminis_set = True
-                        else:
-                            spontminis_set = True
+
+
                         if 'SynapseConfigure' in keys:
                             conf = entry['SynapseConfigure']
                             # collect list of applicable configure blocks to be
