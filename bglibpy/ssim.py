@@ -472,7 +472,7 @@ class SSim(object):
 
             all_synapse_sets[proj_name] = synapses
 
-        if all_synapse_sets is []:
+        if not all_synapse_sets:
             printv('No synapses found', 5)
         else:
             printv(
