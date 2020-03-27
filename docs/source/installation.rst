@@ -1,8 +1,7 @@
 Installation
 ============
 
-This installation guide will explain on how to install BGLibPy. For now it is
-advised to use the CSCS BBP viz cluster (bbpviz1.cscs.ch)
+This installation guide will explain on how to install BGLibPy.
 
 Installing BGLibPy
 ------------------
