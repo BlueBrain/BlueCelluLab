@@ -833,12 +833,9 @@ class SSim(object):
                                                    entry['CreateMode']))
                         if 'Weight' in keys:
                             parameters['Weight'] = float(entry['Weight'])
-                        
                         if 'SpontMinis' in keys:
                             parameters['SpontMinis'] = float(
                                 entry['SpontMinis'])
-
-
                         if 'SynapseConfigure' in keys:
                             conf = entry['SynapseConfigure']
                             # collect list of applicable configure blocks to be
