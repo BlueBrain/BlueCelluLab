@@ -16,8 +16,7 @@ pre-installed versions.
 Python
 ------
 
-Modern Linux systems will have Python 2.7 or 3 installed. However, CSCS viz still 
-has Python 2.6 as default.
+Modern Linux systems will have Python 2.7 or 3 installed.
 
 Make sure you're using a recent version of pip. It's best to run ::
 
@@ -25,41 +24,15 @@ Make sure you're using a recent version of pip. It's best to run ::
 
 before installing anything else using pip.
 
-Possibly ways to acquire Python 2.7 on CSCS viz are:
+Possibly ways to acquire Python on BB5 are:
 
 Pre-installed modules
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you want to use the NEURON NIX package mentioned below, you have to use this 
-package to load Python ::
-    
-    module load nix/python/2.7-light
+First, you need to load an archive of your choice containing Python. Then you can load Python ::
 
-Beware that are still some open issues with this NIX Python. E.g. installing
-pip packages from source:
-https://bbpteam.epfl.ch/project/issues/browse/BBPP10-763
-
-The nix module provides a very old version of pip 
-(https://bbpteam.epfl.ch/project/issues/browse/HPCTM-1060)
-So you should first create a new virtualenv and upgrade pip inside::
-
-    virtualenv testenv
-    . testenv/bin/activate
-    pip install pip --upgrade
-
-Every time you use the software you will first have to load the virtualenv 
-by executing (if you're in another directory, make sure your point to the 
-correct location of the activate script)::
-    
-    . testenv/bin/activate
-
-
-Redhat Software Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-On CSCS BBP viz it is also possible to use the Redhat Software collection ::
-
-    . /opt/rh/python27/enable
+    module load archive/2020-02
+    module load python
 
 Neuron
 ------
@@ -79,30 +52,16 @@ Possibly ways to acquire NEURON are:
 Pre-installed modules
 ~~~~~~~~~~~~~~~~~~~~~
 
-Due to an open issue (https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818),
-it's not possible to use the nix/hpc/neuron or HPC production package on the 
-CSCS BBP viz for the moment.
+First, you need to load an archive of your choice containing NEURON. Then you can load NEURON ::
 
-However, there is a temporary fix. Loading all of the following modules 
-should work ::
-
-    module load nix/hpc/neuron-nomultisend
-    module load nix/python/2.7-light
-    module load nix/dev-env-gcc
-
-In case you get something like::
-
-    Module 'nix/git/2.5.4' conflicts with the currently loaded module(s) 'git/1.8.4.3'
-
-Disable the git module first::
-
-    module unload git
+    module load archive/2020-02
+    module load neuron
 
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
 
 It's not too difficult to install NEURON from source in your home directory on
-CSCS viz.
+BB5.
 If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
 
     SRC_DIR=$HOME/src
@@ -200,9 +159,11 @@ BGLibPy git repo)
 Pre-installed modules
 ~~~~~~~~~~~~~~~~~~~~~
 
-The packages containing Neurodamus on CSCS viz won't work because they would
-use the nix/hpc/neuron package which is broken as mentioned in this open issue:
-https://bbpteam.epfl.ch/project/issues/browse/BBPP10-818
+First, you need to load an archive of your choice containing Neurodamus. 
+Then you can load Neurodamus compiled with the circuit specified such as::
+
+    module load archive/2020-03
+    module load neurodamus-thalamus/0.3
 
 BluePy
 ~~~~~~
