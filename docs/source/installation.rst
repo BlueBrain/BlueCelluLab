@@ -8,7 +8,6 @@ Installing BGLibPy
 
 You probably want to use a python virtual environment 
 (https://bbpteam.epfl.ch/project/spaces/display/BBPWFA/virtualenv). 
-Make sure you use Python 2.7.
 
 Pip install bglibpy from the BBP Devpi server::
 
