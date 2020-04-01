@@ -62,7 +62,7 @@ class Dendrogram(object):
         pylab.gcf().subplots_adjust(
             top=0.99, bottom=0.01, left=0.01, right=0.99, hspace=0.3)
 
-        if variable is "v" or variable is None:
+        if variable == "v" or variable is None:
             varbounds = [-100, 50]
         else:
             varbounds = self.proot.getTreeVarBounds(variable)

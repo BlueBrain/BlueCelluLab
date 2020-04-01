@@ -68,7 +68,7 @@ class PSegment(object):
 
     def getVariableValue(self, variable):
         """Get a variable value in a segment"""
-        if variable is "v" or \
+        if variable == "v" or \
                 bglibpy.neuron.h.execute1("{%s.%s(%f)}" %
                                           (bglibpy.neuron.h.secname(
                                               sec=self.parentsection.hsection),
