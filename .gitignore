@@ -6,5 +6,5 @@
 /dist
 /jekylltest
 /docs/build
-/.debug
-/.vscode
+.debug
+.vscode
