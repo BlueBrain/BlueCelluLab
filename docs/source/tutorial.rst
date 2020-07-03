@@ -22,16 +22,14 @@ and are constructed based on a BlueConfig of the simulation.
 
 .. code-block:: python
 
-        blueconfig = "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations\
-                /SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/knockout/\
-                L4_EXC/BlueConfig"
+        blueconfig = "PATH_TO_BGLibPy/bglibpy/tests/examples/sim_twocell_all/BlueConfig"
         ssim = bglibpy.SSim(blueconfig)
 
 Next, a cell can be instantiated from this network:
 
 .. code-block:: python
 
-        gid = 101390
+        gid = 1
         ssim.instantiate_gids([gid])
 
 The :py:class:`~bglibpy.cell.Cell` object of the instantiated gid can then be
@@ -41,8 +39,8 @@ accessed with:
 
         cell = ssim.cells[gid]
 
-The simulate that cell, the function :py:meth:`~bglibpy.ssim.SSim.run` is 
-called:
+To simulate that cell, the function :py:meth:`~bglibpy.ssim.SSim.run` is
+ called:
 
 .. code-block:: python
 
@@ -56,6 +54,28 @@ To plot the result:
         pylab.plot(cell.get_time(), cell.get_soma_voltage())
         pylab.show()
 
+More details can be specified in the simulation. See the function
+ :py:meth:`~bglibpy.ssim.SSim.instantiate_gids` for further information.
+
+To enable the synapses and spont minis in the simulation:
+
+.. code-block:: python
+
+        ssim = bglibpy.SSim(blueconfig)
+        ssim.instantiate_gids(
+                [gid],
+                add_synapses=True,
+                add_minis=True
+        )
+        ssim.run(1000)
+        cell = ssim.cells[gid]
+
+To see how enabling minis and synapses affects the recorded voltage:
+
+.. code-block:: python
+
+        pylab.plot(cell.get_time(), cell.get_soma_voltage())
+        pylab.show()
 
 Changing the verbosity
 ======================
@@ -66,3 +86,10 @@ set the verbose level
 .. code-block:: python
 
         bglibpy.set_verbose(level=100)
+
+Postsynaptic potential validation
+=================================
+BGLibPy can also be used in running pair simulations.
+Further information can be found at the documentation of
+ `psp-validation
+<https://bbp.epfl.ch/documentation/projects/psp-validation/0.1.5/index.html>`_.
