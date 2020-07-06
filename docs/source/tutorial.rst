@@ -90,6 +90,4 @@ set the verbose level
 Postsynaptic potential validation
 =================================
 BGLibPy can also be used in running pair simulations.
-Further information can be found at the documentation of
- `psp-validation
-<https://bbp.epfl.ch/documentation/projects/psp-validation/0.1.5/index.html>`_.
+Further information can be found at the documentation of `psp-validation <https://bbp.epfl.ch/documentation/projects/psp-validation/0.1.5/index.html>`_.
