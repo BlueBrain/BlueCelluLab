@@ -97,23 +97,16 @@ If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
 (The above code is based on a script called '.install_neuron.sh' in the BGLibPy
 git repo)
 
-Linux package
+Linux packages
 ~~~~~~~~~~~~~
 
-There is a deb package available for debian-flavoured linux machines. The 
-commands to install this package are ::
+On RPM systems one can install NEURON and its python interface using the following command ::
 
-    apt-get update
-    apt-get install -y wget libx11-6 python-dev git build-essential libncurses-dev
-    wget https://bootstrap.pypa.io/get-pip.py
-    python get-pip.py
-    wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.x86_64.deb
-    dpkg -i nrn-7.4.x86_64.deb
-    rm nrn-7.4.x86_64.deb
+    sudo dnf install python3-neuron
 
-    export PYTHONPATH=/usr/local/nrn/lib/python:$PYTHONPATH
+On Debian systems the corresponding command is ::
 
-(Has to be run with sudo. The PYTHONPATH export has to be run at every login)
+    sudo apt-get install python3-neuron
 
 Neurodamus
 ----------
