@@ -814,8 +814,9 @@ class Cell(object):
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
-    def add_replay_synapse(self, synapse_id, syn_description,
-                           connection_modifiers, base_seed=None, popids=None):
+    def add_replay_synapse(
+            self, synapse_id, syn_description, connection_modifiers,
+            base_seed=None, popids=None, extracellular_calcium=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise False.
@@ -833,8 +834,14 @@ class Cell(object):
             return False
 
         synapse = bglibpy.Synapse(
-            self, location, synapse_id, syn_description,
-            connection_modifiers, base_seed, popids=popids)
+            self,
+            location,
+            synapse_id,
+            syn_description,
+            connection_modifiers,
+            base_seed,
+            popids=popids,
+            extracellular_calcium=extracellular_calcium)
 
         self.synapses[synapse_id] = synapse
 
@@ -923,7 +930,7 @@ class Cell(object):
         return netcon
 
     def add_replay_minis(self, syn_id, syn_description, connection_parameters,
-                         base_seed=None, popids=None):
+                         base_seed=None, popids=None, mini_frequencies=None):
         """Add minis from the replay."""
 
         if popids is None:
@@ -950,16 +957,32 @@ class Cell(object):
         else:
             weight_scalar = 1.0
 
+        exc_mini_frequency, inh_mini_frequency = mini_frequencies \
+            if mini_frequencies is not None else (None, None)
+
+        synapse = self.synapses[syn_id]
+
+        # SpontMinis in BlueConfig takes precedence of values in nodes file
         if 'SpontMinis' in connection_parameters:
-            # add the *minis*: spontaneous synaptic events
             spont_minis_rate = connection_parameters['SpontMinis']
+        else:
+            if synapse.is_excitatory():
+                spont_minis_rate = exc_mini_frequency
+            elif synapse.is_inhibitory():
+                spont_minis_rate = inh_mini_frequency
+            else:
+                raise Exception('Synapse not inhibitory nor excitatory, '
+                                'can not set minis frequency')
+
+        if spont_minis_rate is not None:
+            # add the *minis*: spontaneous synaptic events
             self.ips[syn_id] = bglibpy.neuron.h.\
                 InhPoissonStim(location,
                                sec=self.get_hsection(post_sec_id))
 
             delay = 0.1
             self.syn_mini_netcons[syn_id] = bglibpy.neuron.h.\
-                NetCon(self.ips[syn_id], self.synapses[syn_id].hsynapse,
+                NetCon(self.ips[syn_id], synapse.hsynapse,
                        -30, delay, weight * weight_scalar)
 
             if self.rng_settings.mode == 'Random123':

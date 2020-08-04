@@ -12,6 +12,7 @@
 
 import collections
 import os
+import functools
 
 import numpy
 
@@ -119,6 +120,12 @@ class SSim(object):
         asc_dir = os.path.join(self.morph_dir, 'ascii')
         if os.path.exists(asc_dir):
             self.morph_dir = asc_dir
+
+        self.extracellular_calcium = \
+            float(self.bc.Run['ExtracellularCalcium']) \
+            if 'ExtracellularCalcium' in self.bc.Run else None
+        printv('Setting extracellular calcium to: %s' %
+               str(self.extracellular_calcium), 50)
 
     @property
     def base_seed(self):
@@ -418,7 +425,9 @@ class SSim(object):
             BLPSynapse.F_SYN,
             BLPSynapse.DTC,
             BLPSynapse.TYPE,
-            BLPSynapse.NRRP]
+            BLPSynapse.NRRP,
+            BLPSynapse.U_HILL_COEFFICIENT,
+            BLPSynapse.CONDUCTANCE_SCALE_FACTOR]
 
         if projections is None:
             connectomes = {'': self.bc_circuit.connectome}
@@ -434,6 +443,12 @@ class SSim(object):
             if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
                 isinstance(connectome._impl,
                            bluepy.v2.impl.connectome_sonata.SonataConnectome):
+
+                # older circuit don't have these properties
+                for test_property in [BLPSynapse.U_HILL_COEFFICIENT,
+                                      BLPSynapse.CONDUCTANCE_SCALE_FACTOR]:
+                    if test_property not in connectome.available_properties:
+                        all_properties.remove(test_property)
                 synapses = connectome.afferent_synapses(
                     gid,
                     properties=all_properties)
@@ -512,8 +527,22 @@ class SSim(object):
                     if nrrp_defined:
                         old_syn_description = \
                             synapse[all_properties].values[:11]
-                        nrrp = synapse[all_properties].values[11]
-                        ext_syn_description = numpy.array([-1, -1, -1, nrrp])
+                        nrrp = synapse[BLPSynapse.NRRP]
+
+                        # if the following 2 variables don't exist in the
+                        # circuit we put None, to detect that in the Synapse
+                        # code
+                        u_hill_coefficient = \
+                            synapse[BLPSynapse.U_HILL_COEFFICIENT] \
+                            if BLPSynapse.U_HILL_COEFFICIENT in synapse \
+                            else None
+                        conductance_ratio = \
+                            synapse[BLPSynapse.CONDUCTANCE_SCALE_FACTOR] \
+                            if BLPSynapse.CONDUCTANCE_SCALE_FACTOR in synapse \
+                            else None
+                        ext_syn_description = numpy.array(
+                            [-1, -1, -1,
+                             nrrp, u_hill_coefficient, conductance_ratio])
                         # 14 - 16 are dummy values, 17 is Nrrp
                         syn_description = numpy.append(
                             old_syn_description,
@@ -651,7 +680,7 @@ class SSim(object):
 
         syn_type = syn_description[13]
 
-        connection_parameters = self. _evaluate_connection_parameters(
+        connection_parameters = self._evaluate_connection_parameters(
             syn_description[0],
             gid,
             syn_type)
@@ -660,18 +689,23 @@ class SSim(object):
             self.add_single_synapse(gid, syn_id, syn_description,
                                     connection_parameters, popids=popids)
             if add_minis:
+                mini_frequencies = self.fetch_mini_frequencies(gid)
                 printv(
-                    'Adding minis for %s %s %s' %
+                    'Adding minis for synapse %s: '
+                    'syn_description=%s, connection=%s, frequency=%s' %
                     (str(syn_id),
                      str(syn_description),
-                        str(connection_parameters)), 50)
+                        str(connection_parameters),
+                        str(mini_frequencies)),
+                    50)
 
                 self.add_replay_minis(
                     gid,
                     syn_id,
                     syn_description,
                     connection_parameters,
-                    popids=popids)
+                    popids=popids,
+                    mini_frequencies=mini_frequencies)
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
@@ -748,11 +782,14 @@ class SSim(object):
             noisestim_count=noisestim_count)
 
     def add_replay_minis(self, gid, syn_id, syn_description,
-                         syn_parameters, popids=None):
+                         syn_parameters, popids=None, mini_frequencies=None):
         """Add minis from the replay"""
-        self.cells[gid].add_replay_minis(syn_id,
-                                         syn_description,
-                                         syn_parameters, popids=popids)
+        self.cells[gid].add_replay_minis(
+            syn_id,
+            syn_description,
+            syn_parameters,
+            popids=popids,
+            mini_frequencies=mini_frequencies)
 
     def add_single_synapse(self, gid, syn_id,
                            syn_description, connection_modifiers, popids=None):
@@ -770,7 +807,8 @@ class SSim(object):
               Connection modifiers for the synapse
         """
         return self.cells[gid].add_replay_synapse(
-            syn_id, syn_description, connection_modifiers, popids=popids)
+            syn_id, syn_description, connection_modifiers, popids=popids,
+            extracellular_calcium=self.extracellular_calcium)
 
     def check_connection_contents(self, contents):
         """Check the contents of a connection block,
@@ -980,20 +1018,17 @@ class SSim(object):
                 threshold = float(mecombo_info[6])
             except (ValueError, IndexError):
                 threshold = 0.0
-                # printv('WARNING: No threshold found for me-model %s, '
-                #       'replacing with 0.0!' % me_combo, 2)
             try:
                 hypamp = float(mecombo_info[7])
             except (ValueError, IndexError):
                 hypamp = 0.0
-                # printv('WARNING: No hypamp found for me-model %s, '
-                #       'replacing with 0.0!' % me_combo, 2)
             mecombo_emodels[me_combo] = emodel
             mecombo_thresholds[me_combo] = threshold
             mecombo_hypamps[me_combo] = hypamp
 
         return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
 
+    @functools.lru_cache(maxsize=100)
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
         if gid in self.bc_circuit.cells.ids():
@@ -1032,6 +1067,19 @@ class SSim(object):
         morph_name = str(cell_info['morphology'])
 
         return morph_name
+
+    def fetch_mini_frequencies(self, gid):
+        """Get inhibitory frequency of gid"""
+
+        cell_info = self.fetch_gid_cell_info(gid)
+
+        inh_mini_frequency = cell_info['inh_mini_frequency'] \
+            if 'inh_mini_frequency' in cell_info else None
+
+        exc_mini_frequency = cell_info['exc_mini_frequency'] \
+            if 'exc_mini_frequency' in cell_info else None
+
+        return exc_mini_frequency, inh_mini_frequency
 
     def fetch_cell_kwargs(self, gid):
         """Get the kwargs to instantiate a gid's Cell object"""

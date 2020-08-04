@@ -41,7 +41,11 @@ class RNGSettings(object):
         """
 
         if mode is None:
-            if blueconfig and 'RNGMode' in blueconfig.Run:
+            # Ugly, but mimicking neurodamus
+            if blueconfig and 'Simulator' in blueconfig.Run and \
+                    blueconfig.Run['Simulator'] != 'NEURON':
+                self.mode = 'Random123'
+            elif blueconfig and 'RNGMode' in blueconfig.Run:
                 self.mode = blueconfig.Run['RNGMode']
             else:
                 self.mode = default_rng_mode

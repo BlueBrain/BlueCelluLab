@@ -8,15 +8,20 @@ Class that represents a synapse in BGLibPy
 """
 
 import bglibpy
-# from bglibpy.tools import printv
+from bglibpy.tools import printv
+
+import numpy
+from scipy.optimize import fsolve
 
 
 class Synapse(object):
 
     """ Class that represents a synapse in BGLibPy """
 
-    def __init__(self, cell, location, syn_id, syn_description,
-                 connection_parameters, base_seed, popids=None):
+    def __init__(
+            self, cell, location, syn_id, syn_description,
+            connection_parameters, base_seed, popids=None,
+            extracellular_calcium=None):
         """
         Constructor
 
@@ -48,6 +53,7 @@ class Synapse(object):
         self.syn_description = syn_description
         self.connection_parameters = connection_parameters
         self.hsynapse = None
+        self.extracellular_calcium = extracellular_calcium
 
         if popids is not None:
             self.source_popid, self.target_popid = popids
@@ -65,7 +71,7 @@ class Synapse(object):
         post_seg_distance = syn_description[4]
         self.syn_offset = post_seg_distance
         # weight = syn_description[8]
-        self.syn_U = syn_description[9]
+
         self.syn_D = syn_description[10]
         self.syn_F = syn_description[11]
         self.syn_DTC = syn_description[12]
@@ -81,10 +87,10 @@ class Synapse(object):
                                 'be used together')
             self.rng_settings = cell.rng_settings
 
-        if len(syn_description) == 18:
+        if len(syn_description) >= 18:
             if syn_description[17] <= 0:
                 raise ValueError(
-                    'Value not strictly larger than 0.0 found for Nrrp:'
+                    'Value smaller than 0.0 found for Nrrp:'
                     ' %s at synapse %d in gid %d' %
                     (syn_description[17], self.sid, self.cell.gid))
             if syn_description[17] != int(syn_description[17]):
@@ -94,11 +100,17 @@ class Synapse(object):
                     (syn_description[17], self.sid, self.cell.gid))
             self.Nrrp = int(syn_description[17])
 
+            self.u_hill_coefficient = syn_description[18]
+            self.conductance_ratio = syn_description[19]
+
+        self.u_scale_factor = self.calc_u_scale_factor(
+            self.u_hill_coefficient, self.extracellular_calcium)
+        self.syn_U = self.u_scale_factor * syn_description[9]
         self.post_segx = location
 
         # pylint: enable = C0103
 
-        if self.syn_type < 100:
+        if self.is_inhibitory():
             # see: https://bbpteam.epfl.ch/
             # wiki/index.php/BlueBuilder_Specifications#NRN,
             # inhibitory synapse
@@ -142,15 +154,20 @@ class Synapse(object):
 
             rng.lognormal(0.2, 0.1)
             self.hsynapse.tau_r_GABAA = rng.repick()
-        else:
-            # else we have excitatory synapse
 
+            if self.conductance_ratio is not None:
+                self.hsynapse.GABAB_ratio = self.conductance_ratio
+        elif self.is_excitatory():
             self.mech_name = 'ProbAMPANMDA_EMS'
 
             self.hsynapse = bglibpy.neuron.h.\
                 ProbAMPANMDA_EMS(
                     self.post_segx, sec=self.cell.get_hsection(post_sec_id))
             self.hsynapse.tau_d_AMPA = self.syn_DTC
+            if self.conductance_ratio is not None:
+                self.hsynapse.NMDA_ratio = self.conductance_ratio
+        else:
+            raise Exception('Synapse not inhibitory or excitatory')
 
         self.hsynapse.Use = abs(self.syn_U)
         self.hsynapse.Dep = abs(self.syn_D)
@@ -201,8 +218,6 @@ class Synapse(object):
                 hoc_cmd = cmd % {'syn': self.hsynapse.hname()}
                 hoc_cmd = '{%s}' % hoc_cmd
                 bglibpy.neuron.h(hoc_cmd)
-                # printv("Executed hoc command: %s" % hoc_cmd, 50)
-                # printv("Use: %f" % self.hsynapse.Use, 50)
 
     def is_inhibitory(self):
         """
@@ -235,6 +250,33 @@ class Synapse(object):
         if hasattr(self, 'persistent'):
             for persistent_object in self.persistent:
                 del persistent_object
+
+    def calc_u_scale_factor(self, u_hill_coefficient,
+                            extracellular_calcium):
+        if extracellular_calcium is None or u_hill_coefficient is None:
+            return 1.0
+
+        def hill(extracellular_calcium, y_max, K_half):
+            return y_max * extracellular_calcium ** 4 / (
+                K_half ** 4 + extracellular_calcium ** 4)
+
+        def constrained_hill(K_half):
+            def f(x): return hill(2.0, x, K_half) - 1.0
+            y_max = fsolve(f, 1.0)
+            return lambda x: hill(x, y_max, K_half)
+
+        def f_scale(x, y):
+            return constrained_hill(x)(y)
+
+        u_scale_factor = numpy.vectorize(f_scale)(u_hill_coefficient,
+                                                  extracellular_calcium)
+        printv(
+            "Scaling synapse Use with u_hill_coeffient %f, "
+            "extra_cellular_calcium %f with a factor of %f" %
+            (extracellular_calcium, u_hill_coefficient, u_scale_factor),
+            50)
+
+        return u_scale_factor
 
     @property
     def info_dict(self):
@@ -277,6 +319,15 @@ class Synapse(object):
         else:
             raise Exception('Encountered unknow mech_name %s in synapse' %
                             synapse_dict['mech_name'])
+
+        synapse_dict['synapse_parameters']['conductance_ratio'] = \
+            self.conductance_ratio
+        synapse_dict['synapse_parameters']['u_hill_coefficient'] = \
+            self.u_hill_coefficient
+        synapse_dict['synapse_parameters']['u_scale_factor'] = \
+            self.u_scale_factor
+        synapse_dict['synapse_parameters']['extracellular_calcium'] = \
+            self.extracellular_calcium
 
         return synapse_dict
 
