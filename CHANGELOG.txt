@@ -1,0 +1,9 @@
+4.3:
+- Add ability to read inh/exc minis from sonata nodes file
+- Add use scaling based on hill coefficient / extracellular calcium concentration
+- Add ability to read conductance ratio from sonata nodes file
+- Rely on BluePy to read nrn.h5 version
+- Execute nosetests in parallel
+- Add OMP_NUM_THREADS=1 to test to avoid running out of resources
+- Stop testing for deprecation warning when using .syns
+- Add CHANGELOG

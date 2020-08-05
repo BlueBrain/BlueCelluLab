@@ -8,3 +8,4 @@
 /docs/build
 .debug
 .vscode
+/.python-version

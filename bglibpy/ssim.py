@@ -441,12 +441,16 @@ class SSim(object):
             using_sonata = False
 
             nrrp_defined = True
+
+            # list() to make a copy
+            connectome_properties = list(all_properties)
+
             # older circuit don't have these properties
             for test_property in [BLPSynapse.U_HILL_COEFFICIENT,
                                   BLPSynapse.CONDUCTANCE_RATIO,
                                   BLPSynapse.NRRP]:
                 if test_property not in connectome.available_properties:
-                    all_properties.remove(test_property)
+                    connectome_properties.remove(test_property)
                     if test_property == BLPSynapse.NRRP:
                         nrrp_defined = False
                     printv(
@@ -459,15 +463,15 @@ class SSim(object):
 
                 synapses = connectome.afferent_synapses(
                     gid,
-                    properties=all_properties)
+                    properties=connectome_properties)
                 using_sonata = True
                 printv('Using sonata style synapse file, not nrn.h5', 50)
             else:
                 synapses = connectome.afferent_synapses(
                     gid,
-                    properties=all_properties)
+                    properties=connectome_properties)
 
-            all_synapse_sets[proj_name] = synapses
+            all_synapse_sets[proj_name] = (synapses, connectome_properties)
 
         if not all_synapse_sets:
             printv('No synapses found', 5)
@@ -476,7 +480,8 @@ class SSim(object):
                 'Adding a total of %d synapse sets' %
                 len(all_synapse_sets), 5)
 
-            for proj_name, synapse_set in all_synapse_sets.items():
+            for proj_name, (synapse_set,
+                            connectome_properties) in all_synapse_sets.items():
                 if proj_name in [proj.name
                                  for proj in self.bc.typed_sections(
                                      'Projection')]:
@@ -508,7 +513,7 @@ class SSim(object):
                             syn_id_proj)
                     if nrrp_defined:
                         old_syn_description = \
-                            synapse[all_properties].values[:11]
+                            synapse[connectome_properties].values[:11]
                         nrrp = synapse[BLPSynapse.NRRP]
 
                         # if the following 2 variables don't exist in the
@@ -531,7 +536,7 @@ class SSim(object):
                             ext_syn_description)
                     else:
                         # old behavior
-                        syn_description = synapse[all_properties].values
+                        syn_description = synapse[connectome_properties].values
 
                     syn_description = numpy.insert(
                         syn_description, [5, 5, 5], [-1, -1, -1])
