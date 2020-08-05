@@ -6,4 +6,5 @@
 - Execute nosetests in parallel
 - Add OMP_NUM_THREADS=1 to test to avoid running out of resources
 - Stop testing for deprecation warning when using .syns
+- Use lru_cache to optimize bluepy query
 - Add CHANGELOG

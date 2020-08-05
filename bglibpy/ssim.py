@@ -12,7 +12,11 @@
 
 import collections
 import os
-import functools
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
 
 import numpy
 
@@ -1015,7 +1019,7 @@ class SSim(object):
 
         return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
 
-    @functools.lru_cache(maxsize=100)
+    @lru_cache(maxsize=100)
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
         if gid in self.bc_circuit.cells.ids():
