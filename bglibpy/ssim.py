@@ -427,7 +427,7 @@ class SSim(object):
             BLPSynapse.TYPE,
             BLPSynapse.NRRP,
             BLPSynapse.U_HILL_COEFFICIENT,
-            BLPSynapse.CONDUCTANCE_SCALE_FACTOR]
+            BLPSynapse.CONDUCTANCE_RATIO]
 
         if projections is None:
             connectomes = {'': self.bc_circuit.connectome}
@@ -440,50 +440,32 @@ class SSim(object):
         for proj_name, connectome in connectomes.items():
             using_sonata = False
 
+            nrrp_defined = True
+            # older circuit don't have these properties
+            for test_property in [BLPSynapse.U_HILL_COEFFICIENT,
+                                  BLPSynapse.CONDUCTANCE_RATIO,
+                                  BLPSynapse.NRRP]:
+                if test_property not in connectome.available_properties:
+                    all_properties.remove(test_property)
+                    if test_property == BLPSynapse.NRRP:
+                        nrrp_defined = False
+                    printv(
+                        'WARNING: %s not found, disabling' %
+                        test_property, 50)
+
             if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
                 isinstance(connectome._impl,
                            bluepy.v2.impl.connectome_sonata.SonataConnectome):
 
-                # older circuit don't have these properties
-                for test_property in [BLPSynapse.U_HILL_COEFFICIENT,
-                                      BLPSynapse.CONDUCTANCE_SCALE_FACTOR]:
-                    if test_property not in connectome.available_properties:
-                        all_properties.remove(test_property)
                 synapses = connectome.afferent_synapses(
                     gid,
                     properties=all_properties)
-                nrrp_defined = True
                 using_sonata = True
                 printv('Using sonata style synapse file, not nrn.h5', 50)
             else:
-                nrn_h5_path = connectome._impl._prefix + 'nrn.h5'
-                nrn_h5_version = self.get_nrn_h5_version(nrn_h5_path)
-
-                if nrn_h5_version == 5:
-                    # Get properties with Nrrp
-                    synapses = connectome.afferent_synapses(
-                        gid,
-                        properties=all_properties)
-                    nrrp_defined = True
-                    printv(
-                        'Version of nrn.h5 file is 5, enabling multivesicular '
-                        'release', 50)
-                elif nrn_h5_version is None or nrn_h5_version < 5:
-                    # Get properties without Nrrp
-                    if BLPSynapse.NRRP in all_properties:
-                        all_properties.remove(BLPSynapse.NRRP)
-                    synapses = connectome.afferent_synapses(
-                        gid,
-                        properties=all_properties)
-                    nrrp_defined = False
-                    printv(
-                        'Version of nrn.h5 file not specified or smaller '
-                        'than 5, '
-                        'DISABLING multivesicular release', 50)
-                else:
-                    raise ValueError(
-                        'Unknown nrn.h5 version "%s" for %s' %
-                        (nrn_h5_version, nrn_h5_path))
+                synapses = connectome.afferent_synapses(
+                    gid,
+                    properties=all_properties)
 
             all_synapse_sets[proj_name] = synapses
 
@@ -537,8 +519,8 @@ class SSim(object):
                             if BLPSynapse.U_HILL_COEFFICIENT in synapse \
                             else None
                         conductance_ratio = \
-                            synapse[BLPSynapse.CONDUCTANCE_SCALE_FACTOR] \
-                            if BLPSynapse.CONDUCTANCE_SCALE_FACTOR in synapse \
+                            synapse[BLPSynapse.CONDUCTANCE_RATIO] \
+                            if BLPSynapse.CONDUCTANCE_RATIO in synapse \
                             else None
                         ext_syn_description = numpy.array(
                             [-1, -1, -1,
@@ -1154,30 +1136,6 @@ class SSim(object):
                 index.values)
 
         return gids
-
-    @staticmethod
-    def get_nrn_h5_version(nrn_h5_path):
-        """Get version of nrn.h5 file"""
-
-        import h5py
-        with h5py.File(nrn_h5_path, 'r') as nrn_h5:
-            if 'info' not in nrn_h5 or 'version' not in nrn_h5['info'].attrs:
-                version = None
-            else:
-                version_value = nrn_h5['info'].attrs['version']
-
-                if version_value == 5 or version_value == [5]:
-                    version = 5
-                elif version_value == 3 or version_value == [3]:
-                    version = 3
-                elif version_value == 4 or version_value == [4]:
-                    version = 4
-                else:
-                    raise ValueError(
-                        'Unknown version in nrn.h5: %s' % str(version_value)
-                    )
-
-        return version
 
 
 def _parse_outdat2(path):

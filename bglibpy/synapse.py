@@ -102,6 +102,10 @@ class Synapse(object):
 
             self.u_hill_coefficient = syn_description[18]
             self.conductance_ratio = syn_description[19]
+        else:
+            self.Nrrp = None
+            self.u_hill_coefficient = None
+            self.conductance_ratio = None
 
         self.u_scale_factor = self.calc_u_scale_factor(
             self.u_hill_coefficient, self.extracellular_calcium)
@@ -173,7 +177,7 @@ class Synapse(object):
         self.hsynapse.Dep = abs(self.syn_D)
         self.hsynapse.Fac = abs(self.syn_F)
 
-        if hasattr(self, 'Nrrp'):
+        if self.Nrrp is not None:
             self.hsynapse.Nrrp = self.Nrrp
 
         if self.rng_settings.mode == "Random123":
