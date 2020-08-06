@@ -46,7 +46,7 @@ v6_test_bc_rnd123_1_path = os.path.join(proj64_path,
 
 test_thalamus_path = os.path.join(proj55_path,
                                   "tuncel/simulations/release",
-                                  "2020-02-04",
+                                  "2020-08-06-v2",
                                   "bglibpy-thal-test-with-projections",
                                   "BlueConfig")
 

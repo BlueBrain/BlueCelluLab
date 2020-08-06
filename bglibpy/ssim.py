@@ -66,7 +66,12 @@ class SSim(object):
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
 
-        if 'MEComboInfoFile' in self.bc.Run:
+        if self.node_properties_available:
+            self.use_mecombotsv = False
+            self.mecombo_emodels, \
+                self.mecombo_thresholds, \
+                self.mecombo_hypamps = self.get_sonata_mecombo_emodels()
+        elif 'MEComboInfoFile' in self.bc.Run:
             self.use_mecombotsv = True
             self.mecombo_emodels, \
                 self.mecombo_thresholds, \
@@ -130,6 +135,20 @@ class SSim(object):
             if 'ExtracellularCalcium' in self.bc.Run else None
         printv('Setting extracellular calcium to: %s' %
                str(self.extracellular_calcium), 50)
+
+    @property
+    def node_properties_available(self):
+        """Checks if the node properties can be used."""
+        node_props = set(
+            (
+                "@dynamics:holding_current",
+                "@dynamics:threshold_current",
+                "model_template",
+            )
+        )
+        return (
+            len(self.bc_circuit.cells.available_properties & node_props) == 3
+        )
 
     @property
     def base_seed(self):
@@ -1019,6 +1038,39 @@ class SSim(object):
 
         return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
 
+    def get_sonata_mecombo_emodels(self):
+        """Extracts the model template, holding and threshold currents.
+
+        Returns:
+            tuple of dicts containing the emodels, threshold and holding
+            currents for every cell.
+        """
+        all_gids = self.bc_circuit.cells.ids()
+        mecombo_emodels = {}
+        mecombo_thresholds = {}
+        mecombo_holding_currs = {}
+
+        for gid in all_gids:
+            cell_props = self.bc_circuit.cells.get(
+                gid,
+                properties=[
+                    "@dynamics:holding_current",
+                    "@dynamics:threshold_current",
+                    "model_template",
+                ],
+            )
+            me_combo = cell_props["model_template"]
+            me_combo = me_combo.split("hoc:")[1]
+            mecombo_emodels[me_combo] = me_combo
+            mecombo_thresholds[me_combo] = cell_props[
+                "@dynamics:threshold_current"
+            ]
+            mecombo_holding_currs[me_combo] = cell_props[
+                "@dynamics:holding_current"
+            ]
+
+        return mecombo_emodels, mecombo_thresholds, mecombo_holding_currs
+
     @lru_cache(maxsize=100)
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
@@ -1033,9 +1085,11 @@ class SSim(object):
         """Fetch mecombo name for a certain gid"""
 
         cell_info = self.fetch_gid_cell_info(gid)
-
-        me_combo = str(cell_info['me_combo'])
-
+        if self.node_properties_available:
+            me_combo = str(cell_info['model_template'])
+            me_combo = me_combo.split('hoc:')[1]
+        else:
+            me_combo = str(cell_info['me_combo'])
         return me_combo
 
     def fetch_emodel_name(self, gid):
@@ -1082,7 +1136,7 @@ class SSim(object):
         morph_filename = '%s.%s' % \
             (self.fetch_morph_name(gid), 'asc')
 
-        if self.use_mecombotsv:
+        if self.use_mecombotsv or self.node_properties_available:
             me_combo = self.fetch_mecombo_name(gid)
             extra_values = {
                 'threshold_current': self.mecombo_thresholds[me_combo],
