@@ -298,8 +298,8 @@ class TestSSimBaseClass_thalamus(object):
         for gid in gids:
 
             ssim = bglibpy.ssim.SSim(
-                        test_thalamus_path,
-                        record_dt=0.1)
+                test_thalamus_path,
+                record_dt=0.1)
 
             ssim.instantiate_gids(
                 [gid],
@@ -310,19 +310,17 @@ class TestSSimBaseClass_thalamus(object):
                 add_hyperpolarizing_stimuli=True,
                 add_replay=True,
                 add_projections=True,
-                synapse_detail=2
-                )
-            ssim.run(3000)
+            )
+            ssim.run(300)
 
-            time_bglibpy = ssim.get_time_trace()
-            voltage_bglibpy = ssim.get_voltage_trace(gid)
+            voltage_bglibpy = ssim.get_voltage_trace(gid)[1:]
 
             voltage_bglib = ssim.get_mainsim_voltage_trace(
-                    gid)[:len(voltage_bglibpy)]
+                gid)[:len(voltage_bglibpy)]
 
             rms_error = numpy.sqrt(
-                    numpy.mean(
-                        (voltage_bglibpy - voltage_bglib) ** 2))
+                numpy.mean(
+                    (voltage_bglibpy - voltage_bglib) ** 2))
 
             nt.assert_less(rms_error, 0.055)
 
