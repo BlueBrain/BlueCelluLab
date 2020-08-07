@@ -55,6 +55,57 @@ def test_merge_pre_spike_trains():
             train3))
 
 
+class TestSonataNodeInput(object):
+    """Tests the Sonata nodes.h5 input specified as CellLibraryFile."""
+
+    def setup(self):
+        """Modify the BlueConfig to have absolute path to sonata.
+
+        Bluepy requires absolute path for the CellLibraryFile.
+        """
+        import bluepy_configfile
+        from bluepy_configfile.configfile import BlueConfig
+
+        prev_cwd = os.getcwd()
+        os.chdir("%s/examples/sim_sonata_node" % script_dir)
+
+        with open("BlueConfigTemplate") as f_template_config:
+            config = BlueConfig(f_template_config)
+
+        nodes_h5_abs_path = os.path.abspath("./nodes.h5")
+        circuit_path_abs_path = os.path.abspath("../circuit_twocell_example1")
+
+        config.Run.CellLibraryFile = nodes_h5_abs_path
+        config.Run.CircuitPath = circuit_path_abs_path
+        config.Run.MorphologyPath = os.path.join(
+            circuit_path_abs_path, "morphologies"
+        )
+        config.Run.METypePath = os.path.join(circuit_path_abs_path, "ccells")
+        config.Run.nrnPath = os.path.join(
+            circuit_path_abs_path, "ncsFunctionalAllRecipePathways"
+        )
+
+        with open("./BlueConfig", "w") as f:
+            f.writelines(str(config))
+
+        os.chdir(prev_cwd)
+
+    def test_sim_with_sonata_node(self):
+        """Test instantiation of SSim using sonata nodes file."""
+        blueconfig = "%s/examples/sim_sonata_node/BlueConfig" % script_dir
+
+        ssim = bglibpy.SSim(blueconfig)
+        gid = 10
+
+        assert ssim.node_properties_available
+        assert set(ssim.mecombo_thresholds.keys()) == set(
+            (ssim.mecombo_hypamps.keys())
+        )
+        assert set(ssim.mecombo_emodels.keys()) == set(
+            (ssim.mecombo_hypamps.keys())
+        )
+
+
 class TestSSimBaseClass_twocell_forwardskip(object):
 
     """Class to test SSim with two cell circuit"""
