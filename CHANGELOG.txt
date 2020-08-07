@@ -1,3 +1,6 @@
+4.3.8:
+- Vectorised usage of bluepy api for get_sonama_mecombo_emodels
+
 4.3.4:
 - Add node_properties_available to check if nodes.h5 can be used
 - Add get_sonata_mecombo_emodels to extract nodes.h5 properties

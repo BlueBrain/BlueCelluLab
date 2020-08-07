@@ -12,6 +12,7 @@
 
 import collections
 import os
+import pandas as pd
 
 try:
     from functools import lru_cache
@@ -68,8 +69,8 @@ class SSim(object):
 
         if self.node_properties_available:
             self.use_mecombotsv = False
-            self.mecombo_emodels, \
-                self.mecombo_thresholds, \
+            self.mecombo_emodels = None
+            self.mecombo_thresholds, \
                 self.mecombo_hypamps = self.get_sonata_mecombo_emodels()
         elif 'MEComboInfoFile' in self.bc.Run:
             self.use_mecombotsv = True
@@ -1036,37 +1037,30 @@ class SSim(object):
         return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
 
     def get_sonata_mecombo_emodels(self):
-        """Extracts the model template, holding and threshold currents.
+        """Extracts the holding and threshold currents.
 
         Returns:
-            tuple of dicts containing the emodels, threshold and holding
+            tuple of dicts containing the threshold and holding
             currents for every cell.
         """
-        all_gids = self.bc_circuit.cells.ids()
-        mecombo_emodels = {}
-        mecombo_thresholds = {}
-        mecombo_holding_currs = {}
+        cell_props = self.bc_circuit.cells.get(
+            None,
+            properties=[
+                "@dynamics:holding_current",
+                "@dynamics:threshold_current",
+                "model_template",
+            ],
+        )
 
-        for gid in all_gids:
-            cell_props = self.bc_circuit.cells.get(
-                gid,
-                properties=[
-                    "@dynamics:holding_current",
-                    "@dynamics:threshold_current",
-                    "model_template",
-                ],
-            )
-            me_combo = cell_props["model_template"]
-            me_combo = me_combo.split("hoc:")[1]
-            mecombo_emodels[me_combo] = me_combo
-            mecombo_thresholds[me_combo] = cell_props[
-                "@dynamics:threshold_current"
-            ]
-            mecombo_holding_currs[me_combo] = cell_props[
-                "@dynamics:holding_current"
-            ]
+        cell_props["model_template"] = (
+            cell_props["model_template"].str.split("hoc:").str[1]
+        )
+        cell_props = cell_props.set_index("model_template").to_dict()
 
-        return mecombo_emodels, mecombo_thresholds, mecombo_holding_currs
+        mecombo_thresholds = cell_props["@dynamics:threshold_current"]
+        mecombo_holding_currs = cell_props["@dynamics:holding_current"]
+
+        return mecombo_thresholds, mecombo_holding_currs
 
     @lru_cache(maxsize=100)
     def fetch_gid_cell_info(self, gid):
