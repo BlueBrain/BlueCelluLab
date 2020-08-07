@@ -139,16 +139,13 @@ class SSim(object):
     @property
     def node_properties_available(self):
         """Checks if the node properties can be used."""
-        node_props = set(
-            (
-                "@dynamics:holding_current",
-                "@dynamics:threshold_current",
-                "model_template",
-            )
-        )
-        return (
-            len(self.bc_circuit.cells.available_properties & node_props) == 3
-        )
+        node_props = {
+            "@dynamics:holding_current",
+            "@dynamics:threshold_current",
+            "model_template",
+        }
+
+        return node_props.issubset(self.bc_circuit.cells.available_properties)
 
     @property
     def base_seed(self):
