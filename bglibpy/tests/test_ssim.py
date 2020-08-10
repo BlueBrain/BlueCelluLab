@@ -101,9 +101,7 @@ class TestSonataNodeInput(object):
         assert set(ssim.mecombo_thresholds.keys()) == set(
             (ssim.mecombo_hypamps.keys())
         )
-        assert set(ssim.mecombo_emodels.keys()) == set(
-            (ssim.mecombo_hypamps.keys())
-        )
+        assert ssim.mecombo_emodels is None
 
 
 class TestSSimBaseClass_twocell_forwardskip(object):
