@@ -1,3 +1,6 @@
+4.3.9:
+- Add support for a* targets in connection blocks
+
 4.3.8:
 - Vectorised usage of bluepy api for get_sonama_mecombo_emodels
 

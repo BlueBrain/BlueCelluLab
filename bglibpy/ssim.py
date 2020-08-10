@@ -12,7 +12,6 @@
 
 import collections
 import os
-import pandas as pd
 
 try:
     from functools import lru_cache
@@ -851,43 +850,50 @@ class SSim(object):
             src = entry['Source']
             dest = entry['Destination']
 
-            if src in self.all_targets_dict and dest in self.all_targets_dict:
-                if pre_gid in self.all_targets_dict[src] and \
-                        post_gid in self.all_targets_dict[dest]:
-                    # whatever specified in this block, is applied to gid
-                    apply_parameters = True
-                    keys = set(entry.keys())
+            src_matches = (
+                src == 'a%d' % pre_gid or
+                (src in self.all_targets_dict
+                 and pre_gid in self.all_targets_dict[src]))
+            dest_matches = (
+                dest == 'a%d' % post_gid
+                        or (dest in self.all_targets_dict
+                            and post_gid in self.all_targets_dict[dest]))
 
-                    if 'SynapseID' in keys:
-                        if int(entry['SynapseID']) != syn_type:
-                            apply_parameters = False
+            if src_matches and dest_matches:
+                # whatever specified in this block, is applied to gid
+                apply_parameters = True
+                keys = set(entry.keys())
 
-                    if 'Delay' in keys:
-                        parameters.setdefault('DelayWeights', []).append((
-                            float(entry['Delay']),
-                            float(entry['Weight'])))
+                if 'SynapseID' in keys:
+                    if int(entry['SynapseID']) != syn_type:
                         apply_parameters = False
 
-                    if apply_parameters:
-                        if 'CreateMode' in keys:
-                            if entry['CreateMode'] == 'NoCreate':
-                                parameters['add_synapse'] = False
-                            else:
-                                raise Exception('Connection %s: Unknown '
-                                                'CreateMode option %s'
-                                                % (entry_name,
-                                                   entry['CreateMode']))
-                        if 'Weight' in keys:
-                            parameters['Weight'] = float(entry['Weight'])
-                        if 'SpontMinis' in keys:
-                            parameters['SpontMinis'] = float(
-                                entry['SpontMinis'])
-                        if 'SynapseConfigure' in keys:
-                            conf = entry['SynapseConfigure']
-                            # collect list of applicable configure blocks to be
-                            # applied with a "hoc exec" statement
-                            parameters.setdefault(
-                                'SynapseConfigure', []).append(conf)
+                if 'Delay' in keys:
+                    parameters.setdefault('DelayWeights', []).append((
+                        float(entry['Delay']),
+                        float(entry['Weight'])))
+                    apply_parameters = False
+
+                if apply_parameters:
+                    if 'CreateMode' in keys:
+                        if entry['CreateMode'] == 'NoCreate':
+                            parameters['add_synapse'] = False
+                        else:
+                            raise Exception('Connection %s: Unknown '
+                                            'CreateMode option %s'
+                                            % (entry_name,
+                                               entry['CreateMode']))
+                    if 'Weight' in keys:
+                        parameters['Weight'] = float(entry['Weight'])
+                    if 'SpontMinis' in keys:
+                        parameters['SpontMinis'] = float(
+                            entry['SpontMinis'])
+                    if 'SynapseConfigure' in keys:
+                        conf = entry['SynapseConfigure']
+                        # collect list of applicable configure blocks to be
+                        # applied with a "hoc exec" statement
+                        parameters.setdefault(
+                            'SynapseConfigure', []).append(conf)
 
         return parameters
 
