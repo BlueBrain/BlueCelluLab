@@ -1,3 +1,7 @@
+
+4.3.10:
+- Use analytical solution for hill coefficient
+
 4.3.9:
 - Add support for a* targets in connection blocks
 

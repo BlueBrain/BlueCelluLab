@@ -11,7 +11,6 @@ import bglibpy
 from bglibpy.tools import printv
 
 import numpy
-from scipy.optimize import fsolve
 
 
 class Synapse(object):
@@ -260,13 +259,12 @@ class Synapse(object):
         if extracellular_calcium is None or u_hill_coefficient is None:
             return 1.0
 
-        def hill(extracellular_calcium, y_max, K_half):
-            return y_max * extracellular_calcium ** 4 / (
-                K_half ** 4 + extracellular_calcium ** 4)
+        def hill(extracellular_calcium, y, K_half):
+            return y * extracellular_calcium**4 / (
+                K_half**4 + extracellular_calcium**4)
 
         def constrained_hill(K_half):
-            def f(x): return hill(2.0, x, K_half) - 1.0
-            y_max = fsolve(f, 1.0)
+            y_max = y_max = (K_half**4 + 16) / 16
             return lambda x: hill(x, y_max, K_half)
 
         def f_scale(x, y):
