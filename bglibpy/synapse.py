@@ -264,7 +264,7 @@ class Synapse(object):
                 K_half**4 + extracellular_calcium**4)
 
         def constrained_hill(K_half):
-            y_max = y_max = (K_half**4 + 16) / 16
+            y_max = (K_half**4 + 16) / 16
             return lambda x: hill(x, y_max, K_half)
 
         def f_scale(x, y):
