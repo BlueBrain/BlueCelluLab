@@ -1,3 +1,4 @@
+- Added support for MorphologyType in BlueConfig
 
 4.3.10:
 - Use analytical solution for hill coefficient

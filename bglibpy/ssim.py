@@ -121,14 +121,19 @@ class SSim(object):
         if 'Duration' in self.bc.Run:
             bglibpy.neuron.h.tstop = float(self.bc.Run['Duration'])
 
-        # backwards compatible
-        if self.morph_dir[-3:] == "/h5":
-            self.morph_dir = self.morph_dir[:-3]
+        if 'MorphologyType' in self.bc.Run:
+            self.morph_extension = self.bc.Run['MorphologyType']
+        else:
+            # backwards compatible
+            if self.morph_dir[-3:] == "/h5":
+                self.morph_dir = self.morph_dir[:-3]
 
-        # latest circuits don't have asc dir
-        asc_dir = os.path.join(self.morph_dir, 'ascii')
-        if os.path.exists(asc_dir):
-            self.morph_dir = asc_dir
+            # latest circuits don't have asc dir
+            asc_dir = os.path.join(self.morph_dir, 'ascii')
+            if os.path.exists(asc_dir):
+                self.morph_dir = asc_dir
+
+            self.morph_extension = 'asc'
 
         self.extracellular_calcium = \
             float(self.bc.Run['ExtracellularCalcium']) \
@@ -1131,7 +1136,7 @@ class SSim(object):
             '.hoc')
 
         morph_filename = '%s.%s' % \
-            (self.fetch_morph_name(gid), 'asc')
+            (self.fetch_morph_name(gid), self.morph_extension)
 
         if self.use_mecombotsv or self.node_properties_available:
             me_combo = self.fetch_mecombo_name(gid)
