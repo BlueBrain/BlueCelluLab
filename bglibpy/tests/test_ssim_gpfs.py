@@ -50,6 +50,12 @@ test_thalamus_path = os.path.join(proj55_path,
                                   "bglibpy-thal-test-with-projections",
                                   "BlueConfig")
 
+test_thalamus_no_population_id_path = os.path.join(proj55_path,
+                                  "tuncel/simulations/release",
+                                  "2020-08-06-v2",
+                                  "bglibpy-thal-test-with-projections",
+                                  "BlueConfigNoPopulationID")
+
 hip20180219_1_path = os.path.join(
     proj42_path,
     "circuits/O1/20180219",
@@ -323,6 +329,32 @@ class TestSSimBaseClass_thalamus(object):
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
             nt.assert_less(rms_error, 0.055)
+
+    def test_population_id(self):
+        """Tests the behaviour when the population id is missing."""
+
+        gid = 35089
+        ssim = bglibpy.ssim.SSim(
+                test_thalamus_no_population_id_path,
+                record_dt=0.1)
+
+        nt.assert_raises(
+        bglibpy.PopulationIDMissingError,
+        ssim.instantiate_gids,
+        [gid],
+        add_synapses=True,
+        add_projections=True
+    )
+        ssim2 = bglibpy.ssim.SSim(
+                test_thalamus_no_population_id_path,
+                record_dt=0.1, ignore_populationid_error=True)
+        # no exception
+        ssim2.instantiate_gids(
+            [gid],
+            add_synapses=True,
+            add_projections=True
+        )
+
 
 
 @attr('gpfs', 'v6')

@@ -36,7 +36,8 @@ class SSim(object):
     # pylint: disable=R0913
 
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None,
-                 base_seed=None, base_noise_seed=None, rng_mode=None):
+                 base_seed=None, base_noise_seed=None, rng_mode=None,
+                 ignore_populationid_error=False):
         """Object dealing with BlueConfig configured Small Simulations
 
         Parameters
@@ -58,6 +59,11 @@ class SSim(object):
                     Not setting this will result in the default Neurodamus
                     behavior (i.e. seed=0)
                     Has to positive integer.
+        rng_mode : str
+                    String with rng mode, if not specified mode is taken from
+                    BlueConfig.
+        ignore_populationid_error: bool
+                    Flag to ignore the missing population ids of projections.
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -88,6 +94,7 @@ class SSim(object):
             base_seed=base_seed,
             base_noise_seed=base_noise_seed)
 
+        self.ignore_populationid_error = ignore_populationid_error
         self.connection_entries = self.bc.typed_sections('Connection')
         self.all_targets = self.bc_circuit.cells.targets
         self.all_targets_dict = {}
@@ -506,12 +513,25 @@ class SSim(object):
                 len(all_synapse_sets), 5)
 
             for proj_name, (synapse_set,
-                            connectome_properties) in all_synapse_sets.items():
-                if proj_name in [proj.name
-                                 for proj in self.bc.typed_sections(
-                                     'Projection')]:
-                    source_popid = \
-                        int(self.bc['Projection_' + proj_name]['PopulationID'])
+                connectome_properties) in all_synapse_sets.items():
+                if proj_name in [
+                    proj.name for proj in self.bc.typed_sections("Projection")
+                ]:
+                    if "PopulationID" in self.bc["Projection_" + proj_name]:
+                        source_popid = int(
+                            self.bc["Projection_" + proj_name]["PopulationID"]
+                        )
+                    else:
+                        if self.ignore_populationid_error:
+                            source_popid = 0
+                        else:
+                            raise bglibpy.PopulationIDMissingError(
+                                "PopulationID is missing from projection,"
+                                " block this will lead to wrong rng seeding."
+                                " If you anyway want to overwrite this,"
+                                " use ignore_populationid_error option in SSim"
+
+                            )
                 else:
                     source_popid = 0
                 # ATM hard coded in neurodamus
