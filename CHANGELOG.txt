@@ -1,3 +1,7 @@
+4.3.18:
+- Removed all_targets_dict, since it uses too much memory in new circuits, replaced with direct bluepy call and lru_cache
+
+4.3.17:
 - Added explicit delete() method to ssim
 - Test for leftover sections in NEURON during tests
 

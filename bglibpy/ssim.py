@@ -97,10 +97,6 @@ class SSim(object):
         self.ignore_populationid_error = ignore_populationid_error
         self.connection_entries = self.bc.typed_sections('Connection')
         self.all_targets = self.bc_circuit.cells.targets
-        self.all_targets_dict = {}
-        for target in self.all_targets:
-            self.all_targets_dict[target] = \
-                self.bc_circuit.cells.ids(target)
 
         self.gids = []
         self.cells = {}
@@ -109,7 +105,7 @@ class SSim(object):
             self.bc.typed_sections("NeuronConfigure")
         self.neuronconfigure_expressions = {}
         for entry in self.neuronconfigure_entries:
-            for gid in self.all_targets_dict[entry.Target]:
+            for gid in self.bc_circuit.cells.ids(entry.Target):
                 conf = entry.Configure
                 self.neuronconfigure_expressions.\
                     setdefault(gid, []).append(conf)
@@ -513,7 +509,7 @@ class SSim(object):
                 len(all_synapse_sets), 5)
 
             for proj_name, (synapse_set,
-                connectome_properties) in all_synapse_sets.items():
+                            connectome_properties) in all_synapse_sets.items():
                 if proj_name in [
                     proj.name for proj in self.bc.typed_sections("Projection")
                 ]:
@@ -855,6 +851,24 @@ class SSim(object):
                     "Key %s in Connection blocks not supported by BGLibPy"
                     % key)
 
+    @lru_cache(maxsize=1000)
+    def is_cell_target(self, target, gid):
+        """Check if target is cell"""
+
+        return target == 'a%d' % gid
+
+    @lru_cache(maxsize=1000)
+    def is_group_target(self, target):
+        """Check if target is group of cells"""
+
+        return target in self.bc_circuit.cells.targets
+
+    @lru_cache(maxsize=1000)
+    def target_has_gid(self, target, gid):
+
+        gid_found = (gid in self.bc_circuit.cells.ids(target))
+        return gid_found
+
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
         """ Apply connection blocks in order for pre_gid, post_gid to
             determine a final connection override for this pair
@@ -875,14 +889,12 @@ class SSim(object):
             src = entry['Source']
             dest = entry['Destination']
 
-            src_matches = (
-                src == 'a%d' % pre_gid or
-                (src in self.all_targets_dict
-                 and pre_gid in self.all_targets_dict[src]))
-            dest_matches = (
-                dest == 'a%d' % post_gid
-                        or (dest in self.all_targets_dict
-                            and post_gid in self.all_targets_dict[dest]))
+            src_matches = self.is_cell_target(src, pre_gid) or \
+                (self.is_group_target(src) and
+                 self.target_has_gid(src, pre_gid))
+            dest_matches = self.is_cell_target(dest, post_gid) or \
+                (self.is_group_target(dest) and
+                 self.target_has_gid(dest, post_gid))
 
             if src_matches and dest_matches:
                 # whatever specified in this block, is applied to gid
