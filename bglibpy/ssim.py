@@ -1029,11 +1029,21 @@ class SSim(object):
         pos_voltage = voltage[numpy.where(time >= 0.0)]
         return pos_voltage
 
+    def delete(self):
+        """Delete ssim"""
+
+        # This code might look weird, but it's to make sure cells are properly
+        # delete by python
+        if hasattr(self, 'cells'):
+            for _, cell in self.cells.items():
+                cell.delete()
+            gids = list(self.cells.keys())
+            for gid in gids:
+                del self.cells[gid]
+
     def __del__(self):
         """Destructor"""
-        if hasattr(self, 'cells'):
-            for gid in self.cells:
-                self.cells[gid].delete()
+        self.delete()
 
     # Auxialliary methods ###
 

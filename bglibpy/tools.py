@@ -12,6 +12,7 @@ import multiprocessing.pool
 import warnings
 import math
 import json
+import io
 
 import numpy
 
@@ -669,3 +670,24 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, numpy.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
+
+class get_stdout(list):
+    def __enter__(self):
+        self.orig_stdout = sys.stdout
+        sys.stdout = self.stringio = io.StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self.stringio.getvalue().splitlines())
+        del self.stringio
+        sys.stdout = self.orig_stdout
+
+
+def check_empty_topology():
+    """Return true if NEURON simulator topology command is empty"""
+
+    with get_stdout() as stdout:
+        bglibpy.neuron.h.topology()
+
+    return stdout == ['', '']

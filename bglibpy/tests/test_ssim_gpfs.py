@@ -74,7 +74,8 @@ class TestSSimBaseClass_full_run(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        self.ssim.delete()
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
@@ -117,7 +118,8 @@ class TestSSimBaseClass_full_realconn(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        self.ssim.delete()
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a multi - cell full replay of a simulation """ \
@@ -186,7 +188,9 @@ class TestSSimBaseClass_v6_full_run(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        self.ssim.delete()
+
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
@@ -422,7 +426,8 @@ class TestSSimBaseClass_v6_rnd123_1(object):
 
             nt.assert_less(rms_error, 10.0)
 
-            del self.ssim
+            self.ssim.delete()
+            nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 @attr('gpfs', 'v5')
@@ -437,7 +442,8 @@ class TestSSimBaseClass_full(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        self.ssim.delete()
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_generate_mtype_list(self):
         """SSim: Test generate_mtype_list"""

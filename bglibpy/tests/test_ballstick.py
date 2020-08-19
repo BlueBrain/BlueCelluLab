@@ -127,6 +127,7 @@ def run_pyneuron(soma_l, soma_d, params):
 
 def run_pyneuron_with_template(params):
     """Run ballstick with PyNeuron and template"""
+
     bglibpy.neuron.h.load_file(params.templatefile)
     cell = bglibpy.neuron.h.ballstick_cell(0, params.morphfile)
     basal = [x for x in cell.getCell().basal]
@@ -152,6 +153,8 @@ def run_pyneuron_with_template(params):
 
     voltage = numpy.array(v_vec)
     time = numpy.array(t_vec)
+
+    cell.getCell().clear()
 
     del(syn)
     del(ns)
@@ -292,6 +295,8 @@ def test_ballstick_load():
     nt.assert_true(
         abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) <
         0.001)
+
+    del cell
 
 
 def main():

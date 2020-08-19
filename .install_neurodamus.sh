@@ -12,15 +12,15 @@ then
 
     echo "Downloading neurodamus core ..." 
     rm -rf neurodamus-core
-    git clone --depth 1 ssh://bbpcode.epfl.ch/sim/neurodamus-core
+    git clone -q --depth 1 ssh://bbpcode.epfl.ch/sim/neurodamus-core
     
     echo "Downloading neocortex channels ..."
     rm -rf neocortex
-    git clone --depth 1 --recursive ssh://bbpcode.epfl.ch/sim/models/neocortex
+    git clone -q --depth 1 --recursive ssh://bbpcode.epfl.ch/sim/models/neocortex
 
     echo "Downloading thalamus channels ..."
     rm -rf thalamus
-    git clone --depth 1 --recursive ssh://bbpcode.epfl.ch/sim/models/thalamus
+    git clone -q --depth 1 --recursive ssh://bbpcode.epfl.ch/sim/models/thalamus
 
     # Remove this line once we have a canonical v6 sim
     cp neocortex/mod/v5/Ca_HVA.mod neocortex/mod/v6

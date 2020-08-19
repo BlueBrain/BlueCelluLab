@@ -189,7 +189,8 @@ class TestCellBaseClassSynapses(object):
     def teardown(self):
         """Teardown TestCellBaseClassSynapses"""
         os.chdir(self.prev_cwd)
-        del self.ssim_bglibpy
+        self.ssim_bglibpy.delete()
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 @attr('debugtest')

@@ -3,6 +3,7 @@
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
 import os
+
 import nose.tools as nt
 # from nose.plugins.attrib import attr
 import numpy
@@ -63,7 +64,6 @@ class TestSonataNodeInput(object):
 
         Bluepy requires absolute path for the CellLibraryFile.
         """
-        import bluepy_configfile
         from bluepy_configfile.configfile import BlueConfig
 
         prev_cwd = os.getcwd()
@@ -95,7 +95,6 @@ class TestSonataNodeInput(object):
         blueconfig = "%s/examples/sim_sonata_node/BlueConfig" % script_dir
 
         ssim = bglibpy.SSim(blueconfig)
-        gid = 10
 
         assert ssim.node_properties_available
         assert set(ssim.mecombo_thresholds.keys()) == set(
@@ -141,8 +140,9 @@ class TestSSimBaseClass_twocell_forwardskip(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
+        self.ssim_bglibpy.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_empty(object):
@@ -179,9 +179,10 @@ class TestSSimBaseClass_twocell_empty(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_replay(object):
@@ -244,10 +245,11 @@ class TestSSimBaseClass_twocell_replay(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy_withoutreplay
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy_withoutreplay.delete()
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_all_realconn(object):
@@ -288,9 +290,10 @@ class TestSSimBaseClass_twocell_all_realconn(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_all(object):
@@ -345,9 +348,10 @@ class TestSSimBaseClass_twocell_all(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 def rms(trace1, trace2):
@@ -384,6 +388,7 @@ class TestSSimBaseClass_twocell_all_intersect(object):
             ssim_bglibpy.run()
 
             traces[option] = ssim_bglibpy.get_voltage_trace(1)
+            ssim_bglibpy.delete()
 
         nt.assert_true(rms(traces['intersect'], traces['no_intersect']) == 0.0)
         nt.assert_true(
@@ -392,6 +397,7 @@ class TestSSimBaseClass_twocell_all_intersect(object):
     def teardown(self):
         """Teardown"""
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_all_presynspiketrains(object):
@@ -439,9 +445,10 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_all_mvr(object):
@@ -517,10 +524,11 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglib_all
-        del self.ssim_bglibpy_mvr
-        del self.ssim_bglib_mvr
+        self.ssim_bglib_all.delete()
+        self.ssim_bglibpy_mvr.delete()
+        self.ssim_bglib_mvr.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_synapseid(object):
@@ -573,9 +581,10 @@ class TestSSimBaseClass_twocell_synapseid(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_minis_replay(object):
@@ -638,10 +647,11 @@ class TestSSimBaseClass_twocell_minis_replay(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy_withoutminis
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy_withoutminis.delete()
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_noisestim(object):
@@ -704,10 +714,11 @@ class TestSSimBaseClass_twocell_noisestim(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy_withoutstim
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy_withoutstim.delete()
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_twocell_pulsestim(object):
@@ -772,10 +783,11 @@ class TestSSimBaseClass_twocell_pulsestim(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim_bglibpy_withoutstim
-        del self.ssim_bglibpy
-        del self.ssim_bglib
+        self.ssim_bglibpy_withoutstim.delete()
+        self.ssim_bglibpy.delete()
+        self.ssim_bglib.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
 class TestSSimBaseClass_syns(object):
@@ -796,8 +808,9 @@ class TestSSimBaseClass_syns(object):
 
     def teardown(self):
         """Teardown"""
-        del self.ssim
+        self.ssim.delete()
         os.chdir(self.prev_cwd)
+        nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if Cells.hsynapses and Cells.syns return """ \
