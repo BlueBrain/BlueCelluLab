@@ -1,3 +1,6 @@
+4.3.19:
+- When get time trace from mainsim, only look at 1 gid to save memory
+
 4.3.18:
 - Removed all_targets_dict, since it uses too much memory in new circuits, replaced with direct bluepy call and lru_cache
 

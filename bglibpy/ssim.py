@@ -1009,7 +1009,8 @@ class SSim(object):
     def get_mainsim_time_trace(self):
         """Get the time trace from the main simulation"""
 
-        time = self.bc_simulation.report('soma').get().index
+        report = self.bc_simulation.report('soma')
+        time = report.get_gid(report.gids[0]).index
         return time
 
     @tools.deprecated("get_voltage_trace")
