@@ -1,3 +1,6 @@
+4.3.20:
+- Fix printv in synapse.py
+
 4.3.19:
 - When get time trace from mainsim, only look at 1 gid to save memory
 

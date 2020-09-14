@@ -275,7 +275,7 @@ class Synapse(object):
         printv(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %
-            (extracellular_calcium, u_hill_coefficient, u_scale_factor),
+            (u_hill_coefficient, extracellular_calcium, u_scale_factor),
             50)
 
         return u_scale_factor
