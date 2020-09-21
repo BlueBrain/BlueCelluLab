@@ -673,10 +673,11 @@ class SSim(object):
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
                     if "DelayWeights" in connection_parameters:
-                        for delay, weight in \
+                        for delay, weight_scale in \
                                 connection_parameters['DelayWeights']:
                             self.cells[post_gid].add_replay_delayed_weight(
-                                syn_id, delay, weight)
+                                syn_id, delay,
+                                weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
                 printv("Added synaptic connections for target post_gid %d" %
