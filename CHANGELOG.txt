@@ -1,5 +1,7 @@
 4.4.4:
 - noisestim_count to be incremented whether or not it's applied to the gid
+4.4.2:
+- Added check to make sure targets used by _evaluate_connection_parameters exist.
 4.4.1:
 - Fixed synapse_detail error log when add_minis is False and synapse detail>0
 4.4:

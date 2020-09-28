@@ -12,6 +12,7 @@
 
 import collections
 import os
+import re
 
 try:
     from functools import lru_cache
@@ -885,18 +886,26 @@ class SSim(object):
         parameters = {}
         parameters['add_synapse'] = True
 
+        gid_pttrn = re.compile("^a[0-9]+")
+
         for entry in self.connection_entries:
             entry_name = entry.name
             self.check_connection_contents(entry)
             src = entry['Source']
             dest = entry['Destination']
 
+            for target in (src, dest):
+                if not (
+                    self.is_group_target(target) or gid_pttrn.match(target)
+                ):
+                    raise bglibpy.TargetDoesNotExist(
+                        "%s target does not exist" % target
+                    )
+
             src_matches = self.is_cell_target(src, pre_gid) or \
-                (self.is_group_target(src) and
-                 self.target_has_gid(src, pre_gid))
+                (self.target_has_gid(src, pre_gid))
             dest_matches = self.is_cell_target(dest, post_gid) or \
-                (self.is_group_target(dest) and
-                 self.target_has_gid(dest, post_gid))
+                (self.target_has_gid(dest, post_gid))
 
             if src_matches and dest_matches:
                 # whatever specified in this block, is applied to gid
