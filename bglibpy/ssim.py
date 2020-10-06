@@ -277,7 +277,7 @@ class SSim(object):
             if synapse_detail > 0:
                 if add_minis is False:
                     raise Exception('SSim: synapse_detail >= 1 cannot be used'
-                                    ' with add_synapses == False')
+                                    ' with add_minis == False')
                 add_synapses = True
             if synapse_detail > 1:
                 if add_minis is False:
