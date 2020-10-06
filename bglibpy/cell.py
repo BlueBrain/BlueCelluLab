@@ -1246,7 +1246,7 @@ class Cell(object):
 
     def apical_trunk(self):
         """Return the apical trunk of the cell."""
-        if len(self.apical) is 0:
+        if len(self.apical) == 0:
             return []
         else:
             apicaltrunk = []
@@ -1258,7 +1258,7 @@ class Cell(object):
                     neuron.h.SectionRef(sec=max_diam_section).child[index]
                     for index in range(0, int(neuron.h.SectionRef(
                         sec=max_diam_section).nchild()))]
-                if len(children) is 0:
+                if len(children) == 0:
                     break
                 maxdiam = 0
                 for child in children:
