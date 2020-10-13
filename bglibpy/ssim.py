@@ -755,20 +755,19 @@ class SSim(object):
         for entry in self.bc.values():
             if entry.section_type == 'StimulusInject':
                 destination = entry.Target
+                # retrieve the stimulus to apply
+                stimulus_name = entry.Stimulus
+                # bluepy magic to add underscore Stimulus underscore
+                # stimulus_name
+                stimulus = self.bc['Stimulus_%s' % stimulus_name]
                 gids_of_target = self.bc_circuit.cells.ids(destination)
                 if gid in gids_of_target:
-                    # retrieve the stimulus to apply
-                    stimulus_name = entry.Stimulus
-                    # bluepy magic to add underscore Stimulus underscore
-                    # stimulus_name
-                    stimulus = self.bc['Stimulus_%s' % stimulus_name]
                     if stimulus.Pattern == 'Noise':
                         if add_noise_stimuli:
                             self._add_replay_noise(
                                 gid,
                                 stimulus,
                                 noisestim_count=noisestim_count)
-                        noisestim_count += 1
                     elif stimulus.Pattern == 'Hyperpolarizing':
                         if add_hyperpolarizing_stimuli:
                             self._add_replay_hypamp_injection(
@@ -787,6 +786,8 @@ class SSim(object):
                         raise Exception("Found stimulus with pattern %s, "
                                         "not supported" %
                                         stimulus.Pattern)
+                if stimulus.Pattern == 'Noise':
+                    noisestim_count += 1
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
