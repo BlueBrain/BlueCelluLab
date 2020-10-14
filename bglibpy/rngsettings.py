@@ -8,12 +8,12 @@ Class that represents a synapse in BGLibPy
 """
 
 import bglibpy
-from bglibpy import printv
+from bglibpy import printv, Singleton
 
 default_rng_mode = "Compatibility"
 
 
-class RNGSettings(object):
+class RNGSettings(Singleton):
 
     """ Class that represents RNG settings in BGLibPy"""
 
@@ -40,6 +40,7 @@ class RNGSettings(object):
                          base seed for the noise stimuli
         """
 
+        self._mode = ""
         if mode is None:
             # Ugly, but mimicking neurodamus
             if blueconfig and 'Simulator' in blueconfig.Run and \
@@ -52,13 +53,7 @@ class RNGSettings(object):
         else:
             self.mode = mode
 
-        accepted_modes = ['UpdatedMCell', 'Compatibility', 'Random123']
-        if self.mode not in accepted_modes:
-            raise ValueError(
-                "SSim: RNG mode %s not in accepted list: %s" %
-                (self.mode, accepted_modes))
-
-        printv("Setting rng mode to: %s" % self.mode, 50)
+        printv("Setting rng mode to: %s" % self._mode, 50)
 
         if base_seed is None:
             if blueconfig and 'BaseSeed' in blueconfig.Run:
@@ -68,7 +63,7 @@ class RNGSettings(object):
         else:
             self.base_seed = base_seed
 
-        if self.mode == 'Random123':
+        if self._mode == 'Random123':
             rng = bglibpy.neuron.h.Random()
             rng.Random123_globalindex(self.base_seed)
 
@@ -96,3 +91,21 @@ class RNGSettings(object):
             self.base_noise_seed = 0
         else:
             self.base_noise_seed = base_noise_seed
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, new_val):
+        """Setter method for the mode."""
+
+        options = {"Compatibility": 0, "Random123": 1, "UpdatedMCell": 2}
+        if new_val not in options.keys():
+            raise bglibpy.UndefinedRNGException(
+                "SSim: RNG mode %s not in accepted list: %s"
+                % (self.mode, list(options.keys()))
+            )
+        else:
+            bglibpy.neuron.h.rngMode = options[new_val]
+            self._mode = new_val

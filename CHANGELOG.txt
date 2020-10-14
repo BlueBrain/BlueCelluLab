@@ -1,3 +1,5 @@
+4.4.5:
+- setting RNGSettings.mode will also set bglibpy.neuron.h.rngMode automatically
 4.4.4:
 - noisestim_count to be incremented whether or not it's applied to the gid
 4.4.2:
