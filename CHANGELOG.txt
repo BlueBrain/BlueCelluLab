@@ -1,3 +1,8 @@
+4.4.6:
+- Remove pyrsistent dependency since bluepy handles it
+- Remove unused pandas dependency
+- Tox to use download=true to get the recent pip that comes with a new dependency resolver
+- removed the old bluepy-configfile-0.1.2.dev1 version dependency (bluepy already has bluepy-configfile>=0.1.11)
 4.4.5:
 - setting RNGSettings.mode will also set bglibpy.neuron.h.rngMode automatically
 4.4.4:
