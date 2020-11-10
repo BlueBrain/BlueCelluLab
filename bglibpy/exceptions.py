@@ -14,3 +14,8 @@ class TargetDoesNotExist(Exception):
 class UndefinedRNGException(Exception):
     """Raise when the RNG mode to be used does not exist."""
     pass
+
+
+class OldNeurodamusVersionError(Exception):
+    """Raise when the loaded neurodamus does not support new feature."""
+    pass

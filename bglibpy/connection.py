@@ -19,7 +19,8 @@ class Connection(object):
             post_synapse,
             pre_spiketrain=None,
             pre_cell=None,
-            stim_dt=None):
+            stim_dt=None,
+            spike_threshold=-30):
         self.persistent = []
         self.delay = post_synapse.syn_description[1]
         self.weight = post_synapse.syn_description[8]
@@ -47,9 +48,15 @@ class Connection(object):
             vecstim = bglibpy.neuron.h.VecStim()
             vecstim.play(t_vec, stim_dt)
             self.post_netcon = bglibpy.neuron.h.NetCon(
-                vecstim, self.post_synapse.hsynapse, -30,
+                vecstim, self.post_synapse.hsynapse,
+                spike_threshold,
                 self.post_netcon_delay,
                 self.post_netcon_weight)
+            # set netcon type
+            nc_param_name = 'nc_type_param_{}'.format(self.post_synapse.hsynapse).split('[')[0]
+            if hasattr(bglibpy.neuron.h, nc_param_name):
+                nc_type_param = int(getattr(bglibpy.neuron.h, nc_param_name))
+                self.post_netcon.weight[nc_type_param] = 2  # NC_REPLAY
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
         elif self.pre_cell is not None:
@@ -57,6 +64,12 @@ class Connection(object):
                 self.post_synapse.hsynapse)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
+            self.post_netcon.threshold = 10
+            # set netcon type
+            nc_param_name = 'nc_type_param_{}'.format(self.post_synapse.hsynapse).split('[')[0]
+            if hasattr(bglibpy.neuron.h, nc_param_name):
+                nc_type_param = int(getattr(bglibpy.neuron.h, nc_param_name))
+                self.post_netcon.weight[nc_type_param] = 0  # NC_PRESYN
 
     @property
     def info_dict(self):

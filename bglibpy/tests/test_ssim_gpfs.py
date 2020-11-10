@@ -18,6 +18,7 @@ proj35_path = "/gpfs/bbp.cscs.ch/project/proj35/"
 proj42_path = "/gpfs/bbp.cscs.ch/project/proj42/"
 proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
+proj83_path = "/gpfs/bbp.cscs.ch/project/proj83/"
 
 # Example ReNCCv2 sim used in BluePy use cases
 renccv2_bc_1_path = os.path.join(
@@ -55,6 +56,11 @@ test_thalamus_no_population_id_path = os.path.join(proj55_path,
                                   "2020-08-06-v2",
                                   "bglibpy-thal-test-with-projections",
                                   "BlueConfigNoPopulationID")
+
+test_single_vesicle_path = os.path.join(
+    proj83_path, "home/tuncel/bglibpy-tests/single-vesicle-minis-sim",
+    "BlueConfig"
+)
 
 hip20180219_1_path = os.path.join(
     proj42_path,
@@ -457,6 +463,58 @@ class TestSSimBaseClass_v6_rnd123_1(object):
 
             self.ssim.delete()
             nt.assert_true(bglibpy.tools.check_empty_topology())
+
+
+@attr('gpfs', 'v6')
+class TestSSimBaseClassSingleVesicleMinis(object):
+
+    """Test SSim with MinisSingleVesicle, SpikeThreshold, V_Init, Celsius"""
+
+    def setup(self):
+        """Setup"""
+        self.t_start = 0
+        self.t_stop = 500
+        self.record_dt = 0.2
+        self.len_voltage = self.t_stop / self.record_dt
+
+        self.ssim = bglibpy.ssim.SSim(
+            test_single_vesicle_path,
+            record_dt=self.record_dt)
+
+    def teardown(self):
+        """Teardown"""
+        self.ssim.delete()
+        nt.assert_true(bglibpy.tools.check_empty_topology())
+
+
+    def test_run(self):
+        """SSim: Check if a full replay with MinisSingleVesicle """ \
+            """SpikeThreshold, V_Init, Celcius produce the same voltage"""
+        gid = 4138379
+        self.ssim.instantiate_gids(
+            [gid],
+            add_synapses=True,
+            add_minis=True,
+            add_stimuli=True)
+
+        self.ssim.run(self.t_stop)
+
+        time_bglibpy = self.ssim.get_time_trace()
+        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
+        nt.assert_equal(len(time_bglibpy), self.len_voltage)
+        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
+
+        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
+            gid, self.t_start, self.t_stop, self.record_dt)
+
+        time_bglib = self.ssim.get_mainsim_time_trace()[
+            :len(voltage_bglibpy)]
+
+        rms_error = numpy.sqrt(
+            numpy.mean(
+                (voltage_bglibpy - voltage_bglib) ** 2))
+
+        nt.assert_less(rms_error, 0.005)
 
 
 @attr('gpfs', 'v5')

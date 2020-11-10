@@ -145,6 +145,35 @@ class SSim(object):
         printv('Setting extracellular calcium to: %s' %
                str(self.extracellular_calcium), 50)
 
+        self.spike_threshold = \
+            float(self.bc.Run['SpikeThreshold']) \
+            if 'SpikeThreshold' in self.bc.Run else -30
+
+        if "MinisSingleVesicle" in self.bc.Run:
+            if not hasattr(
+                bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"
+            ):
+                raise bglibpy.OldNeurodamusVersionError(
+                    "Synapses don't implement minis_single_vesicle."
+                    "More recent neurodamus model required."
+                )
+            minis_single_vesicle = int(self.bc.Run["MinisSingleVesicle"])
+            printv(
+                "Setting synapses minis_single_vesicle to %d"
+                % minis_single_vesicle,
+                50,
+            )
+            bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
+                minis_single_vesicle
+            )
+            bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
+                minis_single_vesicle
+            )
+            bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
+                minis_single_vesicle
+            )
+
+
     @property
     def node_properties_available(self):
         """Checks if the node properties can be used."""
@@ -654,7 +683,8 @@ class SSim(object):
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=None,
                         pre_cell=self.cells[pre_gid],
-                        stim_dt=self.dt)
+                        stim_dt=self.dt,
+                        spike_threshold=self.spike_threshold)
                     printv("Added real connection between pre_gid %d and \
                             post_gid %d, syn_id %s" % (pre_gid,
                                                        post_gid,
@@ -665,7 +695,8 @@ class SSim(object):
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=pre_spiketrain,
                         pre_cell=None,
-                        stim_dt=self.dt)
+                        stim_dt=self.dt,
+                        spike_threshold=self.spike_threshold)
                     printv(
                         "Added replay connection from pre_gid %d to "
                         "post_gid %d, syn_id %s" %
@@ -950,7 +981,7 @@ class SSim(object):
         for cell in self.cells.itervalues():
             cell.initialize_synapses()
 
-    def run(self, t_stop=None, v_init=-65, celsius=34, dt=None,
+    def run(self, t_stop=None, v_init=None, celsius=None, dt=None,
             forward_skip=True, forward_skip_value=None,
             cvode=False, show_progress=False):
         """Simulate the SSim
@@ -991,6 +1022,16 @@ class SSim(object):
             if 'ForwardSkip' in self.bc.Run:
                 forward_skip_value = float(
                     self.bc.Run['ForwardSkip'])
+        if celsius is None:
+            if 'Celsius' in self.bc.Run:
+                celsius = float(self.bc.Run['Celsius'])
+            else:
+                celsius = 34  # default
+        if v_init is None:
+            if 'V_Init' in self.bc.Run:
+                v_init = float(self.bc.Run['V_Init'])
+            else:
+                v_init = -65  # default
 
         sim = bglibpy.Simulation()
         for gid in self.gids:
