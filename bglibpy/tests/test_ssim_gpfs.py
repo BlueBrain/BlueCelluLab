@@ -69,7 +69,13 @@ class TestSSimBaseClass_full_run(object):
 
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim(renccv2_bc_1_path, record_dt=0.2)
+        self.t_start = 0
+        self.t_stop = 500
+        self.record_dt = 0.2
+        self.len_voltage = self.t_stop / self.record_dt
+        self.ssim = bglibpy.ssim.SSim(
+            renccv2_bc_1_path, record_dt=self.record_dt
+        )
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -88,15 +94,15 @@ class TestSSimBaseClass_full_run(object):
             add_replay=True,
             add_stimuli=True)
 
-        self.ssim.run(500)
+        self.ssim.run(self.t_stop)
 
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), 2500)
-        nt.assert_equal(len(voltage_bglibpy), 2500)
+        nt.assert_equal(len(time_bglibpy), self.len_voltage)
+        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
+            gid, self.t_start, self.t_stop, self.record_dt)
 
         rms_error = numpy.sqrt(
             numpy.mean(
@@ -113,7 +119,13 @@ class TestSSimBaseClass_full_realconn(object):
 
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim(renccv2_bc_1_path, record_dt=0.2)
+        self.t_start = 0
+        self.t_stop = 200
+        self.record_dt = 0.2
+        self.len_voltage = self.t_stop / self.record_dt
+        self.ssim = bglibpy.ssim.SSim(
+            renccv2_bc_1_path, record_dt=self.record_dt
+        )
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -133,14 +145,14 @@ class TestSSimBaseClass_full_realconn(object):
             add_replay=True,
             add_stimuli=True,
             interconnect_cells=True)
-        self.ssim.run(200)
+        self.ssim.run(self.t_stop)
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gids[0])
-        nt.assert_equal(len(time_bglibpy), 1000)
-        nt.assert_equal(len(voltage_bglibpy), 1000)
+        nt.assert_equal(len(time_bglibpy), self.len_voltage)
+        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gids[0])[:len(voltage_bglibpy)]
+            gids[0], self.t_start, self.t_stop, self.record_dt)
 
         rms_error = numpy.sqrt(
             numpy.mean(
@@ -183,7 +195,13 @@ class TestSSimBaseClass_v6_full_run(object):
 
     def setup(self):
         """Setup"""
-        self.ssim = bglibpy.ssim.SSim(v6_test_bc_1_path, record_dt=0.1)
+        self.t_start = 0
+        self.t_stop = 500
+        self.record_dt = 0.1
+        self.len_voltage = self.t_stop / self.record_dt
+        self.ssim = bglibpy.ssim.SSim(
+            v6_test_bc_1_path, record_dt=self.record_dt
+        )
         nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
@@ -203,15 +221,15 @@ class TestSSimBaseClass_v6_full_run(object):
             add_replay=True,
             add_stimuli=True)
 
-        self.ssim.run(500)
+        self.ssim.run(self.t_stop)
 
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), 5000)
-        nt.assert_equal(len(voltage_bglibpy), 5000)
+        nt.assert_equal(len(time_bglibpy), self.len_voltage)
+        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
+            gid, self.t_start, self.t_stop, self.record_dt)
 
         rms_error = numpy.sqrt(
             numpy.mean(
@@ -293,6 +311,10 @@ class TestSSimBaseClass_thalamus(object):
     def setup(self):
         """Setup"""
         self.ssim = None
+        self.t_start = 0
+        self.t_stop = 300
+        self.record_dt = 0.1
+        self.len_voltage = self.t_stop / self.record_dt
 
     def teardown(self):
         """Teardown"""
@@ -309,7 +331,7 @@ class TestSSimBaseClass_thalamus(object):
 
             ssim = bglibpy.ssim.SSim(
                 test_thalamus_path,
-                record_dt=0.1)
+                record_dt=self.record_dt)
 
             ssim.instantiate_gids(
                 [gid],
@@ -321,12 +343,15 @@ class TestSSimBaseClass_thalamus(object):
                 add_replay=True,
                 add_projections=True,
             )
-            ssim.run(300)
+            ssim.run(self.t_stop)
 
             voltage_bglibpy = ssim.get_voltage_trace(gid)[1:]
 
             voltage_bglib = ssim.get_mainsim_voltage_trace(
-                gid)[:len(voltage_bglibpy)]
+                gid, self.t_start, self.t_stop, self.record_dt)[1:]
+
+            nt.assert_equal(len(voltage_bglibpy), self.len_voltage - 1)
+            nt.assert_equal(len(voltage_bglib), self.len_voltage - 1)
 
             rms_error = numpy.sqrt(
                 numpy.mean(
@@ -369,6 +394,10 @@ class TestSSimBaseClass_v6_rnd123_1(object):
     def setup(self):
         """Setup"""
         self.ssim = None
+        self.t_start = 0
+        self.t_stop = 200
+        self.record_dt = 0.1
+        self.len_voltage = self.t_stop / self.record_dt
 
     def teardown(self):
         """Teardown"""
@@ -384,7 +413,7 @@ class TestSSimBaseClass_v6_rnd123_1(object):
         for gid in gids:
             self.ssim = bglibpy.ssim.SSim(
                 v6_test_bc_rnd123_1_path,
-                record_dt=0.1)
+                record_dt=self.record_dt)
 
             self.ssim.instantiate_gids(
                 [gid],
@@ -393,15 +422,15 @@ class TestSSimBaseClass_v6_rnd123_1(object):
                 add_minis=True,
                 add_stimuli=True)
 
-            self.ssim.run(200)
+            self.ssim.run(self.t_stop)
 
             time_bglibpy = self.ssim.get_time_trace()
             voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-            nt.assert_equal(len(time_bglibpy), 2000)
-            nt.assert_equal(len(voltage_bglibpy), 2000)
+            nt.assert_equal(len(time_bglibpy), self.len_voltage)
+            nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
 
             voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-                gid)[:len(voltage_bglibpy)]
+                gid, self.t_start, self.t_stop, self.record_dt)
 
             '''
 

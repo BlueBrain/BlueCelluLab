@@ -1011,10 +1011,28 @@ class SSim(object):
             forward_skip_value=forward_skip_value,
             show_progress=show_progress)
 
-    def get_mainsim_voltage_trace(self, gid=None):
-        """Get the voltage trace from a cell from the main simulation"""
+    def get_mainsim_voltage_trace(
+        self, gid=None, t_start=None, t_stop=None, t_step=None
+    ):
+        """Get the voltage trace from a cell from the main simulation
 
-        voltage = self.bc_simulation.report('soma').get_gid(gid).values
+        Parameters:
+        -----------
+        gid: GID of interest
+        t_start, t_stop: time range of interest,
+        report time range is used by default.
+        t_step: time step (should be a multiple of report time step T;
+        equals T by default)
+
+        Returns:
+            One dimentional numpy.ndarray to represent the voltages.
+        """
+
+        voltage = (
+            self.bc_simulation.report("soma")
+            .get_gid(gid, t_start=t_start, t_end=t_stop, t_step=t_step)
+            .values
+        )
         return voltage
 
     def get_mainsim_time_trace(self):

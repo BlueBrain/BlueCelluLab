@@ -1,3 +1,5 @@
+4.4.13:
+- introducing t_start, t_stop, t_step parameters for get_mainsim_voltage_trace.
 4.4.11:
 - Use h5py<3.0.0 since it's using different data types for strings now
 4.4.6:
