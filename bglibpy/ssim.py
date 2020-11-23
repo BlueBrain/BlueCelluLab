@@ -516,19 +516,38 @@ class SSim(object):
                         'WARNING: %s not found, disabling' %
                         test_property, 50)
 
-            if hasattr(bluepy.v2.impl, 'connectome_sonata') and \
-                isinstance(connectome._impl,
-                           bluepy.v2.impl.connectome_sonata.SonataConnectome):
+            if hasattr(bluepy.v2.impl, 'connectome_sonata') and isinstance(
+                connectome._impl,
+                bluepy.v2.impl.connectome_sonata.SonataConnectome,
+            ):
+
+                # load 'afferent_section_pos' instead of '_POST_DISTANCE'
+                if 'afferent_section_pos' in connectome.available_properties:
+                    connectome_properties[
+                        connectome_properties.index('_POST_DISTANCE')
+                    ] = 'afferent_section_pos'
 
                 synapses = connectome.afferent_synapses(
-                    gid,
-                    properties=connectome_properties)
+                    gid, properties=connectome_properties
+                )
+
+                # replace '_POST_SEGMENT_ID' with -1 (as indicator for synlocation_to_segx)
+                if 'afferent_section_pos' in connectome.available_properties:
+                    synapses['_POST_SEGMENT_ID'] = -1
+
                 using_sonata = True
                 printv('Using sonata style synapse file, not nrn.h5', 50)
             else:
                 synapses = connectome.afferent_synapses(
-                    gid,
-                    properties=connectome_properties)
+                    gid, properties=connectome_properties
+                )
+
+
+            # io/synapse_reader.py:_patch_delay_fp_inaccuracies from py-neurodamus
+            dt = bglibpy.neuron.h.dt
+            synapses[BLPSynapse.AXONAL_DELAY] = (
+                synapses[BLPSynapse.AXONAL_DELAY] / dt + 1e-5
+            ).astype('i4') * dt
 
             all_synapse_sets[proj_name] = (synapses, connectome_properties)
 

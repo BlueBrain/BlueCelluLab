@@ -563,6 +563,10 @@ class Cell(object):
                 (isec, self.gid))
         length = curr_sec.L
 
+        # SONATA has pre-calculated distance field
+        if ipt == -1:
+            return syn_offset
+
         # access section to compute the distance
         if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
             ipt = neuron.h.n3d(sec=self.get_hsection(isec)) - 1 - ipt
