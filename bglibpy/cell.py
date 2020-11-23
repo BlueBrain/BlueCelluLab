@@ -79,12 +79,30 @@ class Cell(object):
             self._load_template(template_filename)
 
         if template_format == 'v6':
+            attr_names = getattr(neuron.h, self.template_name + "_NeededAttributes", None)
+            if attr_names is not None:
+                self.cell = getattr(
+                    neuron.h,
+                    self.template_name)(
+                    gid,
+                    morph_dir,
+                    morphology_name,
+                    *[extra_values[name] for name in attr_names.split(";")])
+
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
                 gid,
                 morph_dir,
                 morphology_name)
+        elif template_format == 'v6_ais_scaler':
+            self.cell = getattr(
+                neuron.h,
+                self.template_name)(
+                gid,
+                morph_dir,
+                morphology_name,
+                extra_values['AIS_scaler'])
         else:
             self.cell = getattr(
                 neuron.h,

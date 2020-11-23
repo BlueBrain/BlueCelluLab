@@ -1,3 +1,5 @@
+4.4.23:
+- added option to use hoc with AIS_scaler
 4.4.22:
 - Bluepy 1.0 integration while supporting bluepy<0.16.0
 4.4.21:
