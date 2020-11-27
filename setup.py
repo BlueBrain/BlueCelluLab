@@ -16,7 +16,8 @@ setuptools.setup(
     dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
                       "dev/+simple/bluepy/"],
     extras_require={"bbp": ["bluepy[bbp]>=0.11.10.dev1", "brain"]},
-    install_requires=["bluepy[sonata]>=0.14.12", "libsonata", "h5py<3.0.0"],
+    install_requires=["bluepy[sonata]>=0.14.12", "libsonata", "h5py<3.0.0",
+                      "voxcell<3.0.0"],
     tests_require=["bluepy[bbp]>=0.12", "brain"],
     keywords=(
         'computational neuroscience',
