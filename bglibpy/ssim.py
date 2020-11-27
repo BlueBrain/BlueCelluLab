@@ -45,6 +45,7 @@ class SSim(object):
         ----------
         blueconfig_filename : string
                               Absolute filename of the Blueconfig
+                              Alternatively the blueconfig object can be passed
         dt : float
              Timestep of the simulation
         record_dt : float
@@ -69,7 +70,7 @@ class SSim(object):
         self.dt = dt
         self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
-        self.bc_simulation = bluepy.Simulation(blueconfig_filename).v2
+        self.bc_simulation = bluepy.v2.Simulation(blueconfig_filename)
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
 

@@ -13,11 +13,14 @@ import warnings
 import math
 import json
 import io
+import copy
+import six
 
 import numpy
 
 import bglibpy
 from bglibpy import neuron
+from bluepy_configfile.configfile import BlueConfig
 
 BLUECONFIG_KEYWORDS = [
     'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
@@ -656,6 +659,35 @@ def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600,
             pool.terminate()
             yield (None, None)
     pool.terminate()
+
+
+def blueconfig_append_path(blueconfig, path, fields=None):
+    """Appends path to the certain path fields in a given blueconfig.
+
+    Args:
+        blueconfig : config object or BlueConfig file path
+        fields (list): collection of fields (str) to be modified
+        path (str): path to be appended to the fields f blueconfig
+
+    Returns:
+        bluepy_configfile.configfile.BlueConfigFile: modified config object
+    """
+
+    # if path, get the object
+    if isinstance(blueconfig, six.string_types):
+        with open(blueconfig) as f:
+            blueconfig = BlueConfig(f)
+
+    if not fields:
+        fields = ["MorphologyPath", "METypePath", "CircuitPath",
+                  "nrnPath", "CurrentDir", "OutputRoot", "TargetFile"]
+
+    new_bc = copy.deepcopy(blueconfig)
+    for field in fields:
+        old_value = new_bc.Run.__getattr__(field)
+        new_value = os.path.realpath(os.path.join(path, old_value))
+        new_bc.Run.__setattr__(field, new_value)
+    return new_bc
 
 
 class NumpyEncoder(json.JSONEncoder):

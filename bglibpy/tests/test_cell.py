@@ -160,17 +160,24 @@ class TestCellBaseClassSynapses(object):
 
     def setup(self):
         """Setup TestCellBaseClassSynapses"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_synapseid" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+
+        self.conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_synapseid")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(self.conf_pre_path, "BlueConfig"), self.conf_pre_path)
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2)
 
     def test_info_dict(self):
         """Cell: Test if info_dict is working as expected"""
 
-        cell1_info_dict = self.ssim_bglibpy.cells[1].info_dict
+        cell1_info_dict = self.ssim_bglibpy.cells[self.gid].info_dict
 
         import pprint
         cell1_info_dict_str = pprint.pformat(cell1_info_dict)
@@ -178,7 +185,9 @@ class TestCellBaseClassSynapses(object):
         # with open('cell1_info_dict.txt', 'w') as cell_info_dict_file:
         #    cell_info_dict_file.write(cell1_info_dict_str)
 
-        with open('cell1_info_dict.txt', 'r') as cell_info_dict_file:
+        expected_dict = os.path.join(self.conf_pre_path, "cell1_info_dict.txt")
+
+        with open(expected_dict, 'r') as cell_info_dict_file:
             cell1_info_dict_expected_str = cell_info_dict_file.read()
 
         # print(cell1_info_dict_str)
@@ -188,7 +197,6 @@ class TestCellBaseClassSynapses(object):
 
     def teardown(self):
         """Teardown TestCellBaseClassSynapses"""
-        os.chdir(self.prev_cwd)
         self.ssim_bglibpy.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 

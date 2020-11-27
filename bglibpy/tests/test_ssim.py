@@ -8,6 +8,7 @@ import nose.tools as nt
 # from nose.plugins.attrib import attr
 import numpy
 import bglibpy
+from bluepy_configfile.configfile import BlueConfig
 
 script_dir = os.path.dirname(__file__)
 
@@ -64,7 +65,6 @@ class TestSonataNodeInput(object):
 
         Bluepy requires absolute path for the CellLibraryFile.
         """
-        from bluepy_configfile.configfile import BlueConfig
 
         prev_cwd = os.getcwd()
         os.chdir("%s/examples/sim_sonata_node" % script_dir)
@@ -110,9 +110,14 @@ class TestSSimBaseClass_twocell_forwardskip(object):
     def setup(self):
         """Setup"""
         self.gid = 1
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig")
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_empty")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
             add_synapses=True,
@@ -141,7 +146,6 @@ class TestSSimBaseClass_twocell_forwardskip(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -151,12 +155,17 @@ class TestSSimBaseClass_twocell_empty(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_empty")
+
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
@@ -166,10 +175,10 @@ class TestSSimBaseClass_twocell_empty(object):
         """SSim: Compare the output traces of BGLib against those of """\
             """BGLibPy for two cell circuit"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -180,8 +189,6 @@ class TestSSimBaseClass_twocell_empty(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -191,37 +198,43 @@ class TestSSimBaseClass_twocell_replay(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_replay" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_replay")
+
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
         self.ssim_bglibpy_withoutreplay = bglibpy.SSim(
-            "BlueConfig",
+            modified_conf,
             record_dt=0.1)
         self.ssim_bglibpy_withoutreplay.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=False)
         self.ssim_bglibpy_withoutreplay.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -232,10 +245,10 @@ class TestSSimBaseClass_twocell_replay(object):
     def test_disable_replay(self):
         """SSim: Check if disabling the stimuli creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutreplay = \
-            self.ssim_bglibpy_withoutreplay.get_voltage_trace(1)[
+            self.ssim_bglibpy_withoutreplay.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -248,7 +261,6 @@ class TestSSimBaseClass_twocell_replay(object):
         self.ssim_bglibpy_withoutreplay.delete()
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -258,29 +270,33 @@ class TestSSimBaseClass_twocell_all_realconn(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True,
             interconnect_cells=False)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit, spike replay, minis, """ \
             """noisy stimulus and real connections between cells"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -292,7 +308,6 @@ class TestSSimBaseClass_twocell_all_realconn(object):
         """Teardown"""
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -302,28 +317,35 @@ class TestSSimBaseClass_twocell_all(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, """ \
             """minis and noisy stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -335,7 +357,7 @@ class TestSSimBaseClass_twocell_all(object):
     def test_pre_gids(self):
         """SSim: Test pre_gids() of the cells for a two cell circuit"""
 
-        pre_gids = self.ssim_bglibpy.cells[1].pre_gids()
+        pre_gids = self.ssim_bglibpy.cells[self.gid].pre_gids()
 
         nt.assert_true(len(pre_gids) == 1)
         nt.assert_true(pre_gids[0] == 2)
@@ -344,13 +366,12 @@ class TestSSimBaseClass_twocell_all(object):
         """SSim: Test pre_gid_synapse_ids() of the cells for a two """ \
             """cell circuit"""
 
-        nt.assert_equal(self.ssim_bglibpy.cells[1].pre_gids(), [2])
+        nt.assert_equal(self.ssim_bglibpy.cells[self.gid].pre_gids(), [2])
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -367,8 +388,14 @@ class TestSSimBaseClass_twocell_all_intersect(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
+
+        # make the paths absolute
+        self.modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
 
     def test_compare_traces(self):
         """SSim: Check trace generated using intersect_pre_gid"""
@@ -378,16 +405,16 @@ class TestSSimBaseClass_twocell_all_intersect(object):
         for option, intersect in [('intersect', [2]),
                                   ('no_intersect', None),
                                   ('wrong_intersect', [3])]:
-            ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+            ssim_bglibpy = bglibpy.SSim(self.modified_conf, record_dt=0.1)
             ssim_bglibpy.instantiate_gids(
-                [1],
+                [self.gid],
                 synapse_detail=1,
                 add_synapses=True,
                 add_replay=True,
                 intersect_pre_gids=intersect)
             ssim_bglibpy.run()
 
-            traces[option] = ssim_bglibpy.get_voltage_trace(1)
+            traces[option] = ssim_bglibpy.get_voltage_trace(self.gid)
             ssim_bglibpy.delete()
 
         nt.assert_true(rms(traces['intersect'], traces['no_intersect']) == 0.0)
@@ -396,7 +423,6 @@ class TestSSimBaseClass_twocell_all_intersect(object):
 
     def teardown(self):
         """Teardown"""
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -406,35 +432,31 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             add_stimuli=False,
             add_replay=False,
             add_minis=False,
             pre_spike_trains={2: [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]})
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and and pre_spike_train"""
 
         time_bglibpy = self.ssim_bglibpy.get_time_trace()
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)
-
-        '''
-        import matplotlib
-        matplotlib.use('Agg')
-
-        import matplotlib.pyplot as plt
-
-        plt.plot(time_bglibpy, voltage_bglibpy)
-        plt.savefig('test.png')
-        '''
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)
 
         epsp_level = numpy.max(
             voltage_bglibpy[
@@ -447,7 +469,6 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
         """Teardown"""
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -457,26 +478,33 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim_bglib_all = bglibpy.SSim("BlueConfig")
-        self.voltage_bglib_all = self.ssim_bglib_all.get_mainsim_voltage_trace(
-            gid=1)
-        os.chdir(self.prev_cwd)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
 
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all_mvr" % script_dir)
-        self.ssim_bglibpy_mvr = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglib_all = bglibpy.SSim(modified_conf)
+        self.voltage_bglib_all = self.ssim_bglib_all.get_mainsim_voltage_trace(
+            gid=self.gid)
+
+        conf_pre_path_mvr = os.path.join(
+            script_dir, "examples", "sim_twocell_all_mvr")
+        modified_conf_mvr = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path_mvr, "BlueConfig"), conf_pre_path_mvr
+        )
+        self.ssim_bglibpy_mvr = bglibpy.SSim(modified_conf_mvr, record_dt=0.1)
         self.ssim_bglibpy_mvr.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy_mvr.run()
         self.voltage_bglib_mvr = \
-            self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(gid=1)
+            self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(gid=self.gid)
 
-        self.ssim_bglib_mvr = bglibpy.SSim("BlueConfig")
 
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
@@ -506,8 +534,9 @@ class TestSSimBaseClass_twocell_all_mvr(object):
 
         nt.assert_equal(len(self.voltage_bglib_mvr), 1000)
 
-        voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_trace(1)[
-            0:len(self.voltage_bglib_mvr)]
+        voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_trace(
+            self.gid
+        )[0:len(self.voltage_bglib_mvr)]
 
         rms_error = numpy.sqrt(
             numpy.mean(
@@ -519,15 +548,13 @@ class TestSSimBaseClass_twocell_all_mvr(object):
         """SSim: Test if synapseconfigure with mvr works correctly"""
 
         nt.assert_equal(
-            '%s.Nrrp = 3.0', self.ssim_bglibpy_mvr.cells[1].synapses[('', 0)].
+            '%s.Nrrp = 3.0', self.ssim_bglibpy_mvr.cells[self.gid].synapses[('', 0)].
             synapseconfigure_cmds[-1])
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglib_all.delete()
         self.ssim_bglibpy_mvr.delete()
-        self.ssim_bglib_mvr.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -537,34 +564,46 @@ class TestSSimBaseClass_twocell_synapseid(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_synapseid" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_synapseid"
+        )
+
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, minis, """ \
             """noisy stimulus and SynapseID"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        os.chdir("../sim_twocell_all")
-        ssim_bglib_all = bglibpy.SSim("BlueConfig")
+        conf_pre_path_all = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
 
-        voltage_bglib_all = ssim_bglib_all.get_mainsim_voltage_trace(gid=1)
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path_all, "BlueConfig"), conf_pre_path_all)
+
+        ssim_bglib_all = bglibpy.SSim(modified_conf)
+
+        voltage_bglib_all = ssim_bglib_all.get_mainsim_voltage_trace(
+            gid=self.gid)
 
         nt.assert_equal(len(voltage_bglib_all), 1000)
 
@@ -583,7 +622,6 @@ class TestSSimBaseClass_twocell_synapseid(object):
         """Teardown"""
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -593,37 +631,44 @@ class TestSSimBaseClass_twocell_minis_replay(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_minis_replay" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_minis_replay")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
         self.ssim_bglibpy_withoutminis = bglibpy.SSim(
-            "BlueConfig",
+            modified_conf,
             record_dt=0.1)
         self.ssim_bglibpy_withoutminis.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=1,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy_withoutminis.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay and minis"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -634,10 +679,10 @@ class TestSSimBaseClass_twocell_minis_replay(object):
     def test_disable_minis(self):
         """SSim: Check if disabling the minis creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutminis = \
-            self.ssim_bglibpy_withoutminis.get_voltage_trace(1)[
+            self.ssim_bglibpy_withoutminis.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -650,7 +695,6 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         self.ssim_bglibpy_withoutminis.delete()
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -660,37 +704,44 @@ class TestSSimBaseClass_twocell_noisestim(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_noisestim" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_noisestim")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
         self.ssim_bglibpy_withoutstim = bglibpy.SSim(
-            "BlueConfig",
+            modified_conf,
             record_dt=0.1)
         self.ssim_bglibpy_withoutstim.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=False,
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and noise stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -701,10 +752,10 @@ class TestSSimBaseClass_twocell_noisestim(object):
     def test_disable_stimuli(self):
         """SSim: Check if disabling the stimuli creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutstim = \
-            self.ssim_bglibpy_withoutstim.get_voltage_trace(1)[
+            self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -717,7 +768,6 @@ class TestSSimBaseClass_twocell_noisestim(object):
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -727,37 +777,43 @@ class TestSSimBaseClass_twocell_pulsestim(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_pulsestim" % script_dir)
-        self.ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_pulsestim")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
 
         self.ssim_bglibpy_withoutstim = bglibpy.SSim(
-            "BlueConfig",
+            modified_conf,
             record_dt=0.1)
         self.ssim_bglibpy_withoutstim.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=False,
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
 
-        self.ssim_bglib = bglibpy.SSim("BlueConfig")
+        self.ssim_bglib = bglibpy.SSim(modified_conf)
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and pulse stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
-        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(1)[
+        voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -770,10 +826,10 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         """SSim: Check if disabling the pulse stimuli creates a different """ \
             """result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(1)
+        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutstim = \
-            self.ssim_bglibpy_withoutstim.get_voltage_trace(1)[
+            self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
         rms_error = numpy.sqrt(
@@ -786,7 +842,6 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
         self.ssim_bglib.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -796,11 +851,17 @@ class TestSSimBaseClass_syns(object):
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_all" % script_dir)
-        self.ssim = bglibpy.SSim("BlueConfig", record_dt=0.1)
+        self.gid = 1
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_all")
+
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
+        )
+        self.ssim = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim.instantiate_gids(
-            [1],
+            [self.gid],
             synapse_detail=2,
             add_stimuli=True,
             add_replay=True,
@@ -809,14 +870,12 @@ class TestSSimBaseClass_syns(object):
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        os.chdir(self.prev_cwd)
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if Cells.hsynapses and Cells.syns return """ \
             """the right dictionary"""
-        gid = 1
         nt.assert_true(
             isinstance(
-                self.ssim.cells[gid].hsynapses[('', 3)].Use,
+                self.ssim.cells[self.gid].hsynapses[('', 3)].Use,
                 float))

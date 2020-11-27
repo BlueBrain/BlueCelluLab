@@ -103,14 +103,39 @@ def test_calculate_SS_voltage_subprocess():
     nt.assert_true(abs(SS_voltage_stoch - -73.9235504304) < 0.001)
 
 
+def test_blueconfig_append_path():
+    """Tools: Test blueconfig_append_path."""
+    conf_pre_path = os.path.join(
+        script_dir, "examples", "sim_twocell_empty"
+    )
+    blueconfig_path = os.path.join(conf_pre_path, "BlueConfig")
+
+    fields = ["MorphologyPath", "METypePath", "CircuitPath",
+              "nrnPath", "CurrentDir", "OutputRoot", "TargetFile"]
+
+    modified_config = bglibpy.tools.blueconfig_append_path(
+        blueconfig_path, conf_pre_path, fields=fields
+    )
+
+    for field in fields:
+        field_val = modified_config.Run.__getattr__(field)
+        nt.assert_true(os.path.isabs(field_val))
+
+
 class TestTools(object):
 
     """Class to test SSim with two cell circuit"""
 
     def setup(self):
         """Setup"""
-        self.prev_cwd = os.getcwd()
-        os.chdir("%s/examples/sim_twocell_empty" % script_dir)
+        conf_pre_path = os.path.join(
+            script_dir, "examples", "sim_twocell_empty"
+        )
+        blueconfig_path = os.path.join(conf_pre_path, "BlueConfig")
+
+        self.config = bglibpy.tools.blueconfig_append_path(
+            blueconfig_path, conf_pre_path
+        )
 
     def test_holding_current(self):
         """Tools: Test holding_current"""
@@ -121,10 +146,6 @@ class TestTools(object):
             (-0.08019584734739738, False),
                 (-0.08019289690395226, True)]:
             holding_current, holding_voltage = bglibpy.tools.holding_current(
-                expected_voltage, gid, 'BlueConfig', enable_ttx=ttx)
+                expected_voltage, gid, self.config, enable_ttx=ttx)
             nt.assert_almost_equal(holding_current, expected_current)
             nt.assert_almost_equal(holding_voltage, expected_voltage)
-
-    def teardown(self):
-        """Teardown"""
-        os.chdir(self.prev_cwd)
