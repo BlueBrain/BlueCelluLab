@@ -224,13 +224,11 @@ class TestSSimBaseClass_twocell_replay(object):
             add_replay=False)
         self.ssim_bglibpy_withoutreplay.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -245,7 +243,7 @@ class TestSSimBaseClass_twocell_replay(object):
     def test_disable_replay(self):
         """SSim: Check if disabling the stimuli creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutreplay = \
             self.ssim_bglibpy_withoutreplay.get_voltage_trace(self.gid)[
@@ -260,7 +258,6 @@ class TestSSimBaseClass_twocell_replay(object):
         """Teardown"""
         self.ssim_bglibpy_withoutreplay.delete()
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -285,14 +282,12 @@ class TestSSimBaseClass_twocell_all_realconn(object):
             interconnect_cells=False)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit, spike replay, minis, """ \
             """noisy stimulus and real connections between cells"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -307,7 +302,6 @@ class TestSSimBaseClass_twocell_all_realconn(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -334,14 +328,12 @@ class TestSSimBaseClass_twocell_all(object):
             add_replay=True)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, """ \
             """minis and noisy stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -371,7 +363,6 @@ class TestSSimBaseClass_twocell_all(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -449,8 +440,6 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
             pre_spike_trains={2: [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]})
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and and pre_spike_train"""
@@ -468,7 +457,6 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -504,7 +492,6 @@ class TestSSimBaseClass_twocell_all_mvr(object):
         self.ssim_bglibpy_mvr.run()
         self.voltage_bglib_mvr = \
             self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(gid=self.gid)
-
 
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
@@ -580,14 +567,12 @@ class TestSSimBaseClass_twocell_synapseid(object):
             add_replay=True)
         self.ssim_bglibpy.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay, minis, """ \
             """noisy stimulus and SynapseID"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(gid=self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -621,7 +606,6 @@ class TestSSimBaseClass_twocell_synapseid(object):
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -658,13 +642,11 @@ class TestSSimBaseClass_twocell_minis_replay(object):
             add_replay=True)
         self.ssim_bglibpy_withoutminis.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and spike replay and minis"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -679,7 +661,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
     def test_disable_minis(self):
         """SSim: Check if disabling the minis creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutminis = \
             self.ssim_bglibpy_withoutminis.get_voltage_trace(self.gid)[
@@ -694,7 +676,6 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         """Teardown"""
         self.ssim_bglibpy_withoutminis.delete()
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -731,13 +712,11 @@ class TestSSimBaseClass_twocell_noisestim(object):
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and noise stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -752,7 +731,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
     def test_disable_stimuli(self):
         """SSim: Check if disabling the stimuli creates a different result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutstim = \
             self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
@@ -767,7 +746,6 @@ class TestSSimBaseClass_twocell_noisestim(object):
         """Teardown"""
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 
@@ -803,13 +781,11 @@ class TestSSimBaseClass_twocell_pulsestim(object):
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
 
-        self.ssim_bglib = bglibpy.SSim(modified_conf)
-
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of """ \
             """BGLibPy for two cell circuit and pulse stimulus"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         nt.assert_equal(len(voltage_bglib), 1000)
 
@@ -826,7 +802,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         """SSim: Check if disabling the pulse stimuli creates a different """ \
             """result"""
 
-        voltage_bglib = self.ssim_bglib.get_mainsim_voltage_trace(self.gid)
+        voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
         voltage_bglibpy_withoutstim = \
             self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
@@ -841,7 +817,6 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         """Teardown"""
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
-        self.ssim_bglib.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
 

@@ -1,3 +1,6 @@
+4.4.15:
+- Refactor tests, reduce number of times ssim object is called
+- Tests to adapt blueconfig parts to have absolute paths
 4.4.14:
 - Remove python27 from the jenkins plan
 4.4.13:
