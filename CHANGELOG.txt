@@ -1,3 +1,6 @@
+4.4.18:
+- Removed bluepy 'sonata' extra in version >=0.16.0
+also remove the explicit h5py<3.0.0 dependency since bluepy handles it
 4.4.15:
 - Refactor tests, reduce number of times ssim object is called
 - Tests to adapt blueconfig parts to have absolute paths
