@@ -11,12 +11,12 @@ tox_args='-v --recreate'
 if [ "${os}" = "bb5" ]
 then
 	. /opt/rh/rh-python36/enable
-    tox_args="${tox_args} -e py3-test-v5-v6-thal-upload_docs-devpi"
+    tox_args="${tox_args} -e py3-test-style-v5-v6-thal-upload_docs-devpi"
 elif  [ "${os}" = "Ubuntu-18.04" ]
 then
-    tox_args="${tox_args} -e py3-test"
+    tox_args="${tox_args} -e py3-test-style"
 else
-    tox_args="${tox_args} -e py3-test"
+    tox_args="${tox_args} -e py3-test-style"
 fi
 
 cd $WORKSPACE

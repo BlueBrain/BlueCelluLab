@@ -36,7 +36,9 @@ class PSection(object):
         elif 'axon' in self.name:
             self.section_type = 'axonal'
         else:
-            raise Exception("PSection: Section of unknown type: %s" % self.name)
+            raise Exception(
+                "PSection: Section of unknown type: %s" %
+                self.name)
 
         self.psegments = []
         self.maxsegdiam = 0

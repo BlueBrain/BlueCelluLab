@@ -38,7 +38,7 @@ def create_extracted_simulation(
     with open(newrunsh, "w") as newrunsh_file:
         newrunsh_file.write(runsh_template)
 
-    os.chmod(newrunsh, 0755)
+    os.chmod(newrunsh, 0o755)
 
     usertarget_content = "Target Cell PreCell\n{\na2\n}\n\n" \
         "Target Cell PostCell\n{\na1\n}\n\n" \
@@ -84,8 +84,8 @@ def create_extracted_simulation(
 def main():
     """Main"""
     tstop = 100
-    #dt = 1.0/64
-    #record_dt = 1.0/8
+    # dt = 1.0/64
+    # record_dt = 1.0/8
     dt = 0.025
     record_dt = 0.1
 

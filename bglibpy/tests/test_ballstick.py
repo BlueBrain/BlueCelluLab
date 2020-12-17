@@ -19,9 +19,6 @@ except ImportError:
     gfc_imported = False
 
 
-def cyl_surface(diam, h): return numpy.pi * diam * h
-
-
 class Params:
 
     """Simulation parameters"""

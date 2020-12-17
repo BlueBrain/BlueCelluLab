@@ -989,10 +989,12 @@ class Cell(object):
                 NetCon(self.ips[syn_id], synapse.hsynapse,
                        -30, delay, weight * weight_scalar)
             # set netcon type
-            nc_param_name = 'nc_type_param_{}'.format(synapse.hsynapse).split('[')[0]
+            nc_param_name = 'nc_type_param_{}'.format(
+                synapse.hsynapse).split('[')[0]
             if hasattr(bglibpy.neuron.h, nc_param_name):
                 nc_type_param = int(getattr(bglibpy.neuron.h, nc_param_name))
-                self.syn_mini_netcons[syn_id].weight[nc_type_param] = 1  # NC_SPONTMINI
+                # NC_SPONTMINI
+                self.syn_mini_netcons[syn_id].weight[nc_type_param] = 1
 
             if self.rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \

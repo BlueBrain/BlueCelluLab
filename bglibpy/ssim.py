@@ -174,7 +174,6 @@ class SSim(object):
                 minis_single_vesicle
             )
 
-
     @property
     def node_properties_available(self):
         """Checks if the node properties can be used."""
@@ -531,7 +530,8 @@ class SSim(object):
                     gid, properties=connectome_properties
                 )
 
-                # replace '_POST_SEGMENT_ID' with -1 (as indicator for synlocation_to_segx)
+                # replace '_POST_SEGMENT_ID' with -1 (as indicator for
+                # synlocation_to_segx)
                 if 'afferent_section_pos' in connectome.available_properties:
                     synapses['_POST_SEGMENT_ID'] = -1
 
@@ -542,8 +542,8 @@ class SSim(object):
                     gid, properties=connectome_properties
                 )
 
-
-            # io/synapse_reader.py:_patch_delay_fp_inaccuracies from py-neurodamus
+            # io/synapse_reader.py:_patch_delay_fp_inaccuracies from
+            # py-neurodamus
             dt = bglibpy.neuron.h.dt
             synapses[BLPSynapse.AXONAL_DELAY] = (
                 synapses[BLPSynapse.AXONAL_DELAY] / dt + 1e-5

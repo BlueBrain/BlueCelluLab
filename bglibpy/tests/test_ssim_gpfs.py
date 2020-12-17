@@ -52,10 +52,10 @@ test_thalamus_path = os.path.join(proj55_path,
                                   "BlueConfig")
 
 test_thalamus_no_population_id_path = os.path.join(proj55_path,
-                                  "tuncel/simulations/release",
-                                  "2020-08-06-v2",
-                                  "bglibpy-thal-test-with-projections",
-                                  "BlueConfigNoPopulationID")
+                                                   "tuncel/simulations/release",
+                                                   "2020-08-06-v2",
+                                                   "bglibpy-thal-test-with-projections",
+                                                   "BlueConfigNoPopulationID")
 
 test_single_vesicle_path = os.path.join(
     proj83_path, "home/tuncel/bglibpy-tests/single-vesicle-minis-sim",
@@ -370,26 +370,25 @@ class TestSSimBaseClass_thalamus(object):
 
         gid = 35089
         ssim = bglibpy.ssim.SSim(
-                test_thalamus_no_population_id_path,
-                record_dt=0.1)
+            test_thalamus_no_population_id_path,
+            record_dt=0.1)
 
         nt.assert_raises(
-        bglibpy.PopulationIDMissingError,
-        ssim.instantiate_gids,
-        [gid],
-        add_synapses=True,
-        add_projections=True
-    )
+            bglibpy.PopulationIDMissingError,
+            ssim.instantiate_gids,
+            [gid],
+            add_synapses=True,
+            add_projections=True
+        )
         ssim2 = bglibpy.ssim.SSim(
-                test_thalamus_no_population_id_path,
-                record_dt=0.1, ignore_populationid_error=True)
+            test_thalamus_no_population_id_path,
+            record_dt=0.1, ignore_populationid_error=True)
         # no exception
         ssim2.instantiate_gids(
             [gid],
             add_synapses=True,
             add_projections=True
         )
-
 
 
 @attr('gpfs', 'v6')
@@ -485,7 +484,6 @@ class TestSSimBaseClassSingleVesicleMinis(object):
         """Teardown"""
         self.ssim.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
-
 
     def test_run(self):
         """SSim: Check if a full replay with MinisSingleVesicle """ \

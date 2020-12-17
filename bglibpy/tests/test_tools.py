@@ -5,13 +5,13 @@
 
 """Unit tests for tools.py"""
 
+from nose.plugins.attrib import attr
+import nose.tools as nt
 import os
 import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
-import nose.tools as nt
-from nose.plugins.attrib import attr
 
 '''
 @attr('bgscratch')

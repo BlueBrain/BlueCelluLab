@@ -17,7 +17,7 @@ def test_setting_rngmodes():
     try:
         rng_obj.mode = "MersenneTwister"
     except Exception as e:
-        assert type(e) is bglibpy.UndefinedRNGException
+        assert isinstance(e, bglibpy.UndefinedRNGException)
 
     # make sure only one object is created
     assert (rng_obj is bglibpy.RNGSettings())

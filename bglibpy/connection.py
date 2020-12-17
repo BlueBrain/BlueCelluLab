@@ -53,7 +53,8 @@ class Connection(object):
                 self.post_netcon_delay,
                 self.post_netcon_weight)
             # set netcon type
-            nc_param_name = 'nc_type_param_{}'.format(self.post_synapse.hsynapse).split('[')[0]
+            nc_param_name = 'nc_type_param_{}'.format(
+                self.post_synapse.hsynapse).split('[')[0]
             if hasattr(bglibpy.neuron.h, nc_param_name):
                 nc_type_param = int(getattr(bglibpy.neuron.h, nc_param_name))
                 self.post_netcon.weight[nc_type_param] = 2  # NC_REPLAY
@@ -66,7 +67,8 @@ class Connection(object):
             self.post_netcon.delay = self.post_netcon_delay
             self.post_netcon.threshold = 10
             # set netcon type
-            nc_param_name = 'nc_type_param_{}'.format(self.post_synapse.hsynapse).split('[')[0]
+            nc_param_name = 'nc_type_param_{}'.format(
+                self.post_synapse.hsynapse).split('[')[0]
             if hasattr(bglibpy.neuron.h, nc_param_name):
                 nc_type_param = int(getattr(bglibpy.neuron.h, nc_param_name))
                 self.post_netcon.weight[nc_type_param] = 0  # NC_PRESYN

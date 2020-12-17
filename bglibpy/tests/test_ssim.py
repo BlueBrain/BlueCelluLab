@@ -534,9 +534,9 @@ class TestSSimBaseClass_twocell_all_mvr(object):
     def test_synapseconfigure(self):
         """SSim: Test if synapseconfigure with mvr works correctly"""
 
+        first_synapse = self.ssim_bglibpy_mvr.cells[self.gid].synapses[('', 0)]
         nt.assert_equal(
-            '%s.Nrrp = 3.0', self.ssim_bglibpy_mvr.cells[self.gid].synapses[('', 0)].
-            synapseconfigure_cmds[-1])
+            '%s.Nrrp = 3.0', first_synapse.synapseconfigure_cmds[-1])
 
     def teardown(self):
         """Teardown"""
