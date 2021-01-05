@@ -1,3 +1,5 @@
+4.4.21:
+- Update docstring for Synapse.syn_id to contain tuple idx info.
 4.4.20:
 - Apply pep8 code style with E501,W504,W503,E741 ignored
 4.4.18:

@@ -31,7 +31,8 @@ class Synapse(object):
         location : float in [0, 1]
                    Location on the section this synapse is placed
         syn_id : (string,integer)
-              Synapse identifier
+              Synapse identifier, string being the projection name and
+               int the synapse id. Empty string refers to a local connection
         syn_description : list of floats
                           Parameters of the synapse
         connection_parameters : list of floats
