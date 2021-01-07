@@ -27,6 +27,7 @@ from bglibpy import printv
 from bglibpy import tools
 
 from bluepy.v2.enums import Synapse as BLPSynapse
+from bluepy.v2.impl.connectome_sonata import SonataConnectome
 
 
 class SSim(object):
@@ -471,12 +472,19 @@ class SSim(object):
                 raise ValueError(
                     'Cant combine projection and projections arguemnt')
 
+        if bluepy.version.version > "0.16.0":
+            post_segment_id = BLPSynapse.POST_SEGMENT_ID
+            post_segment_offset = BLPSynapse.POST_SEGMENT_OFFSET
+        else:
+            post_segment_id = "_POST_SEGMENT_ID"
+            post_segment_offset = "_POST_DISTANCE"
+
         all_properties = [
             BLPSynapse.PRE_GID,
             BLPSynapse.AXONAL_DELAY,
             BLPSynapse.POST_SECTION_ID,
-            '_POST_SEGMENT_ID',
-            '_POST_DISTANCE',
+            post_segment_id,
+            post_segment_offset,
             BLPSynapse.G_SYNX,
             BLPSynapse.U_SYN,
             BLPSynapse.D_SYN,
@@ -515,15 +523,11 @@ class SSim(object):
                         'WARNING: %s not found, disabling' %
                         test_property, 50)
 
-            if hasattr(bluepy.v2.impl, 'connectome_sonata') and isinstance(
-                connectome._impl,
-                bluepy.v2.impl.connectome_sonata.SonataConnectome,
-            ):
-
+            if isinstance(connectome._impl, SonataConnectome):
                 # load 'afferent_section_pos' instead of '_POST_DISTANCE'
                 if 'afferent_section_pos' in connectome.available_properties:
                     connectome_properties[
-                        connectome_properties.index('_POST_DISTANCE')
+                        connectome_properties.index(post_segment_offset)
                     ] = 'afferent_section_pos'
 
                 synapses = connectome.afferent_synapses(
@@ -533,7 +537,7 @@ class SSim(object):
                 # replace '_POST_SEGMENT_ID' with -1 (as indicator for
                 # synlocation_to_segx)
                 if 'afferent_section_pos' in connectome.available_properties:
-                    synapses['_POST_SEGMENT_ID'] = -1
+                    synapses[post_segment_id] = -1
 
                 using_sonata = True
                 printv('Using sonata style synapse file, not nrn.h5', 50)
