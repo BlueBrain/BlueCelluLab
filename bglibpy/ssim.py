@@ -64,7 +64,8 @@ class SSim(object):
                     Has to positive integer.
         rng_mode : str
                     String with rng mode, if not specified mode is taken from
-                    BlueConfig.
+                    BlueConfig. Possible values are Compatibility, Random123
+                    and UpdatedMCell.
         ignore_populationid_error: bool
                     Flag to ignore the missing population ids of projections.
         """
@@ -274,6 +275,10 @@ class SSim(object):
                                       Setting add_stimuli=True,
                                       will automatically set this option to
                                       True.
+        add_projections: Boolean
+                          If set True, adds all of the projection blocks of the
+                          BlueConfig. This option assumes no additional
+                           projection is passed using the `projections` option.
         intersect_pre_gids : list of gids
                              Only add synapses to the cells if their
                              presynaptic gid is in this list

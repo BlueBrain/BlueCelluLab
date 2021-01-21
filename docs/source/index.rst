@@ -18,3 +18,4 @@ of in-silico whole-cell patching experiments.
    dependencies
    tutorial
    api
+   changelog

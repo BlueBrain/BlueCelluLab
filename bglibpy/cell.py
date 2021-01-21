@@ -65,6 +65,15 @@ class Cell(object):
         record_dt : float
                    Force a different timestep for the recordings
                    (default: None)
+        template_format: str
+                         cell template format such as v6 or v6_air_scaler.
+        morph_dir: str
+                   path to the directory containing morphology file.
+        extra_values: dict
+                      any extra values such as threshold_current
+                       or holding_current.
+        rng_settings: bglibpy.RNGSettings
+                      random number generation setting object used by the Cell.
         """
         # Persistent objects, like clamps, that exist as long
         # as the object exists
