@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+(unreleased)
+------------
+- Added FAQ page with MPT ERROR: PMI2_Init. [Anil Tuncel]
+- Documentation update. [Anil Tuncel]
+
+  * mention missing parameters in docstring
+  * refer to the jupyter notebook in insilico-cookbook
+    in the tutorial section.
+  * add changelog to sphinx.
+  * PATCH 2: added docs/source/changelog.rst
+
+
 4.5 (2021-01-21)
 ----------------
 - Documentation update. [Anil Tuncel]
@@ -9,7 +21,7 @@ Changelog
   * mention missing parameters in docstring
   * refer to the jupyter notebook in insilico-cookbook
     in the tutorial section.
-  * add CHANGELOG to sphinx documentation.
+  * add changelog to sphinx.
 - Added option to use hoc with AIS_scaler, aligned with
   https://bbpcode.epfl.ch/code/#/c/52044/ [arnaudon]
 
