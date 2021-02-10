@@ -4,6 +4,9 @@ Changelog
 
 (unreleased)
 ------------
+- Apply the sonata spike report update [BLPY-244] [Anil Tuncel]
+
+  * apply renaming of brian->brion
 - Added FAQ page with MPT ERROR: PMI2_Init. [Anil Tuncel]
 - Documentation update. [Anil Tuncel]
 
@@ -1081,7 +1084,7 @@ Changelog
 - Dummy commit, trying out versioning. [Werner Van Geit]
 
 
-1.0 (2013-02-23)
+1.0 (2013-03-07)
 ----------------
 - Werner revised the intersect_pre_gid for loop. [Ben Torben-Nielsen]
 - Merge branch 'master' of ssh://bbpgit.epfl.ch/sim/BGLibPy. [Werner Van

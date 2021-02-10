@@ -1350,7 +1350,7 @@ def _parse_outdat2(path):
        pointed to by path"""
 
     import bluepy.v2.impl.spike_report
-    spikes = bluepy.v2.impl.spike_report.SpikeReport(path)
+    spikes = bluepy.v2.impl.spike_report.SpikeReport.load(path)
 
     outdat = {}
 
