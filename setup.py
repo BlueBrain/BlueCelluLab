@@ -15,9 +15,10 @@ setuptools.setup(
     license="BBP-internal-confidential",
     dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
                       "dev/+simple/bluepy/"],
-    extras_require={"bbp": ["bluepy[bbp]>=0.11.10.dev1", "brion"]},
-    install_requires=["bluepy>=0.16.0"],
-    tests_require=["bluepy[bbp]>=0.16", "brion"],
+    extras_require={"bbp": ["bluepy", "brion"]},
+    install_requires=["bluepy>=2.1.0.dev6", "methodtools",
+                      "functools32;python_version < '3'", "brion"],
+    tests_require=["bluepy>=2.1.0.dev6", "brion"],
     keywords=(
         'computational neuroscience',
         'simulation',
