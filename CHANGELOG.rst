@@ -4,6 +4,7 @@ Changelog
 
 (unreleased)
 ------------
+- Use methodtools lru cache to prevent memory leak. [Werner Van Geit]
 - Apply the sonata spike report update [BLPY-244] [Anil Tuncel]
 
   * apply renaming of brian->brion
@@ -15,16 +16,6 @@ Changelog
     in the tutorial section.
   * add changelog to sphinx.
   * PATCH 2: added docs/source/changelog.rst
-
-
-4.5 (2021-01-21)
-----------------
-- Documentation update. [Anil Tuncel]
-
-  * mention missing parameters in docstring
-  * refer to the jupyter notebook in insilico-cookbook
-    in the tutorial section.
-  * add changelog to sphinx.
 - Added option to use hoc with AIS_scaler, aligned with
   https://bbpcode.epfl.ch/code/#/c/52044/ [arnaudon]
 
@@ -1084,7 +1075,7 @@ Changelog
 - Dummy commit, trying out versioning. [Werner Van Geit]
 
 
-1.0 (2013-03-07)
+1.0 (2013-02-23)
 ----------------
 - Werner revised the intersect_pre_gid for loop. [Ben Torben-Nielsen]
 - Merge branch 'master' of ssh://bbpgit.epfl.ch/sim/BGLibPy. [Werner Van
