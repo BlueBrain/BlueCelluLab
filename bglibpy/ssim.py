@@ -582,8 +582,8 @@ class SSim(object):
                                 "PopulationID is missing from projection,"
                                 " block this will lead to wrong rng seeding."
                                 " If you anyway want to overwrite this,"
-                                " use ignore_populationid_error option in SSim"
-
+                                " pass ignore_populationid_error=True param"
+                                " to SSim constructor."
                             )
                 else:
                     source_popid = 0
