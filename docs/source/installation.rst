@@ -11,7 +11,7 @@ You probably want to use a python virtual environment
 
 Pip install bglibpy from the BBP Devpi server::
 
-    pip install -i 'https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/' bglibpy[bbp]
+    pip install -i 'https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple/' bglibpy
 
 Pip will install automatically the BluePy dependency. However you will still
 have to load/install NEURON with Python support, and compile the MOD files of 
@@ -35,7 +35,7 @@ the only difference is that you clone the git repo::
 and run pip from inside the newly created BGLibPy subdirectory 
 (don't forget the dot at the end of the command)::
 
-    pip install -i https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple --upgrade .[bbp]
+    pip install -i https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple --upgrade .
 
 If you run into permission issues when downloading the BGLibPy repo, make sure
 your `Kerberos <https://bbpteam.epfl.ch/project/spaces/display/BLGTST/Kerberos+Authentication>`_ 
