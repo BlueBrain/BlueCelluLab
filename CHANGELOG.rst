@@ -4,6 +4,24 @@ Changelog
 
 (unreleased)
 ------------
+- Added numpy and matplotlib dependencies. [Anil Tuncel]
+- Replace methodtools with cachetools to reduce dependencies. [Anil
+  Tuncel]
+
+  as methodtools depend on wirerope and inspect2 #BGLPY-80
+  Patch 2: remove the cache of is_cell_target method
+  since it's cheap
+- Remove extra[bbp] since brion is in install_requires. [Anil Tuncel]
+
+  *PATCH1: bluepy>=2.1.0.dev6 -> bluepy>=2.1.0
+- Drop deprecated bluepy.v2 subpackage. [Anil Tuncel]
+- Merge "Merge branch 'warnings'" [Anil Tuncel]
+- Merge branch 'warnings' [Anil Tuncel]
+- Merge "error message made more informative" [Anil Tuncel]
+- Error message made more informative. [Anil Tuncel]
+
+  ignore_populationid_error=True is mentioned
+- Changelog update upon updating the tag. [Anil Tuncel]
 - Use methodtools lru cache to prevent memory leak. [Werner Van Geit]
 - Apply the sonata spike report update [BLPY-244] [Anil Tuncel]
 
@@ -1075,7 +1093,7 @@ Changelog
 - Dummy commit, trying out versioning. [Werner Van Geit]
 
 
-1.0 (2013-02-23)
+1.0 (2013-03-07)
 ----------------
 - Werner revised the intersect_pre_gid for loop. [Ben Torben-Nielsen]
 - Merge branch 'master' of ssh://bbpgit.epfl.ch/sim/BGLibPy. [Werner Van
