@@ -24,8 +24,8 @@ import bglibpy
 from bglibpy import printv
 from bglibpy import tools
 
-from bluepy.v2.enums import Synapse as BLPSynapse
-from bluepy.v2.impl.connectome_sonata import SonataConnectome
+from bluepy.enums import Synapse as BLPSynapse
+from bluepy.impl.connectome_sonata import SonataConnectome
 
 
 class SSim(object):
@@ -70,7 +70,7 @@ class SSim(object):
         self.dt = dt
         self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
-        self.bc_simulation = bluepy.v2.Simulation(blueconfig_filename)
+        self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
 
@@ -1337,7 +1337,7 @@ class SSim(object):
         gids = []
         for mtype in mtypes:
             gids.extend(
-                self.bc_circuit.cells.get({bluepy.v2.Cell.MTYPE: mtype}).
+                self.bc_circuit.cells.get({bluepy.Cell.MTYPE: mtype}).
                 index.values)
 
         return gids
@@ -1347,8 +1347,8 @@ def _parse_outdat2(path):
     """Parse the replay spiketrains in a out.dat formatted file
        pointed to by path"""
 
-    import bluepy.v2.impl.spike_report
-    spikes = bluepy.v2.impl.spike_report.SpikeReport.load(path)
+    import bluepy.impl.spike_report
+    spikes = bluepy.impl.spike_report.SpikeReport.load(path)
 
     outdat = {}
 
