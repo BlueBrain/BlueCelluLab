@@ -15,7 +15,7 @@ import os
 import re
 
 
-from methodtools import lru_cache
+from cachetools import cachedmethod, LRUCache
 
 import numpy
 
@@ -73,6 +73,12 @@ class SSim(object):
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
+
+        self._caches = {
+            "is_group_target": LRUCache(maxsize=1000),
+            "target_has_gid": LRUCache(maxsize=1000),
+            "fetch_gid_cell_info": LRUCache(maxsize=100),
+        }
 
         if self.node_properties_available:
             self.use_mecombotsv = False
@@ -912,19 +918,18 @@ class SSim(object):
                     "Key %s in Connection blocks not supported by BGLibPy"
                     % key)
 
-    @lru_cache(maxsize=1000)
     def is_cell_target(self, target, gid):
         """Check if target is cell"""
 
         return target == 'a%d' % gid
 
-    @lru_cache(maxsize=1000)
+    @cachedmethod(lambda self: self._caches["is_group_target"])
     def is_group_target(self, target):
         """Check if target is group of cells"""
 
         return target in self.bc_circuit.cells.targets
 
-    @lru_cache(maxsize=1000)
+    @cachedmethod(lambda self: self._caches["target_has_gid"])
     def target_has_gid(self, target, gid):
 
         gid_found = (gid in self.bc_circuit.cells.ids(target))
@@ -1213,7 +1218,7 @@ class SSim(object):
 
         return mecombo_thresholds, mecombo_holding_currs
 
-    @lru_cache(maxsize=100)
+    @cachedmethod(lambda self: self._caches["fetch_gid_cell_info"])
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
         if gid in self.bc_circuit.cells.ids():
