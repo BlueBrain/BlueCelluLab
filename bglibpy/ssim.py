@@ -601,10 +601,10 @@ class SSim(object):
                     'Adding a total of %d synapses for set %s' %
                     (synapse_set.shape[0], proj_name), 5)
 
-                for syn_id, (index, synapse) in enumerate(
+                for syn_id, (edge_id, synapse) in enumerate(
                         synapse_set.iterrows()):
                     if not using_sonata:
-                        syn_gid, syn_id = index
+                        syn_gid, syn_id = edge_id
                         if syn_gid != gid:
                             raise Exception(
                                 "BGLibPy SSim: synapse gid doesnt match with "
@@ -645,6 +645,7 @@ class SSim(object):
                     syn_description = numpy.insert(
                         syn_description, [5, 5, 5], [-1, -1, -1])
 
+                    syn_description = numpy.append(syn_description, edge_id)
                     syn_descriptions_dict[syn_id_proj] = \
                         syn_description, popids
 

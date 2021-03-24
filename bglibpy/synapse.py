@@ -43,6 +43,7 @@ class Synapse(object):
         rng_settings: RNGSettings
                       RNGsettings object specifying details about
                       random generator
+        edge_id: id of an edge within the population.
         """
         self.persistent = []
 
@@ -76,6 +77,7 @@ class Synapse(object):
         self.syn_F = syn_description[11]
         self.syn_DTC = syn_description[12]
         self.syn_type = int(syn_description[13])
+        self.edge_id = syn_description[-1]
 
         if cell.rng_settings is None:
             self.rng_setting = bglibpy.RNGSettings(
