@@ -481,12 +481,8 @@ class SSim(object):
                 raise ValueError(
                     'Cant combine projection and projections arguemnt')
 
-        if bluepy.version.version > "0.16.0":
-            post_segment_id = BLPSynapse.POST_SEGMENT_ID
-            post_segment_offset = BLPSynapse.POST_SEGMENT_OFFSET
-        else:
-            post_segment_id = "_POST_SEGMENT_ID"
-            post_segment_offset = "_POST_DISTANCE"
+        post_segment_id = BLPSynapse.POST_SEGMENT_ID
+        post_segment_offset = BLPSynapse.POST_SEGMENT_OFFSET
 
         all_properties = [
             BLPSynapse.PRE_GID,
