@@ -13,6 +13,53 @@ in Python becomes then as easy as:
 
         import bglibpy
 
+
+Instantiating and stimulating a single cell
+=====================================================
+
+First of all, let's create the cell using a hoc template and a morphology.
+
+.. code-block:: python
+
+        from bglibpy.cell import Cell
+
+        template_path = "/your/path/to/cAD_noscltb.hoc"
+        morph_dir = "/directory/containing/morphologies"
+        morphology = "dend-jy180406_A_idB_axon-05311-05329-X10166-Y11730_-_Scale_x1.000_y0.950_z1.000.asc"
+        extra_values = {"holding_current": None, "threshold_current": None}
+        cell = Cell(
+            template_filename=template_path,
+            morphology_name=morphology,
+            morph_dir=morph_dir,
+            template_format="v6",
+            extra_values=extra_values,
+        )
+
+Now we can inject a step current to the cell and start recording from its soma.
+
+.. code-block:: python
+
+        cell.add_step(start_time=15.0, stop_time=40.0, level=1.0)
+        cell.add_recording("self.soma(0.5)._ref_v")
+
+The next step is to create a simulation object and add our cell to the simulator.
+Later the run method is called to initiate the simulation.
+Here we specify the max runtime to be 50ms.
+We can choose whether we want to use the cvode variable time step integrator or not.
+
+.. code-block:: python
+
+        sim = bglibpy.Simulation()
+        sim.add_cell(cell)
+        sim.run(maxtime=50, cvode=True)
+
+The time and voltage can be retrieved as follows.
+
+.. code-block:: python
+
+        time = cell.get_time()
+        voltage = cell.get_soma_voltage()
+
 Instantiating a single cell from a network simulation
 =====================================================
 

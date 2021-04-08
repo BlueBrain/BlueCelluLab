@@ -4,6 +4,13 @@ Changelog
 
 (unreleased)
 ------------
+- Updated tutorial with an example single cell sim (without network)
+  [Anil Tuncel]
+- Removed unreachable bluepy<=0.16.0 branch. [Anil Tuncel]
+
+  Patch 2: setup.py bluepy remove bbp and  add brion
+
+  it's unreachable since setup.py assumes bluepy>2.1.0
 - Added numpy and matplotlib dependencies. [Anil Tuncel]
 - Replace methodtools with cachetools to reduce dependencies. [Anil
   Tuncel]
