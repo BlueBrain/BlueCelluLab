@@ -77,6 +77,7 @@ class SSim(object):
         self._caches = {
             "is_group_target": LRUCache(maxsize=1000),
             "target_has_gid": LRUCache(maxsize=1000),
+            "get_target_gids": LRUCache(maxsize=16),
             "fetch_gid_cell_info": LRUCache(maxsize=100),
         }
 
@@ -105,6 +106,7 @@ class SSim(object):
         self.ignore_populationid_error = ignore_populationid_error
         self.connection_entries = self.bc.typed_sections('Connection')
         self.all_targets = self.bc_circuit.cells.targets
+        self.check_connection_entries()
 
         self.gids = []
         self.cells = {}
@@ -925,10 +927,16 @@ class SSim(object):
 
         return target in self.bc_circuit.cells.targets
 
+    @cachedmethod(lambda self: self._caches["get_target_gids"])
+    def get_target_gids(self, target):
+        """Return GIDs in target as a set"""
+
+        return set(self.bc_circuit.cells.ids(target))
+
     @cachedmethod(lambda self: self._caches["target_has_gid"])
     def target_has_gid(self, target, gid):
 
-        gid_found = (gid in self.bc_circuit.cells.ids(target))
+        gid_found = (gid in self.get_target_gids(target))
         return gid_found
 
     def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
@@ -945,21 +953,10 @@ class SSim(object):
         parameters = {}
         parameters['add_synapse'] = True
 
-        gid_pttrn = re.compile("^a[0-9]+")
-
         for entry in self.connection_entries:
             entry_name = entry.name
-            self.check_connection_contents(entry)
             src = entry['Source']
             dest = entry['Destination']
-
-            for target in (src, dest):
-                if not (
-                    self.is_group_target(target) or gid_pttrn.match(target)
-                ):
-                    raise bglibpy.TargetDoesNotExist(
-                        "%s target does not exist" % target
-                    )
 
             src_matches = self.is_cell_target(src, pre_gid) or \
                 (self.target_has_gid(src, pre_gid))
@@ -1157,6 +1154,17 @@ class SSim(object):
         self.delete()
 
     # Auxialliary methods ###
+
+    def check_connection_entries(self):
+        """Check all connection entries at once"""
+        gid_pttrn = re.compile("^a[0-9]+")
+        for entry in self.connection_entries:
+            self.check_connection_contents(entry)
+            src = entry['Source']
+            dest = entry['Destination']
+            for target in (src, dest):
+                if not (self.is_group_target(target) or gid_pttrn.match(target)):
+                    raise bglibpy.TargetDoesNotExist("%s target does not exist" % target)
 
     def get_mecombo_emodels(self):
         """Create a dict matching me_combo names to template_names"""
