@@ -62,7 +62,7 @@ class Connection(object):
             self.persistent.append(vecstim)
         elif self.pre_cell is not None:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(
-                self.post_synapse.hsynapse)
+                self.post_synapse.hsynapse, threshold=spike_threshold)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
             self.post_netcon.threshold = 10

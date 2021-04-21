@@ -940,11 +940,14 @@ class Cell(object):
 
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target):
+    def create_netcon_spikedetector(self, target, threshold=-30):
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
         connects to target
+        Args:
+            target: target point process
+            threshold (float): spike detection threshold
 
         Returns
         -------
@@ -953,10 +956,10 @@ class Cell(object):
 
         """
 
-        # M. Hines magic to return a variable by reference to a python function
-        netcon = neuron.h.ref(None)
-        self.cell.getCell().connect2target(target, netcon)
-        netcon = netcon[0]
+        sec = self.cell.getCell().soma[0]
+        source = self.cell.getCell().soma[0](1)._ref_v
+        netcon = bglibpy.neuron.h.NetCon(source, target, sec=sec)
+        netcon.threshold = threshold
 
         return netcon
 
