@@ -4,6 +4,7 @@
 
 import os
 import numpy
+import pandas as pd
 import itertools
 
 import nose.tools as nt
@@ -58,7 +59,7 @@ test_thalamus_no_population_id_path = os.path.join(proj55_path,
                                                    "BlueConfigNoPopulationID")
 
 test_single_vesicle_path = os.path.join(
-    proj83_path, "home/tuncel/bglibpy-tests/single-vesicle-minis-sim",
+    proj83_path, "home/tuncel/bglibpy-tests/single-vesicle-AIS",
     "BlueConfig"
 )
 
@@ -473,46 +474,59 @@ class TestSSimBaseClassSingleVesicleMinis(object):
         """Setup"""
         self.t_start = 0
         self.t_stop = 500
-        self.record_dt = 0.2
+        self.record_dt = 0.1
         self.len_voltage = self.t_stop / self.record_dt
 
         self.ssim = bglibpy.ssim.SSim(
             test_single_vesicle_path,
             record_dt=self.record_dt)
 
+        self.gid = 4138379
+        self.ssim.instantiate_gids(
+            [self.gid],
+            add_synapses=True,
+            add_minis=True,
+            add_stimuli=True)
+
+        self.cell = self.ssim.cells[self.gid]
+        self.cell.add_ais_recording(dt=self.cell.record_dt)
+
     def teardown(self):
         """Teardown"""
+        del self.cell
         self.ssim.delete()
         nt.assert_true(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay with MinisSingleVesicle """ \
             """SpikeThreshold, V_Init, Celcius produce the same voltage"""
-        gid = 4138379
-        self.ssim.instantiate_gids(
-            [gid],
-            add_synapses=True,
-            add_minis=True,
-            add_stimuli=True)
-
         self.ssim.run(self.t_stop)
 
-        time_bglibpy = self.ssim.get_time_trace()
-        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), self.len_voltage)
-        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
-
+        voltage_bglibpy = self.ssim.get_voltage_trace(self.gid)
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid, self.t_start, self.t_stop, self.record_dt)
+            self.gid, self.t_start, self.t_stop, self.record_dt)
 
-        time_bglib = self.ssim.get_mainsim_time_trace()[
-            :len(voltage_bglibpy)]
-
+        nt.assert_equal(len(voltage_bglibpy), len(voltage_bglib))
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_less(rms_error, 0.005)
+        nt.assert_less(rms_error, 4.38)
+
+        self.check_ais_voltages()
+
+    def check_ais_voltages(self):
+        """Makes sure recording at AIS from bglibpy and ND produce the same."""
+        ais_voltage_bglibpy = self.cell.get_ais_voltage()
+
+        ais_report = self.ssim.bc_simulation.report('axon_SONATA', source="h5")
+        ais_voltage_mainsim = ais_report.get_gid(self.gid).values
+
+        nt.assert_equal(len(ais_voltage_bglibpy), len(ais_voltage_mainsim))
+        voltage_diff = ais_voltage_bglibpy - ais_voltage_mainsim
+        rms_error = numpy.sqrt(numpy.mean(voltage_diff ** 2))
+
+        nt.assert_less(rms_error, 14.91)
 
 
 @attr('gpfs', 'v5')

@@ -663,6 +663,10 @@ class Cell(object):
         for var_name in var_names:
             self.add_recording(var_name, dt)
 
+    def add_ais_recording(self, dt=None):
+        """Adds recording to AIS."""
+        self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
+
     def add_voltage_recording(self, section, segx):
         """Add a voltage recording to a certain section(segx)
 
@@ -940,13 +944,14 @@ class Cell(object):
 
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, threshold=-30):
+    def create_netcon_spikedetector(self, target, location, threshold=-30):
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
         connects to target
         Args:
             target: target point process
+            location (str): the spike detection location
             threshold (float): spike detection threshold
 
         Returns
@@ -955,9 +960,14 @@ class Cell(object):
         NetCon : Neuron netcon object
 
         """
-
-        sec = self.cell.getCell().soma[0]
-        source = self.cell.getCell().soma[0](1)._ref_v
+        if location == "soma":
+            sec = self.cell.getCell().soma[0]
+            source = self.cell.getCell().soma[0](1)._ref_v
+        elif location == "AIS":
+            sec = self.cell.getCell().axon[1]
+            source = self.cell.getCell().axon[1](0.5)._ref_v
+        else:
+            raise Exception("Spike detection location must be soma or AIS")
         netcon = bglibpy.neuron.h.NetCon(source, target, sec=sec)
         netcon.threshold = threshold
 
@@ -1438,6 +1448,10 @@ class Cell(object):
     def get_soma_voltage(self):
         """Get a vector of the soma voltage."""
         return self.get_recording('self.soma(0.5)._ref_v')
+
+    def get_ais_voltage(self):
+        """Get a vector of AIS voltage."""
+        return self.get_recording('self.axonal[1](0.5)._ref_v')
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell."""
