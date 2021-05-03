@@ -158,6 +158,14 @@ class SSim(object):
             float(self.bc.Run['SpikeThreshold']) \
             if 'SpikeThreshold' in self.bc.Run else -30
 
+        if 'SpikeLocation' in self.bc.Run:
+            self.spike_location = self.bc.Run['SpikeLocation']
+            if self.spike_location not in ["soma", "AIS"]:
+                raise bglibpy.ConfigError(
+                    "Possible options for SpikeLocation are 'soma' and 'AIS'")
+        else:
+            self.spike_location = "soma"
+
         if "MinisSingleVesicle" in self.bc.Run:
             if not hasattr(
                 bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"
@@ -694,7 +702,6 @@ class SSim(object):
         pre_spike_trains = self.merge_pre_spike_trains(
             pre_spike_trains,
             user_pre_spike_trains)
-
         for post_gid in self.gids:
             if dest and post_gid not in dest:
                 continue
@@ -715,7 +722,8 @@ class SSim(object):
                         pre_spiketrain=None,
                         pre_cell=self.cells[pre_gid],
                         stim_dt=self.dt,
-                        spike_threshold=self.spike_threshold)
+                        spike_threshold=self.spike_threshold,
+                        spike_location=self.spike_location)
                     printv("Added real connection between pre_gid %d and \
                             post_gid %d, syn_id %s" % (pre_gid,
                                                        post_gid,
@@ -727,7 +735,8 @@ class SSim(object):
                         pre_spiketrain=pre_spiketrain,
                         pre_cell=None,
                         stim_dt=self.dt,
-                        spike_threshold=self.spike_threshold)
+                        spike_threshold=self.spike_threshold,
+                        spike_location=self.spike_location)
                     printv(
                         "Added replay connection from pre_gid %d to "
                         "post_gid %d, syn_id %s" %

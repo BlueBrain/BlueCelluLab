@@ -20,7 +20,8 @@ class Connection(object):
             pre_spiketrain=None,
             pre_cell=None,
             stim_dt=None,
-            spike_threshold=-30):
+            spike_threshold=-30,
+            spike_location="soma"):
         self.persistent = []
         self.delay = post_synapse.syn_description[1]
         self.weight = post_synapse.syn_description[8]
@@ -62,7 +63,8 @@ class Connection(object):
             self.persistent.append(vecstim)
         elif self.pre_cell is not None:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(
-                self.post_synapse.hsynapse)
+                self.post_synapse.hsynapse, location=spike_location,
+                threshold=spike_threshold)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
             self.post_netcon.threshold = 10

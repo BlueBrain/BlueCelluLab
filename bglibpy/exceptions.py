@@ -19,3 +19,8 @@ class UndefinedRNGException(Exception):
 class OldNeurodamusVersionError(Exception):
     """Raise when the loaded neurodamus does not support new feature."""
     pass
+
+
+class ConfigError(Exception):
+    """Error due to invalid settings in BlueConfig"""
+    pass
