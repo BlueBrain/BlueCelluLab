@@ -143,14 +143,15 @@ class Simulation(object):
 
         neuron.h.stdinit()
 
-        if forward_skip_value is not None and forward_skip:
-            neuron.h.t = -1e9
-            save_dt = neuron.h.dt
-            neuron.h.dt = forward_skip_value * 0.1
-            for _ in range(0, 10):
-                neuron.h.fadvance()
-            neuron.h.dt = save_dt
-            neuron.h.t = 0.0
+        if forward_skip:
+            if forward_skip_value is not None and forward_skip_value > 0:
+                neuron.h.t = -1e9
+                save_dt = neuron.h.dt
+                neuron.h.dt = forward_skip_value * 0.1
+                for _ in range(0, 10):
+                    neuron.h.fadvance()
+                neuron.h.dt = save_dt
+                neuron.h.t = 0.0
 
         # pylint: disable=W0703
         try:
