@@ -22,7 +22,7 @@ then
     echo "Building NEURON ..."
     mkdir build
     cd build
-    cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DNRN_ENABLE_INTERVIEWS=OFF -DNRN_ENABLE_TESTS=OFF -DNRN_ENABLE_RX3D=OFF -DNRN_ENABLE_MPI=OFF >build.log 2>&1
+    cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DNRN_ENABLE_INTERVIEWS=OFF -DNRN_ENABLE_TESTS=OFF -DNRN_ENABLE_RX3D=OFF -DNRN_ENABLE_MPI=OFF
     echo "Installing NEURON ..."
     make -j10 install >makeinstall.log 2>&1
 
