@@ -6,29 +6,27 @@ SRC_DIR=$1
 INSTALL_DIR=$2
 PYTHON_BIN=$3
 
+PYTHON_LIB=${PYTHON_BIN}/../lib
+echo ${PYTHON_LIB}
 if [ ! -e ${INSTALL_DIR}/.install_finished ]
 then
     echo 'Neuron was not fully installed in previous build, installing ...'
     mkdir -p ${SRC_DIR}
     cd ${SRC_DIR}
-    # echo "Downloading NEURON 7.4 ..."
-    # wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.4/nrn-7.4.tar.gz >wget.log 2>&1
-    # tar xzf nrn-7.4.tar.gz
-    # cd nrn-7.4
-    if [ ! -d nrn ]                                               
+    if [ ! -d nrn ]
     then
         echo "Downloading NEURON from github ..."
-        git clone https://github.com/nrnhines/nrn.git --depth 100 >download.log 2>&1
-    else                                                                         
-        echo "Neuron already downloaded"
+        git clone https://github.com/neuronsimulator/nrn.git --depth 15 >download.log 2>&1
+    else
+        echo "Neuron is already downloaded"
     fi
     cd nrn
-    echo "Preparing NEURON ..."
-    ./build.sh >buildsh.log 2>&1
-    echo "Configuring NEURON ..."
-    PYTHON_BLD=${PYTHON_BIN} ./configure --prefix=${INSTALL_DIR} --without-x --with-nrnpython=${PYTHON_BIN} --disable-rx3d >configure.log 2>&1
+    echo "Building NEURON ..."
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DNRN_ENABLE_INTERVIEWS=OFF -DNRN_ENABLE_TESTS=OFF -DNRN_ENABLE_RX3D=OFF -DNRN_ENABLE_MPI=OFF >build.log 2>&1
     echo "Installing NEURON ..."
-    make -j4 install >makeinstall.log 2>&1
+    make -j10 install >makeinstall.log 2>&1
 
     export PATH="${INSTALL_DIR}/x86_64/bin":${PATH}
     export PYTHONPATH="${INSTALL_DIR}/lib/python":${PYTHONPATH}
