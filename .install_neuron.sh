@@ -6,8 +6,6 @@ SRC_DIR=$1
 INSTALL_DIR=$2
 PYTHON_BIN=$3
 
-PYTHON_LIB=${PYTHON_BIN}/../lib
-echo ${PYTHON_LIB}
 if [ ! -e ${INSTALL_DIR}/.install_finished ]
 then
     echo 'Neuron was not fully installed in previous build, installing ...'
