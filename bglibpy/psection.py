@@ -33,7 +33,7 @@ class PSection(object):
             self.section_type = 'basal'
         elif 'soma' in self.name:
             self.section_type = 'somatic'
-        elif 'axon' in self.name:
+        elif 'axon' in self.name or 'ais' in self.name or 'node' in self.name:
             self.section_type = 'axonal'
         else:
             raise Exception(
