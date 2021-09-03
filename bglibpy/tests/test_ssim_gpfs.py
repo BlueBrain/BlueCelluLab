@@ -15,7 +15,6 @@ import bglibpy
 script_dir = os.path.dirname(__file__)
 
 proj1_path = "/gpfs/bbp.cscs.ch/project/proj1/"
-proj35_path = "/gpfs/bbp.cscs.ch/project/proj35/"
 proj42_path = "/gpfs/bbp.cscs.ch/project/proj42/"
 proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
