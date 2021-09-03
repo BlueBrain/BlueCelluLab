@@ -46,6 +46,7 @@ Changelog
 Authors and Contributors
 ------------------------
 
+* Anil Tuncel
 * Werner Van Geit
 * Ben Torbien Nielsen
 * Eilif Muller
@@ -53,6 +54,6 @@ Authors and Contributors
 Copyright
 ---------
 
-Copyright (c) BBP/EPFL 2010-2012;
+Copyright (c) BBP/EPFL 2010-2021;
 All rights reserved.
 Do not distribute without further notice.
