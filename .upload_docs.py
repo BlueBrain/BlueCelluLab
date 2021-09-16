@@ -6,6 +6,7 @@ import sys
 import os
 import contextlib
 import datetime
+import pkg_resources
 
 metadata_template = \
     """---
@@ -45,10 +46,9 @@ def main():
 
     with cd(doc_dir):
         print('Reading BGLibPy version ...')
-        import bglibpy
-        bglibpy_version = bglibpy.__version__
-        bglibpy_major_version = bglibpy.__version__.split('.')[0]
-        bglibpy_minor_version = bglibpy.__version__.split('.')[1]
+        bglibpy_version = pkg_resources.get_distribution('bglibpy').version
+        bglibpy_major_version = bglibpy_version.split('.')[0]
+        bglibpy_minor_version = bglibpy_version.split('.')[1]
         print('BGLibPy version is: %s' % bglibpy_version)
 
         finished_filename = '.doc_version'
