@@ -1,0 +1,2 @@
+[run]
+omit = bglibpy/_version.py

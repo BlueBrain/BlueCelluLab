@@ -138,7 +138,7 @@ Postsynaptic potential validation
 =================================
 BGLibPy can also be used in running pair simulations.
 Further information can be found at the documentation of
- `psp-validation <https://bbp.epfl.ch/documentation/projects/psp-validation/latest/index.html>`_.
+`psp-validation <https://bbp.epfl.ch/documentation/projects/psp-validation/latest/index.html>`_.
 
 Jupyter notebook tutorial
 =========================

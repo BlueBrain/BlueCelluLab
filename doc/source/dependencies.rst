@@ -98,7 +98,7 @@ If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
 git repo)
 
 Linux packages
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 On RPM systems one can install NEURON and its python interface using the following command ::
 

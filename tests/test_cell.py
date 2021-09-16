@@ -4,8 +4,7 @@
 
 """Unit tests for Cell.py"""
 
-import nose.tools as nt
-from nose.plugins.attrib import attr
+import pytest
 
 import math
 import os
@@ -26,7 +25,7 @@ def test_longname():
     cell = bglibpy.Cell(
         "%s/examples/cell_example1/test_cell_longname1.hoc" % script_dir,
         "%s/examples/cell_example1" % script_dir)
-    nt.assert_true(isinstance(cell, bglibpy.Cell))
+    assert isinstance(cell, bglibpy.Cell)
 
     del cell
 
@@ -40,7 +39,7 @@ class TestCellBaseClass1(object):
         self.cell = bglibpy.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % script_dir,
             "%s/examples/cell_example1" % script_dir)
-        nt.assert_true(isinstance(self.cell, bglibpy.Cell))
+        assert isinstance(self.cell, bglibpy.Cell)
 
     def teardown(self):
         """Teardown"""
@@ -48,25 +47,19 @@ class TestCellBaseClass1(object):
 
     def test_fields(self):
         """Cell: Test the fields of a Cell object"""
-        nt.assert_true(isinstance(self.cell.soma, bglibpy.neuron.nrn.Section))
-        nt.assert_true(
-            isinstance(
-                self.cell.axonal[0],
-                bglibpy.neuron.nrn.Section))
-        nt.assert_true(math.fabs(self.cell.threshold - 0.184062) < 0.00001)
-        nt.assert_true(math.fabs(self.cell.hypamp - -0.070557) < 0.00001)
+        assert isinstance(self.cell.soma, bglibpy.neuron.nrn.Section)
+        assert isinstance(self.cell.axonal[0], bglibpy.neuron.nrn.Section)
+        assert math.fabs(self.cell.threshold - 0.184062) < 0.00001
+        assert math.fabs(self.cell.hypamp - -0.070557) < 0.00001
         # Lowered precision because of commit
         # 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn simulator repo
-        nt.assert_true(math.fabs(self.cell.soma.diam - 13.78082) < 0.0001)
-        nt.assert_true(math.fabs(self.cell.soma.L - 19.21902) < 0.00001)
-        nt.assert_true(math.fabs(self.cell.basal[2].diam - 0.595686) < 0.00001)
-        nt.assert_true(math.fabs(self.cell.basal[2].L - 178.96164) < 0.00001)
-        nt.assert_true(
-            math.fabs(
-                self.cell.apical[10].diam -
-                0.95999) < 0.00001)
-        nt.assert_true(math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001)
+        assert math.fabs(self.cell.soma.diam - 13.78082) < 0.0001
+        assert math.fabs(self.cell.soma.L - 19.21902) < 0.00001
+        assert math.fabs(self.cell.basal[2].diam - 0.595686) < 0.00001
+        assert math.fabs(self.cell.basal[2].L - 178.96164) < 0.00001
+        assert math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001
+        assert math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001
 
     def test_addRecording(self):
         """Cell: Test if addRecording gives deprecation warning"""
@@ -75,22 +68,20 @@ class TestCellBaseClass1(object):
         varname = 'self.apical[1](0.5)._ref_v'
         with warnings.catch_warnings(record=True) as w:
             self.cell.addRecording(varname)
-            nt.assert_true(
+            assert(
                 len([warning for warning in w
                      if issubclass(warning.category, DeprecationWarning)]) > 0)
 
     def test_get_hsection(self):
         """Cell: Test cell.get_hsection"""
-        nt.assert_true(
-            isinstance(
-                self.cell.get_hsection(0),
-                bglibpy.neuron.nrn.Section))
+        assert isinstance(
+            self.cell.get_hsection(0), bglibpy.neuron.nrn.Section)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""
         varname = 'self.apical[1](0.5)._ref_v'
         self.cell.add_recording(varname)
-        nt.assert_true(varname in self.cell.recordings)
+        assert varname in self.cell.recordings
 
     def test_add_recordings(self):
         """Cell: Test cell.add_recordings"""
@@ -100,7 +91,7 @@ class TestCellBaseClass1(object):
             'self.apical[1](0.5)._ref_v']
         self.cell.add_recordings(varnames)
         for varname in varnames:
-            nt.assert_true(varname in self.cell.recordings)
+            assert varname in self.cell.recordings
 
     def test_add_allsections_voltagerecordings(self):
         """Cell: Test cell.add_allsections_voltagerecordings"""
@@ -109,7 +100,7 @@ class TestCellBaseClass1(object):
         all_sections = self.cell.cell.getCell().all
         for section in all_sections:
             varname = 'neuron.h.%s(0.5)._ref_v' % section.name()
-            nt.assert_true(varname in self.cell.recordings)
+            assert varname in self.cell.recordings
 
     def test_euclid_section_distance(self):
         """Cell: Test cell.euclid_section_distance"""
@@ -151,7 +142,7 @@ class TestCellBaseClass1(object):
             import numpy
             distance_hand = numpy.sqrt((x1 - x2) ** 2
                                        + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-            nt.assert_true(distance_euclid == distance_hand)
+            assert distance_euclid == distance_hand
 
 
 class TestCellBaseClassSynapses(object):
@@ -193,15 +184,15 @@ class TestCellBaseClassSynapses(object):
         # print(cell1_info_dict_str)
 
         # print(cell1_info_dict_expected_str)
-        nt.assert_equal(cell1_info_dict_str, cell1_info_dict_expected_str)
+        assert cell1_info_dict_str == cell1_info_dict_expected_str
 
     def teardown(self):
         """Teardown TestCellBaseClassSynapses"""
         self.ssim_bglibpy.delete()
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert (bglibpy.tools.check_empty_topology())
 
 
-@attr('debugtest')
+@pytest.mark.debugtest
 class TestCellBaseClassVClamp(object):
 
     """First Cell test class"""
@@ -211,7 +202,7 @@ class TestCellBaseClassVClamp(object):
         self.cell = bglibpy.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % script_dir,
             "%s/examples/cell_example1" % script_dir)
-        nt.assert_true(isinstance(self.cell, bglibpy.Cell))
+        assert (isinstance(self.cell, bglibpy.Cell))
 
     def teardown(self):
         """Teardown"""
@@ -230,11 +221,11 @@ class TestCellBaseClassVClamp(object):
             current_record_name='test_vclamp',
             rs=rs)
 
-        nt.assert_equal(vclamp.amp1, level)
-        nt.assert_equal(vclamp.dur1, stop_time)
-        nt.assert_equal(vclamp.dur2, 0)
-        nt.assert_equal(vclamp.dur3, 0)
-        nt.assert_equal(vclamp.rs, rs)
+        assert vclamp.amp1 == level
+        assert vclamp.dur1 == stop_time
+        assert vclamp.dur2 == 0
+        assert vclamp.dur3 == 0
+        assert vclamp.rs == rs
 
         sim = bglibpy.Simulation()
         sim.add_cell(self.cell)
@@ -249,21 +240,21 @@ class TestCellBaseClassVClamp(object):
         voltage_vc_end = numpy.mean(
             voltage[numpy.where((time < stop_time) & (time > .9 * stop_time))])
 
-        nt.assert_true(abs(voltage_vc_end - level) < .1)
+        assert (abs(voltage_vc_end - level) < .1)
 
         voltage_end = numpy.mean(
             voltage
             [numpy.where((time < total_time) & (time > .9 * total_time))])
 
-        nt.assert_true(abs(voltage_end - (-73)) < 1)
+        assert (abs(voltage_end - (-73)) < 1)
 
         current_vc_end = numpy.mean(
             current[numpy.where((time < stop_time) & (time > .9 * stop_time))])
 
-        nt.assert_true(abs(current_vc_end - (-.1)) < .01)
+        assert (abs(current_vc_end - (-.1)) < .01)
 
         current_after_vc_end = numpy.mean(
             current[
                 numpy.where((time > stop_time) & (time < 1.1 * stop_time))])
 
-        nt.assert_equal(current_after_vc_end, 0.0)
+        assert current_after_vc_end == 0.0

@@ -278,21 +278,21 @@ class SSim(object):
                                       will automatically set this option to
                                       True.
         add_relativelinear_stimuli : Boolean
-                                      Process the 'relativelinear' stimuli
-                                      blocks of the BlueConfig.
-                                      Setting add_stimuli=True,
-                                      will automatically set this option to
-                                      True.
+                                     Process the 'relativelinear' stimuli
+                                     blocks of the BlueConfig.
+                                     Setting add_stimuli=True,
+                                     will automatically set this option to
+                                     True.
         add_pulse_stimuli : Boolean
-                                      Process the 'pulse' stimuli
-                                      blocks of the BlueConfig.
-                                      Setting add_stimuli=True,
-                                      will automatically set this option to
-                                      True.
+                            Process the 'pulse' stimuli
+                            blocks of the BlueConfig.
+                            Setting add_stimuli=True,
+                            will automatically set this option to
+                            True.
         add_projections: Boolean
-                          If set True, adds all of the projection blocks of the
-                          BlueConfig. This option assumes no additional
-                           projection is passed using the `projections` option.
+                         If set True, adds all of the projection blocks of the
+                         BlueConfig. This option assumes no additional
+                         projection is passed using the `projections` option.
         intersect_pre_gids : list of gids
                              Only add synapses to the cells if their
                              presynaptic gid is in this list
@@ -817,7 +817,7 @@ class SSim(object):
         """ Adds indeitical stimuli to the simulated cell as in the 'large'
             model
 
-        Parameters:
+        Parameters
         -----------
         gid: gid of the simulated cell
         """
@@ -954,7 +954,7 @@ class SSim(object):
             determine a final connection override for this pair
             (pre_gid, post_gid)
 
-        Parameters:
+        Parameters
         -----------
         gid : int
               gid of the post-synaptic cell
@@ -1090,11 +1090,11 @@ class SSim(object):
     def get_mainsim_voltage_trace(
         self, gid=None, t_start=None, t_stop=None, t_step=None
     ):
-        """Get the voltage trace from a cell from the main simulation
+        """Get the voltage trace from a cell from the main simulation.
 
-        Parameters:
+        Parameters
         -----------
-        gid: GID of interest
+        gid: GID of interest.
         t_start, t_stop: time range of interest,
         report time range is used by default.
         t_step: time step (should be a multiple of report time step T;

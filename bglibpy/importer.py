@@ -33,10 +33,11 @@ def import_all():
 def _nrn_disable_banner():
     """Disable Neuron banner"""
 
-    import imp
+    import importlib
     import ctypes
 
-    nrnpy_path = os.path.join(imp.find_module('neuron')[1])
+    neuron_spec = importlib.util.find_spec("neuron")
+    nrnpy_path = neuron_spec.submodule_search_locations[0]
     import glob
     hoc_so_list = \
         glob.glob(os.path.join(nrnpy_path, 'hoc*.so'))

@@ -5,7 +5,9 @@
 /bglibpy.egg-info/
 /dist
 /jekylltest
-/docs/build
+/doc/build
 .debug
 .vscode
 /.python-version
+coverage.xml
+.coverage

@@ -3,10 +3,9 @@
 # pylint: disable=
 
 
-from nose.plugins.attrib import attr
-import nose.tools as nt
 import os
 
+import pytest
 import bglibpy
 
 script_dir = os.path.dirname(__file__)
@@ -42,12 +41,12 @@ def test_allNaChannels():
         voltage_nottx2 = cell.get_soma_voltage()
 
         # Check if voltage changed due to enable_ttx
-        nt.assert_not_equal(voltage_nottx1[-1], voltage_ttx[-1])
+        assert voltage_nottx1[-1] != voltage_ttx[-1]
 
-        nt.assert_equal(voltage_nottx1[-1], voltage_nottx2[-1])
+        assert voltage_nottx1[-1] == voltage_nottx2[-1]
 
 
-@attr('v6')
+@pytest.mark.v6
 def test_allNaChannels_v6a():
     """TTX: Testing ttx enabling in v6a cell"""
 
@@ -86,6 +85,5 @@ def test_allNaChannels_v6a():
 
     # Check if voltage changed due to enable_ttx
 
-    nt.assert_not_equal(voltage_nottx1[-1], voltage_ttx[-1])
-
-    nt.assert_equal(voltage_nottx1[-1], voltage_nottx2[-1])
+    assert voltage_nottx1[-1] != voltage_ttx[-1]
+    assert voltage_nottx1[-1] == voltage_nottx2[-1]

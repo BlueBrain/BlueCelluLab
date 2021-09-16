@@ -4,11 +4,9 @@
 
 import os
 import numpy
-import pandas as pd
 import itertools
 
-import nose.tools as nt
-from nose.plugins.attrib import attr
+import pytest
 
 import bglibpy
 
@@ -68,7 +66,7 @@ hip20180219_1_path = os.path.join(
     "CircuitConfig")
 
 
-@attr('gpfs', 'v5')
+@pytest.mark.v5
 class TestSSimBaseClass_full_run(object):
 
     """Class to test SSim with full circuit"""
@@ -82,12 +80,12 @@ class TestSSimBaseClass_full_run(object):
         self.ssim = bglibpy.ssim.SSim(
             renccv2_bc_1_path, record_dt=self.record_dt
         )
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        assert (isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert (bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
@@ -104,8 +102,8 @@ class TestSSimBaseClass_full_run(object):
 
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), self.len_voltage)
-        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
+        assert len(time_bglibpy) == self.len_voltage
+        assert len(voltage_bglibpy) == self.len_voltage
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gid, self.t_start, self.t_stop, self.record_dt)
@@ -114,10 +112,10 @@ class TestSSimBaseClass_full_run(object):
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_true(rms_error < 2.0)
+        assert (rms_error < 2.0)
 
 
-@attr('gpfs', 'v5')
+@pytest.mark.v5
 class TestSSimBaseClass_full_realconn(object):
 
     """Class to test SSim with full circuit and multiple cells """ \
@@ -132,12 +130,12 @@ class TestSSimBaseClass_full_realconn(object):
         self.ssim = bglibpy.ssim.SSim(
             renccv2_bc_1_path, record_dt=self.record_dt
         )
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        assert(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a multi - cell full replay of a simulation """ \
@@ -154,8 +152,8 @@ class TestSSimBaseClass_full_realconn(object):
         self.ssim.run(self.t_stop)
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gids[0])
-        nt.assert_equal(len(time_bglibpy), self.len_voltage)
-        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
+        assert len(time_bglibpy) == self.len_voltage
+        assert len(voltage_bglibpy) == self.len_voltage
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gids[0], self.t_start, self.t_stop, self.record_dt)
@@ -164,7 +162,7 @@ class TestSSimBaseClass_full_realconn(object):
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_true(rms_error < 2.0)
+        assert(rms_error < 2.0)
 
 
 '''
@@ -178,7 +176,7 @@ class TestSSimBaseClass_hip_20180219(object):
     def setup(self):
         """Setup"""
         self.ssim = bglibpy.ssim.SSim(hip20180219_1_path)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        assert(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
         """Teardown"""
@@ -194,7 +192,7 @@ class TestSSimBaseClass_hip_20180219(object):
 '''
 
 
-@attr('gpfs', 'v6')
+@pytest.mark.v6
 class TestSSimBaseClass_v6_full_run(object):
 
     """Class to test SSim with full circuit"""
@@ -208,13 +206,13 @@ class TestSSimBaseClass_v6_full_run(object):
         self.ssim = bglibpy.ssim.SSim(
             v6_test_bc_1_path, record_dt=self.record_dt
         )
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        assert(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
 
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
@@ -231,8 +229,8 @@ class TestSSimBaseClass_v6_full_run(object):
 
         time_bglibpy = self.ssim.get_time_trace()
         voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), self.len_voltage)
-        nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
+        assert len(time_bglibpy) == self.len_voltage
+        assert len(voltage_bglibpy) == self.len_voltage
 
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gid, self.t_start, self.t_stop, self.record_dt)
@@ -241,7 +239,7 @@ class TestSSimBaseClass_v6_full_run(object):
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_true(rms_error < 0.5)
+        assert(rms_error < 0.5)
 
 
 '''
@@ -275,15 +273,15 @@ class TestSSimBaseClass_v6_mvr_run(object):
             # Manual examination of nrn.h5 showed it has to have Nrrp == 3
             if gid == 29561:
                 one_synapse = self.ssim.cells[gid].synapses[150]
-                nt.assert_true(hasattr(one_synapse, 'Nrrp'))
-                nt.assert_equal(one_synapse.Nrrp, 3)
+                assert(hasattr(one_synapse, 'Nrrp'))
+                assert one_synapse.Nrrp == 3
 
             self.ssim.run(500)
 
             time_bglibpy = self.ssim.get_time_trace()
             voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-            nt.assert_equal(len(time_bglibpy), 5000)
-            nt.assert_equal(len(voltage_bglibpy), 5000)
+            assert len(time_bglibpy) == 5000
+            assert len(voltage_bglibpy) == 5000
 
             voltage_bglib = self.ssim.get_mainsim_voltage_trace(
                 gid)[:len(voltage_bglibpy)]
@@ -304,13 +302,13 @@ class TestSSimBaseClass_v6_mvr_run(object):
                 numpy.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
-            nt.assert_less(rms_error, 10.0)
+            assert rms_error < 10.0
 
             del self.ssim
 '''
 
 
-@attr('gpfs', 'thal')
+@pytest.mark.thal
 class TestSSimBaseClass_thalamus(object):
     """Class to test SSim for thalamus with 5 cells of interest"""
 
@@ -356,14 +354,14 @@ class TestSSimBaseClass_thalamus(object):
             voltage_bglib = ssim.get_mainsim_voltage_trace(
                 gid, self.t_start, self.t_stop, self.record_dt)[1:]
 
-            nt.assert_equal(len(voltage_bglibpy), self.len_voltage - 1)
-            nt.assert_equal(len(voltage_bglib), self.len_voltage - 1)
+            assert len(voltage_bglibpy) == self.len_voltage - 1
+            assert len(voltage_bglib) == self.len_voltage - 1
 
             rms_error = numpy.sqrt(
                 numpy.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
-            nt.assert_less(rms_error, 0.055)
+            assert rms_error < 0.055
 
     def test_population_id(self):
         """Tests the behaviour when the population id is missing."""
@@ -373,13 +371,10 @@ class TestSSimBaseClass_thalamus(object):
             test_thalamus_no_population_id_path,
             record_dt=0.1)
 
-        nt.assert_raises(
-            bglibpy.PopulationIDMissingError,
-            ssim.instantiate_gids,
-            [gid],
-            add_synapses=True,
-            add_projections=True
-        )
+        with pytest.raises(bglibpy.PopulationIDMissingError):
+            ssim.instantiate_gids(
+                [gid], add_synapses=True, add_projections=True)
+
         ssim2 = bglibpy.ssim.SSim(
             test_thalamus_no_population_id_path,
             record_dt=0.1, ignore_populationid_error=True)
@@ -391,7 +386,7 @@ class TestSSimBaseClass_thalamus(object):
         )
 
 
-@attr('gpfs', 'v6')
+@pytest.mark.v6
 class TestSSimBaseClass_v6_rnd123_1(object):
 
     """Class to test SSim with 1000 cell random123 circuit"""
@@ -431,8 +426,8 @@ class TestSSimBaseClass_v6_rnd123_1(object):
 
             time_bglibpy = self.ssim.get_time_trace()
             voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-            nt.assert_equal(len(time_bglibpy), self.len_voltage)
-            nt.assert_equal(len(voltage_bglibpy), self.len_voltage)
+            assert len(time_bglibpy) == self.len_voltage
+            assert len(voltage_bglibpy) == self.len_voltage
 
             voltage_bglib = self.ssim.get_mainsim_voltage_trace(
                 gid, self.t_start, self.t_stop, self.record_dt)
@@ -458,13 +453,13 @@ class TestSSimBaseClass_v6_rnd123_1(object):
                 numpy.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
-            nt.assert_less(rms_error, 10.0)
+            assert rms_error < 10.0
 
             self.ssim.delete()
-            nt.assert_true(bglibpy.tools.check_empty_topology())
+            assert(bglibpy.tools.check_empty_topology())
 
 
-@attr('gpfs', 'v6')
+@pytest.mark.v6
 class TestSSimBaseClassSingleVesicleMinis(object):
 
     """Test SSim with MinisSingleVesicle, SpikeThreshold, V_Init, Celsius"""
@@ -494,7 +489,7 @@ class TestSSimBaseClassSingleVesicleMinis(object):
         """Teardown"""
         del self.cell
         self.ssim.delete()
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
         """SSim: Check if a full replay with MinisSingleVesicle """ \
@@ -505,12 +500,12 @@ class TestSSimBaseClassSingleVesicleMinis(object):
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             self.gid, self.t_start, self.t_stop, self.record_dt)
 
-        nt.assert_equal(len(voltage_bglibpy), len(voltage_bglib))
+        assert len(voltage_bglibpy) == len(voltage_bglib)
         rms_error = numpy.sqrt(
             numpy.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        nt.assert_less(rms_error, 4.38)
+        assert rms_error < 4.38
 
         self.check_ais_voltages()
 
@@ -521,14 +516,14 @@ class TestSSimBaseClassSingleVesicleMinis(object):
         ais_report = self.ssim.bc_simulation.report('axon_SONATA', source="h5")
         ais_voltage_mainsim = ais_report.get_gid(self.gid).values
 
-        nt.assert_equal(len(ais_voltage_bglibpy), len(ais_voltage_mainsim))
+        assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
         voltage_diff = ais_voltage_bglibpy - ais_voltage_mainsim
         rms_error = numpy.sqrt(numpy.mean(voltage_diff ** 2))
 
-        nt.assert_less(rms_error, 14.91)
+        assert rms_error < 14.91
 
 
-@attr('gpfs', 'v5')
+@pytest.mark.v5
 class TestSSimBaseClass_full(object):
 
     """Class to test SSim with full circuit"""
@@ -536,12 +531,12 @@ class TestSSimBaseClass_full(object):
     def setup(self):
         """Setup"""
         self.ssim = bglibpy.ssim.SSim(renccv2_bc_1_path)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
+        assert(isinstance(self.ssim, bglibpy.SSim))
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        nt.assert_true(bglibpy.tools.check_empty_topology())
+        assert(bglibpy.tools.check_empty_topology())
 
     def test_generate_mtype_list(self):
         """SSim: Test generate_mtype_list"""
@@ -609,13 +604,14 @@ class TestSSimBaseClass_full(object):
 
             syn_desc = self.ssim.get_syn_descriptions(post_gid)[syn_id]
 
-            nt.assert_equal(pre_gid, syn_desc[0][0])
+            assert pre_gid == syn_desc[0][0]
             syn_type = syn_desc[0][13]
 
-            nt.assert_equal(params, self.ssim._evaluate_connection_parameters(
+            evaluated_params = self.ssim._evaluate_connection_parameters(
                 pre_gid,
                 post_gid,
-                syn_type))
+                syn_type)
+            assert params == evaluated_params
 
     def test_add_single_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
@@ -639,148 +635,15 @@ class TestSSimBaseClass_full(object):
             syn_params,
             connection_modifiers)
 
-        nt.assert_equal(
-            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAA, -80.6)
-        nt.assert_equal(
-            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAB, -101.0)
-        nt.assert_equal(
-            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_d_GABAA,
-            10.0)
-        nt.assert_equal(
-            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_r_GABAA,
-            1.0)
-
-
-'''
-
-@attr('bgscratch')
-class TestSSimBaseClass_full_neuronconfigure(object):
-
-    """Class to test SSim with full circuit that uses neuronconfigure"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = bglibpy.ssim.SSim(
-            "/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/"
-            "SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/"
-            "coupled_Ek65_Mg0p25/BlueConfig",
-            record_dt=0.1)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
-
-    def teardown(self):
-        """Teardown"""
-        del self.ssim
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation with """ \
-            """neuronconfigure blocks run gives the same output """ \
-            """trace as on BG / P"""
-        gid = 116386
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
-        self.ssim.run(500)
-        time_bglibpy = self.ssim.get_time_trace()
-        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), 5000)
-        nt.assert_equal(len(voltage_bglibpy), 5000)
-
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
-
-        rms_error = numpy.sqrt(
-            numpy.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 0.01)
-
-'''
-
-'''
-@attr('bgscratch')
-class TestSSimBaseClass_full_connection_delay(object):
-
-    """Class to test SSim with full circuit that uses a delay field """ \
-        """in a connection block"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = bglibpy.ssim.SSim(
-            "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/"
-            "SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/"
-            "knockout/L4_EXC/BlueConfig",
-            record_dt=0.1)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
-
-    def teardown(self):
-        """Teardown"""
-        del self.ssim
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation with """ \
-            """delayed connection blocks gives the same output """ \
-            """trace as on BG / P"""
-        gid = 116386
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
-        self.ssim.run(500)
-        time_bglibpy = self.ssim.get_time_trace()
-        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), 5000)
-        nt.assert_equal(len(voltage_bglibpy), 5000)
-
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
-
-        rms_error = numpy.sqrt(
-            numpy.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 1.0)
-'''
-
-'''
-@attr('bgscratch')
-class TestSSimBaseClass_full_forwardskip(object):
-
-    """Class to test SSim with full circuit that uses a ForwardSkip"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = bglibpy.ssim.SSim(
-            "/bgscratch/bbp/l5/projects/proj1/2013.02.11/simulations/"
-            "SomatosensoryCxS1-v4.SynUpdate.r151/Silberberg/"
-            "k_ca_scan/K5p0/Ca1p3/BlueConfig",
-            record_dt=0.1)
-        nt.assert_true(isinstance(self.ssim, bglibpy.SSim))
-
-    def teardown(self):
-        """Teardown"""
-        del self.ssim
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation with ForwardSkip """ \
-            """gives the same output trace as on BG / P"""
-        gid = 108849
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
-        self.ssim.run(100)
-        time_bglibpy = self.ssim.get_time_trace()
-        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        nt.assert_equal(len(time_bglibpy), 1001)
-        nt.assert_equal(len(voltage_bglibpy), 1001)
-
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid)[:len(voltage_bglibpy)]
-
-        rms_error = numpy.sqrt(
-            numpy.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
-        nt.assert_true(rms_error < 0.3)
-'''
+        assert(
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAA == -80.6
+        )
+        assert(
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAB == -101.0
+        )
+        assert(
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_d_GABAA == 10.0
+        )
+        assert(
+            self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_r_GABAA == 1.0
+        )

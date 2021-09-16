@@ -3,13 +3,13 @@
 
 # pylint: disable=E1101,W0201
 
-"""Nosetest for the Simulation class"""
+"""Tests for the Simulation class"""
 
 import os
 import numpy
 import bglibpy
 
-import nose.tools as nt
+from pytest import approx
 
 script_dir = os.path.dirname(__file__)
 
@@ -18,21 +18,16 @@ class TestCellBaseClass(object):
 
     """Base test class"""
 
-    def __init__(self):
-        """Initializer"""
-        self.cell = None
-        self.sim = None
-
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % script_dir,
             "%s/examples/cell_example1" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
-        nt.assert_true(isinstance(self.sim, bglibpy.Simulation))
+        assert isinstance(self.sim, bglibpy.Simulation)
 
-    def teardown(self):
+    def teardown_method(self):
         """Destructor"""
         del self.cell
         del self.sim
@@ -46,21 +41,16 @@ class TestCellcSTUTRandom123BaseClass(object):
 
     """Base test class"""
 
-    def __init__(self):
-        """Initializer"""
-        self.cell = None
-        self.sim = None
-
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
             "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
             "%s/examples/cell_example_cstut" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
-        nt.assert_true(isinstance(self.sim, bglibpy.Simulation))
+        assert isinstance(self.sim, bglibpy.Simulation)
 
-    def teardown(self):
+    def teardown_method(self):
         """Destructor"""
         del self.cell
         del self.sim
@@ -77,30 +67,25 @@ class TestCellcSTUTRandom123BaseClass(object):
         # Lowered precision because of
         # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn repo
-        nt.assert_almost_equal(
-            numpy.mean(voltage_ss), -75.5400762008, places=6)
-        nt.assert_almost_equal(numpy.std(voltage_ss), 0.142647101877)
+        # self.cell = bglibpy.Cell("%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,"%s/examples/cell_example_cstut" % script_dir)
+        assert numpy.mean(voltage_ss) == approx(-75.5400762008, abs=1e-6)
+        assert numpy.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
 
 
 class TestCellcSTUTBaseClass(object):
 
     """Base test class"""
 
-    def __init__(self):
-        """Initializer"""
-        self.cell = None
-        self.sim = None
-
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
             "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
             "%s/examples/cell_example_cstut" % script_dir)
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
-        nt.assert_true(isinstance(self.sim, bglibpy.Simulation))
+        assert isinstance(self.sim, bglibpy.Simulation)
 
-    def teardown(self):
+    def teardown_method(self):
         """Destructor"""
         del self.cell
         del self.sim
@@ -117,6 +102,5 @@ class TestCellcSTUTBaseClass(object):
         # Lowered precision because of
         # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn repo
-        nt.assert_almost_equal(
-            numpy.mean(voltage_ss), -75.61918061202924, places=6)
-        nt.assert_almost_equal(numpy.std(voltage_ss), 0.19192736450671288)
+        assert numpy.mean(voltage_ss) == approx(-75.61918061202924, abs=1e-6)
+        assert numpy.std(voltage_ss) == approx(0.19192736450671288, abs=1e-6)

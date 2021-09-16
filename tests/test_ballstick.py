@@ -8,7 +8,6 @@ Models simulated in N disticnt ways, all shoudl
 import os
 import numpy
 import bglibpy
-import nose.tools as nt
 
 script_dir = os.path.dirname(__file__)
 
@@ -244,7 +243,7 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     else:
         analytic_t, analytic_v = numpy.loadtxt(analytic_expsyn_path)
 
-    nt.assert_equal(len(analytic_v), 8000)
+    assert len(analytic_v) == 8000
     pyneuron_rms_error = numpy.sqrt(
         numpy.mean(
             (analytic_v -
@@ -260,9 +259,9 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
             (analytic_v -
              bglibpy_v[
                  :len(analytic_v)]) ** 2))
-    nt.assert_true(pyneuron_rms_error < 0.1)
-    nt.assert_true(pyneuron_template_rms_error < 0.1)
-    nt.assert_true(bglibpy_rms_error < 0.1)
+    assert pyneuron_rms_error < 0.1
+    assert pyneuron_template_rms_error < 0.1
+    assert bglibpy_rms_error < 0.1
 
     if graph:
         import pylab
@@ -283,15 +282,12 @@ def test_ballstick_load():
     params = Params()
 
     cell = bglibpy.Cell(params.templatefile, params.morphfile)
-    nt.assert_true(abs(cell.soma.L - 19.6) < 0.001)
-    nt.assert_true(abs(cell.soma.diam - 10.229) < 0.001)
-    nt.assert_true(
-        abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001)
-    nt.assert_true(abs(cell.basal[0].L - 200.0) < 0.001)
-    nt.assert_true(abs(cell.basal[0].diam - 3.0) < 0.001)
-    nt.assert_true(
-        abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) <
-        0.001)
+    assert abs(cell.soma.L - 19.6) < 0.001
+    assert abs(cell.soma.diam - 10.229) < 0.001
+    assert abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001
+    assert abs(cell.basal[0].L - 200.0) < 0.001
+    assert abs(cell.basal[0].diam - 3.0) < 0.001
+    assert abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
 
     del cell
 
