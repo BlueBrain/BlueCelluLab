@@ -5,7 +5,7 @@ Dependencies
 
 The main dependencies of BGLibPy are::
 
-    Python 2.7+ or 3.5+ 
+    Python 3.6+ 
     Neuron
     Neurodamus
     BluePy
@@ -15,8 +15,6 @@ pre-installed versions.
 
 Python
 ------
-
-Modern Linux systems will have Python 2.7 or 3 installed.
 
 Make sure you're using a recent version of pip. It's best to run ::
 
@@ -37,16 +35,12 @@ First, you need to load an archive of your choice containing Python. Then you ca
 Neuron
 ------
 
-NEURON should be compiled with Python support. MPI support is not a 
-requirement.
-
 Versions that are supported:
 
 - 7.4
 - 7.5
-- Latest git commit from https://github.com/nrnhines/nrn 
+- Latest git commit from https://github.com/neuronsimulator/nrn 
   (Before being release the BGLibPy package is tested against this release)
-
 Possibly ways to acquire NEURON are:
 
 Pre-installed modules
@@ -57,45 +51,20 @@ First, you need to load an archive of your choice containing NEURON. Then you ca
     module load archive/2020-02
     module load neuron
 
+Using the PyPI package
+~~~~~~~~~~~~~~~~~~~~~~
+
+Neuron can be installed through pip using ::
+
+    pip install NEURON
+
+
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
 
-It's not too difficult to install NEURON from source in your home directory on
-BB5.
-If necessary change the SRC_DIR and INSTALL_DIR, and run the following code ::
+The up-to-date installation instructions can be found at ::
 
-    SRC_DIR=$HOME/src
-    INSTALL_DIR=$HOME/local
-
-    mkdir -p ${SRC_DIR}
-    cd ${SRC_DIR}
-    if [ ! -d nrn ]
-    then
-        echo "Downloading NEURON from github ..."
-        git clone https://github.com/nrnhines/nrn.git
-    else                                                                         
-        echo "Neuron already downloaded"                                         
-    fi                                                                           
-    cd nrn
-    echo "Preparing NEURON ..."
-    ./build.sh
-    echo "Configuring NEURON ..."                                                
-    ./configure --prefix=${INSTALL_DIR} --without-x --with-nrnpython --disable-rx3d
-    echo "Installing NEURON ..."
-    make -j4 install
-    
-    export PATH="${INSTALL_DIR}/x86_64/bin":${PATH}
-    export PYTHONPATH="${INSTALL_DIR}/lib64/python":${PYTHONPATH}
-
-    echo "Testing NEURON import ...."
-    python -c 'import neuron'
-                                                                                 
-    echo "NEURON successfully installed"
-    echo "Set your PATH at login to: ${INSTALL_DIR}/x86_64/bin:\${PATH}"
-    echo "Set your PYTHONPATH at login to: ${INSTALL_DIR}/lib64/python:\${PYTHONPATH}"
-
-(The above code is based on a script called '.install_neuron.sh' in the BGLibPy
-git repo)
+    https://github.com/neuronsimulator/nrn
 
 Linux packages
 ~~~~~~~~~~~~~~
