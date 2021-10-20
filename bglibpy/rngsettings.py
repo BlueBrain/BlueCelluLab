@@ -13,7 +13,7 @@ from bglibpy import printv, Singleton
 default_rng_mode = "Compatibility"
 
 
-class RNGSettings(Singleton):
+class RNGSettings(metaclass=Singleton):
 
     """ Class that represents RNG settings in BGLibPy"""
 

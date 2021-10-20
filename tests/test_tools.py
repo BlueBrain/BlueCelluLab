@@ -8,6 +8,7 @@
 import os
 from pytest import approx
 import bglibpy
+from bglibpy.tools import Singleton
 
 script_dir = os.path.dirname(__file__)
 
@@ -73,3 +74,27 @@ class TestTools(object):
                 expected_voltage, gid, self.config, enable_ttx=ttx)
             holding_current == approx(expected_current, abs=1e-6)
             holding_voltage == approx(expected_voltage, abs=1e-6)
+
+
+def test_singleton():
+    """Make sure only 1 object gets created in a singleton."""
+
+    class TestClass(metaclass=Singleton):
+        """Class to test Singleton object creation."""
+
+        n_instances = 0
+
+        def __init__(self):
+            print("I'm instantiated")
+            TestClass.n_instances += 1
+
+    test_obj1 = TestClass()
+    test_obj2 = TestClass()
+    test_objs = [TestClass() for x in range(10)]
+
+    assert test_obj1 is test_obj2
+    assert id(test_obj1) == id(test_obj2)
+
+    assert len(set(test_objs)) == 1
+
+    assert TestClass.n_instances == 1

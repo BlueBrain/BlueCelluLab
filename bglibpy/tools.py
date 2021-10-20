@@ -725,18 +725,11 @@ def check_empty_topology():
     return stdout == ['', '']
 
 
-class Singleton(object):
-    """Singleton implementation from the Python documentation.
+class Singleton(type):
+    _instances = {}
 
-    https://www.python.org/download/releases/2.2/descrintro/#__new__
-    """
-    def __new__(cls, *args, **kwds):
-        it = cls.__dict__.get("__it__")
-        if it is not None:
-            return it
-        cls.__it__ = it = object.__new__(cls)
-        it.init(*args, **kwds)
-        return it
-
-    def init(self, *args, **kwds):
-        pass
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(
+                *args, **kwargs)
+        return cls._instances[cls]
