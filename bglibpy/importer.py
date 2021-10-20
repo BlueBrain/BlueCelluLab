@@ -33,7 +33,7 @@ def import_all():
 def _nrn_disable_banner():
     """Disable Neuron banner"""
 
-    import importlib
+    import importlib.util
     import ctypes
 
     neuron_spec = importlib.util.find_spec("neuron")
