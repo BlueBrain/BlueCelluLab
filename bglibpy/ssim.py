@@ -661,24 +661,16 @@ class SSim:
     def merge_pre_spike_trains(*train_dicts):
         """Merge presynaptic spike train dicts"""
 
-        ret_dict = None
+        train_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
+        if train_dicts == []:
+            return None
 
-        for train_dict in train_dicts:
-            if train_dict is not None:
-                if ret_dict is None:
-                    ret_dict = train_dict.copy()
-                    continue
-                else:
-                    # Not super efficient, but out.dats to tend not to be
-                    # very large
-                    for pre_gid, train in train_dict.items():
-                        ret_dict.setdefault(pre_gid, []).extend(train)
-
-        if ret_dict is not None:
-            for pre_gid, train in ret_dict.items():
-                if train is not None:
-                    ret_dict[pre_gid] = numpy.array(sorted(train))
-
+        all_keys = set().union(*[d.keys() for d in train_dicts])
+        ret_dict = {}
+        for k in all_keys:
+            ret_dict[k] = numpy.sort(
+                numpy.concatenate([d[k] for d in train_dicts if k in d])
+            )
         return ret_dict
 
     # pylint: disable=R0913
