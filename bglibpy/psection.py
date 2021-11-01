@@ -13,7 +13,7 @@ import bglibpy
 from bglibpy import neuron
 
 
-class PSection(object):
+class PSection:
 
     """Class that represents a cell section"""
 

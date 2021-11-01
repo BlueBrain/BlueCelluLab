@@ -13,7 +13,7 @@ import numpy
 # pylint: disable=R0914,too-many-arguments
 
 
-class Dendrogram(object):
+class Dendrogram:
 
     """Class that represent a dendrogram plot"""
 

@@ -19,10 +19,8 @@ Cell class
 import re
 import math
 import os
-try:
-    import queue as queue
-except ImportError:
-    import Queue as queue
+
+import queue
 import hashlib
 import string
 import json
@@ -39,7 +37,7 @@ from bglibpy import printv
 example_dir = __file__
 
 
-class Cell(object):
+class Cell:
 
     """Represents a BGLib Cell object."""
 
@@ -216,7 +214,7 @@ class Cell(object):
                 self.secname_to_isec[secname] = isec
 
         # Set the parents and children of all the psections
-        for psec in self.psections.itervalues():
+        for psec in self.psections.values():
             hparent = psec.hparent
             if hparent:
                 parentname = neuron.h.secname(sec=hparent)
@@ -428,7 +426,7 @@ class Cell(object):
             return self.secname_to_psection[secname]
         else:
             raise Exception(
-                "SSim: get_psection requires or a section_id or a secname")
+                "Cell: get_psection requires or a section_id or a secname")
 
     def get_hsection(self, section_id):
         """Use the serialized object to find a hoc section from a section id.
@@ -984,7 +982,7 @@ class Cell(object):
         else:
             source_popid, target_popid = popids
 
-        proj_name, sid = syn_id
+        sid = syn_id[1]
 
         if base_seed is None:
             base_seed = self.rng_settings.base_seed
@@ -1093,7 +1091,7 @@ class Cell(object):
 
     def initialize_synapses(self):
         """Initialize the synapses."""
-        for synapse in self.synapses.itervalues():
+        for synapse in self.synapses.values():
             syn = synapse.hsynapse
             syn_type = syn.hname().partition('[')[0]
             # todo: Is there no way to call the mod file's INITIAL block?

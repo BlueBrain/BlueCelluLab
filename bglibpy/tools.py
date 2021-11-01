@@ -65,7 +65,7 @@ def get_release_morphologies():
     return "/bgscratch/bbp/release/morphologies/31.05.12"
 
 
-class deprecated(object):
+class deprecated:
 
     """Decorator to mark a function as deprecated"""
 
@@ -544,7 +544,7 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
 # pylint: enable=R0913
 
 
-class search_hyp_function(object):
+class search_hyp_function:
 
     """Function object"""
 
@@ -556,7 +556,7 @@ class search_hyp_function(object):
         return search_hyp_current_replay(self.blueconfig, gid, **self.kwargs)
 
 
-class search_hyp_function_gid(object):
+class search_hyp_function_gid:
 
     """Function object, return a tuple (gid, results)"""
 

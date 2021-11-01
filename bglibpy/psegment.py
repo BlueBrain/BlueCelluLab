@@ -14,7 +14,7 @@ import bglibpy
 type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b'}
 
 
-class PSegment(object):
+class PSegment:
 
     """A python representation of a segment"""
 

@@ -30,7 +30,7 @@ def test_longname():
     del cell
 
 
-class TestCellBaseClass1(object):
+class TestCellBaseClass1:
 
     """First Cell test class"""
 
@@ -145,7 +145,7 @@ class TestCellBaseClass1(object):
             assert distance_euclid == distance_hand
 
 
-class TestCellBaseClassSynapses(object):
+class TestCellBaseClassSynapses:
 
     """TestCellBaseClassSynapses"""
 
@@ -193,7 +193,7 @@ class TestCellBaseClassSynapses(object):
 
 
 @pytest.mark.debugtest
-class TestCellBaseClassVClamp(object):
+class TestCellBaseClassVClamp:
 
     """First Cell test class"""
 

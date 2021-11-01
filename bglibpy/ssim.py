@@ -28,7 +28,7 @@ from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
 
 
-class SSim(object):
+class SSim:
 
     """Class that can load a BGLib BlueConfig,
                and instantiate the simulation"""
@@ -696,7 +696,7 @@ class SSim(object):
                 outdat_path = os.path.join(
                     self.bc.Run['OutputRoot'],
                     'out.dat')
-            pre_spike_trains = _parse_outdat2(outdat_path)
+            pre_spike_trains = _parse_outdat(outdat_path)
         else:
             pre_spike_trains = None
 
@@ -788,8 +788,9 @@ class SSim(object):
             syn_type)
 
         if connection_parameters["add_synapse"]:
-            self.add_single_synapse(gid, syn_id, syn_description,
-                                    connection_parameters, popids=popids)
+            self.cells[gid].add_replay_synapse(
+                syn_id, syn_description, connection_parameters, popids=popids,
+                extracellular_calcium=self.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.fetch_mini_frequencies(gid)
                 printv(
@@ -801,8 +802,7 @@ class SSim(object):
                         str(mini_frequencies)),
                     50)
 
-                self.add_replay_minis(
-                    gid,
+                self.cells[gid].add_replay_minis(
                     syn_id,
                     syn_description,
                     connection_parameters,
@@ -884,36 +884,8 @@ class SSim(object):
             stimulus,
             noisestim_count=noisestim_count)
 
-    def add_replay_minis(self, gid, syn_id, syn_description,
-                         syn_parameters, popids=None, mini_frequencies=None):
-        """Add minis from the replay"""
-        self.cells[gid].add_replay_minis(
-            syn_id,
-            syn_description,
-            syn_parameters,
-            popids=popids,
-            mini_frequencies=mini_frequencies)
-
-    def add_single_synapse(self, gid, syn_id,
-                           syn_description, connection_modifiers, popids=None):
-        """Add a replay synapse on the cell
-
-        Parameters
-        ----------
-        gid : int
-              GID of the cell
-        syn_id: int
-              Synapse ID of the synapse
-        syn_description: dict
-              Description of the synapse
-        connection_modifiers: dict
-              Connection modifiers for the synapse
-        """
-        return self.cells[gid].add_replay_synapse(
-            syn_id, syn_description, connection_modifiers, popids=popids,
-            extracellular_calcium=self.extracellular_calcium)
-
-    def check_connection_contents(self, contents):
+    @staticmethod
+    def check_connection_contents(contents):
         """Check the contents of a connection block,
            to see if we support all the fields"""
 
@@ -926,7 +898,8 @@ class SSim(object):
                     "Key %s in Connection blocks not supported by BGLibPy"
                     % key)
 
-    def is_cell_target(self, target, gid):
+    @staticmethod
+    def is_cell_target(target, gid):
         """Check if target is cell"""
 
         return target == 'a%d' % gid
@@ -1013,7 +986,7 @@ class SSim(object):
 
     def initialize_synapses(self):
         """ Resets the state of all synapses of all cells to initial values """
-        for cell in self.cells.itervalues():
+        for cell in self.cells.values():
             cell.initialize_synapses()
 
     def run(self, t_stop=None, v_init=None, celsius=None, dt=None,
@@ -1362,11 +1335,10 @@ class SSim(object):
         return gids
 
 
-def _parse_outdat2(path):
+def _parse_outdat(path):
     """Parse the replay spiketrains in a out.dat formatted file
        pointed to by path"""
 
-    import bluepy.impl.spike_report
     spikes = bluepy.impl.spike_report.SpikeReport.load(path)
 
     outdat = {}
@@ -1382,9 +1354,3 @@ def _parse_outdat2(path):
         outdat[gid] = spike_times
 
     return outdat
-
-
-def _parse_outdat(path, outdat_name='out.dat'):
-    """Parse the replay spiketrains in out.dat"""
-    full_outdat_name = os.path.join(path, outdat_name)
-    return _parse_outdat2(full_outdat_name)

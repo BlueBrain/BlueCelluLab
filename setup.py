@@ -20,8 +20,7 @@ setuptools.setup(
         "brion>=3.3.0",
         "cachetools",
         "numpy>=1.8.0",
-        "matplotlib>=3.0.0",
-        "functools32;python_version < '3'"],
+        "matplotlib>=3.0.0"],
     keywords=(
         'computational neuroscience',
         'simulation',

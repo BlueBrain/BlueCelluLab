@@ -47,7 +47,7 @@ def test_blueconfig_append_path():
         assert os.path.isabs(field_val)
 
 
-class TestTools(object):
+class TestTools:
 
     """Class to test SSim with two cell circuit"""
 

@@ -11,7 +11,7 @@ import bglibpy
 script_dir = os.path.dirname(__file__)
 
 
-class TestBGLibBaseClass1(object):
+class TestBGLibBaseClass1:
 
     """Test BGLib base class"""
 

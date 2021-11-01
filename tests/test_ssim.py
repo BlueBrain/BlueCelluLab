@@ -16,10 +16,12 @@ def test_parse_outdat():
     """SSim: Testing parsing of out.dat"""
     with pytest.raises(IOError):
         outdat = bglibpy.ssim._parse_outdat(
-            "%s/examples/sim_twocell_empty/output_doesntexist" % script_dir)
+            "%s/examples/sim_twocell_empty/output_doesntexist/out.dat"
+            % script_dir
+        )
 
     outdat = bglibpy.ssim._parse_outdat(
-        "%s/examples/sim_twocell_minis_replay/output" % script_dir)
+        "%s/examples/sim_twocell_minis_replay/output/out.dat" % script_dir)
     assert(45 in outdat[2])
 
 
@@ -52,7 +54,7 @@ def test_merge_pre_spike_trains():
             train3))
 
 
-class TestSonataNodeInput(object):
+class TestSonataNodeInput:
     """Tests the Sonata nodes.h5 input specified as CellLibraryFile."""
 
     def setup(self):
@@ -98,7 +100,7 @@ class TestSonataNodeInput(object):
         assert ssim.mecombo_emodels is None
 
 
-class TestSSimBaseClass_twocell_forwardskip(object):
+class TestSSimBaseClass_twocell_forwardskip:
 
     """Class to test SSim with two cell circuit"""
 
@@ -144,7 +146,7 @@ class TestSSimBaseClass_twocell_forwardskip(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_empty(object):
+class TestSSimBaseClass_twocell_empty:
 
     """Class to test SSim with two cell circuit"""
 
@@ -187,7 +189,7 @@ class TestSSimBaseClass_twocell_empty(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_replay(object):
+class TestSSimBaseClass_twocell_replay:
 
     """Class to test SSim with two cell circuit"""
 
@@ -256,7 +258,7 @@ class TestSSimBaseClass_twocell_replay(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_all_realconn(object):
+class TestSSimBaseClass_twocell_all_realconn:
 
     """Class to test SSim with two cell circuit"""
 
@@ -300,7 +302,7 @@ class TestSSimBaseClass_twocell_all_realconn(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_all(object):
+class TestSSimBaseClass_twocell_all:
 
     """Class to test SSim with two cell circuit"""
 
@@ -368,7 +370,7 @@ def rms(trace1, trace2):
     return rms
 
 
-class TestSSimBaseClass_twocell_all_intersect(object):
+class TestSSimBaseClass_twocell_all_intersect:
 
     """Class to test SSim with two cell circuit"""
 
@@ -412,7 +414,7 @@ class TestSSimBaseClass_twocell_all_intersect(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_all_presynspiketrains(object):
+class TestSSimBaseClass_twocell_all_presynspiketrains:
 
     """Class to test SSim with two cell circuit"""
 
@@ -455,7 +457,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_all_mvr(object):
+class TestSSimBaseClass_twocell_all_mvr:
 
     """Class to test SSim with two cell circuit"""
 
@@ -540,7 +542,7 @@ class TestSSimBaseClass_twocell_all_mvr(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_synapseid(object):
+class TestSSimBaseClass_twocell_synapseid:
 
     """Class to test SSim with two cell circuit"""
 
@@ -604,7 +606,7 @@ class TestSSimBaseClass_twocell_synapseid(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_minis_replay(object):
+class TestSSimBaseClass_twocell_minis_replay:
 
     """Class to test SSim with two cell circuit"""
 
@@ -674,7 +676,7 @@ class TestSSimBaseClass_twocell_minis_replay(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_noisestim(object):
+class TestSSimBaseClass_twocell_noisestim:
 
     """Class to test SSim with two cell circuit"""
 
@@ -744,7 +746,7 @@ class TestSSimBaseClass_twocell_noisestim(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_twocell_pulsestim(object):
+class TestSSimBaseClass_twocell_pulsestim:
 
     """Class to test SSim with two cell circuit"""
 
@@ -815,7 +817,7 @@ class TestSSimBaseClass_twocell_pulsestim(object):
         assert(bglibpy.tools.check_empty_topology())
 
 
-class TestSSimBaseClass_syns(object):
+class TestSSimBaseClass_syns:
 
     """Class to test the syns / hsynapses property of Cell"""
 

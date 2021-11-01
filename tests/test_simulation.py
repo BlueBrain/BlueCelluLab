@@ -14,7 +14,7 @@ from pytest import approx
 script_dir = os.path.dirname(__file__)
 
 
-class TestCellBaseClass(object):
+class TestCellBaseClass:
 
     """Base test class"""
 
@@ -37,7 +37,7 @@ class TestCellBaseClass(object):
         self.sim.run(100)
 
 
-class TestCellcSTUTRandom123BaseClass(object):
+class TestCellcSTUTRandom123BaseClass:
 
     """Base test class"""
 
@@ -72,7 +72,7 @@ class TestCellcSTUTRandom123BaseClass(object):
         assert numpy.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
 
 
-class TestCellcSTUTBaseClass(object):
+class TestCellcSTUTBaseClass:
 
     """Base test class"""
 

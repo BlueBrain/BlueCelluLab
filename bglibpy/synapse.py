@@ -13,7 +13,7 @@ from bglibpy.tools import printv
 import numpy
 
 
-class Synapse(object):
+class Synapse:
 
     """ Class that represents a synapse in BGLibPy """
 
@@ -257,8 +257,8 @@ class Synapse(object):
             for persistent_object in self.persistent:
                 del persistent_object
 
-    def calc_u_scale_factor(self, u_hill_coefficient,
-                            extracellular_calcium):
+    @staticmethod
+    def calc_u_scale_factor(u_hill_coefficient, extracellular_calcium):
         if extracellular_calcium is None or u_hill_coefficient is None:
             return 1.0
 

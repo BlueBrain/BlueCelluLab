@@ -67,7 +67,7 @@ hip20180219_1_path = os.path.join(
 
 
 @pytest.mark.v5
-class TestSSimBaseClass_full_run(object):
+class TestSSimBaseClass_full_run:
 
     """Class to test SSim with full circuit"""
 
@@ -116,7 +116,7 @@ class TestSSimBaseClass_full_run(object):
 
 
 @pytest.mark.v5
-class TestSSimBaseClass_full_realconn(object):
+class TestSSimBaseClass_full_realconn:
 
     """Class to test SSim with full circuit and multiple cells """ \
         """instantiate with real connections"""
@@ -168,7 +168,7 @@ class TestSSimBaseClass_full_realconn(object):
 '''
 Reenable this once the MOD files are separated out of neurodamus
 @attr('gpfs', 'hip', 'debugtest')
-class TestSSimBaseClass_hip_20180219(object):
+class TestSSimBaseClass_hip_20180219:
 
     """Class to test SSim with full circuit and multiple cells """ \
         """instantiate with real connections"""
@@ -193,7 +193,7 @@ class TestSSimBaseClass_hip_20180219(object):
 
 
 @pytest.mark.v6
-class TestSSimBaseClass_v6_full_run(object):
+class TestSSimBaseClass_v6_full_run:
 
     """Class to test SSim with full circuit"""
 
@@ -244,7 +244,7 @@ class TestSSimBaseClass_v6_full_run(object):
 
 '''
 @attr('gpfs', 'v6', 'debugtest')
-class TestSSimBaseClass_v6_mvr_run(object):
+class TestSSimBaseClass_v6_mvr_run:
 
     """Class to test SSim with full mvr circuit"""
 
@@ -309,7 +309,7 @@ class TestSSimBaseClass_v6_mvr_run(object):
 
 
 @pytest.mark.thal
-class TestSSimBaseClass_thalamus(object):
+class TestSSimBaseClass_thalamus:
     """Class to test SSim for thalamus with 5 cells of interest"""
 
     def setup(self):
@@ -387,7 +387,7 @@ class TestSSimBaseClass_thalamus(object):
 
 
 @pytest.mark.v6
-class TestSSimBaseClass_v6_rnd123_1(object):
+class TestSSimBaseClass_v6_rnd123_1:
 
     """Class to test SSim with 1000 cell random123 circuit"""
 
@@ -460,7 +460,7 @@ class TestSSimBaseClass_v6_rnd123_1(object):
 
 
 @pytest.mark.v6
-class TestSSimBaseClassSingleVesicleMinis(object):
+class TestSSimBaseClassSingleVesicleMinis:
 
     """Test SSim with MinisSingleVesicle, SpikeThreshold, V_Init, Celsius"""
 
@@ -524,7 +524,7 @@ class TestSSimBaseClassSingleVesicleMinis(object):
 
 
 @pytest.mark.v5
-class TestSSimBaseClass_full(object):
+class TestSSimBaseClass_full:
 
     """Class to test SSim with full circuit"""
 
@@ -613,7 +613,7 @@ class TestSSimBaseClass_full(object):
                 syn_type)
             assert params == evaluated_params
 
-    def test_add_single_synapse_SynapseConfigure(self):
+    def test_add_replay_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
         gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
@@ -623,17 +623,16 @@ class TestSSimBaseClass_full(object):
         inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
         sid = int(inh_synapses[0][1])
         syn_params = pre_datas[sid, :]
-        connection_modifiers = {
+        connection_parameters = {
             'SynapseConfigure': [
                 '%s.e_GABAA = -80.5 %s.e_GABAB = -101.0',
                 '%s.tau_d_GABAA = 10.0 %s.tau_r_GABAA = 1.0',
                 '%s.e_GABAA = -80.6'],
             'Weight': 2.0}
-        self.ssim.add_single_synapse(
-            gid,
+        self.ssim.cells[gid].add_replay_synapse(
             ('', sid),
             syn_params,
-            connection_modifiers)
+            connection_parameters)
 
         assert(
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAA == -80.6

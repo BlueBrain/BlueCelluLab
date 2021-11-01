@@ -12,7 +12,7 @@ Class that represents a plot window in BGLibPy
 import itertools
 
 
-class PlotWindow(object):
+class PlotWindow:
 
     """Class the represents a plotting window"""
 

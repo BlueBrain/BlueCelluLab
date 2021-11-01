@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Class that represents a synapse in BGLibPy
+RNG settings of BGLibPy
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.

@@ -10,7 +10,7 @@ Class that represents a connection between two cells in BGLibPy
 import bglibpy
 
 
-class Connection(object):
+class Connection:
 
     """ Class that represents a connection between two cells in BGLibPy """
 

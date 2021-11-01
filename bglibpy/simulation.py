@@ -18,7 +18,7 @@ from bglibpy import printv_err
 from bglibpy import tools
 
 
-class Simulation(object):
+class Simulation:
 
     """Class that represents a neuron simulation"""
 
@@ -47,7 +47,7 @@ class Simulation(object):
             sys.stdout.write("\x1b[3F")
 
         self.progress += 1
-        self.progress_closed = False if self.progress_closed else True
+        self.progress_closed = not self.progress_closed
         if self.progress_closed:
             sys.stdout.write(" %s%s%s \n" % (" " * (
                 self.progress - 1), " ", " " * (100 - self.progress)))
