@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """ BGLibPy setup """
 
+import sys
 import setuptools
 import versioneer
+
+if sys.version_info[:2] < (3, 7):
+    raise RuntimeError("Python version >= 3.7 required.")
 
 setuptools.setup(
     name="bglibpy",
