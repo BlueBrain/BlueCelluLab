@@ -8,7 +8,7 @@
 
 """
 
-import numpy
+import numpy as np
 
 # pylint: disable=R0914,too-many-arguments
 
@@ -68,7 +68,7 @@ class Dendrogram:
             varbounds = self.proot.getTreeVarBounds(variable)
 
         if variable is not None:
-            cax = pylab.imshow(numpy.outer(numpy.arange(0, 1, 0.1), numpy.ones(
+            cax = pylab.imshow(np.outer(np.arange(0, 1, 0.1), np.ones(
                 1)), aspect='auto', cmap=pylab.get_cmap("hot"), origin="lower")
             pylab.clim(varbounds[0], varbounds[1])
 

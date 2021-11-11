@@ -6,7 +6,7 @@
 """Tests for the Simulation class"""
 
 import os
-import numpy
+import numpy as np
 import bglibpy
 
 from pytest import approx
@@ -62,14 +62,14 @@ class TestCellcSTUTRandom123BaseClass:
         time = self.cell.get_time()
         voltage = self.cell.get_soma_voltage()
 
-        voltage_ss = voltage[numpy.where(time > 150)]
+        voltage_ss = voltage[np.where(time > 150)]
 
         # Lowered precision because of
         # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn repo
         # self.cell = bglibpy.Cell("%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,"%s/examples/cell_example_cstut" % script_dir)
-        assert numpy.mean(voltage_ss) == approx(-75.5400762008, abs=1e-6)
-        assert numpy.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
+        assert np.mean(voltage_ss) == approx(-75.5400762008, abs=1e-6)
+        assert np.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
 
 
 class TestCellcSTUTBaseClass:
@@ -97,10 +97,10 @@ class TestCellcSTUTBaseClass:
         time = self.cell.get_time()
         voltage = self.cell.get_soma_voltage()
 
-        voltage_ss = voltage[numpy.where(time > 150)]
+        voltage_ss = voltage[np.where(time > 150)]
 
         # Lowered precision because of
         # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn repo
-        assert numpy.mean(voltage_ss) == approx(-75.61918061202924, abs=1e-6)
-        assert numpy.std(voltage_ss) == approx(0.19192736450671288, abs=1e-6)
+        assert np.mean(voltage_ss) == approx(-75.61918061202924, abs=1e-6)
+        assert np.std(voltage_ss) == approx(0.19192736450671288, abs=1e-6)

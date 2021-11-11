@@ -1,13 +1,13 @@
 
 import h5py
-import numpy
+import numpy as np
 
 h5 = h5py.File("nrn.h5", "w")
 
 
 # a1
 #
-a1 = numpy.array([[2.0, 1.0, 1.0, 0.0, 100.0,  # pre_gid, delay, postsec, post seg id, distance along seg
+a1 = np.array([[2.0, 1.0, 1.0, 0.0, 100.0,  # pre_gid, delay, postsec, post seg id, distance along seg
                    0.0, 0.0, 0.0,  # presec, preseg, preseg distance
                    # gsyn, u, d, f, dtc, synapse type (>=100 exc, <100 inh),
                    1.0, 0.5, 650.0, 10, 10.0, 0,
@@ -18,7 +18,7 @@ a1 = numpy.array([[2.0, 1.0, 1.0, 0.0, 100.0,  # pre_gid, delay, postsec, post s
 
 
 # a2
-a2 = numpy.array([[1.0, 1.0, 1.0, 0.0, 150.0,  # pre_gid, delay, postsec, post seg id, distance along seg
+a2 = np.array([[1.0, 1.0, 1.0, 0.0, 150.0,  # pre_gid, delay, postsec, post seg id, distance along seg
                    0.0, 0.0, 0.0,  # presec, preseg, preseg distance
                    # gsyn, u, d, f, dtc, synapse type (>=100 exc, <100 inh),
                    1.0, 0.5, 650.0, 10, 2.0, 100,

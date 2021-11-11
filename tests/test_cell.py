@@ -139,8 +139,8 @@ class TestCellBaseClass1:
                 bglibpy.neuron.h.n3d(
                     sec=hsection2) - 1,
                 sec=hsection2)
-            import numpy
-            distance_hand = numpy.sqrt((x1 - x2) ** 2
+            import numpy as np
+            distance_hand = np.sqrt((x1 - x2) ** 2
                                        + (y1 - y2) ** 2 + (z1 - z2) ** 2)
             assert distance_euclid == distance_hand
 
@@ -233,28 +233,28 @@ class TestCellBaseClassVClamp:
 
         time = self.cell.get_time()
         current = self.cell.get_recording('test_vclamp')
-        import numpy
+        import numpy as np
 
         voltage = self.cell.get_soma_voltage()
 
-        voltage_vc_end = numpy.mean(
-            voltage[numpy.where((time < stop_time) & (time > .9 * stop_time))])
+        voltage_vc_end = np.mean(
+            voltage[np.where((time < stop_time) & (time > .9 * stop_time))])
 
         assert (abs(voltage_vc_end - level) < .1)
 
-        voltage_end = numpy.mean(
+        voltage_end = np.mean(
             voltage
-            [numpy.where((time < total_time) & (time > .9 * total_time))])
+            [np.where((time < total_time) & (time > .9 * total_time))])
 
         assert (abs(voltage_end - (-73)) < 1)
 
-        current_vc_end = numpy.mean(
-            current[numpy.where((time < stop_time) & (time > .9 * stop_time))])
+        current_vc_end = np.mean(
+            current[np.where((time < stop_time) & (time > .9 * stop_time))])
 
         assert (abs(current_vc_end - (-.1)) < .01)
 
-        current_after_vc_end = numpy.mean(
+        current_after_vc_end = np.mean(
             current[
-                numpy.where((time > stop_time) & (time < 1.1 * stop_time))])
+                np.where((time > stop_time) & (time < 1.1 * stop_time))])
 
         assert current_after_vc_end == 0.0

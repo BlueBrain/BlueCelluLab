@@ -7,6 +7,7 @@ Class that represents a connection between two cells in BGLibPy
          Do not distribute without further notice.
 """
 
+from bluepy.enums import Synapse as BLPSynapse
 import bglibpy
 
 
@@ -23,8 +24,8 @@ class Connection:
             spike_threshold=-30,
             spike_location="soma"):
         self.persistent = []
-        self.delay = post_synapse.syn_description[1]
-        self.weight = post_synapse.syn_description[8]
+        self.delay = post_synapse.syn_description[BLPSynapse.AXONAL_DELAY]
+        self.weight = post_synapse.syn_description[BLPSynapse.G_SYNX]
         self.connection_parameters = post_synapse.connection_parameters
         self.pre_cell = pre_cell
         self.pre_spiketrain = pre_spiketrain

@@ -7,10 +7,11 @@ Class that represents a synapse in BGLibPy
          Do not distribute without further notice.
 """
 
+import numpy as np
+from bluepy.enums import Synapse as BLPSynapse
+
 import bglibpy
 from bglibpy.tools import printv
-
-import numpy
 
 
 class Synapse:
@@ -63,20 +64,23 @@ class Synapse:
             self.source_popid, self.target_popid = 0, 0
         # pylint: disable = C0103
 
-        self.pre_gid = int(syn_description[0])
-        # self.delay = syn_description[1]
-        post_sec_id = syn_description[2]
+        self.pre_gid = int(syn_description[BLPSynapse.PRE_GID])
+        # self.delay = syn_description[BLPSynapse.AXONAL_DELAY]
+        post_sec_id = syn_description[BLPSynapse.POST_SECTION_ID]
         self.isec = int(post_sec_id)
-        post_seg_id = syn_description[3]
+        post_seg_id = syn_description[BLPSynapse.POST_SEGMENT_ID]
         self.ipt = post_seg_id
-        post_seg_distance = syn_description[4]
+        if post_seg_id == -1:
+            post_seg_distance = syn_description["afferent_section_pos"]
+        else:
+            post_seg_distance = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
         self.syn_offset = post_seg_distance
-        # weight = syn_description[8]
+        # weight = syn_description[BLPSynapse.G_SYNX]
 
-        self.syn_D = syn_description[10]
-        self.syn_F = syn_description[11]
-        self.syn_DTC = syn_description[12]
-        self.syn_type = int(syn_description[13])
+        self.syn_D = syn_description[BLPSynapse.D_SYN]
+        self.syn_F = syn_description[BLPSynapse.F_SYN]
+        self.syn_DTC = syn_description[BLPSynapse.DTC]
+        self.syn_type = int(syn_description[BLPSynapse.TYPE])
         self.edge_id = syn_description[-1]
 
         if cell.rng_settings is None:
@@ -273,8 +277,8 @@ class Synapse:
         def f_scale(x, y):
             return constrained_hill(x)(y)
 
-        u_scale_factor = numpy.vectorize(f_scale)(u_hill_coefficient,
-                                                  extracellular_calcium)
+        u_scale_factor = np.vectorize(f_scale)(u_hill_coefficient,
+                                               extracellular_calcium)
         printv(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %

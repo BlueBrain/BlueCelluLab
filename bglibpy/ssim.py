@@ -17,7 +17,7 @@ import re
 
 from cachetools import cachedmethod, LRUCache
 
-import numpy
+import numpy as np
 
 from bglibpy import bluepy
 import bglibpy
@@ -25,7 +25,6 @@ from bglibpy import printv
 from bglibpy import tools
 
 from bluepy.enums import Synapse as BLPSynapse
-from bluepy.impl.connectome_sonata import SonataConnectome
 
 
 class SSim:
@@ -451,7 +450,7 @@ class SSim:
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
-        if syn_descriptions_popids is None:
+        if syn_descriptions_popids is {}:
             printv(
                 "Warning: No presynaptic cells found for gid %d, "
                 "no synapses added" % gid, 2)
@@ -482,178 +481,8 @@ class SSim:
     def get_syn_descriptions_dict(
             self, gid, projection=None, projections=None):
         """Get synapse descriptions dict from bluepy, Keys are synapse ids"""
-        syn_descriptions_dict = {}
-
-        if projection is not None:
-            if projections is None:
-                projections = [projection]
-            else:
-                raise ValueError(
-                    'Cant combine projection and projections arguemnt')
-
-        post_segment_id = BLPSynapse.POST_SEGMENT_ID
-        post_segment_offset = BLPSynapse.POST_SEGMENT_OFFSET
-
-        all_properties = [
-            BLPSynapse.PRE_GID,
-            BLPSynapse.AXONAL_DELAY,
-            BLPSynapse.POST_SECTION_ID,
-            post_segment_id,
-            post_segment_offset,
-            BLPSynapse.G_SYNX,
-            BLPSynapse.U_SYN,
-            BLPSynapse.D_SYN,
-            BLPSynapse.F_SYN,
-            BLPSynapse.DTC,
-            BLPSynapse.TYPE,
-            BLPSynapse.NRRP,
-            BLPSynapse.U_HILL_COEFFICIENT,
-            BLPSynapse.CONDUCTANCE_RATIO]
-
-        if projections is None:
-            connectomes = {'': self.bc_circuit.connectome}
-        else:
-            connectomes = {
-                this_projection: self.bc_circuit.projection(this_projection)
-                for this_projection in projections}
-
-        all_synapse_sets = {}
-        for proj_name, connectome in connectomes.items():
-            using_sonata = False
-
-            nrrp_defined = True
-
-            # list() to make a copy
-            connectome_properties = list(all_properties)
-
-            # older circuit don't have these properties
-            for test_property in [BLPSynapse.U_HILL_COEFFICIENT,
-                                  BLPSynapse.CONDUCTANCE_RATIO,
-                                  BLPSynapse.NRRP]:
-                if test_property not in connectome.available_properties:
-                    connectome_properties.remove(test_property)
-                    if test_property == BLPSynapse.NRRP:
-                        nrrp_defined = False
-                    printv(
-                        'WARNING: %s not found, disabling' %
-                        test_property, 50)
-
-            if isinstance(connectome._impl, SonataConnectome):
-                # load 'afferent_section_pos' instead of '_POST_DISTANCE'
-                if 'afferent_section_pos' in connectome.available_properties:
-                    connectome_properties[
-                        connectome_properties.index(post_segment_offset)
-                    ] = 'afferent_section_pos'
-
-                synapses = connectome.afferent_synapses(
-                    gid, properties=connectome_properties
-                )
-
-                # replace '_POST_SEGMENT_ID' with -1 (as indicator for
-                # synlocation_to_segx)
-                if 'afferent_section_pos' in connectome.available_properties:
-                    synapses[post_segment_id] = -1
-
-                using_sonata = True
-                printv('Using sonata style synapse file, not nrn.h5', 50)
-            else:
-                synapses = connectome.afferent_synapses(
-                    gid, properties=connectome_properties
-                )
-
-            # io/synapse_reader.py:_patch_delay_fp_inaccuracies from
-            # py-neurodamus
-            dt = bglibpy.neuron.h.dt
-            synapses[BLPSynapse.AXONAL_DELAY] = (
-                synapses[BLPSynapse.AXONAL_DELAY] / dt + 1e-5
-            ).astype('i4') * dt
-
-            all_synapse_sets[proj_name] = (synapses, connectome_properties)
-
-        if not all_synapse_sets:
-            printv('No synapses found', 5)
-        else:
-            printv(
-                'Adding a total of %d synapse sets' %
-                len(all_synapse_sets), 5)
-
-            for proj_name, (synapse_set,
-                            connectome_properties) in all_synapse_sets.items():
-                if proj_name in [
-                    proj.name for proj in self.bc.typed_sections("Projection")
-                ]:
-                    if "PopulationID" in self.bc["Projection_" + proj_name]:
-                        source_popid = int(
-                            self.bc["Projection_" + proj_name]["PopulationID"]
-                        )
-                    else:
-                        if self.ignore_populationid_error:
-                            source_popid = 0
-                        else:
-                            raise bglibpy.PopulationIDMissingError(
-                                "PopulationID is missing from projection,"
-                                " block this will lead to wrong rng seeding."
-                                " If you anyway want to overwrite this,"
-                                " pass ignore_populationid_error=True param"
-                                " to SSim constructor."
-                            )
-                else:
-                    source_popid = 0
-                # ATM hard coded in neurodamus
-                target_popid = 0
-                popids = (source_popid, target_popid)
-
-                printv(
-                    'Adding a total of %d synapses for set %s' %
-                    (synapse_set.shape[0], proj_name), 5)
-
-                for syn_id, (edge_id, synapse) in enumerate(
-                        synapse_set.iterrows()):
-                    if not using_sonata:
-                        syn_gid, syn_id = edge_id
-                        if syn_gid != gid:
-                            raise Exception(
-                                "BGLibPy SSim: synapse gid doesnt match with "
-                                "cell gid !")
-                    syn_id_proj = (proj_name, syn_id)
-                    if syn_id_proj in syn_descriptions_dict:
-                        raise Exception(
-                            "BGLibPy SSim: trying to add "
-                            "synapse id %s twice !" %
-                            syn_id_proj)
-                    if nrrp_defined:
-                        old_syn_description = \
-                            synapse[connectome_properties].values[:11]
-                        nrrp = synapse[BLPSynapse.NRRP]
-
-                        # if the following 2 variables don't exist in the
-                        # circuit we put None, to detect that in the Synapse
-                        # code
-                        u_hill_coefficient = \
-                            synapse[BLPSynapse.U_HILL_COEFFICIENT] \
-                            if BLPSynapse.U_HILL_COEFFICIENT in synapse \
-                            else None
-                        conductance_ratio = \
-                            synapse[BLPSynapse.CONDUCTANCE_RATIO] \
-                            if BLPSynapse.CONDUCTANCE_RATIO in synapse \
-                            else None
-                        ext_syn_description = numpy.array(
-                            [-1, -1, -1,
-                             nrrp, u_hill_coefficient, conductance_ratio])
-                        # 14 - 16 are dummy values, 17 is Nrrp
-                        syn_description = numpy.append(
-                            old_syn_description,
-                            ext_syn_description)
-                    else:
-                        # old behavior
-                        syn_description = synapse[connectome_properties].values
-
-                    syn_description = numpy.insert(
-                        syn_description, [5, 5, 5], [-1, -1, -1])
-
-                    syn_description = numpy.append(syn_description, edge_id)
-                    syn_descriptions_dict[syn_id_proj] = \
-                        syn_description, popids
+        syn_descriptions_dict = bglibpy.synapse.create_syn_description_dict(
+            self.bc_circuit, self.bc, self.ignore_populationid_error, gid, projection, projections)
 
         return syn_descriptions_dict
 
@@ -668,8 +497,8 @@ class SSim:
         all_keys = set().union(*[d.keys() for d in train_dicts])
         ret_dict = {}
         for k in all_keys:
-            ret_dict[k] = numpy.sort(
-                numpy.concatenate([d[k] for d in train_dicts if k in d])
+            ret_dict[k] = np.sort(
+                np.concatenate([d[k] for d in train_dicts if k in d])
             )
         return ret_dict
 
@@ -702,7 +531,7 @@ class SSim:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 connection_parameters = synapse.connection_parameters
-                pre_gid = syn_description[0]
+                pre_gid = syn_description[BLPSynapse.PRE_GID]
                 if source and pre_gid not in source:
                     continue
                 real_synapse_connection = pre_gid in self.gids \
@@ -772,10 +601,10 @@ class SSim:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
 
-        syn_type = syn_description[13]
+        syn_type = syn_description[BLPSynapse.TYPE]
 
         connection_parameters = self._evaluate_connection_parameters(
-            syn_description[0],
+            syn_description[BLPSynapse.PRE_GID],
             gid,
             syn_type)
 
@@ -1066,7 +895,7 @@ class SSim:
         equals T by default)
 
         Returns:
-            One dimentional numpy.ndarray to represent the voltages.
+            One dimentional np.ndarray to represent the voltages.
         """
 
         voltage = (
@@ -1101,7 +930,7 @@ class SSim:
         """Get the time vector for the recordings, negative times removed"""
 
         time = self.cells[self.gids[0]].get_time()
-        pos_time = time[numpy.where(time >= 0.0)]
+        pos_time = time[np.where(time >= 0.0)]
         return pos_time
 
     def get_voltage_trace(self, gid):
@@ -1109,7 +938,7 @@ class SSim:
 
         time = self.get_time_trace()
         voltage = self.cells[gid].get_soma_voltage()
-        pos_voltage = voltage[numpy.where(time >= 0.0)]
+        pos_voltage = voltage[np.where(time >= 0.0)]
         return pos_voltage
 
     def delete(self):

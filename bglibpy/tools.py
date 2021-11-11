@@ -15,8 +15,9 @@ import json
 import io
 import copy
 import six
+from pathlib import Path
 
-import numpy
+import numpy as np
 
 import bglibpy
 from bglibpy import neuron
@@ -236,13 +237,13 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
     simulation.run(1000, cvode=template_accepts_cvode(template_name))
     time = cell.get_time()
     voltage = cell.get_soma_voltage()
-    SS_voltage = numpy.mean(voltage[numpy.where((time < 1000) & (time > 800))])
+    SS_voltage = np.mean(voltage[np.where((time < 1000) & (time > 800))])
     cell.delete()
 
     if check_for_spiking:
         # check for voltage crossings
-        if len(numpy.nonzero(
-                voltage[numpy.where(time > 100.0)] > spike_threshold)[0]) > 0:
+        if len(np.nonzero(
+                voltage[np.where(time > 100.0)] > spike_threshold)[0]) > 0:
             return None
 
     return SS_voltage
@@ -351,8 +352,8 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
 
     time = cell.get_time()
     voltage = cell.get_soma_voltage()
-    time_step = time[numpy.where((time > inj_start) & (time < inj_stop))]
-    voltage_step = voltage[numpy.where((
+    time_step = time[np.where((time > inj_start) & (time < inj_stop))]
+    voltage_step = voltage[np.where((
         time_step > inj_start) & (time_step < inj_stop))]
     spike_detected = detect_spike(voltage_step)
 
@@ -363,7 +364,7 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
 
 def detect_spike(voltage):
     """Detect if there is a spike in the voltage trace"""
-    return numpy.max(voltage) > -20
+    return np.max(voltage) > -20
 
 
 def search_threshold_current(template_name, morphology_name, hyp_level,
@@ -441,7 +442,7 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     ssim.run(t_stop=tstop)
     time = ssim.get_time_trace()
     voltage = ssim.get_voltage_trace(gid)
-    SS_voltage = numpy.mean(voltage[numpy.where(
+    SS_voltage = np.mean(voltage[np.where(
         (time < tstop) & (time > tstart))])
     printv("%s: Calculated SS voltage for gid %d "
            "with step level %f nA: %s mV" %
@@ -667,16 +668,18 @@ def blueconfig_append_path(blueconfig, path, fields=None):
     Args:
         blueconfig : config object or BlueConfig file path
         fields (list): collection of fields (str) to be modified
-        path (str): path to be appended to the fields f blueconfig
+        path (str or pathlib.Path): path to be appended to the fields
+         of blueconfig
 
     Returns:
         bluepy_configfile.configfile.BlueConfigFile: modified config object
     """
 
-    # if path, get the object
-    if isinstance(blueconfig, six.string_types):
-        with open(blueconfig) as f:
-            blueconfig = BlueConfig(f)
+    # bluepyconfigfile doesn't support pathlib yet
+    if isinstance(blueconfig, Path):
+        blueconfig = str(blueconfig)
+    with open(blueconfig) as f:
+        blueconfig = BlueConfig(f)
 
     if not fields:
         fields = ["MorphologyPath", "METypePath", "CircuitPath",
@@ -685,21 +688,21 @@ def blueconfig_append_path(blueconfig, path, fields=None):
     new_bc = copy.deepcopy(blueconfig)
     for field in fields:
         old_value = new_bc.Run.__getattr__(field)
-        new_value = os.path.realpath(os.path.join(path, old_value))
-        new_bc.Run.__setattr__(field, new_value)
+        new_value = (Path(path) / old_value).absolute()
+        new_bc.Run.__setattr__(field, str(new_value))
     return new_bc
 
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, (numpy.int_, numpy.intc, numpy.intp, numpy.int8,
-                            numpy.int16, numpy.int32, numpy.int64, numpy.uint8,
-                            numpy.uint16, numpy.uint32, numpy.uint64)):
+        if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
+                            np.int16, np.int32, np.int64, np.uint8,
+                            np.uint16, np.uint32, np.uint64)):
             return int(obj)
-        elif isinstance(obj, (numpy.float_, numpy.float16, numpy.float32,
-                              numpy.float64)):
+        elif isinstance(obj, (np.float_, np.float16, np.float32,
+                              np.float64)):
             return float(obj)
-        elif isinstance(obj, numpy.ndarray):
+        elif isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 

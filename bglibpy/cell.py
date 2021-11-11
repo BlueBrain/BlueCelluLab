@@ -25,7 +25,9 @@ import hashlib
 import string
 import json
 
-import numpy
+import numpy as np
+
+from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
 from bglibpy import tools
@@ -550,8 +552,8 @@ class Cell:
         # pylint: disable=C0103
         area = 0
         for section in self.all:
-            x_s = numpy.arange(1.0 / (2 * section.nseg), 1.0,
-                               1.0 / (section.nseg))
+            x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
+                            1.0 / (section.nseg))
             for x in x_s:
                 area += bglibpy.neuron.h.area(x, sec=section)
             # for segment in section:
@@ -735,7 +737,7 @@ class Cell:
         numpy array : array with the recording var_name variable values
 
         """
-        return numpy.array(self.recordings[var_name])
+        return np.array(self.recordings[var_name])
 
     def add_pulse(self, stimulus):
         """Inject pulse stimulus for replay."""
@@ -856,9 +858,13 @@ class Cell:
 
         """
 
-        isec = syn_description[2]
-        ipt = syn_description[3]
-        syn_offset = syn_description[4]
+        isec = syn_description[BLPSynapse.POST_SECTION_ID]
+        ipt = syn_description[BLPSynapse.POST_SEGMENT_ID]
+
+        if ipt == -1:
+            syn_offset = syn_description["afferent_section_pos"]
+        else:
+            syn_offset = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
 
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None:
@@ -986,10 +992,13 @@ class Cell:
 
         if base_seed is None:
             base_seed = self.rng_settings.base_seed
-        weight = syn_description[8]
-        post_sec_id = syn_description[2]
-        post_seg_id = syn_description[3]
-        post_seg_distance = syn_description[4]
+        weight = syn_description[BLPSynapse.G_SYNX]
+        post_sec_id = syn_description[BLPSynapse.POST_SECTION_ID]
+        post_seg_id = syn_description[BLPSynapse.POST_SEGMENT_ID]
+        if post_seg_id == -1:
+            post_seg_distance = syn_description["afferent_section_pos"]
+        else:
+            post_seg_distance = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
         location = self.\
             synlocation_to_segx(post_sec_id, post_seg_id,
                                 post_seg_distance)
@@ -1211,10 +1220,10 @@ class Cell:
         n_segments = int(neuron.h.n3d(sec=hsection))
         n_comps = hsection.nseg
 
-        xs = numpy.zeros(n_segments)
-        ys = numpy.zeros(n_segments)
-        zs = numpy.zeros(n_segments)
-        lengths = numpy.zeros(n_segments)
+        xs = np.zeros(n_segments)
+        ys = np.zeros(n_segments)
+        zs = np.zeros(n_segments)
+        lengths = np.zeros(n_segments)
         for index in range(0, n_segments):
             xs[index] = neuron.h.x3d(index, sec=hsection)
             ys[index] = neuron.h.y3d(index, sec=hsection)
@@ -1227,8 +1236,8 @@ class Cell:
         lengths /= (lengths[-1])
 
         # initialize the destination "independent" vector
-        # range = numpy.array(n_comps+2)
-        comp_range = numpy.arange(0, n_comps + 2) / n_comps - \
+        # range = np.array(n_comps+2)
+        comp_range = np.arange(0, n_comps + 2) / n_comps - \
             1.0 / (2 * n_comps)
         comp_range[0] = 0
         comp_range[-1] = 1
@@ -1240,9 +1249,9 @@ class Cell:
         # centroid of the section.  These are spaced at regular intervals.
         # Ready to interpolate.
 
-        xs_interp = numpy.interp(comp_range, lengths, xs)
-        ys_interp = numpy.interp(comp_range, lengths, ys)
-        zs_interp = numpy.interp(comp_range, lengths, zs)
+        xs_interp = np.interp(comp_range, lengths, xs)
+        ys_interp = np.interp(comp_range, lengths, ys)
+        zs_interp = np.interp(comp_range, lengths, zs)
 
         return xs_interp, ys_interp, zs_interp
 
@@ -1273,13 +1282,13 @@ class Cell:
         xs_interp1, ys_interp1, zs_interp1 = Cell.grindaway(hsection1)
         xs_interp2, ys_interp2, zs_interp2 = Cell.grindaway(hsection2)
 
-        x1 = xs_interp1[int(numpy.floor((len(xs_interp1) - 1) * location1))]
-        y1 = ys_interp1[int(numpy.floor((len(ys_interp1) - 1) * location1))]
-        z1 = zs_interp1[int(numpy.floor((len(zs_interp1) - 1) * location1))]
+        x1 = xs_interp1[int(np.floor((len(xs_interp1) - 1) * location1))]
+        y1 = ys_interp1[int(np.floor((len(ys_interp1) - 1) * location1))]
+        z1 = zs_interp1[int(np.floor((len(zs_interp1) - 1) * location1))]
 
-        x2 = xs_interp2[int(numpy.floor((len(xs_interp2) - 1) * location2))]
-        y2 = ys_interp2[int(numpy.floor((len(ys_interp2) - 1) * location2))]
-        z2 = zs_interp2[int(numpy.floor((len(zs_interp2) - 1) * location2))]
+        x2 = xs_interp2[int(np.floor((len(xs_interp2) - 1) * location2))]
+        y2 = ys_interp2[int(np.floor((len(ys_interp2) - 1) * location2))]
+        z2 = zs_interp2[int(np.floor((len(zs_interp2) - 1) * location2))]
 
         distance = 0
         if 'x' in projection:
@@ -1289,7 +1298,7 @@ class Cell:
         if 'z' in projection:
             distance += (z1 - z2) ** 2
 
-        distance = numpy.sqrt(distance)
+        distance = np.sqrt(distance)
 
         return distance
 
@@ -1433,7 +1442,7 @@ class Cell:
         (numpy array, numpy array) : time and current data
 
         """
-        t_content = numpy.arange(start_time, stop_time, dt)
+        t_content = np.arange(start_time, stop_time, dt)
         i_content = [amplitude * math.sin(freq * (x - start_time) * (
             2 * math.pi)) + mid_level for x in t_content]
         self.injectCurrentWaveform(t_content, i_content)

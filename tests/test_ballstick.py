@@ -6,7 +6,7 @@ Models simulated in N disticnt ways, all shoudl
 # pylint: disable=E1101,W0201
 
 import os
-import numpy
+import numpy as np
 import bglibpy
 
 script_dir = os.path.dirname(__file__)
@@ -61,7 +61,7 @@ class Params:
         self.EL = cell.soma(0.5).e_pas
 
         self.d_derived = 10
-        self.l_derived = self.soma_A / (2 * numpy.pi * self.d_derived / 2.0)
+        self.l_derived = self.soma_A / (2 * np.pi * self.d_derived / 2.0)
 
 
 def run_pyneuron(soma_l, soma_d, params):
@@ -111,8 +111,8 @@ def run_pyneuron(soma_l, soma_d, params):
     bglibpy.neuron.h.dt = params.DT
     bglibpy.neuron.run(params.T_STOP)
 
-    voltage = numpy.array(v_vec)
-    time = numpy.array(t_vec)
+    voltage = np.array(v_vec)
+    time = np.array(t_vec)
 
     del(syn)
     del(ns)
@@ -147,8 +147,8 @@ def run_pyneuron_with_template(params):
     bglibpy.neuron.h.dt = params.DT
     bglibpy.neuron.run(params.T_STOP)
 
-    voltage = numpy.array(v_vec)
-    time = numpy.array(t_vec)
+    voltage = np.array(v_vec)
+    time = np.array(t_vec)
 
     cell.getCell().clear()
 
@@ -239,23 +239,23 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
 
     if gfc_imported:
         analytic_t, analytic_v = run_analytic(params)
-        numpy.savetxt(analytic_expsyn_path, (analytic_t, analytic_v))
+        np.savetxt(analytic_expsyn_path, (analytic_t, analytic_v))
     else:
-        analytic_t, analytic_v = numpy.loadtxt(analytic_expsyn_path)
+        analytic_t, analytic_v = np.loadtxt(analytic_expsyn_path)
 
     assert len(analytic_v) == 8000
-    pyneuron_rms_error = numpy.sqrt(
-        numpy.mean(
+    pyneuron_rms_error = np.sqrt(
+        np.mean(
             (analytic_v -
              pyneuron_v[
                  :len(analytic_v)]) ** 2))
-    pyneuron_template_rms_error = numpy.sqrt(
-        numpy.mean(
+    pyneuron_template_rms_error = np.sqrt(
+        np.mean(
             (analytic_v -
              pyneuron_template_v[
                  :len(analytic_v)]) ** 2))
-    bglibpy_rms_error = numpy.sqrt(
-        numpy.mean(
+    bglibpy_rms_error = np.sqrt(
+        np.mean(
             (analytic_v -
              bglibpy_v[
                  :len(analytic_v)]) ** 2))

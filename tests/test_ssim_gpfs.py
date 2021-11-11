@@ -3,7 +3,7 @@
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
 import os
-import numpy
+import numpy as np
 import itertools
 
 import pytest
@@ -108,8 +108,8 @@ class TestSSimBaseClass_full_run:
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gid, self.t_start, self.t_stop, self.record_dt)
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert (rms_error < 2.0)
@@ -158,8 +158,8 @@ class TestSSimBaseClass_full_realconn:
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gids[0], self.t_start, self.t_stop, self.record_dt)
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert(rms_error < 2.0)
@@ -235,8 +235,8 @@ class TestSSimBaseClass_v6_full_run:
         voltage_bglib = self.ssim.get_mainsim_voltage_trace(
             gid, self.t_start, self.t_stop, self.record_dt)
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert(rms_error < 0.5)
@@ -298,8 +298,8 @@ class TestSSimBaseClass_v6_mvr_run:
             plt.legend()
             plt.savefig('O1v6a_%d.png' % i)
             """
-            rms_error = numpy.sqrt(
-                numpy.mean(
+            rms_error = np.sqrt(
+                np.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
             assert rms_error < 10.0
@@ -357,8 +357,8 @@ class TestSSimBaseClass_thalamus:
             assert len(voltage_bglibpy) == self.len_voltage - 1
             assert len(voltage_bglib) == self.len_voltage - 1
 
-            rms_error = numpy.sqrt(
-                numpy.mean(
+            rms_error = np.sqrt(
+                np.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
             assert rms_error < 0.055
@@ -449,8 +449,8 @@ class TestSSimBaseClass_v6_rnd123_1:
             # plt.clear()
             '''
 
-            rms_error = numpy.sqrt(
-                numpy.mean(
+            rms_error = np.sqrt(
+                np.mean(
                     (voltage_bglibpy - voltage_bglib) ** 2))
 
             assert rms_error < 10.0
@@ -501,8 +501,8 @@ class TestSSimBaseClassSingleVesicleMinis:
             self.gid, self.t_start, self.t_stop, self.record_dt)
 
         assert len(voltage_bglibpy) == len(voltage_bglib)
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert rms_error < 4.38
@@ -513,12 +513,12 @@ class TestSSimBaseClassSingleVesicleMinis:
         """Makes sure recording at AIS from bglibpy and ND produce the same."""
         ais_voltage_bglibpy = self.cell.get_ais_voltage()
 
-        ais_report = self.ssim.bc_simulation.report('axon_SONATA', source="h5")
+        ais_report = self.ssim.bc_simulation.report('axon_SONATA')
         ais_voltage_mainsim = ais_report.get_gid(self.gid).values
 
         assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
         voltage_diff = ais_voltage_bglibpy - ais_voltage_mainsim
-        rms_error = numpy.sqrt(numpy.mean(voltage_diff ** 2))
+        rms_error = np.sqrt(np.mean(voltage_diff ** 2))
 
         assert rms_error < 14.91
 
@@ -550,10 +550,10 @@ class TestSSimBaseClass_full:
             mtypes_filename = os.path.join(
                 script_dir, 'examples/mtype_lists', '%s.%s' %
                 ('_'.join(mtypes), 'txt'))
-            # numpy.savetxt(mtypes_filename, mtypes_gids)
-            expected_gids = numpy.loadtxt(mtypes_filename)
+            # np.savetxt(mtypes_filename, mtypes_gids)
+            expected_gids = np.loadtxt(mtypes_filename)
 
-            numpy.testing.assert_array_equal(
+            np.testing.assert_array_equal(
                 expected_gids, mtypes_gids)
 
     def test_evaluate_connection_parameters(self):
@@ -617,12 +617,11 @@ class TestSSimBaseClass_full:
         """SSim: Check if SynapseConfigure works correctly"""
         gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
-        pre_datas = numpy.array(
-            [x[0] for x in self.ssim.get_syn_descriptions(gid)])
+        pre_datas = [x[0] for x in self.ssim.get_syn_descriptions(gid)]
         # get second inh synapse (first fails)
-        inh_synapses = numpy.nonzero(pre_datas[:, 13] < 100)
+        inh_synapses = np.nonzero(np.array(pre_datas)[:, 13] < 100)
         sid = int(inh_synapses[0][1])
-        syn_params = pre_datas[sid, :]
+        syn_params = pre_datas[sid]
         connection_parameters = {
             'SynapseConfigure': [
                 '%s.e_GABAA = -80.5 %s.e_GABAB = -101.0',

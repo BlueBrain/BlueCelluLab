@@ -4,7 +4,7 @@
 
 import os
 
-import numpy
+import numpy as np
 import pytest
 import bglibpy
 from bluepy_configfile.configfile import BlueConfig
@@ -34,18 +34,18 @@ def test_merge_pre_spike_trains():
 
     trains_merged = {1: [5, 5, 100, 100], 2: [5, 7, 8, 120], 3: [8]}
 
-    numpy.testing.assert_equal(
+    np.testing.assert_equal(
         None,
         bglibpy.ssim.SSim.merge_pre_spike_trains(None))
-    numpy.testing.assert_equal(
+    np.testing.assert_equal(
         train1,
         bglibpy.ssim.SSim.merge_pre_spike_trains(train1))
-    numpy.testing.assert_equal(
+    np.testing.assert_equal(
         train1,
         bglibpy.ssim.SSim.merge_pre_spike_trains(
             None,
             train1))
-    numpy.testing.assert_equal(
+    np.testing.assert_equal(
         trains_merged,
         bglibpy.ssim.SSim.merge_pre_spike_trains(
             train1,
@@ -133,8 +133,8 @@ class TestSSimBaseClass_twocell_forwardskip:
 
         time_len = len(time)
         time_trace_len = len(time_trace)
-        assert len(time[numpy.where(time >= 0.0)]) == time_trace_len
-        assert len(time[numpy.where(time < 0.0)]) == 10
+        assert len(time[np.where(time >= 0.0)]) == time_trace_len
+        assert len(time[np.where(time < 0.0)]) == 10
 
         assert len(voltage) == time_len
 
@@ -178,8 +178,8 @@ class TestSSimBaseClass_twocell_empty:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < 0.2)
 
@@ -232,8 +232,8 @@ class TestSSimBaseClass_twocell_replay:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < .2)
 
@@ -246,8 +246,8 @@ class TestSSimBaseClass_twocell_replay:
             self.ssim_bglibpy_withoutreplay.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy_withoutreplay - voltage_bglib) ** 2))
         assert(rms_error > .2)
 
@@ -291,8 +291,8 @@ class TestSSimBaseClass_twocell_all_realconn:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < 1.0)
 
@@ -337,8 +337,8 @@ class TestSSimBaseClass_twocell_all:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert(rms_error < 1.0)
@@ -366,7 +366,7 @@ class TestSSimBaseClass_twocell_all:
 def rms(trace1, trace2):
     """Calculate rms error"""
 
-    rms = numpy.sqrt(numpy.mean((trace1 - trace2) ** 2))
+    rms = np.sqrt(np.mean((trace1 - trace2) ** 2))
     return rms
 
 
@@ -444,7 +444,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains:
         time_bglibpy = self.ssim_bglibpy.get_time_trace()
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)
 
-        epsp_level = numpy.max(
+        epsp_level = np.max(
             voltage_bglibpy[
                 (time_bglibpy < 20) & (
                     time_bglibpy > 10)])
@@ -493,8 +493,8 @@ class TestSSimBaseClass_twocell_all_mvr:
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (self.voltage_bglib_all - self.voltage_bglib_mvr) ** 2))
 
         assert(rms_error > 10)
@@ -522,8 +522,8 @@ class TestSSimBaseClass_twocell_all_mvr:
             self.gid
         )[0:len(self.voltage_bglib_mvr)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy_mvr - self.voltage_bglib_mvr) ** 2))
 
         assert(rms_error < 1.0)
@@ -589,13 +589,13 @@ class TestSSimBaseClass_twocell_synapseid:
 
         assert (len(voltage_bglib_all) == 1000)
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < .5)
 
-        rms_error_all = numpy.sqrt(
-            numpy.mean(
+        rms_error_all = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib_all) ** 2))
 
         assert(rms_error_all > 10.0)
@@ -650,8 +650,8 @@ class TestSSimBaseClass_twocell_minis_replay:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < 1.0)
 
@@ -664,8 +664,8 @@ class TestSSimBaseClass_twocell_minis_replay:
             self.ssim_bglibpy_withoutminis.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy_withoutminis - voltage_bglib) ** 2))
         assert(rms_error > 1.0)
 
@@ -720,8 +720,8 @@ class TestSSimBaseClass_twocell_noisestim:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
         assert(rms_error < 1.0)
 
@@ -734,8 +734,8 @@ class TestSSimBaseClass_twocell_noisestim:
             self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
         assert(rms_error > 1.0)
 
@@ -789,8 +789,8 @@ class TestSSimBaseClass_twocell_pulsestim:
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert(rms_error < 2.5)
@@ -805,8 +805,8 @@ class TestSSimBaseClass_twocell_pulsestim:
             self.ssim_bglibpy_withoutstim.get_voltage_trace(self.gid)[
                 0:len(voltage_bglib)]
 
-        rms_error = numpy.sqrt(
-            numpy.mean(
+        rms_error = np.sqrt(
+            np.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
         assert(rms_error > 20.0)
 
