@@ -25,12 +25,12 @@ setuptools.setup(
         "cachetools",
         "numpy>=1.8.0",
         "matplotlib>=3.0.0"],
-    keywords=(
+    keywords=[
         'computational neuroscience',
         'simulation',
         'analysis',
         'parameters',
-        'Blue Brain Project'),
+        'Blue Brain Project'],
     url="http://bbpteam.epfl.ch/project/issues/projects/BGLPY",
     download_url="https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy",
     classifiers=[
