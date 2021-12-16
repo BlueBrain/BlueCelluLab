@@ -921,14 +921,12 @@ class SSim:
             vm[gid] = self.cells[gid].get_soma_voltage()
         return vm
 
-    @tools.deprecated("get_time_trace")
     def get_time(self):
         """Get the time vector for the recordings"""
         return self.cells[self.gids[0]].get_time()
 
     def get_time_trace(self):
         """Get the time vector for the recordings, negative times removed"""
-
         time = self.cells[self.gids[0]].get_time()
         pos_time = time[np.where(time >= 0.0)]
         return pos_time
@@ -936,7 +934,7 @@ class SSim:
     def get_voltage_trace(self, gid):
         """Get the voltage vector for the gid, negative times removed"""
 
-        time = self.get_time_trace()
+        time = self.get_time()
         voltage = self.cells[gid].get_soma_voltage()
         pos_voltage = voltage[np.where(time >= 0.0)]
         return pos_voltage

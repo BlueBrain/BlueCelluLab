@@ -645,3 +645,23 @@ class TestSSimBaseClass_full:
         assert(
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_r_GABAA == 1.0
         )
+
+
+@pytest.mark.v6
+def test_get_voltage_trace():
+    """Test the filtering behaviour of get_voltage_trace with forwardskip."""
+    blueconfig = f"{script_dir}/examples/gpfs_minimal_forwardskip/BlueConfig"
+    ssim = bglibpy.ssim.SSim(blueconfig)
+    gid = 693207
+    ssim.instantiate_gids([693207])
+    ssim.run()
+
+    real_voltage = ssim.cells[gid].get_soma_voltage()[
+        np.where(ssim.get_time() >= 0.0)
+    ]
+    voltage_trace = ssim.get_voltage_trace(gid)
+
+    assert np.array_equal(real_voltage, voltage_trace)
+    assert sum(ssim.get_time() < 0) == 10
+    assert sum(ssim.get_time_trace() < 0) == 0
+    assert len(voltage_trace) == len(ssim.get_time_trace())

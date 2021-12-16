@@ -1,0 +1,29 @@
+Run Default
+{
+    CircuitPath /gpfs/bbp.cscs.ch/project/proj83/circuits/Bio_M/20200805
+    nrnPath /gpfs/bbp.cscs.ch/project/proj83/circuits/Bio_M/20200805/connectome/functional/edges.sonata
+    MorphologyPath /gpfs/bbp.cscs.ch/project/proj83/morphologies/fixed_ais_L23PC_20201210/ascii
+    METypePath /gpfs/bbp.cscs.ch/project/proj83/singlecell/release_2020-07-31/hoc
+    MEComboInfoFile /gpfs/bbp.cscs.ch/project/proj83/singlecell/fixed_L6_allBPC_thresholds/mecombo_emodel.tsv
+    CellLibraryFile circuit.mvd3
+
+    CircuitTarget S1HL
+    RunMode LoadBalance
+    ForwardSkip 50
+    RNGMode Random123
+    Dt 0.025
+    Duration 10.0
+
+}
+
+Report soma
+{
+    Target S1HL
+    Type compartment
+    ReportOn v
+    Unit mV
+    Format Bin
+    Dt 0.1
+    StartTime 0.0
+    EndTime 10.0
+}
