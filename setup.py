@@ -31,7 +31,7 @@ setuptools.setup(
         'parameters',
         'Blue Brain Project'],
     url="http://bbpteam.epfl.ch/project/issues/projects/BGLPY",
-    download_url="https://bbpcode.epfl.ch/code/#/admin/projects/sim/BGLibPy",
+    download_url="https://bbpgitlab.epfl.ch/cells/bglibpy.git",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
