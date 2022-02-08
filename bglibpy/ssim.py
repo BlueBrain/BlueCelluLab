@@ -349,9 +349,8 @@ class SSim:
                                 "if you want to specify use add_replay or "
                                 "pre_spike_trains")
             add_synapses = True
-        else:
-            if add_synapses is None:
-                add_synapses = False
+        elif add_synapses is None:
+            add_synapses = False
 
         if add_projections:
             if projections is not None:
@@ -442,11 +441,8 @@ class SSim:
             projection=projection, projections=projections)
 
         if intersect_pre_gids is not None:
-            syn_descriptions_popids = {syn_id: syn_description_popids
-                                       for syn_id, syn_description_popids in
-                                       syn_descriptions_popids.items()
-                                       if syn_description_popids[0][0] in
-                                       intersect_pre_gids}
+            syn_descriptions_popids = self._intersect_pre_gids(
+                syn_descriptions_popids, intersect_pre_gids)
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
@@ -464,10 +460,18 @@ class SSim:
             if add_minis:
                 printv("Added minis for gid %d" % gid, 2)
 
+    @staticmethod
+    def _intersect_pre_gids(syn_descriptions, pre_gids):
+        """Return the synapse descriptions with pre_gids intersected."""
+        return {
+            syn_id: syn_description
+            for syn_id, syn_description in syn_descriptions.items()
+            if syn_description[0][BLPSynapse.PRE_GID] in pre_gids
+        }
+
     @tools.deprecated("get_syn_descriptions_dict")
     def get_syn_descriptions(self, gid, projection=None, projections=None):
         """Get synapse description arrays from bluepy"""
-
         syn_descriptions = [
             v for _,
             v in sorted(
@@ -481,26 +485,22 @@ class SSim:
     def get_syn_descriptions_dict(
             self, gid, projection=None, projections=None):
         """Get synapse descriptions dict from bluepy, Keys are synapse ids"""
-        syn_descriptions_dict = bglibpy.synapse.create_syn_description_dict(
-            self.bc_circuit, self.bc, self.ignore_populationid_error, gid, projection, projections)
-
-        return syn_descriptions_dict
+        return bglibpy.synapse.create_syn_description_dict(
+            self.bc_circuit, self.bc, self.ignore_populationid_error,
+            gid, projection, projections)
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts):
         """Merge presynaptic spike train dicts"""
-
         train_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
         if train_dicts == []:
             return None
 
         all_keys = set().union(*[d.keys() for d in train_dicts])
-        ret_dict = {}
-        for k in all_keys:
-            ret_dict[k] = np.sort(
-                np.concatenate([d[k] for d in train_dicts if k in d])
-            )
-        return ret_dict
+        return {
+            k: np.sort(np.concatenate([d[k] for d in train_dicts if k in d]))
+            for k in all_keys
+        }
 
     # pylint: disable=R0913
     def _add_connections(
@@ -597,7 +597,7 @@ class SSim:
                     self.cells[gid].execute_neuronconfigure(expression)
 
     def _instantiate_synapse(self, gid, syn_id, syn_description,
-                             add_minis=None, popids=None):
+                             add_minis=None, popids=(0, 0)):
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
 

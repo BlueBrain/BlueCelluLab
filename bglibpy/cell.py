@@ -851,7 +851,7 @@ class Cell:
 
     def add_replay_synapse(
             self, synapse_id, syn_description, connection_modifiers,
-            base_seed=None, popids=None, extracellular_calcium=None):
+            base_seed=None, popids=(0, 0), extracellular_calcium=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise False.
@@ -978,15 +978,10 @@ class Cell:
         return netcon
 
     def add_replay_minis(self, syn_id, syn_description, connection_parameters,
-                         base_seed=None, popids=None, mini_frequencies=None):
+                         base_seed=None, popids=(0, 0), mini_frequencies=None):
         """Add minis from the replay."""
 
-        if popids is None:
-            # Default values in Neurodamus
-            source_popid = 0
-            target_popid = 0
-        else:
-            source_popid, target_popid = popids
+        source_popid, target_popid = popids
 
         sid = syn_id[1]
 

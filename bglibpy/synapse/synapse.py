@@ -20,7 +20,7 @@ class Synapse:
 
     def __init__(
             self, cell, location, syn_id, syn_description,
-            connection_parameters, base_seed, popids=None,
+            connection_parameters, base_seed, popids=(0, 0),
             extracellular_calcium=None):
         """
         Constructor
@@ -41,10 +41,10 @@ class Synapse:
         base_seed : float
                     Base seed of the simulation, the seeds for this synapse
                     will be derived from this
-        rng_settings: RNGSettings
-                      RNGsettings object specifying details about
-                      random generator
-        edge_id: id of an edge within the population.
+        popids : tuple of (int, int)
+                  Source and target popids used by the random number generation
+        extracellular_calcium: float
+                               the extracellular calcium concentration
         """
         self.persistent = []
 
@@ -57,11 +57,7 @@ class Synapse:
         self.hsynapse = None
         self.extracellular_calcium = extracellular_calcium
 
-        if popids is not None:
-            self.source_popid, self.target_popid = popids
-        else:
-            # Default in Neurodamus
-            self.source_popid, self.target_popid = 0, 0
+        self.source_popid, self.target_popid = popids
         # pylint: disable = C0103
 
         self.pre_gid = int(syn_description[BLPSynapse.PRE_GID])
@@ -79,38 +75,29 @@ class Synapse:
         self.syn_F = syn_description[BLPSynapse.F_SYN]
         self.syn_DTC = syn_description[BLPSynapse.DTC]
         self.syn_type = int(syn_description[BLPSynapse.TYPE])
-        self.edge_id = syn_description[-1]
 
         if cell.rng_settings is None:
             self.rng_setting = bglibpy.RNGSettings(
                 mode='Compatibility',
                 base_seed=base_seed)
+        elif base_seed is not None:
+            raise Exception('Synapse: base_seed and RNGSettings cant '
+                            'be used together')
         else:
-            if base_seed is not None:
-                raise Exception('Synapse: base_seed and RNGSettings cant '
-                                'be used together')
             self.rng_settings = cell.rng_settings
 
-        if len(syn_description) >= 18:
-            NRRP = syn_description[BLPSynapse.NRRP]
-            if NRRP <= 0:
-                raise ValueError(
-                    'Value smaller than 0.0 found for Nrrp:'
-                    ' %s at synapse %d in gid %d' %
-                    (NRRP, self.sid, self.cell.gid))
-            if NRRP != int(NRRP):
-                raise ValueError(
-                    'Non-integer value for Nrrp found:'
-                    ' %s at synapse %d in gid %d' %
-                    (NRRP, self.sid, self.cell.gid))
-            self.Nrrp = int(NRRP)
-
-            self.u_hill_coefficient = syn_description[BLPSynapse.U_HILL_COEFFICIENT]
-            self.conductance_ratio = syn_description[BLPSynapse.CONDUCTANCE_RATIO]
+        if BLPSynapse.NRRP in syn_description:
+            self.Nrrp = int(syn_description[BLPSynapse.NRRP])
         else:
             self.Nrrp = None
-            self.u_hill_coefficient = None
-            self.conductance_ratio = None
+
+        self.u_hill_coefficient = (
+            syn_description[BLPSynapse.U_HILL_COEFFICIENT]
+            if BLPSynapse.U_HILL_COEFFICIENT in syn_description else None)
+
+        self.conductance_ratio = (
+            syn_description[BLPSynapse.CONDUCTANCE_RATIO]
+            if BLPSynapse.CONDUCTANCE_RATIO in syn_description else None)
 
         self.u_scale_factor = self.calc_u_scale_factor(
             self.u_hill_coefficient, self.extracellular_calcium)

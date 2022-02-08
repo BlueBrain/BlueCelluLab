@@ -3,10 +3,11 @@
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
 import os
-import numpy as np
 import itertools
 
 import pytest
+import numpy as np
+from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
 
@@ -604,8 +605,8 @@ class TestSSimBaseClass_full:
 
             syn_desc = self.ssim.get_syn_descriptions(post_gid)[syn_id]
 
-            assert pre_gid == syn_desc[0][0]
-            syn_type = syn_desc[0][13]
+            assert pre_gid == syn_desc[0][BLPSynapse.PRE_GID]
+            syn_type = syn_desc[0][BLPSynapse.TYPE]
 
             evaluated_params = self.ssim._evaluate_connection_parameters(
                 pre_gid,
@@ -618,9 +619,8 @@ class TestSSimBaseClass_full:
         gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
         pre_datas = [x[0] for x in self.ssim.get_syn_descriptions(gid)]
-        # get second inh synapse (first fails)
-        inh_synapses = np.nonzero(np.array(pre_datas)[:, 13] < 100)
-        sid = int(inh_synapses[0][1])
+        first_inh_syn = next(x for x in pre_datas if x[BLPSynapse.TYPE] < 100)
+        sid = int(first_inh_syn.name[1])
         syn_params = pre_datas[sid]
         connection_parameters = {
             'SynapseConfigure': [

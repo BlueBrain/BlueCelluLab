@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import bglibpy
@@ -17,6 +18,22 @@ proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
 proj83_path = "/gpfs/bbp.cscs.ch/project/proj83/"
 
+
+def test_check_nrrp_value():
+    """Unit test for check nrrp value."""
+    synapse_desc = pd.Series(data=[15.0], index=[BLPSynapse.NRRP])
+    syn_id, gid = (1, 2)
+
+    bglibpy.synapse.check_nrrp_value(gid, syn_id, synapse_desc)
+
+    synapse_desc[BLPSynapse.NRRP] = 15.1
+    with pytest.raises(ValueError):
+        bglibpy.synapse.check_nrrp_value(gid, syn_id, synapse_desc)
+
+    synapse_desc[BLPSynapse.NRRP] = -1
+
+    with pytest.raises(ValueError):
+        bglibpy.synapse.check_nrrp_value(gid, syn_id, synapse_desc)
 
 def test_get_connectomes_dict():
     """Test creation of connectome dict."""
@@ -80,7 +97,6 @@ def test_syn_dict_example_sims():
 
     ssim = bglibpy.SSim(modified_conf)
     syn_descriptions_dict = ssim.get_syn_descriptions_dict(gid)
-
     assert set(syn_descriptions_dict.keys()) == {
         ("", 0),
         ("", 1),
@@ -91,10 +107,8 @@ def test_syn_dict_example_sims():
 
     first_syn_description = np.array(
         [2.00000000e+00,  4.37500000e+00,  1.98000000e+02,  0.00000000e+00,
-        2.99810982e+00, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        3.17367077e-01,  5.01736701e-01,  6.72000000e+02,  1.70000000e+01,
-        1.75563037e+00,  1.13000000e+02,  1.00000000e+00,  0.00000000e+00]
-    )
+        2.99810982e+00, 3.17367077e-01,  5.01736701e-01,  6.72000000e+02,
+        1.70000000e+01, 1.75563037e+00,  1.13000000e+02])
     first_syn_popids = (0, 0)
 
     assert np.allclose(
@@ -120,9 +134,8 @@ def test_syn_dict_proj1_sim1():
     a_syn_idx = ('', 4157)
     syn_params_gt = np.array(
         [ 1.84112000e+05,  2.77500000e+00,  2.85000000e+02,  4.00000000e+01,
-        6.98333502e-01, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        5.14560044e-01,  4.89490896e-01,  6.62000000e+02,  1.40000000e+01,
-        1.64541817e+00,  1.16000000e+02,  7.59360000e+04,  4.15700000e+03])
+        6.98333502e-01, 5.14560044e-01,  4.89490896e-01,  6.62000000e+02,
+        1.40000000e+01, 1.64541817e+00,  1.16000000e+02])
 
     syn_popids_gt = (0, 0)
 
@@ -148,9 +161,8 @@ def test_syn_dict_proj64_sim1():
     a_syn_idx = ('', 50)
     syn_params_gt = np.array(
         [ 6.27400000e+03,  1.05000000e+00,  7.12000000e+02,  1.10000000e+01,
-        1.20243251e+00, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        1.32327390e+00,  2.79871672e-01,  5.87988770e+02,  1.79656506e+01,
-        9.63626862e+00,  1.00000000e+00,  8.70900000e+03,  5.00000000e+01])
+        1.20243251e+00, 1.32327390e+00,  2.79871672e-01,  5.87988770e+02,
+        1.79656506e+01, 9.63626862e+00,  1.00000000e+00])
 
     syn_popids_gt = (0, 0)
 
@@ -176,10 +188,9 @@ def test_syn_dict_proj64_sim2():
     a_syn_idx = ('', 28)
 
     syn_params_gt = np.array(
-        [625.0, 2.275, 368.0, 10.0, 3.7314558029174805, -1, -1, -1,
-         1.5232694149017334, 0.3078206479549408, 332.729736328125,
-         17.701997756958008, 9.191937446594238, 1.0, -1, -1, -1, 1.0, None,
-         None, 1326, 28], dtype=np.float)
+        [625.0, 2.275, 368.0, 10.0, 3.7314558029174805, 1.5232694149017334,
+         0.3078206479549408, 332.729736328125,
+         17.701997756958008, 9.191937446594238, 1.0, 1.0], dtype=np.float)
 
     syn_popids_gt = (0, 0)
 
@@ -205,11 +216,9 @@ def test_syn_dict_proj83_sim1():
 
     syn_params_gt = np.array(
         [ 2.52158100e+06,  7.25000000e-01,  1.29000000e+02, -1.00000000e+00,
-        4.69802350e-01, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        7.61569560e-01,  4.97424483e-01,  6.66551819e+02,  1.65781898e+01,
-        1.79162169e+00,  1.14000000e+02, -1.00000000e+00, -1.00000000e+00,
-       -1.00000000e+00,  1.00000000e+00,  2.78999996e+00,  6.99999988e-01,
-        8.77342335e+09])
+        4.69802350e-01, 7.61569560e-01,  4.97424483e-01,  6.66551819e+02,
+        1.65781898e+01, 1.79162169e+00,  1.14000000e+02,  1.00000000e+00,
+        2.78999996e+00, 6.99999988e-01, 8.77342335e+09])
 
     syn_popids_gt = (0, 0)
 
@@ -236,10 +245,9 @@ def test_syn_dict_proj55_sim1():
     a_syn_idx = ('', 234)
 
     syn_params_gt = np.array(
-        [32088.0, 4.075, 626.0, -1.0, 0.5044383406639099, -1, -1, -1,
+        [32088.0, 4.075, 626.0, -1.0, 0.5044383406639099,
          0.5477614402770996, 0.39246755838394165, 408.77203369140625, 0.0,
-         6.245694637298584, 4.0, -1, -1, -1, 1.0, None, None, 14519083],
-         dtype=np.float)  # float for NaN comparison
+         6.245694637298584, 4.0, 1.0, 14519083], dtype=np.float)
 
     syn_popids_gt = (0, 0)
 
@@ -268,9 +276,8 @@ def test_syn_dict_proj55_sim1_with_projections():
 
     ml_afferent_syn_params_gt = np.array(
         [ 1.00018400e+06,  1.07500000e+00,  5.60000000e+02,  3.60000000e+01,
-        1.94341523e-01, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        4.27851178e+00,  5.03883432e-01,  6.66070118e+02,  1.18374201e+01,
-        1.72209917e+00,  1.20000000e+02,  3.50890000e+04,  5.00000000e+00])
+        1.94341523e-01, 4.27851178e+00,  5.03883432e-01,  6.66070118e+02,
+        1.18374201e+01, 1.72209917e+00,  1.20000000e+02])
 
     ml_afferent_popids_gt = (1, 0)
 
@@ -283,9 +290,8 @@ def test_syn_dict_proj55_sim1_with_projections():
 
     ct_afferent_syn_params_gt = np.array(
         [ 2.00921500e+06,  1.40000000e+00,  5.53000000e+02,  9.00000000e+01,
-        7.34749257e-01, -1.00000000e+00, -1.00000000e+00, -1.00000000e+00,
-        1.79559005e-01,  1.64240128e-01,  3.69520016e+02,  1.80942025e+02,
-        2.89750268e+00,  1.20000000e+02,  3.50890000e+04,  4.90000000e+01])
+        7.34749257e-01, 1.79559005e-01,  1.64240128e-01,  3.69520016e+02,
+        1.80942025e+02, 2.89750268e+00,  1.20000000e+02])
     
     ct_afferent_popids_gt = (2, 0)
 

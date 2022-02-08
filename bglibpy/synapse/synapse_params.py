@@ -1,7 +1,5 @@
 """Hoc compatible synapse parameters representation."""
 
-import pandas as pd
-
 from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
 
@@ -52,67 +50,54 @@ def create_syn_description_dict(bc_circuit, bc, ignore_populationid_error, gid, 
     if not all_synapse_sets:
         printv('No synapses found', 5)
     else:
-        printv(
-            'Adding a total of %d synapse sets' %
-            len(all_synapse_sets), 5)
+        printv(f'Adding a total of {len(all_synapse_sets)} synapse sets', 5)
 
         for proj_name, (synapse_set, using_sonata) in all_synapse_sets.items():
-            printv(
-                'Adding a total of %d synapses for set %s' %
-                (synapse_set.shape[0], proj_name), 5)
+            printv('Adding a total of %d synapses for set %s' %
+                   (synapse_set.shape[0], proj_name), 5)
 
             popids = get_popids(bc, ignore_populationid_error, proj_name)
 
             for syn_id, (edge_id, synapse) in enumerate(
                     synapse_set.iterrows()):
-                if not using_sonata:
-                    edge_id_series = pd.Series(data=edge_id, index=("syn_gid", "syn_id"))
-                    if edge_id_series.syn_gid != gid:
-                        raise BGLibPyError(
-                            "BGLibPy SSim: synapse gid doesnt match with "
-                            "cell gid !")
-                else:  # edge id is a single value
-                    edge_id_series = pd.Series(data=[edge_id], index=["edge_id"])
+
                 syn_id_proj = (proj_name, syn_id)
                 if syn_id_proj in syn_descriptions_dict:
-                    raise BGLibPyError(
-                        "BGLibPy SSim: trying to add "
-                        "synapse id %s twice!" %
-                        syn_id_proj)
+                    raise BGLibPyError("BGLibPy SSim: trying to add "
+                                       f"synapse id {syn_id_proj} twice!")
                 if BLPSynapse.NRRP in synapse:
-                    old_syn_description = synapse[:11]  # deletes nrrp at 11
+                    check_nrrp_value(gid, syn_id, synapse)
 
-                    # if the following 2 variables don't exist in the
-                    # circuit we put None, to detect that in the Synapse
-                    # code
-                    u_hill_coefficient = \
-                        synapse[BLPSynapse.U_HILL_COEFFICIENT] \
-                        if BLPSynapse.U_HILL_COEFFICIENT in synapse \
-                        else None
-                    conductance_ratio = \
-                        synapse[BLPSynapse.CONDUCTANCE_RATIO] \
-                        if BLPSynapse.CONDUCTANCE_RATIO in synapse \
-                        else None
-                    # 14 - 16 are dummy values, 17 is Nrrp
-                    ext_description = pd.Series(
-                        data=[-1, -1, -1, synapse[BLPSynapse.NRRP],
-                              u_hill_coefficient, conductance_ratio],
-                        index=["dummy1", "dummy2", "dummy3", BLPSynapse.NRRP,
-                               BLPSynapse.U_HILL_COEFFICIENT, BLPSynapse.CONDUCTANCE_RATIO],
-                        dtype=object)
-                    synapse = old_syn_description.append(ext_description)
+                if using_sonata:
+                    synapse["edge_id"] = edge_id
 
-                series_idx = synapse.index
-                series_idx = series_idx.insert(5, "placeholder-3")
-                series_idx = series_idx.insert(5, "placeholder-2")
-                series_idx = series_idx.insert(5, "placeholder-1")
-
-                synapse = synapse.reindex(series_idx, fill_value=-1)
-
-                synapse = synapse.append(edge_id_series)
                 syn_descriptions_dict[syn_id_proj] = synapse, popids
 
     return syn_descriptions_dict
+
+
+def check_nrrp_value(gid, syn_id, synapse_desc):
+    """Assures the nrrp values fits the conditions.
+
+    Args:
+        gid (int): cell identification
+        syn_id (int): synapse identification
+        synapse_desc (pandas.Series): synapse description
+
+    Raises:
+        ValueError: when NRRP is <= 0
+        ValueError: when NRRP cannot ve cast to integer
+    """
+    if synapse_desc[BLPSynapse.NRRP] <= 0:
+        raise ValueError(
+            'Value smaller than 0.0 found for Nrrp: '
+            f'{synapse_desc[BLPSynapse.NRRP]} at synapse {syn_id} in gid {gid}'
+        )
+    if synapse_desc[BLPSynapse.NRRP] != int(synapse_desc[BLPSynapse.NRRP]):
+        raise ValueError(
+            'Non-integer value for Nrrp found: '
+            f'{synapse_desc[BLPSynapse.NRRP]} at synapse {syn_id} in gid {gid}'
+        )
 
 
 def get_popids(bc, ignore_populationid_error, proj_name):
@@ -133,22 +118,20 @@ def get_popids(bc, ignore_populationid_error, proj_name):
     if proj_name in [proj.name for proj in bc.typed_sections("Projection")]:
         if "PopulationID" in bc["Projection_" + proj_name]:
             source_popid = int(bc["Projection_" + proj_name]["PopulationID"])
+        elif ignore_populationid_error:
+            source_popid = 0
         else:
-            if ignore_populationid_error:
-                source_popid = 0
-            else:
-                raise bglibpy.PopulationIDMissingError(
-                    "PopulationID is missing from projection,"
-                    " block this will lead to wrong rng seeding."
-                    " If you anyway want to overwrite this,"
-                    " pass ignore_populationid_error=True param"
-                    " to SSim constructor.")
+            raise bglibpy.PopulationIDMissingError(
+                "PopulationID is missing from projection,"
+                " block this will lead to wrong rng seeding."
+                " If you anyway want to overwrite this,"
+                " pass ignore_populationid_error=True param"
+                " to SSim constructor.")
     else:
         source_popid = 0
     # ATM hard coded in neurodamus
     target_popid = 0
-    popids = (source_popid, target_popid)
-    return popids
+    return source_popid, target_popid
 
 
 def get_connectomes_dict(bc_circuit, projection, projections):
