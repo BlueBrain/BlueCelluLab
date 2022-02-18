@@ -14,7 +14,6 @@ import collections
 import os
 import re
 
-
 from cachetools import cachedmethod, LRUCache
 
 import numpy as np
@@ -25,6 +24,8 @@ from bglibpy import printv
 from bglibpy import tools
 
 from bluepy.enums import Synapse as BLPSynapse
+
+from bglibpy.exceptions import BGLibPyError, ConfigError
 
 
 class SSim:
@@ -482,12 +483,32 @@ class SSim:
 
         return syn_descriptions
 
-    def get_syn_descriptions_dict(
-            self, gid, projection=None, projections=None):
-        """Get synapse descriptions dict from bluepy, Keys are synapse ids"""
-        return bglibpy.synapse.create_syn_description_dict(
-            self.bc_circuit, self.bc, self.ignore_populationid_error,
-            gid, projection, projections)
+    def get_syn_descriptions_dict(self, gid, projection=None, projections=None):
+        """Get synapse descriptions dict from bluepy, Keys are synapse ids."""
+        is_glusynapse_used = any(
+            x
+            for x in self.connection_entries
+            if "ModOverride" in x and x["ModOverride"] == "GluSynapse"
+        )
+        syn_description_builder = bglibpy.synapse.SynDescription()
+        if is_glusynapse_used:
+            return syn_description_builder.glusynapse_syn_description(
+                self.bc_circuit,
+                self.bc,
+                self.ignore_populationid_error,
+                gid,
+                projection,
+                projections,
+            )
+        else:
+            return syn_description_builder.gabaab_ampanmda_syn_description(
+                self.bc_circuit,
+                self.bc,
+                self.ignore_populationid_error,
+                gid,
+                projection,
+                projections,
+            )
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts):
@@ -539,6 +560,14 @@ class SSim:
 
                 connection = None
                 if real_synapse_connection:
+                    if (
+                        user_pre_spike_trains is not None
+                        and pre_gid in user_pre_spike_trains
+                    ):
+                        raise BGLibPyError(
+                            """Specifying prespike trains of real connections"""
+                            """ is not allowed."""
+                        )
                     connection = bglibpy.Connection(
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=None,
@@ -609,9 +638,12 @@ class SSim:
             syn_type)
 
         if connection_parameters["add_synapse"]:
+            condition_parameters = self._condition_parameters_dict()
+
+            self._evaluate_condition_parameters(condition_parameters)
             self.cells[gid].add_replay_synapse(
-                syn_id, syn_description, connection_parameters, popids=popids,
-                extracellular_calcium=self.extracellular_calcium)
+                syn_id, syn_description, connection_parameters, condition_parameters,
+                popids=popids, extracellular_calcium=self.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.fetch_mini_frequencies(gid)
                 printv(
@@ -629,6 +661,23 @@ class SSim:
                     connection_parameters,
                     popids=popids,
                     mini_frequencies=mini_frequencies)
+
+    def _evaluate_condition_parameters(self, condition_parameters):
+        """Domain specific checks for the conditions block."""
+        if "cao_CR_GluSynapse" in condition_parameters:
+            cao_cr_glusynapse = condition_parameters["cao_CR_GluSynapse"]
+
+            if cao_cr_glusynapse != self.extracellular_calcium:
+                raise ConfigError("cao_CR_GluSynapse is not equal to ExtracellularCalcium")
+
+            bglibpy.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
+
+        if "randomize_Gaba_risetime" in condition_parameters:
+            randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
+
+            if randomize_gaba_risetime not in ["True", "False", "0", "false"]:
+                raise ConfigError("Invalid randomize_Gaba_risetime value"
+                                  f": {randomize_gaba_risetime}.")
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,
@@ -711,7 +760,7 @@ class SSim:
            to see if we support all the fields"""
 
         allowed_keys = set(['Weight', 'SynapseID', 'SpontMinis',
-                            'SynapseConfigure', 'Source',
+                            'SynapseConfigure', 'Source', 'ModOverride',
                             'Destination', 'Delay', 'CreateMode'])
         for key in contents.keys():
             if key not in allowed_keys:
@@ -754,8 +803,7 @@ class SSim:
               gid of the post-synaptic cell
 
         """
-        parameters = {}
-        parameters['add_synapse'] = True
+        parameters = {'add_synapse': True}
 
         for entry in self.connection_entries:
             entry_name = entry.name
@@ -772,9 +820,8 @@ class SSim:
                 apply_parameters = True
                 keys = set(entry.keys())
 
-                if 'SynapseID' in keys:
-                    if int(entry['SynapseID']) != syn_type:
-                        apply_parameters = False
+                if 'SynapseID' in keys and int(entry['SynapseID']) != syn_type:
+                    apply_parameters = False
 
                 if 'Delay' in keys:
                     parameters.setdefault('DelayWeights', []).append((
@@ -802,8 +849,22 @@ class SSim:
                         # applied with a "hoc exec" statement
                         parameters.setdefault(
                             'SynapseConfigure', []).append(conf)
+                    if 'ModOverride' in keys:
+                        mod_name = entry['ModOverride']
+                        if not hasattr(bglibpy.neuron.h, mod_name):
+                            raise bglibpy.ConfigError(
+                                f"Mod file for {mod_name} is not found.")
+                        parameters['ModOverride'] = mod_name
 
         return parameters
+
+    def _condition_parameters_dict(self):
+        """Returns parameters of global condition block of the blueconfig."""
+        try:
+            condition_entries = self.bc.typed_sections('Conditions')[0]
+        except IndexError:
+            return {}
+        return condition_entries.to_dict()
 
     def initialize_synapses(self):
         """ Resets the state of all synapses of all cells to initial values """

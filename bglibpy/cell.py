@@ -849,15 +849,17 @@ class Cell:
         self.persistent.append(rand)
         self.persistent.append(tstim)
 
-    def add_replay_synapse(
-            self, synapse_id, syn_description, connection_modifiers,
-            base_seed=None, popids=(0, 0), extracellular_calcium=None):
+    def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
+                           condition_parameters=None, base_seed=None,
+                           popids=(0, 0), extracellular_calcium=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise False.
 
         """
 
+        if condition_parameters is None:
+            condition_parameters = {}
         isec = syn_description[BLPSynapse.POST_SECTION_ID]
         ipt = syn_description[BLPSynapse.POST_SEGMENT_ID]
 
@@ -877,8 +879,9 @@ class Cell:
             location,
             synapse_id,
             syn_description,
-            connection_modifiers,
-            base_seed,
+            connection_parameters=connection_modifiers,
+            condition_parameters=condition_parameters,
+            base_seed=base_seed,
             popids=popids,
             extracellular_calcium=extracellular_calcium)
 

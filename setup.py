@@ -23,7 +23,9 @@ setuptools.setup(
         "bluepy[bbp]>=2.4.2.dev1",
         "cachetools",
         "numpy>=1.8.0",
-        "matplotlib>=3.0.0"],
+        "matplotlib>=3.0.0",
+        "bluepy-configfile>=0.1.18.dev0",
+        ],
     keywords=[
         'computational neuroscience',
         'simulation',

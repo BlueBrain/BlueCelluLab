@@ -13,59 +13,72 @@ import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
-proj1_path = "/gpfs/bbp.cscs.ch/project/proj1/"
-proj42_path = "/gpfs/bbp.cscs.ch/project/proj42/"
-proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
-proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
-proj83_path = "/gpfs/bbp.cscs.ch/project/proj83/"
+def proj_path(n):
+    return f"/gpfs/bbp.cscs.ch/project/proj{n}/"
 
 # Example ReNCCv2 sim used in BluePy use cases
 renccv2_bc_1_path = os.path.join(
-    proj1_path,
+    proj_path(1),
     "simulations/ReNCCv2/k_ca_scan_dense/K5p0/Ca1p25_synreport/",
     "BlueConfig")
 
 v6_test_bc_1_path = os.path.join(
-    proj64_path,
+    proj_path(64),
     "circuits/S1HL-200um/20171002/simulations/003",
     "BlueConfig")
 
 # v6_test_bc_3_path = os.path.join(proj64_path,
 #                                 "home/king/sim/Basic",
 #                                 "BlueConfig")
-v6_test_bc_4_path = os.path.join(proj64_path,
+v6_test_bc_4_path = os.path.join(proj_path(64),
                                  "home/king/sim/Basic",
                                  "BlueConfig")
 
 
-v6_test_bc_rnd123_1_path = os.path.join(proj64_path,
+v6_test_bc_rnd123_1_path = os.path.join(proj_path(64),
                                         "home/vangeit/simulations/",
                                         "random123_tests/",
                                         "random123_tests_newneurod_rnd123",
                                         "BlueConfig")
 
-test_thalamus_path = os.path.join(proj55_path,
+test_thalamus_path = os.path.join(proj_path(55),
                                   "tuncel/simulations/release",
                                   "2020-08-06-v2",
                                   "bglibpy-thal-test-with-projections",
                                   "BlueConfig")
 
-test_thalamus_no_population_id_path = os.path.join(proj55_path,
+test_thalamus_no_population_id_path = os.path.join(proj_path(55),
                                                    "tuncel/simulations/release",
                                                    "2020-08-06-v2",
                                                    "bglibpy-thal-test-with-projections",
                                                    "BlueConfigNoPopulationID")
 
 test_single_vesicle_path = os.path.join(
-    proj83_path, "home/tuncel/bglibpy-tests/single-vesicle-AIS",
+    proj_path(83), "home/tuncel/bglibpy-tests/single-vesicle-AIS",
     "BlueConfig"
 )
 
 hip20180219_1_path = os.path.join(
-    proj42_path,
+    proj_path(42),
     "circuits/O1/20180219",
     "CircuitConfig")
 
+plasticity_sim_path = os.path.join(
+    proj_path(96),
+    "home/tuncel/simulations/glusynapse-pairsim/p_Ca_2_0/", "BlueConfig"
+)
+
+risetime_sim_path = os.path.join(
+    proj_path(96),
+    "home/tuncel/simulations/glusynapse-pairsim/p_Ca_2_0_randomize_risetime/",
+    "BlueConfig"
+)
+
+no_rand_risetime_sim_path = os.path.join(
+    proj_path(96),
+    "home/tuncel/simulations/glusynapse-pairsim/p_Ca_2_0_randomize_risetime/",
+    "BlueConfigNoRandRise"
+)
 
 @pytest.mark.v5
 class TestSSimBaseClass_full_run:
@@ -522,6 +535,40 @@ class TestSSimBaseClassSingleVesicleMinis:
         rms_error = np.sqrt(np.mean(voltage_diff ** 2))
 
         assert rms_error < 14.91
+
+
+@pytest.mark.v6
+def test_ssim_glusynapse():
+    """Test the glusynapse mod and helper on a plasticity simulation."""
+    ssim = bglibpy.SSim(plasticity_sim_path, record_dt=0.1)
+    gids = [3424064, 3424037]
+    ssim.instantiate_gids(gids, add_synapses=True, add_stimuli=True,
+        add_replay=False, intersect_pre_gids=[3424064])
+    tstop = 750
+    ssim.run(tstop)
+    cell = gids[1]  # postcell
+    voltage_bglibpy = ssim.get_voltage_trace(cell)
+    voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
+    voltage_diff = voltage_bglibpy - voltage_bglib
+    rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+    assert rms_error < 0.025
+
+
+@pytest.mark.v6
+@pytest.mark.parametrize("sim_path,expected_val",[
+    (plasticity_sim_path, (0.12349485646988291, 0.04423470638285594)),
+    (risetime_sim_path, (0.12349485646988291, 0.04423470638285594)),
+    (no_rand_risetime_sim_path, (0.2, 0.2))
+    ])
+def test_ssim_rand_gabaab_risetime(sim_path, expected_val):
+    """Test for randomize_Gaba_risetime in BlueConfig Conditions block."""
+    ssim = bglibpy.SSim(sim_path, record_dt=0.1)
+    gid = 3424037
+    ssim.instantiate_gids([gid], intersect_pre_gids=[481868], add_synapses=True)
+
+    cell = ssim.cells[gid]
+    assert cell.synapses[('', 388)].hsynapse.tau_r_GABAA == expected_val[0]
+    assert cell.synapses[('', 389)].hsynapse.tau_r_GABAA == expected_val[1]
 
 
 @pytest.mark.v5

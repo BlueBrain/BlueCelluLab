@@ -20,7 +20,7 @@ class Synapse:
 
     def __init__(
             self, cell, location, syn_id, syn_description,
-            connection_parameters, base_seed, popids=(0, 0),
+            connection_parameters, condition_parameters, base_seed, popids=(0, 0),
             extracellular_calcium=None):
         """
         Constructor
@@ -38,6 +38,7 @@ class Synapse:
                           Parameters of the synapse
         connection_parameters : list of floats
                                 Parameters of the connection
+        condition_parameters: dict representing conditions block of BlueConfig
         base_seed : float
                     Base seed of the simulation, the seeds for this synapse
                     will be derived from this
@@ -110,10 +111,21 @@ class Synapse:
             # see: https://bbpteam.epfl.ch/
             # wiki/index.php/BlueBuilder_Specifications#NRN,
             # inhibitory synapse
-            self.use_gabaab_helper(post_sec_id)
+            if "randomize_Gaba_risetime" in condition_parameters:
+                randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
+            else:
+                randomize_gaba_risetime = "True"
 
+            self.use_gabaab_helper(post_sec_id, randomize_gaba_risetime)
         elif self.is_excitatory():
-            self.use_ampanmda_helper(post_sec_id)
+            if (
+                'ModOverride' in self.connection_parameters
+                and self.connection_parameters['ModOverride'] == "GluSynapse"
+            ):
+                self.use_glusynapse_helper(
+                    syn_description, post_sec_id)
+            else:
+                self.use_ampanmda_helper(post_sec_id)
         else:
             raise Exception('Synapse not inhibitory or excitatory')
 
@@ -127,7 +139,7 @@ class Synapse:
                 hoc_cmd = '{%s}' % hoc_cmd
                 bglibpy.neuron.h(hoc_cmd)
 
-    def use_gabaab_helper(self, post_sec_id):
+    def use_gabaab_helper(self, post_sec_id, randomize_gaba_risetime):
         """Python implementation of the GABAAB helper.
 
         This helper object will encapsulate the hoc actions
@@ -135,6 +147,8 @@ class Synapse:
 
         Args:
             post_sec_id (int): post section id of the synapse.
+            randomize_gaba_risetime (str): if "True" then RNG code runs
+            to set tau_r_GABAA value.
 
         Raises:
             ValueError: raised when the RNG mode is unknown.
@@ -145,43 +159,44 @@ class Synapse:
             ProbGABAAB_EMS(self.post_segx,
                            sec=self.cell.get_hsection(post_sec_id))
 
-        self.hsynapse.tau_d_GABAA = self.syn_DTC
-        rng = bglibpy.neuron.h.Random()
-        if self.rng_settings.mode == "Compatibility":
-            rng.MCellRan4(
-                self.sid * 100000 + 100,
-                self.cell.gid + 250 + self.rng_settings.base_seed)
-        elif self.rng_settings.mode == "UpdatedMCell":
-            rng.MCellRan4(
-                self.sid * 1000 + 100,
-                self.source_popid *
-                16777216 +
-                self.cell.gid +
-                250 +
-                self.rng_settings.base_seed +
-                self.rng_settings.synapse_seed)
-        elif self.rng_settings.mode == "Random123":
-            rng.Random123(
-                self.cell.gid +
-                250,
-                self.sid +
-                100,
-                self.source_popid *
-                65536 +
-                self.target_popid +
-                self.rng_settings.synapse_seed +
-                450)
-        else:
-            raise ValueError(
-                "Synapse: unknown RNG mode: %s" %
-                self.rng_settings.mode)
+        if (randomize_gaba_risetime == "True"):
+            rng = bglibpy.neuron.h.Random()
+            if self.rng_settings.mode == "Compatibility":
+                rng.MCellRan4(
+                    self.sid * 100000 + 100,
+                    self.cell.gid + 250 + self.rng_settings.base_seed)
+            elif self.rng_settings.mode == "UpdatedMCell":
+                rng.MCellRan4(
+                    self.sid * 1000 + 100,
+                    self.source_popid *
+                    16777216 +
+                    self.cell.gid +
+                    250 +
+                    self.rng_settings.base_seed +
+                    self.rng_settings.synapse_seed)
+            elif self.rng_settings.mode == "Random123":
+                rng.Random123(
+                    self.cell.gid +
+                    250,
+                    self.sid +
+                    100,
+                    self.source_popid *
+                    65536 +
+                    self.target_popid +
+                    self.rng_settings.synapse_seed +
+                    450)
+            else:
+                raise ValueError(
+                    "Synapse: unknown RNG mode: %s" %
+                    self.rng_settings.mode)
 
-        rng.lognormal(0.2, 0.1)
-        self.hsynapse.tau_r_GABAA = rng.repick()
+            rng.lognormal(0.2, 0.1)
+            self.hsynapse.tau_r_GABAA = rng.repick()
 
         if self.conductance_ratio is not None:
             self.hsynapse.GABAB_ratio = self.conductance_ratio
 
+        self.hsynapse.tau_d_GABAA = self.syn_DTC
         self.hsynapse.Use = abs(self.syn_U)
         self.hsynapse.Dep = abs(self.syn_D)
         self.hsynapse.Fac = abs(self.syn_F)
@@ -219,6 +234,52 @@ class Synapse:
             self.hsynapse.Nrrp = self.Nrrp
 
         self._set_gabaab_ampanmda_rng()
+        self.hsynapse.synapseID = self.sid
+
+    def use_glusynapse_helper(self, syn_description, post_sec_id):
+        """Python implementation of the GluSynapse helper.
+
+        This helper object will encapsulate the hoc actions
+         needed to create our plastic excitatory synapse.
+
+        Args:
+            post_sec_id (int): post section id of the synapse.
+        """
+        self.mech_name = 'GluSynapse'
+
+        self.hsynapse = bglibpy.neuron.h.\
+            GluSynapse(
+                self.post_segx, sec=self.cell.get_hsection(post_sec_id))
+
+        self.hsynapse.Use_d = syn_description["Use_d_TM"]
+        self.hsynapse.Use_p = syn_description["Use_p_TM"]
+
+        self.hsynapse.theta_d_GB = syn_description["theta_d"]
+        self.hsynapse.theta_p_GB = syn_description["theta_p"]
+        self.hsynapse.rho0_GB = syn_description["rho0_GB"]
+
+        self.hsynapse.volume_CR = syn_description["volume_CR"]
+
+        self.hsynapse.gmax_d_AMPA = syn_description["gmax_d_AMPA"]
+        self.hsynapse.gmax_p_AMPA = syn_description["gmax_p_AMPA"]
+
+        if self.hsynapse.rho0_GB > bglibpy.neuron.h.rho_star_GB_GluSynapse:
+            self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_p_AMPA
+            self.hsynapse.Use = self.hsynapse.Use_p
+        else:
+            self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_d_AMPA
+            self.hsynapse.Use = self.hsynapse.Use_d
+
+        self.hsynapse.Dep = abs(self.syn_D)
+        self.hsynapse.Fac = abs(self.syn_F)
+
+        if self.Nrrp >= 0:
+            self.hsynapse.Nrrp = self.Nrrp
+
+        self.randseed1 = self.cell.gid
+        self.randseed2 = 100000 + self.sid
+        self.randseed3 = self.rng_settings.synapse_seed + 200
+        self.hsynapse.setRNG(self.randseed1, self.randseed2, self.randseed3)
         self.hsynapse.synapseID = self.sid
 
     def _set_gabaab_ampanmda_rng(self):
@@ -351,7 +412,7 @@ class Synapse:
                 self.hsynapse.tau_d_GABAA
             synapse_dict['synapse_parameters']['tau_r_GABAA'] = \
                 self.hsynapse.tau_r_GABAA
-        elif synapse_dict['mech_name'] == 'ProbAMPANMDA_EMS':
+        elif synapse_dict['mech_name'] in ['ProbAMPANMDA_EMS', 'GluSynapse']:
             synapse_dict['synapse_parameters']['tau_d_AMPA'] = \
                 self.hsynapse.tau_d_AMPA
         else:

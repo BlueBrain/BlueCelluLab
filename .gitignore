@@ -11,3 +11,4 @@
 /.python-version
 coverage.xml
 .coverage
+.coverage*

@@ -7,15 +7,60 @@ import bglibpy
 from bglibpy import printv, BGLibPyError
 
 
-def create_syn_description_dict(bc_circuit, bc, ignore_populationid_error, gid, projection=None, projections=None):
+class SynDescription:
+    """Retrieve syn descriptions for the defined properties."""
+
+    def __init__(self) -> None:
+        self.common_properties = [
+            BLPSynapse.PRE_GID,
+            BLPSynapse.AXONAL_DELAY,
+            BLPSynapse.POST_SECTION_ID,
+            BLPSynapse.POST_SEGMENT_ID,
+            BLPSynapse.POST_SEGMENT_OFFSET,
+            BLPSynapse.G_SYNX,
+            BLPSynapse.U_SYN,
+            BLPSynapse.D_SYN,
+            BLPSynapse.F_SYN,
+            BLPSynapse.DTC,
+            BLPSynapse.TYPE,
+            BLPSynapse.NRRP,
+            BLPSynapse.U_HILL_COEFFICIENT,
+            BLPSynapse.CONDUCTANCE_RATIO,
+        ]
+
+    def gabaab_ampanmda_syn_description(self, bc_circuit, bc,
+                                        ignore_populationid_error, gid,
+                                        projection=None, projections=None):
+        """Wraps create_syn_description dict w. ampanmda/gabaab properties."""
+        return create_syn_description_dict(
+            self.common_properties, bc_circuit, bc, ignore_populationid_error,
+            gid, projection, projections)
+
+    def glusynapse_syn_description(self, bc_circuit, bc,
+                                   ignore_populationid_error, gid,
+                                   projection=None, projections=None):
+        """Wraps create_syn_description dict with glusynapse properties."""
+        glusynapse_only_properties = [
+            "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
+            "gmax_p_AMPA", "theta_d", "theta_p"]
+        all_properties = self.common_properties + glusynapse_only_properties
+        return create_syn_description_dict(
+            all_properties, bc_circuit, bc,
+            ignore_populationid_error, gid, projection, projections)
+
+
+def create_syn_description_dict(all_properties, bc_circuit, bc,
+                                ignore_populationid_error, gid,
+                                projection=None, projections=None):
     """Get synapse descriptions dict from bluepy, Keys are synapse ids
 
     Args:
+        all_properties: list of properties of synapses to be retrieved
         bc_circuit (bluepy.circuit.Circuit): bluepy circuit object
         bc (bluepy_configfile.configfile.BlueConfigFile): blueconfig object
         ignore_populationid_error (bool): whether to ignore the error
         gid (int): cell identification
-        projection (string): name of the projection of interest. Defaults to None.
+        projection (string): name of projection of interest. Defaults to None.
         projections (list): list of projections. Defaults to None.
 
     Raises:
@@ -26,34 +71,20 @@ def create_syn_description_dict(bc_circuit, bc, ignore_populationid_error, gid, 
         dict: indexed by projection name and synapse id.
         Values contain synapse properties series and popids tuple.
     """
-    all_properties = [
-        BLPSynapse.PRE_GID,
-        BLPSynapse.AXONAL_DELAY,
-        BLPSynapse.POST_SECTION_ID,
-        BLPSynapse.POST_SEGMENT_ID,
-        BLPSynapse.POST_SEGMENT_OFFSET,
-        BLPSynapse.G_SYNX,
-        BLPSynapse.U_SYN,
-        BLPSynapse.D_SYN,
-        BLPSynapse.F_SYN,
-        BLPSynapse.DTC,
-        BLPSynapse.TYPE,
-        BLPSynapse.NRRP,
-        BLPSynapse.U_HILL_COEFFICIENT,
-        BLPSynapse.CONDUCTANCE_RATIO]
+    connectomes = get_connectomes_dict(bc_circuit, projection=projection,
+                                       projections=projections)
 
-    connectomes = get_connectomes_dict(bc_circuit, projection=projection, projections=projections)
-
-    all_synapse_sets = get_synapses_by_connectomes(connectomes, all_properties, gid)
+    all_synapse_sets = get_synapses_by_connectomes(connectomes,
+                                                   all_properties, gid)
 
     syn_descriptions_dict = {}
     if not all_synapse_sets:
         printv('No synapses found', 5)
     else:
-        printv(f'Adding a total of {len(all_synapse_sets)} synapse sets', 5)
+        printv(f'Found a total of {len(all_synapse_sets)} synapse sets', 5)
 
         for proj_name, (synapse_set, using_sonata) in all_synapse_sets.items():
-            printv('Adding a total of %d synapses for set %s' %
+            printv('Retrieving a total of %d synapses for set %s' %
                    (synapse_set.shape[0], proj_name), 5)
 
             popids = get_popids(bc, ignore_populationid_error, proj_name)
@@ -116,8 +147,8 @@ def get_popids(bc, ignore_populationid_error, proj_name):
         tuple: source and target population ids.
     """
     if proj_name in [proj.name for proj in bc.typed_sections("Projection")]:
-        if "PopulationID" in bc["Projection_" + proj_name]:
-            source_popid = int(bc["Projection_" + proj_name]["PopulationID"])
+        if "PopulationID" in bc[f"Projection_{proj_name}"]:
+            source_popid = int(bc[f"Projection_{proj_name}"]["PopulationID"])
         elif ignore_populationid_error:
             source_popid = 0
         else:

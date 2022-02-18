@@ -68,7 +68,7 @@ class Connection:
                 threshold=spike_threshold)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
-            self.post_netcon.threshold = 10
+            self.post_netcon.threshold = spike_threshold
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 self.post_synapse.hsynapse).split('[')[0]
