@@ -92,7 +92,7 @@ Installing from source
 
 First get the Neurodamus source using git::
 
-    git clone ssh://bbpcode.epfl.ch/sim/neurodamus/bbp.git
+    git clone git@bbpgitlab.epfl.ch:hpc/sim/neurodamus-core.git
 
 The HOC code is located in the directory lib/hoclib of the newly created 'bbp'
 subdir. Set the HOC_LIBRARY_PATH (add the resolved path to your login script 

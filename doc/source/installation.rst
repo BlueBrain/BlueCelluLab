@@ -30,7 +30,7 @@ If you want to make changes to BGLibPy, you might want to install it using the
 source repository. The same remarks of the section above apply, 
 the only difference is that you clone the git repo::
 
-   git clone ssh://bbpcode.epfl.ch/sim/BGLibPy.git
+   git clone git@bbpgitlab.epfl.ch:cells/bglibpy.git
 
 and run pip from inside the newly created BGLibPy subdirectory 
 (don't forget the dot at the end of the command)::
