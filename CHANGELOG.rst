@@ -2,10 +2,105 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+4.6 (2022-02-25)
+----------------
+- Docs: update bglibpy and neurodamus repository urls. [Anil Tuncel]
+- Docs: updated documentation link on package json. [Anil Tuncel]
+- Glusynapse support #bglpy-86. [Anil Tuncel]
+- TOX: use v5 v6 thal tests in coverage. [Anil Tuncel]
+- Simplify the syn_description_dict. [Anil Tuncel]
+- Install neurodamus and mods from gitlab. [Anil Tuncel]
+- Refactor: separate gabaab and ampanmda functions as methods for
+  Synapse. [Anil Tuncel]
+- Require bluepy[bbp], let it handle the bbp dependencies e.g. brion.
+  [Anil Tuncel]
+
+  drop brion>=3.3.0 dependency
+
+  require bluepy[bbp], let it handle the bbp dependencies e.g. brion
+
+  previously brion>3.3.0 is handled here to have support of a wide range of bluepys
+- Bug fix: ssim.get_voltage_trace contains ForwardSkip voltages
+  #BGLPY-94. [Anil Tuncel]
+- Addressing setup.py Warning: 'keywords' should be a list, got type
+  'tuple' [Anil Tuncel]
+- Require python>=3.7 since morphio drops py36. [Anil Tuncel]
+- Refactor synapse parameters: turn synapses into a module. [Anil
+  Tuncel]
+- Solve pre_spike_train concatenation problem. [Anil Tuncel]
+- Cleanup: remove unnecessary code. [Anil Tuncel]
+- Add gitlab tokens required to upload documentation. [Anil Tuncel]
+- Use a simpler implementation (using metaclasses) for singleton. [Anil
+  Tuncel]
+- Update bluepy dependencies after BLPY-267. [Anil Tuncel]
+
+
+4.5 (2021-10-15)
+----------------
+- Isolate the unit v5,v6, thal tests. [Anil Tuncel]
+- Upload-docs not to depend on bglibpy's importer. [Anil Tuncel]
+
+  i.e. no neurodamus is needed therefore no gitlab access permission is needed by ci
+- Use upload_docs tox environment instead of bbp-nse-ci. [Anil Tuncel]
+- Update readme & documentation. [Anil Tuncel]
+- Add version.py that reads from versioneer. [Anil Tuncel]
+- Update bglibpy to be compatible with the gitlab ci pipelines. [Anil
+  Tuncel]
+- Update README.rst. [Werner Van Geit]
+- Added initial .gitlab-ci.yml. [Anil Tuncel]
+- Deleted .gitreview. [Anil Tuncel]
+- Revert "Initial commit" [Anil Tuncel]
+
+  This reverts commit e5fa4a7bf820b82a948ac009e49ec78e90b7ca74.
+- Initial commit. [Tharayil Joseph]
+- Merge "add edge_id attribute to Synapse" [Werner Van Geit]
+- Add edge_id attribute to Synapse. [Anil Tuncel]
+- Tox.ini added cmake as dep. [Anil Tuncel]
+- .install_neuron: print cmake output to console. [Anil Tuncel]
+- .install_neuron.sh removed. [Anil Tuncel]
+
+  it was used for debug purposes
+- Using cmake for neuron installation. [Anil Tuncel]
+- Check forward_skip value to be positive BGLPY-85. [Anil Tuncel]
+
+  patch1: applying Werner's feedback
+- Merge changes from topic 'ais' [Anil Tuncel]
+
+  * changes:
+    enable spike detection at AIS #BGLPY-83
+    replace connect2target hoc function with python
+- Enable spike detection at AIS #BGLPY-83. [Anil Tuncel]
+
+  Patch 2
+  * added helper functions to record and read from ais
+  * added test to compare voltages at AIS (using sscx sim)
+
+  Patch 3
+  * check for bluepy's soma_report.get_gid response BLPY-259
+  there are sometimes duplicated columns
+
+  Patch 4
+  * explicitly delete the cell object for python's reference counter
+  * set ecord_dt 0.1
+  * check for length of voltages
+- Replace connect2target hoc function with python. [Anil Tuncel]
+
+  Patch 2: removed M. Hines magic comment
+  Patch 3: spikedetection threshold as an argument with a default val
+  Patch 4: documentation fix
+  Patch 5: pass Connection.spike_threshold to create_netcon_spike
+  Patch 6: fix function call in create_netcon_spikedetector
+- Improve loading time of synapses. [Sirio Bolaños Puchet]
+
+  Two efficiency improvements:
+  + check sanity of connection entries only once at the beggining,
+    instead of for every synapse
+  + cache what GIDs belong to a target, so that matching GIDs to
+    connection entries proceeds much faster
 - Updated tutorial with an example single cell sim (without network)
   [Anil Tuncel]
+
+  * changelog update
 - Removed unreachable bluepy<=0.16.0 branch. [Anil Tuncel]
 
   Patch 2: setup.py bluepy remove bbp and  add brion
