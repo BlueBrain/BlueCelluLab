@@ -845,8 +845,7 @@ class TestSSimBaseClass_syns:
         assert(bglibpy.tools.check_empty_topology())
 
     def test_run(self):
-        """SSim: Check if Cells.hsynapses and Cells.syns return """ \
-            """the right dictionary"""
+        """SSim: Check if Cells.hsynapses return the right dictionary."""
         assert(
             isinstance(
                 self.ssim.cells[self.gid].hsynapses[('', 3)].Use,

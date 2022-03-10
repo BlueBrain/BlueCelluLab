@@ -16,13 +16,9 @@ Cell class
 # Since importing the neuron module is already a big security risk on it's
 # own, I'm ignoring this warning for the moment
 
-import re
-import math
 import os
 
 import queue
-import hashlib
-import string
 import json
 
 import numpy as np
@@ -34,16 +30,13 @@ from bglibpy import tools
 from bglibpy.importer import neuron
 from bglibpy import psection
 from bglibpy import printv
+from bglibpy.cell.template import NeuronTemplate
+from bglibpy.cell.section_distance import EuclideanSectionDistance
+from bglibpy.cell.injector import InjectableMixin
 
 
-example_dir = __file__
-
-
-class Cell:
-
+class Cell(InjectableMixin):
     """Represents a BGLib Cell object."""
-
-    used_template_names = []
 
     def __init__(self, template_filename, morphology_name,
                  gid=0, record_dt=None, template_format=None, morph_dir=None,
@@ -80,12 +73,11 @@ class Cell:
         self.persistent = []
 
         if not os.path.exists(template_filename):
-            raise Exception("Couldn't find template file [%s]"
-                            % template_filename)
+            raise FileNotFoundError("Couldn't find template file [%s]"
+                                    % template_filename)
 
         # Load the template
-        self.template_name, self.template_content = \
-            self._load_template(template_filename)
+        self.template_name = NeuronTemplate.load(template_filename)
 
         if template_format == 'v6':
             attr_names = getattr(neuron.h, self.template_name + "_NeededAttributes", None)
@@ -229,148 +221,6 @@ class Cell:
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
-    @staticmethod
-    def shorten_and_hash_string(label, keep_length=40, hash_length=9):
-        """Convert string to a shorter string if required.
-
-        Parameters
-        ----------
-        label : string
-               a string to be converted
-        keep_length : int
-                     length of the original string to keep. Default is 40
-                     characters.
-        hash_length : int
-                     length of the hash to generate, should not be more then
-                     20. Default is 9 characters.
-
-        Returns
-        -------
-        new_label : string
-            If the length of the original label is shorter than the sum of
-            'keep_length' and 'hash_length' plus one the original string is
-            returned. Otherwise, a string with structure <partial>_<hash> is
-            returned, where <partial> is the first part of the original string
-            with length equal to <keep_length> and the last part is a hash of
-            'hash_length' characters, based on the original string.
-        """
-
-        if hash_length > 20:
-            raise ValueError('Parameter hash_length should not exceed 20, '
-                             ' received: {}'.format(hash_length))
-
-        if len(label) <= keep_length + hash_length + 1:
-            return label
-
-        hash_string = hashlib.sha1(label.encode('utf-8')).hexdigest()
-        return '{}_{}'.format(label[0:keep_length], hash_string[0:hash_length])
-
-    @staticmethod
-    def check_compliance_with_neuron(template_name):
-        """Verify that a given name is compliant with the rules for a NEURON.
-
-        Parameters
-        ----------
-        template name : string
-                        a name should be a non-empty alphanumeric string,
-                        and start with a letter. Underscores are allowed.
-                        The length should not exceed 50 characters.
-
-        Returns
-        -------
-        compliant : boolean
-                   True if compliant, false otherwise.
-        """
-        max_len = 50
-        return (template_name and
-                template_name[0].isalpha() and
-                template_name.replace('_', '').isalnum() and
-                len(template_name) <= max_len)
-
-    @staticmethod
-    def get_neuron_compliant_template_name(name):
-        """Get template name that is compliant with NEURON based on given name.
-
-        Parameters
-        ----------
-        name : string
-              template_name to transform
-
-        Returns
-        -------
-        new_name : string
-                  If `name` is NEURON-compliant, the same string is return.
-                  Otherwise, hyphens are replaced by underscores and if
-                  appropriate, the string is shortened.
-                  Leading numbers are removed.
-        """
-        template_name = name
-        if not Cell.check_compliance_with_neuron(template_name):
-            template_name = template_name.lstrip(
-                string.digits).replace(
-                "-",
-                "_")
-            template_name = Cell.shorten_and_hash_string(template_name,
-                                                         keep_length=40,
-                                                         hash_length=9)
-            printv(
-                "Converted template name %s to %s to make it "
-                "NEURON compliant" %
-                (name, template_name), 50)
-        return template_name
-
-    @staticmethod
-    def _load_template(template_filename):
-        """Open a cell template. If template name already exists, rename it."""
-
-        with open(template_filename) as template_file:
-            template_content = template_file.read()
-
-        match = re.search(r"begintemplate\s*(\S*)", template_content)
-        template_name = match.group(1)
-
-        neuron_versiondate_string = neuron.h.nrnversion(4)
-        import datetime
-        neuron_versiondate = datetime.datetime.strptime(
-            neuron_versiondate_string,
-            "%Y-%m-%d").date()
-        good_neuron_versiondate = datetime.date(2014, 3, 20)
-
-        if neuron_versiondate >= good_neuron_versiondate:
-            printv("This Neuron version supports renaming "
-                   "templates, enabling...", 5)
-            # add bglibpy to the template name, so that we don't interfere with
-            # templates load outside of bglibpy
-            template_name = "%s_bglibpy" % template_name
-            template_name = Cell.get_neuron_compliant_template_name(
-                template_name)
-            if template_name in Cell.used_template_names:
-                new_template_name = template_name
-                while new_template_name in Cell.used_template_names:
-                    new_template_name = "%s_x" % new_template_name
-                    new_template_name = \
-                        Cell.get_neuron_compliant_template_name(
-                            new_template_name)
-
-                template_name = new_template_name
-
-            Cell.used_template_names.append(template_name)
-
-            template_content = re.sub(r"begintemplate\s*(\S*)",
-                                      "begintemplate %s" % template_name,
-                                      template_content)
-            template_content = re.sub(r"endtemplate\s*(\S*)",
-                                      "endtemplate %s" % template_name,
-                                      template_content)
-
-            neuron.h(template_content)
-        else:
-            printv("This Neuron version doesn't support renaming "
-                   "templates, disabling...", 5)
-            neuron.h.load_file(template_filename)
-
-        return template_name, template_content
-
     def get_section_id(self, secname=None):
         """Get section based on section id.
 
@@ -451,10 +301,10 @@ class Cell:
 
         try:
             sec_ref = self.serialized.isec2sec[int(section_id)]
-        except IndexError:
+        except IndexError as e:
             raise IndexError(
                 "BGLibPy get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_name))
+                (section_id, self.morphology_name)) from e
         if sec_ref is not None:
             return self.serialized.isec2sec[int(section_id)].sec
         else:
@@ -645,7 +495,6 @@ class Cell:
     @staticmethod
     def get_precise_record_dt(dt):
         """Get a more precise record_dt to make time points faill on dts"""
-
         return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
     def add_recordings(self, var_names, dt=None):
@@ -725,7 +574,7 @@ class Cell:
         all_sections = self.cell.getCell().all
         for section in all_sections:
             var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
-            allSectionVoltages[section.name()] = self.getRecording(var_name)
+            allSectionVoltages[section.name()] = self.get_recording(var_name)
         return allSectionVoltages
 
     def get_recording(self, var_name):
@@ -738,116 +587,6 @@ class Cell:
 
         """
         return np.array(self.recordings[var_name])
-
-    def add_pulse(self, stimulus):
-        """Inject pulse stimulus for replay."""
-        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        if 'Offset' in stimulus.keys():
-            # The meaning of "Offset" is not clear yet, ask Jim
-            # delay = float(stimulus.Delay) +
-            #        float(stimulus.Offset)
-            raise Exception("Found stimulus with pattern %s and Offset, "
-                            "not supported" % stimulus['Pattern'])
-        else:
-            delay = float(stimulus['Delay'])
-
-        tstim.train(delay,
-                    float(stimulus['Duration']),
-                    float(stimulus['AmpStart']),
-                    float(stimulus['Frequency']),
-                    float(stimulus['Width']))
-        self.persistent.append(tstim)
-
-    def add_replay_hypamp(self, stimulus):
-        """Inject hypamp for the replay."""
-        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        delay = float(stimulus['Delay'])
-        duration = float(stimulus['Duration'])
-        amp = self.hypamp
-        tstim.pulse(delay, duration, amp)
-        self.persistent.append(tstim)
-        printv("Added hypamp stimulus to gid %d: "
-               "delay=%f, duration=%f, amp=%f" %
-               (self.gid, delay, duration, amp), 50)
-
-    def add_replay_relativelinear(self, stimulus):
-        """Add a relative linear stimulus."""
-
-        tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
-        delay = float(stimulus['Delay'])
-        duration = float(stimulus['Duration'])
-        amp = (float(stimulus['PercentStart']) / 100.0) * self.threshold
-        tstim.pulse(delay, duration, amp)
-        self.persistent.append(tstim)
-
-        printv("Added relative linear stimulus to gid %d: "
-               "delay=%f, duration=%f, amp=%f " %
-               (self.gid, delay, duration, amp), 50)
-
-    def add_replay_noise(
-            self,
-            stimulus,
-            noise_seed=None,
-            noisestim_count=None):
-        """Add a replay noise stimulus."""
-        mean = (float(stimulus['MeanPercent']) * self.threshold) / 100.0
-        variance = (float(stimulus['Variance']) * self.threshold) / 100.0
-        delay = float(stimulus['Delay'])
-        duration = float(stimulus['Duration'])
-        self.add_noise_step(
-            self.soma,
-            0.5,
-            mean,
-            variance,
-            delay,
-            duration,
-            seed=noise_seed,
-            noisestim_count=noisestim_count)
-
-        printv("Added noise stimulus to gid %d: "
-               "delay=%f, duration=%f, mean=%f, variance=%f" %
-               (self.gid, delay, duration, mean, variance), 50)
-
-    def _get_noise_step_rand(self, noisestim_count):
-        """Return rng for noise step stimulus"""
-
-        if self.rng_settings.mode == "Compatibility":
-            rng = neuron.h.Random(self.gid + noisestim_count)
-        elif self.rng_settings.mode == "UpdatedMCell":
-            rng = neuron.h.Random()
-            rng.MCellRan4(
-                noisestim_count * 10000 + 100,
-                self.rng_settings.base_seed +
-                self.rng_settings.stimulus_seed +
-                self.gid * 1000)
-        elif self.rng_settings.mode == "Random123":
-            rng = neuron.h.Random()
-            rng.Random123(
-                noisestim_count + 100,
-                self.rng_settings.stimulus_seed + 500,
-                self.gid + 300)
-        else:
-            raise ValueError(
-                "Cell: Unknown rng mode: %s" %
-                self.rng_settings.mode)
-
-        return rng
-
-    def add_noise_step(self, section,
-                       segx,
-                       mean, variance,
-                       delay,
-                       duration, seed=None, noisestim_count=None):
-        """Inject a step current with noise on top."""
-        if seed is not None:
-            rand = bglibpy.neuron.h.Random(seed)
-        else:
-            rand = self._get_noise_step_rand(noisestim_count)
-
-        tstim = bglibpy.neuron.h.TStim(segx, rand, sec=section)
-        tstim.noise(delay, duration, mean, variance)
-        self.persistent.append(rand)
-        self.persistent.append(tstim)
 
     def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
                            condition_parameters=None, base_seed=None,
@@ -1174,17 +913,17 @@ class Cell:
     def addAxialCurrentRecordings(self, section):
         """Record all the axial current flowing in and out of the section."""
         secname = neuron.h.secname(sec=section)
-        self.addRecording(secname)
+        self.add_recording(secname)
         for child in self.get_childrensections(section):
-            self.addRecording(child)
+            self.add_recording(child)
         self.get_parentsection(section)
 
     def getAxialCurrentRecording(self, section):
         """Return the axial current recording."""
         secname = neuron.h.secname(sec=section)
         for child in self.get_childrensections(section):
-            self.getRecording(secname)
-            self.getRecording(child)
+            self.get_recording(secname)
+            self.get_recording(child)
 
     def somatic_branches(self):
         """Show the index numbers."""
@@ -1211,49 +950,7 @@ class Cell:
                                 dend found in section %s" % secname)
 
     @staticmethod
-    def grindaway(hsection):
-        """Grindaway"""
-
-        # get the data for the section
-        n_segments = int(neuron.h.n3d(sec=hsection))
-        n_comps = hsection.nseg
-
-        xs = np.zeros(n_segments)
-        ys = np.zeros(n_segments)
-        zs = np.zeros(n_segments)
-        lengths = np.zeros(n_segments)
-        for index in range(0, n_segments):
-            xs[index] = neuron.h.x3d(index, sec=hsection)
-            ys[index] = neuron.h.y3d(index, sec=hsection)
-            zs[index] = neuron.h.z3d(index, sec=hsection)
-            lengths[index] = neuron.h.arc3d(index, sec=hsection)
-
-        # to use Vector class's .interpolate()
-        # must first scale the independent variable
-        # i.e. normalize length along centroid
-        lengths /= (lengths[-1])
-
-        # initialize the destination "independent" vector
-        # range = np.array(n_comps+2)
-        comp_range = np.arange(0, n_comps + 2) / n_comps - \
-            1.0 / (2 * n_comps)
-        comp_range[0] = 0
-        comp_range[-1] = 1
-
-        # length contains the normalized distances of the pt3d points
-        # along the centroid of the section.  These are spaced at
-        # irregular intervals.
-        # range contains the normalized distances of the nodes along the
-        # centroid of the section.  These are spaced at regular intervals.
-        # Ready to interpolate.
-
-        xs_interp = np.interp(comp_range, lengths, xs)
-        ys_interp = np.interp(comp_range, lengths, ys)
-        zs_interp = np.interp(comp_range, lengths, zs)
-
-        return xs_interp, ys_interp, zs_interp
-
-    @staticmethod
+    @tools.deprecated("bglibpy.cell.section_distance.EuclideanSectionDistance")
     def euclid_section_distance(
             hsection1=None,
             hsection2=None,
@@ -1261,6 +958,7 @@ class Cell:
             location2=None,
             projection=None):
         """Calculate euclidian distance between positions on two sections
+           Uses bglibpy.cell.section_distance.EuclideanSectionDistance
 
         Parameters
         ----------
@@ -1276,29 +974,8 @@ class Cell:
         projection : string
                      planes to project on, e.g. 'xy'
         """
-
-        xs_interp1, ys_interp1, zs_interp1 = Cell.grindaway(hsection1)
-        xs_interp2, ys_interp2, zs_interp2 = Cell.grindaway(hsection2)
-
-        x1 = xs_interp1[int(np.floor((len(xs_interp1) - 1) * location1))]
-        y1 = ys_interp1[int(np.floor((len(ys_interp1) - 1) * location1))]
-        z1 = zs_interp1[int(np.floor((len(zs_interp1) - 1) * location1))]
-
-        x2 = xs_interp2[int(np.floor((len(xs_interp2) - 1) * location2))]
-        y2 = ys_interp2[int(np.floor((len(ys_interp2) - 1) * location2))]
-        z2 = zs_interp2[int(np.floor((len(zs_interp2) - 1) * location2))]
-
-        distance = 0
-        if 'x' in projection:
-            distance += (x1 - x2) ** 2
-        if 'y' in projection:
-            distance += (y1 - y2) ** 2
-        if 'z' in projection:
-            distance += (z1 - z2) ** 2
-
-        distance = np.sqrt(distance)
-
-        return distance
+        dist = EuclideanSectionDistance()
+        return dist(hsection1, hsection2, location1, location2, projection)
 
     def apical_trunk(self):
         """Return the apical trunk of the cell."""
@@ -1323,128 +1000,11 @@ class Cell:
                         maxdiam = child.diam
             return apicaltrunk
 
-    def add_step(self, start_time, stop_time, level, section=None, segx=0.5):
-        """Add a step current injection."""
-
-        if section is None:
-            section = self.soma
-        pulse = neuron.h.new_IClamp(segx, sec=section)
-        self.persistent.append(pulse)
-        setattr(pulse, 'del', start_time)
-        pulse.dur = stop_time - start_time
-        pulse.amp = level
-
     # Disable unused argument warning for dt. This is there for backward
     # compatibility
     # pylint: disable=W0613
-    def add_ramp(self, start_time, stop_time, start_level, stop_level,
-                 section=None, segx=0.5, dt=None):
-        """Add a ramp current injection."""
 
-        if section is None:
-            section = self.soma
-
-        tstim = neuron.h.TStim(segx, sec=section)
-
-        tstim.ramp(
-            0.0,
-            start_time,
-            start_level,
-            stop_level,
-            stop_time -
-            start_time,
-            0.0,
-            0.0)
-
-        self.persistent.append(tstim)
     # pylint: enable=W0613
-
-    @tools.deprecated("add_ramp")
-    def add_tstim_ramp(self, *args, **kwargs):
-        """Exactly same as add_ramp"""
-
-        self.add_ramp(*args, **kwargs)
-
-    def add_voltage_clamp(
-            self, stop_time, level, rs=None, section=None, segx=0.5,
-            current_record_name=None, current_record_dt=None):
-        """Add a voltage clamp
-
-        Parameters
-        ----------
-
-        stop_time : float
-            Time at which voltage clamp should stop
-        level : float
-            Voltage level of the vc (in mV)
-        rs: float
-            Series resistance of the vc (in MOhm)
-        section: NEURON object
-            Object representing the section to place the vc
-        segx: float
-            Segment x coordinate to place the vc
-        current_record_name: str
-            Name of the recording that will store the current
-        current_record_dt: float
-            Timestep to use for the recording of the current
-
-        Returns
-        -------
-
-        SEClamp (NEURON) object of the created vc
-
-        """
-
-        if section is None:
-            section = self.soma
-        if current_record_dt is None:
-            current_record_dt = self.record_dt
-        vclamp = neuron.h.SEClamp(segx, sec=section)
-        self.persistent.append(vclamp)
-
-        vclamp.amp1 = level
-        vclamp.dur1 = stop_time
-
-        if rs is not None:
-            vclamp.rs = rs
-
-        current = neuron.h.Vector()
-        if current_record_dt is None:
-            current.record(vclamp._ref_i)
-        else:
-            current.record(
-                vclamp._ref_i,
-                self.get_precise_record_dt(current_record_dt))
-
-        self.recordings[current_record_name] = current
-
-        return vclamp
-
-    @tools.deprecated("add_voltage_clamp")
-    def addVClamp(self, stop_time, level):
-        """Add a voltage clamp."""
-        vclamp = neuron.h.SEClamp(0.5, sec=self.soma)
-        vclamp.amp1 = level
-        vclamp.dur1 = stop_time
-        vclamp.dur2 = 0
-        vclamp.dur3 = 0
-        self.persistent.append(vclamp)
-
-    def addSineCurrentInject(self, start_time, stop_time, freq,
-                             amplitude, mid_level, dt=1.0):
-        """Add a sinusoidal current injection.
-
-        Returns
-        -------
-
-        (numpy array, numpy array) : time and current data
-
-        """
-        t_content = np.arange(start_time, stop_time, dt)
-        i_content = [amplitude * math.sin(freq * (x - start_time) * (
-            2 * math.pi)) + mid_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content)
-        return (t_content, i_content)
 
     def get_time(self):
         """Get the time vector."""
@@ -1460,10 +1020,7 @@ class Cell:
 
     def getNumberOfSegments(self):
         """Get the number of segments in the cell."""
-        totalnseg = 0
-        for section in self.all:
-            totalnseg += section.nseg
-        return totalnseg
+        return sum(section.nseg for section in self.all)
 
     def add_plot_window(self, var_list, xlim=None, ylim=None, title=""):
         """Add a window to plot a variable."""
@@ -1582,97 +1139,3 @@ class Cell:
 
     def __del__(self):
         self.delete()
-
-    # Deprecated functions ###
-
-    # pylint: disable=C0111, C0112
-
-    @property
-    @tools.deprecated("hsynapses")
-    def syns(self):
-        """Contains a list of the hoc synapses with as key the gid."""
-        return self.hsynapses
-
-    @tools.deprecated()
-    def getThreshold(self):
-        """Get the threshold current of the cell.
-
-        warning: this is measured from hypamp"""
-        return self.cell.threshold
-
-    @tools.deprecated()
-    def getHypAmp(self):
-        """Get the current level necessary to bring the cell to -85 mV."""
-        return self.cell.hypamp
-
-    @tools.deprecated("add_recording")
-    def addRecording(self, var_name):
-        return self.add_recording(var_name)
-
-    @tools.deprecated("add_recordings")
-    def addRecordings(self, var_names):
-        return self.add_recordings(var_names)
-
-    @tools.deprecated("get_recording")
-    def getRecording(self, var_name):
-        return self.get_recording(var_name)
-
-    @tools.deprecated()
-    def addAllSectionsVoltageRecordings(self):
-        """Deprecated."""
-        self.add_allsections_voltagerecordings()
-
-    @tools.deprecated()
-    def getAllSectionsVoltageRecordings(self):
-        """Deprecated."""
-        return self.get_allsections_voltagerecordings()
-
-    @tools.deprecated()
-    def locateBAPSite(self, seclistName, distance):
-        """Deprecated."""
-        return self.locate_bapsite(seclistName, distance)
-
-    def injectCurrentWaveform(self, t_content, i_content, section=None,
-                              segx=0.5):
-        """Inject a current in the cell."""
-        start_time = t_content[0]
-        stop_time = t_content[-1]
-        time = neuron.h.Vector()
-        currents = neuron.h.Vector()
-        time = time.from_python(t_content)
-        currents = currents.from_python(i_content)
-
-        if section is None:
-            section = self.soma
-        pulse = neuron.h.new_IClamp(segx, sec=section)
-        self.persistent.append(pulse)
-        self.persistent.append(time)
-        self.persistent.append(currents)
-        setattr(pulse, 'del', start_time)
-        pulse.dur = stop_time - start_time
-        # pylint: disable=W0212
-        currents.play(pulse._ref_amp, time)
-
-    @tools.deprecated("get_time")
-    def getTime(self):
-        return self.get_time()
-
-    @tools.deprecated()
-    def getSomaVoltage(self):
-        """Deprecated by get_soma_voltage."""
-        return self.get_soma_voltage()
-
-    @tools.deprecated("add_plot_window")
-    def addPlotWindow(self, *args, **kwargs):
-        self.add_plot_window(*args, **kwargs)
-
-    @tools.deprecated("add_dendrogram")
-    def showDendrogram(self, *args, **kwargs):
-        """"""
-        self.add_dendrogram(*args, **kwargs)
-
-    @tools.deprecated("add_ramp")
-    def addRamp(self, *args, **kwargs):
-        self.add_ramp(*args, **kwargs)
-
-    # pylint: enable=C0111, C0112

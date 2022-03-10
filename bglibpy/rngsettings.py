@@ -101,7 +101,7 @@ class RNGSettings(metaclass=Singleton):
         """Setter method for the mode."""
 
         options = {"Compatibility": 0, "Random123": 1, "UpdatedMCell": 2}
-        if new_val not in options.keys():
+        if new_val not in options:
             raise bglibpy.UndefinedRNGException(
                 "SSim: RNG mode %s not in accepted list: %s"
                 % (self.mode, list(options.keys()))

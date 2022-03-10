@@ -6,6 +6,7 @@
 """Tests for the Simulation class"""
 
 import os
+
 import numpy as np
 import bglibpy
 

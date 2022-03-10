@@ -232,7 +232,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
 
     """
     cell = bglibpy.Cell(template_name, morphology_name)
-    cell.add_ramp(500, 5000, step_level, step_level, dt=1.0)
+    cell.add_ramp(500, 5000, step_level, step_level)
     simulation = bglibpy.Simulation()
     simulation.run(1000, cvode=template_accepts_cvode(template_name))
     time = cell.get_time()
@@ -345,8 +345,8 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
                                  inj_start, inj_stop, step_level):
     """Detect if there is a spike at a certain step level"""
     cell = bglibpy.Cell(template_name, morphology_name)
-    cell.add_ramp(0, 5000, hyp_level, hyp_level, dt=1.0)
-    cell.add_ramp(inj_start, inj_stop, step_level, step_level, dt=1.0)
+    cell.add_ramp(0, 5000, hyp_level, hyp_level)
+    cell.add_ramp(inj_start, inj_stop, step_level, step_level)
     simulation = bglibpy.Simulation()
     simulation.run(int(inj_stop), cvode=template_accepts_cvode(template_name))
 

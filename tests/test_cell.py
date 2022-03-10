@@ -4,15 +4,19 @@
 
 """Unit tests for Cell.py"""
 
-import pytest
-
 import math
 import os
 import random
-import bglibpy
-
-
 import warnings
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+import bglibpy
+from bglibpy.cell.template import NeuronTemplate, shorten_and_hash_string
+
+
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
 
@@ -29,6 +33,36 @@ def test_longname():
 
     del cell
 
+
+def test_load_template():
+    """Test the neuron template loading."""
+    fpath = Path(script_dir) / "examples/cell_example1/test_cell.hoc"
+    template_name = NeuronTemplate.load(fpath)
+    assert template_name == "test_cell_bglibpy"
+
+
+@patch("bglibpy.neuron")
+def test_load_template_with_old_neuron(mock_bglibpy_neuron):
+    """Test the template loading with an old neuron version."""
+    mock_bglibpy_neuron.h.nrnversion.return_value = '2014-03-19'
+    fpath = Path(script_dir) / "examples/cell_example1/test_cell.hoc"
+    template_name = NeuronTemplate.load(fpath)
+    assert template_name == "test_cell"
+    mock_bglibpy_neuron.h.nrnversion.assert_called_once_with(4)
+    mock_bglibpy_neuron.h.load_file.assert_called_once()
+    mock_bglibpy_neuron.h.assert_not_called()
+
+
+def test_shorten_and_hash_string():
+    """Unit test for the shorten_and_hash_string function."""
+    with pytest.raises(ValueError):
+        shorten_and_hash_string(label="1", hash_length=21)
+
+    short_label = "short-label"
+    assert shorten_and_hash_string(short_label) == short_label
+
+    long_label = "test-cell" * 10
+    assert len(shorten_and_hash_string(long_label)) < len(long_label)
 
 class TestCellBaseClass1:
 
@@ -61,13 +95,13 @@ class TestCellBaseClass1:
         assert math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001
         assert math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001
 
-    def test_addRecording(self):
-        """Cell: Test if addRecording gives deprecation warning"""
+    def test_add_recording(self):
+        """Cell: Test if add_recording gives deprecation warning"""
         import warnings
         warnings.simplefilter('default')
         varname = 'self.apical[1](0.5)._ref_v'
         with warnings.catch_warnings(record=True) as w:
-            self.cell.addRecording(varname)
+            self.cell.add_recording(varname)
             assert(
                 len([warning for warning in w
                      if issubclass(warning.category, DeprecationWarning)]) > 0)
@@ -107,13 +141,13 @@ class TestCellBaseClass1:
 
         random.seed(1)
 
+        location1 = 0.0
+        location2 = 1.0
         for _ in range(1000):
             hsection1 = random.choice(random.choice(
                 [self.cell.apical, self.cell.somatic, self.cell.basal]))
             hsection2 = random.choice(random.choice(
                 [self.cell.apical, self.cell.somatic, self.cell.basal]))
-            location1 = 0.0
-            location2 = 1.0
             distance_euclid = \
                 self.cell.euclid_section_distance(hsection1=hsection1,
                                                   hsection2=hsection2,
