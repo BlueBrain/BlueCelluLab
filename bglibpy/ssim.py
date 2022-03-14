@@ -228,7 +228,8 @@ class SSim:
                          interconnect_cells=True,
                          pre_spike_trains=None,
                          projection=None,
-                         projections=None):
+                         projections=None,
+                         add_shotnoise_stimuli=False):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -318,6 +319,11 @@ class SSim:
                     Beware, this option might disappear in the future if
                     BluePy unifies the API to get the synapse information for
                     a certain gid.
+        add_shotnoise_stimuli : Boolean
+                            Process the 'shotnoise' stimuli blocks of the
+                            BlueConfig,
+                            Setting add_stimuli=True,
+                            will automatically set this option to True.
         """
 
         if synapse_detail is not None:
@@ -366,16 +372,19 @@ class SSim:
             add_hyperpolarizing_stimuli = True
             add_relativelinear_stimuli = True
             add_pulse_stimuli = True
+            add_shotnoise_stimuli = True
 
         if add_noise_stimuli or \
                 add_hyperpolarizing_stimuli or \
                 add_pulse_stimuli or \
-                add_relativelinear_stimuli:
+                add_relativelinear_stimuli or \
+                add_shotnoise_stimuli:
             self._add_stimuli(
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
                 add_relativelinear_stimuli=add_relativelinear_stimuli,
-                add_pulse_stimuli=add_pulse_stimuli)
+                add_pulse_stimuli=add_pulse_stimuli,
+                add_shotnoise_stimuli=add_shotnoise_stimuli)
         if add_synapses:
             self._add_synapses(
                 intersect_pre_gids=intersect_pre_gids,
@@ -396,7 +405,8 @@ class SSim:
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
                      add_relativelinear_stimuli=False,
-                     add_pulse_stimuli=False):
+                     add_pulse_stimuli=False,
+                     add_shotnoise_stimuli=False):
         """Instantiate all the stimuli"""
         for gid in self.gids:
             # Also add the injections / stimulations as in the cortical model
@@ -405,7 +415,8 @@ class SSim:
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
                 add_relativelinear_stimuli=add_relativelinear_stimuli,
-                add_pulse_stimuli=add_pulse_stimuli)
+                add_pulse_stimuli=add_pulse_stimuli,
+                add_shotnoise_stimuli=add_shotnoise_stimuli)
             printv("Added stimuli for gid %d" % gid, 2)
 
     def _add_synapses(
@@ -683,8 +694,9 @@ class SSim:
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
                          add_relativelinear_stimuli=False,
-                         add_pulse_stimuli=False):
-        """ Adds indeitical stimuli to the simulated cell as in the 'large'
+                         add_pulse_stimuli=False,
+                         add_shotnoise_stimuli=False):
+        """ Adds identical stimuli to the simulated cell as in the 'large'
             model
 
         Parameters
@@ -692,8 +704,9 @@ class SSim:
         gid: gid of the simulated cell
         """
         # check in which StimulusInjects the gid is a target
-        # Every noise stimulus gets a new seed
+        # Every noise or shot noise stimulus gets a new seed
         noisestim_count = 0
+        shotnoise_stim_count = 0
 
         for entry in self.bc.values():
             if entry.section_type == 'StimulusInject':
@@ -725,12 +738,26 @@ class SSim:
                     elif stimulus.Pattern == 'SynapseReplay':
                         printv("Found stimulus with pattern %s, ignoring" %
                                stimulus['Pattern'], 1)
+                    elif stimulus.Pattern == 'ShotNoise':
+                        if add_shotnoise_stimuli:
+                            self._add_replay_shotnoise(
+                                gid,
+                                stimulus,
+                                shotnoise_stim_count=shotnoise_stim_count)
+                    elif stimulus.Pattern == 'RelativeShotNoise':
+                        if add_shotnoise_stimuli:
+                            self._add_replay_relative_shotnoise(
+                                gid,
+                                stimulus,
+                                shotnoise_stim_count=shotnoise_stim_count)
                     else:
                         raise Exception("Found stimulus with pattern %s, "
                                         "not supported" %
                                         stimulus.Pattern)
                 if stimulus.Pattern == 'Noise':
                     noisestim_count += 1
+                if stimulus.Pattern in ['ShotNoise', 'RelativeShotNoise']:
+                    shotnoise_stim_count += 1
 
     def _add_replay_hypamp_injection(self, gid, stimulus):
         """Add injections from the replay"""
@@ -753,6 +780,26 @@ class SSim:
         self.cells[gid].add_replay_noise(
             stimulus,
             noisestim_count=noisestim_count)
+
+    def _add_replay_shotnoise(
+            self,
+            gid,
+            stimulus,
+            shotnoise_stim_count=None):
+        """Add shot noise injection from the replay"""
+        self.cells[gid].add_replay_shotnoise(
+            stimulus,
+            shotnoise_stim_count=shotnoise_stim_count)
+
+    def _add_replay_relative_shotnoise(
+            self,
+            gid,
+            stimulus,
+            shotnoise_stim_count=None):
+        """Add shot noise injection from the replay"""
+        self.cells[gid].add_replay_relative_shotnoise(
+            stimulus,
+            shotnoise_stim_count=shotnoise_stim_count)
 
     @staticmethod
     def check_connection_contents(contents):
