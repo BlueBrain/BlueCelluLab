@@ -184,7 +184,7 @@ class TestInjector:
         rng = self.cell._get_shotnoise_step_rand(0, 144)
         assert rng.uniform(1, 15) == 7.260484082563668
 
-        with raises (BGLibPyError):
+        with raises(BGLibPyError):
             rng_obj.mode = "Compatibility"
             self.cell._get_shotnoise_step_rand(0, 144)
 
@@ -193,8 +193,8 @@ class TestInjector:
         rng_obj = bglibpy.RNGSettings(mode="Random123", base_seed=549821)
         rng_obj.stimulus_seed = 549821
         self.cell.rng_settings = rng_obj
-        soma=self.cell.soma
-        segx=0.5
+        soma = self.cell.soma
+        segx = 0.5
         stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Rate": 2E3,
                     "AmpMean": 40E-3, "AmpVar": 16E-4, "Duration": 2,
                     "Delay": 0, "Seed": 3899663}
@@ -217,8 +217,8 @@ class TestInjector:
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
 
-        soma=self.cell.soma
-        segx=0.5
+        soma = self.cell.soma
+        segx = 0.5
         tvec, svec = self.cell.add_shotnoise_step(section=soma, segx=segx,
                                                   tau_D=4.0, tau_R=0.4,
                                                   rate=2e3, amp_mean=40e-3,
@@ -227,14 +227,14 @@ class TestInjector:
 
         assert svec.as_numpy() == approx(np.array(
             [0., 0., 0., 0.00822223, 0.01212512,
-             0.0137462 , 0.034025, 0.04967694, 0.05614846, 0.]))
+             0.0137462, 0.034025, 0.04967694, 0.05614846, 0.]))
         assert tvec.to_python() == approx(
             [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
 
     def test_get_relative_shotnoise_params(self):
         """Unit test for _get_relative_shotnoise_params."""
         rate, amp_mean, amp_var = self.cell._get_relative_shotnoise_params(
-            mean=40e-3, var=16e-4, tau_D=4.0, tau_R=0.4, cv_square= 0.63**2
+            mean=40e-3, var=16e-4, tau_D=4.0, tau_R=0.4, cv_square=0.63**2
         )
         assert rate == approx(158.73863636363635)
         assert amp_mean == approx(0.048776006926722876)
@@ -247,19 +247,25 @@ class TestInjector:
         self.cell.rng_settings = rng_obj
         stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Dt": 0.25,
                     "Duration": 2, "MeanPercent": 70, "SDPercent": 40,
-                    "AmpCV":0.63, "Delay": 0, "Seed": 3899663}
-        soma=self.cell.soma
-        segx=0.5
+                    "AmpCV": 0.63, "Delay": 0, "Seed": 12}
+        self.cell.threshold = 0.184062
+        soma = self.cell.soma
+        segx = 0.5
         tvec, svec = self.cell.add_replay_relative_shotnoise(soma, segx, stimulus)
-        assert svec.to_python() == [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
-        assert tvec.to_python() == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                                    2.0, 2.0]
+        assert svec.to_python() == approx([0., 0., 0., 0., 0.0204470197, 0.0301526984,
+                                    0.0341840080, 0.0352485557, 0.0347913472, 0.])
+        assert tvec.to_python() == approx([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
+                                    2.0, 2.0])
 
         with raises(BGLibPyError):
             invalid_stim = {"DecayTime": 4.0, "RiseTime": 4.0, "Dt": 0.25,
                             "Duration": 2, "MeanPercent": 70, "SDPercent": 40,
-                            "AmpCV":0.63, "Delay": 0, "Seed": 3899663}
+                            "AmpCV": 0.63, "Delay": 0, "Seed": 12}
             self.cell.add_replay_relative_shotnoise(soma, segx, invalid_stim)
+
+        with raises(ZeroDivisionError):
+            self.cell.threshold = 0.0
+            self.cell.add_replay_relative_shotnoise(soma, segx, stimulus)
 
     def test_inject_current_waveform(self):
         """Test injecting any input current and time arrays."""
