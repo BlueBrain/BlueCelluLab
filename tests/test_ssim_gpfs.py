@@ -80,6 +80,11 @@ no_rand_risetime_sim_path = os.path.join(
     "BlueConfigNoRandRise"
 )
 
+test_relative_shotnoise_path = os.path.join(
+    proj_path(83), "home/bolanos/bglibpy-tests/relative_shotnoise",
+    "BlueConfig"
+)
+
 @pytest.mark.v5
 class TestSSimBaseClass_full_run:
 
@@ -712,3 +717,23 @@ def test_get_voltage_trace():
     assert sum(ssim.get_time() < 0) == 10
     assert sum(ssim.get_time_trace() < 0) == 0
     assert len(voltage_trace) == len(ssim.get_time_trace())
+
+
+@pytest.mark.v6
+def test_relative_shotnoise():
+    """Test injection of relative shot noise."""
+    ssim = bglibpy.SSim(test_relative_shotnoise_path, record_dt=0.1)
+    gids = [2886525, 3099746, 3425774, 3868780]
+    ssim.instantiate_gids(gids, add_synapses=False, add_stimuli=True, add_replay=False)
+    tstop = 500
+    ssim.run(tstop)
+
+    rms_tests = []
+    for cell in gids:
+        voltage_bglibpy = ssim.get_voltage_trace(cell)
+        voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
+        voltage_diff = voltage_bglibpy - voltage_bglib
+        rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+        rms_tests.append(rms_error < 0.025)
+
+    assert all(rms_tests)
