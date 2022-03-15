@@ -228,6 +228,21 @@ class TestInjector:
         assert amp_mean == approx(0.048776006926722876)
         assert amp_var == approx(0.0009442643342459686)
 
+    def test_add_replay_relative_shotnoise(self):
+        """Unit test for add_replay_relative_shotnoise."""
+        rng_obj = bglibpy.RNGSettings()
+        rng_obj.mode = "Random123"
+        self.cell.rng_settings = rng_obj
+        stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Dt": 0.25,
+                    "Duration": 2, "MeanPercent": 70, "SDPercent": 40,
+                    "AmpCV":0.63, "Delay": 0, "Seed": 3899663}
+        soma=self.cell.soma
+        segx=0.5
+        tvec, svec = self.cell.add_replay_relative_shotnoise(soma, segx, stimulus)
+        assert svec.to_python() == [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+        assert tvec.to_python() == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
+                                    2.0, 2.0]
+
     def test_inject_current_waveform(self):
         """Test injecting any input current and time arrays."""
         start_time, stop_time, dt = 10.0, 20.0, 1.0
