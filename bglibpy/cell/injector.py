@@ -381,7 +381,7 @@ class InjectableMixin:
             self,
             stimulus,
             shotnoise_seed=None,
-            shotnoise_stim_count=None):
+            shotnoise_stim_count=0):
         """Add a replay shot noise stimulus."""
         delay = float(stimulus["Delay"])
         duration = float(stimulus["Duration"])
