@@ -788,7 +788,7 @@ class SSim:
             shotnoise_stim_count=None):
         """Add shot noise injection from the replay"""
         self.cells[gid].add_replay_shotnoise(
-            stimulus,
+            self.cells[gid].soma, 0.5, stimulus,
             shotnoise_stim_count=shotnoise_stim_count)
 
     def _add_replay_relative_shotnoise(
@@ -798,7 +798,7 @@ class SSim:
             shotnoise_stim_count=None):
         """Add shot noise injection from the replay"""
         self.cells[gid].add_replay_relative_shotnoise(
-            stimulus,
+            self.cells[gid].soma, 0.5, stimulus,
             shotnoise_stim_count=shotnoise_stim_count)
 
     @staticmethod
