@@ -178,7 +178,8 @@ class TestInjector:
                                          0.1032799, 0.1170881, 0.1207344, 0.0])
 
     def test_get_shotnoise_step_rand(self):
-        rng_obj = bglibpy.RNGSettings(mode="Random123")
+        rng_obj = bglibpy.RNGSettings()
+        rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
         rng = self.cell._get_shotnoise_step_rand(0, 144)
         assert rng.uniform(1, 15) == 7.260484082563668
@@ -197,6 +198,26 @@ class TestInjector:
                                          1.75, 2.0, 2.0])
         assert list(stim_vec) == approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0077349976,
                                          0.0114066037, 0.0432062144, 0.0])
+
+    def test_add_shotnoise_step(self):
+        """Unit test for the add_shotnoise_step."""
+        rng_obj = bglibpy.RNGSettings()
+        rng_obj.mode = "Random123"
+        self.cell.rng_settings = rng_obj
+
+        soma=self.cell.soma
+        segx=0.5
+        tvec, svec = self.cell.add_shotnoise_step(section=soma, segx=segx,
+                                                  tau_D=4.0, tau_R=0.4,
+                                                  rate=2e3, amp_mean=40e-3,
+                                                  amp_var=16e-4, delay=0,
+                                                  duration=2)
+
+        assert svec.as_numpy() == approx(np.array(
+            [0., 0., 0., 0.00822223, 0.01212512,
+             0.0137462 , 0.034025, 0.04967694, 0.05614846, 0.]))
+        assert tvec.to_python() == approx(
+            [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
 
     def test_inject_current_waveform(self):
         """Test injecting any input current and time arrays."""

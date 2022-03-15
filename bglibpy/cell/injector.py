@@ -325,6 +325,7 @@ class InjectableMixin:
         return tvec, svec
 
     def _get_relative_shotnoise_params(self, mean, var, tau_D, tau_R, cv_square):
+        """Returns Rate, amp_mean and amp_var parameters."""
         # bi-exponential time to peak [ms]
         t_peak = math.log(tau_D / tau_R) / (1 / tau_R - 1 / tau_D)
         # bi-exponential peak height [1]
