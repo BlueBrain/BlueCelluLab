@@ -340,6 +340,8 @@ class InjectableMixin:
 
     def add_replay_shotnoise(
             self,
+            section,
+            segx,
             stimulus,
             shotnoise_seed=None,
             shotnoise_stim_count=None):
@@ -372,7 +374,7 @@ class InjectableMixin:
                (self.gid, delay, duration, rate, amp_mean,
                 amp_var, tau_D, tau_R), 50)
 
-        return self.add_shotnoise_step(self.soma, 0.5,
+        return self.add_shotnoise_step(section, segx,
                                        tau_D, tau_R, rate, amp_mean, amp_var,
                                        delay, duration, dt, shotnoise_seed,
                                        shotnoise_stim_count)

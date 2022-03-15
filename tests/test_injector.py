@@ -193,10 +193,12 @@ class TestInjector:
         rng_obj = bglibpy.RNGSettings(mode="Random123", base_seed=549821)
         rng_obj.stimulus_seed = 549821
         self.cell.rng_settings = rng_obj
+        soma=self.cell.soma
+        segx=0.5
         stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Rate": 2E3,
                     "AmpMean": 40E-3, "AmpVar": 16E-4, "Duration": 2,
                     "Delay": 0, "Seed": 3899663}
-        time_vec, stim_vec = self.cell.add_replay_shotnoise(stimulus,
+        time_vec, stim_vec = self.cell.add_replay_shotnoise(soma, segx, stimulus,
                                                             shotnoise_stim_count=3)
         assert list(time_vec) == approx([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5,
                                          1.75, 2.0, 2.0])
@@ -207,7 +209,7 @@ class TestInjector:
             invalid_stim = {"DecayTime": 4.0, "RiseTime": 4.0, "Rate": 2E3,
                             "AmpMean": 40E-3, "AmpVar": 16E-4, "Duration": 2,
                             "Delay": 0, "Seed": 3899663}
-            self.cell.add_replay_shotnoise(invalid_stim, shotnoise_stim_count=3)
+            self.cell.add_replay_shotnoise(soma, segx, invalid_stim, shotnoise_stim_count=3)
 
     def test_add_shotnoise_step(self):
         """Unit test for the add_shotnoise_step."""
