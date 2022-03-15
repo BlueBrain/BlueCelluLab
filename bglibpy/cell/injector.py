@@ -308,7 +308,7 @@ class InjectableMixin:
     def add_shotnoise_step(self, section, segx,
                            tau_D, tau_R, rate, amp_mean, amp_var,
                            delay, duration, dt=0.25,
-                           seed=None, shotnoise_stim_count=None):
+                           seed=None, shotnoise_stim_count=0):
         """Inject a shot noise current signal."""
         rng = self._get_shotnoise_step_rand(shotnoise_stim_count, seed)
         tvec, svec = self._gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean,
