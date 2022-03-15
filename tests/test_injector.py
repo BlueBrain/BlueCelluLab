@@ -184,6 +184,10 @@ class TestInjector:
         rng = self.cell._get_shotnoise_step_rand(0, 144)
         assert rng.uniform(1, 15) == 7.260484082563668
 
+        with raises (BGLibPyError):
+            rng_obj.mode = "Compatibility"
+            self.cell._get_shotnoise_step_rand(0, 144)
+
     def test_add_replay_shotnoise(self):
         """Unit test for add_replay_shotnoise."""
         rng_obj = bglibpy.RNGSettings(mode="Random123", base_seed=549821)
@@ -198,6 +202,12 @@ class TestInjector:
                                          1.75, 2.0, 2.0])
         assert list(stim_vec) == approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0077349976,
                                          0.0114066037, 0.0432062144, 0.0])
+
+        with raises(BGLibPyError):
+            invalid_stim = {"DecayTime": 4.0, "RiseTime": 4.0, "Rate": 2E3,
+                            "AmpMean": 40E-3, "AmpVar": 16E-4, "Duration": 2,
+                            "Delay": 0, "Seed": 3899663}
+            self.cell.add_replay_shotnoise(invalid_stim, shotnoise_stim_count=3)
 
     def test_add_shotnoise_step(self):
         """Unit test for the add_shotnoise_step."""
@@ -242,6 +252,12 @@ class TestInjector:
         assert svec.to_python() == [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
         assert tvec.to_python() == [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
                                     2.0, 2.0]
+
+        with raises(BGLibPyError):
+            invalid_stim = {"DecayTime": 4.0, "RiseTime": 4.0, "Dt": 0.25,
+                            "Duration": 2, "MeanPercent": 70, "SDPercent": 40,
+                            "AmpCV":0.63, "Delay": 0, "Seed": 3899663}
+            self.cell.add_replay_relative_shotnoise(soma, segx, invalid_stim)
 
     def test_inject_current_waveform(self):
         """Test injecting any input current and time arrays."""
