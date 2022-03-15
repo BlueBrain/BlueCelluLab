@@ -219,6 +219,15 @@ class TestInjector:
         assert tvec.to_python() == approx(
             [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
 
+    def test_get_relative_shotnoise_params(self):
+        """Unit test for _get_relative_shotnoise_params."""
+        rate, amp_mean, amp_var = self.cell._get_relative_shotnoise_params(
+            mean=40e-3, var=16e-4, tau_D=4.0, tau_R=0.4, cv_square= 0.63**2
+        )
+        assert rate == approx(158.73863636363635)
+        assert amp_mean == approx(0.048776006926722876)
+        assert amp_var == approx(0.0009442643342459686)
+
     def test_inject_current_waveform(self):
         """Test injecting any input current and time arrays."""
         start_time, stop_time, dt = 10.0, 20.0, 1.0
