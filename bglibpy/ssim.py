@@ -1266,18 +1266,13 @@ def _parse_outdat(path):
     """Parse the replay spiketrains in a out.dat formatted file
        pointed to by path"""
 
-    spikes = bluepy.impl.spike_report.SpikeReport.load(path)
+    spikes = bluepy.impl.spike_report.SpikeReport.load(path).get()
+    # convert Series to DataFrame with 2 columns for `groupby` operation
+    spike_df = spikes.to_frame().reset_index()
+    if (spike_df["t"] < 0).any():
+        printv('WARNING: SSim: Found negative spike times in out.dat ! '
+               'Clipping them to 0', 2)
+        spike_df["t"].clip(lower=0., inplace=True)
 
-    outdat = {}
-
-    for gid in spikes.gids:
-        spike_times = spikes.get_gid(gid)
-        if any(spike_times < 0):
-            printv(
-                'WARNING: SSim: Found negative spike times in out.dat ! '
-                'Clipping them to 0', 2)
-            spike_times = spike_times.clip(min=0.0)
-
-        outdat[gid] = spike_times
-
-    return outdat
+    outdat = spike_df.groupby("gid")["t"].apply(np.array)
+    return outdat.to_dict()
