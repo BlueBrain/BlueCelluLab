@@ -683,6 +683,12 @@ class SSim:
 
             bglibpy.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
 
+        if "SYNAPSES__init_depleted" in condition_parameters:
+            init_depleted = condition_parameters["SYNAPSES__init_depleted"]
+            bglibpy.neuron.h.init_depleted_GluSynapse = init_depleted
+            bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS = init_depleted
+            bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS = init_depleted
+
         if "randomize_Gaba_risetime" in condition_parameters:
             randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
 

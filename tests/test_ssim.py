@@ -9,6 +9,8 @@ import pytest
 import bglibpy
 from bluepy_configfile.configfile import BlueConfig
 
+from bglibpy.exceptions import ConfigError
+
 script_dir = os.path.dirname(__file__)
 
 
@@ -53,6 +55,34 @@ def test_merge_pre_spike_trains():
             train2,
             train3))
 
+def test_evaluate_condition_parameters():
+    """Unit test for _evaluate_condition_parameters function."""
+    conf_pre_path = os.path.join(
+        script_dir, "examples", "sim_twocell_all")
+
+    # make the paths absolute
+    modified_conf = bglibpy.tools.blueconfig_append_path(
+        os.path.join(conf_pre_path, "BlueConfigWithConditions"), conf_pre_path
+    )
+    ssim = bglibpy.SSim(modified_conf)
+
+    condition_parameters = ssim._condition_parameters_dict()
+
+    ssim._evaluate_condition_parameters(condition_parameters)
+    init_depleted = condition_parameters["SYNAPSES__init_depleted"]
+    assert bglibpy.neuron.h.init_depleted_GluSynapse == init_depleted
+    assert bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS == init_depleted
+    assert bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS == init_depleted
+
+    with pytest.raises(ConfigError):
+        inv_cond_params1 = condition_parameters.copy()
+        inv_cond_params1["cao_CR_GluSynapse"] += 1
+        ssim._evaluate_condition_parameters(inv_cond_params1)
+
+    with pytest.raises(ConfigError):
+        inv_cond_params2 = condition_parameters.copy()
+        inv_cond_params2["randomize_Gaba_risetime"] = 2
+        ssim._evaluate_condition_parameters(inv_cond_params2)
 
 class TestSonataNodeInput:
     """Tests the Sonata nodes.h5 input specified as CellLibraryFile."""
