@@ -13,6 +13,7 @@
 import collections
 import os
 import re
+import warnings
 
 from cachetools import cachedmethod, LRUCache
 
@@ -167,28 +168,10 @@ class SSim:
             self.spike_location = "soma"
 
         if "MinisSingleVesicle" in self.bc.Run:
-            if not hasattr(
-                bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"
-            ):
-                raise bglibpy.OldNeurodamusVersionError(
-                    "Synapses don't implement minis_single_vesicle."
-                    "More recent neurodamus model required."
-                )
+            warnings.warn("""Specifying MinisSingleVesicle in the run block
+                             is deprecated, please use the conditions block.""")
             minis_single_vesicle = int(self.bc.Run["MinisSingleVesicle"])
-            printv(
-                "Setting synapses minis_single_vesicle to %d"
-                % minis_single_vesicle,
-                50,
-            )
-            bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
-                minis_single_vesicle
-            )
-            bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
-                minis_single_vesicle
-            )
-            bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
-                minis_single_vesicle
-            )
+            self._parse_minis_single_vesicle(minis_single_vesicle)
 
     @property
     def node_properties_available(self):
@@ -688,6 +671,10 @@ class SSim:
             bglibpy.neuron.h.init_depleted_GluSynapse = init_depleted
             bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS = init_depleted
             bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS = init_depleted
+        if "SYNAPSES__minis_single_vesicle" in condition_parameters:
+            minis_single_vesicle = int(
+                condition_parameters["SYNAPSES__minis_single_vesicle"])
+            self._parse_minis_single_vesicle(minis_single_vesicle)
 
         if "randomize_Gaba_risetime" in condition_parameters:
             randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
@@ -695,6 +682,30 @@ class SSim:
             if randomize_gaba_risetime not in ["True", "False", "0", "false"]:
                 raise ConfigError("Invalid randomize_Gaba_risetime value"
                                   f": {randomize_gaba_risetime}.")
+
+    @staticmethod
+    def _parse_minis_single_vesicle(minis_single_vesicle: int) -> None:
+        """Parse the minis_single_vesicle value from the blueconfig."""
+        if not hasattr(
+                bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"):
+            raise bglibpy.OldNeurodamusVersionError(
+                "Synapses don't implement minis_single_vesicle."
+                "More recent neurodamus model required."
+            )
+        printv(
+            "Setting synapses minis_single_vesicle to %d"
+            % minis_single_vesicle,
+            50,
+        )
+        bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
+            minis_single_vesicle
+        )
+        bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
+            minis_single_vesicle
+        )
+        bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
+            minis_single_vesicle
+        )
 
     def _add_stimuli_gid(self, gid,
                          add_noise_stimuli=False,

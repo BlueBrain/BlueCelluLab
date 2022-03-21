@@ -3,6 +3,8 @@
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
 import os
+from unittest import mock
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -55,34 +57,56 @@ def test_merge_pre_spike_trains():
             train2,
             train3))
 
-def test_evaluate_condition_parameters():
-    """Unit test for _evaluate_condition_parameters function."""
-    conf_pre_path = os.path.join(
+class TestConditionParameters:
+    """Tests the parsing and evaluation of condition parameters."""
+
+    def setup(self):
+        conf_pre_path = os.path.join(
         script_dir, "examples", "sim_twocell_all")
 
-    # make the paths absolute
-    modified_conf = bglibpy.tools.blueconfig_append_path(
-        os.path.join(conf_pre_path, "BlueConfigWithConditions"), conf_pre_path
-    )
-    ssim = bglibpy.SSim(modified_conf)
+        # make the paths absolute
+        modified_conf = bglibpy.tools.blueconfig_append_path(
+            os.path.join(conf_pre_path, "BlueConfigWithConditions"), conf_pre_path
+        )
+        self.ssim = bglibpy.SSim(modified_conf)
+        self.condition_parameters = self.ssim._condition_parameters_dict()
+        self.h = bglibpy.neuron.h
 
-    condition_parameters = ssim._condition_parameters_dict()
+    def test_evaluate_condition_parameters(self):
+        """Unit test for _evaluate_condition_parameters function."""
+        self.ssim._evaluate_condition_parameters(self.condition_parameters)
+        init_depleted = self.condition_parameters["SYNAPSES__init_depleted"]
+        assert self.h.init_depleted_GluSynapse == init_depleted
+        assert self.h.init_depleted_ProbAMPANMDA_EMS == init_depleted
+        assert self.h.init_depleted_ProbGABAAB_EMS == init_depleted
 
-    ssim._evaluate_condition_parameters(condition_parameters)
-    init_depleted = condition_parameters["SYNAPSES__init_depleted"]
-    assert bglibpy.neuron.h.init_depleted_GluSynapse == init_depleted
-    assert bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS == init_depleted
-    assert bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS == init_depleted
+        with pytest.raises(ConfigError):
+            inv_cond_params1 = self.condition_parameters.copy()
+            inv_cond_params1["cao_CR_GluSynapse"] += 1
+            self.ssim._evaluate_condition_parameters(inv_cond_params1)
 
-    with pytest.raises(ConfigError):
-        inv_cond_params1 = condition_parameters.copy()
-        inv_cond_params1["cao_CR_GluSynapse"] += 1
-        ssim._evaluate_condition_parameters(inv_cond_params1)
+        with pytest.raises(ConfigError):
+            inv_cond_params2 = self.condition_parameters.copy()
+            inv_cond_params2["randomize_Gaba_risetime"] = 2
+            self.ssim._evaluate_condition_parameters(inv_cond_params2)
 
-    with pytest.raises(ConfigError):
-        inv_cond_params2 = condition_parameters.copy()
-        inv_cond_params2["randomize_Gaba_risetime"] = 2
-        ssim._evaluate_condition_parameters(inv_cond_params2)
+    def test_parse_minis_single_vesicle(self):
+        """Unit test for parse_minis_single_vesicle."""
+        minis_single_vesicle = int(self.condition_parameters["SYNAPSES__minis_single_vesicle"])
+        self.ssim._parse_minis_single_vesicle(minis_single_vesicle)
+        assert self.h.minis_single_vesicle_ProbAMPANMDA_EMS == minis_single_vesicle
+        assert self.h.minis_single_vesicle_ProbGABAAB_EMS == minis_single_vesicle
+        assert self.h.minis_single_vesicle_GluSynapse == minis_single_vesicle
+
+    @patch("bglibpy.neuron")
+    def test_parse_minis_single_vesicle_neurodamus_exception(self, mock_bglibpy_neuron):
+        """Unit test for the neurodamus exception."""
+        # make sure there are no other attributes than the_only_attribute
+        mock_bglibpy_neuron.h = mock.Mock(["the_only_attribute"])
+        with pytest.raises(bglibpy.OldNeurodamusVersionError):
+            minis_single_vesicle = int(self.condition_parameters["SYNAPSES__minis_single_vesicle"])
+            self.ssim._parse_minis_single_vesicle(minis_single_vesicle)
+
 
 class TestSonataNodeInput:
     """Tests the Sonata nodes.h5 input specified as CellLibraryFile."""
