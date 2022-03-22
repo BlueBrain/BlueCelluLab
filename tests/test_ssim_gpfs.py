@@ -58,6 +58,11 @@ test_single_vesicle_path = os.path.join(
     "BlueConfig"
 )
 
+test_sscx2020_packages_path = os.path.join(
+    proj_path(83), "home/tuncel/sscx2020-sim/single-vesicle-minis-sim/",
+    "BlueConfig"
+)
+
 hip20180219_1_path = os.path.join(
     proj_path(42),
     "circuits/O1/20180219",
@@ -540,6 +545,18 @@ class TestSSimBaseClassSingleVesicleMinis:
         rms_error = np.sqrt(np.mean(voltage_diff ** 2))
 
         assert rms_error < 14.91
+
+
+@pytest.mark.v6
+def test_sscx_merge_pre_spike_trains():
+    """Test for reproducing empty cell_info_dict['connections'] bug."""
+    ssim = bglibpy.ssim.SSim(test_sscx2020_packages_path, record_dt=0.1)
+    gid = 4138379
+    ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True,
+                          add_stimuli=False, add_synapses=None,
+                          intersect_pre_gids=None)
+    cell_info_dict = ssim.cells[gid].info_dict
+    assert cell_info_dict["connections"] != {}
 
 
 @pytest.mark.v6

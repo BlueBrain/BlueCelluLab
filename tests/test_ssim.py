@@ -39,7 +39,7 @@ def test_merge_pre_spike_trains():
     trains_merged = {1: [5, 5, 100, 100], 2: [5, 7, 8, 120], 3: [8]}
 
     np.testing.assert_equal(
-        None,
+        {},
         bglibpy.ssim.SSim.merge_pre_spike_trains(None))
     np.testing.assert_equal(
         train1,

@@ -505,11 +505,9 @@ class SSim:
             )
 
     @staticmethod
-    def merge_pre_spike_trains(*train_dicts):
+    def merge_pre_spike_trains(*train_dicts) -> dict:
         """Merge presynaptic spike train dicts"""
         train_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
-        if train_dicts == []:
-            return None
 
         all_keys = set().union(*[d.keys() for d in train_dicts])
         return {
@@ -534,7 +532,7 @@ class SSim:
                     'out.dat')
             pre_spike_trains = _parse_outdat(outdat_path)
         else:
-            pre_spike_trains = None
+            pre_spike_trains = {}
 
         pre_spike_trains = self.merge_pre_spike_trains(
             pre_spike_trains,
@@ -573,7 +571,7 @@ class SSim:
                             post_gid %d, syn_id %s" % (pre_gid,
                                                        post_gid,
                                                        str(syn_id)), 5)
-                elif pre_spike_trains is not None:
+                else:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
                     connection = bglibpy.Connection(
                         self.cells[post_gid].synapses[syn_id],
