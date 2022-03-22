@@ -533,7 +533,7 @@ class TestSSimBaseClassSingleVesicleMinis:
         ais_voltage_bglibpy = self.cell.get_ais_voltage()
 
         ais_report = self.ssim.bc_simulation.report('axon_SONATA')
-        ais_voltage_mainsim = ais_report.get_gid(self.gid).values
+        ais_voltage_mainsim = ais_report.get_gid(self.gid).to_numpy()
 
         assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
         voltage_diff = ais_voltage_bglibpy - ais_voltage_mainsim

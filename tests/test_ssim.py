@@ -227,7 +227,8 @@ class TestSSimBaseClass_twocell_empty:
             """BGLibPy for two cell circuit"""
 
         voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
-        assert len(voltage_bglib) == 1000
+        time_bglib = self.ssim_bglibpy.get_mainsim_time_trace()
+        assert len(voltage_bglib) == len(time_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]

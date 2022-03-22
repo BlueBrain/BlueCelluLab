@@ -1026,7 +1026,7 @@ class SSim:
         voltage = (
             self.bc_simulation.report("soma")
             .get_gid(gid, t_start=t_start, t_end=t_stop, t_step=t_step)
-            .values
+            .to_numpy()
         )
         return voltage
 
@@ -1034,7 +1034,7 @@ class SSim:
         """Get the time trace from the main simulation"""
 
         report = self.bc_simulation.report('soma')
-        time = report.get_gid(report.gids[0]).index
+        time = report.get_gid(report.gids[0]).index.to_numpy()
         return time
 
     @tools.deprecated("get_voltage_trace")
