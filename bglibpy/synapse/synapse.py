@@ -251,8 +251,8 @@ class Synapse:
             GluSynapse(
                 self.post_segx, sec=self.cell.get_hsection(post_sec_id))
 
-        self.hsynapse.Use_d = syn_description["Use_d_TM"]
-        self.hsynapse.Use_p = syn_description["Use_p_TM"]
+        self.hsynapse.Use_d = syn_description["Use_d_TM"] * self.u_scale_factor
+        self.hsynapse.Use_p = syn_description["Use_p_TM"] * self.u_scale_factor
 
         self.hsynapse.theta_d_GB = syn_description["theta_d"]
         self.hsynapse.theta_p_GB = syn_description["theta_p"]
