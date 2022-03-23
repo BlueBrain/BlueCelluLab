@@ -515,6 +515,18 @@ class TestSSimBaseClassSingleVesicleMinis:
         self.ssim.delete()
         assert(bglibpy.tools.check_empty_topology())
 
+    def test_fetch_emodel_name(self):
+        """Test to check if the emodel name is correct."""
+        emodel_name = self.ssim.fetch_emodel_name(self.gid)
+        assert emodel_name == "cADpyr_L5TPC"
+
+    def test_fetch_cell_kwargs_extra_values(self):
+        """Test to verify the kwargs threshold and holding currents."""
+        kwargs = self.ssim.fetch_cell_kwargs(self.gid)
+        assert kwargs["extra_values"]["threshold_current"] == 0.181875
+        assert kwargs["extra_values"]["holding_current"] == pytest.approx(
+            -0.06993715097820541)
+
     def test_run(self):
         """SSim: Check if a full replay with MinisSingleVesicle """ \
             """SpikeThreshold, V_Init, Celcius produce the same voltage"""

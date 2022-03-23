@@ -148,11 +148,6 @@ class TestSonataNodeInput:
         ssim = bglibpy.SSim(blueconfig)
 
         assert ssim.node_properties_available
-        assert set(ssim.mecombo_thresholds.keys()) == set(
-            (ssim.mecombo_hypamps.keys())
-        )
-        assert ssim.mecombo_emodels is None
-
 
 class TestSSimBaseClass_twocell_forwardskip:
 

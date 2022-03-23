@@ -84,19 +84,10 @@ class SSim:
 
         if self.node_properties_available:
             self.use_mecombotsv = False
-            self.mecombo_emodels = None
-            self.mecombo_thresholds, \
-                self.mecombo_hypamps = self.get_sonata_mecombo_emodels()
         elif 'MEComboInfoFile' in self.bc.Run:
             self.use_mecombotsv = True
-            self.mecombo_emodels, \
-                self.mecombo_thresholds, \
-                self.mecombo_hypamps = self.get_mecombo_emodels()
         else:
             self.use_mecombotsv = False
-            self.mecombo_emodels = None
-            self.mecombo_thresholds = None
-            self.mecombo_hypamps = None
 
         self.rng_settings = bglibpy.RNGSettings(
             rng_mode,
@@ -1091,62 +1082,6 @@ class SSim:
                 if not (self.is_group_target(target) or gid_pttrn.match(target)):
                     raise bglibpy.TargetDoesNotExist("%s target does not exist" % target)
 
-    def get_mecombo_emodels(self):
-        """Create a dict matching me_combo names to template_names"""
-
-        mecombo_filename = self.bc.Run['MEComboInfoFile']
-
-        with open(mecombo_filename) as mecombo_file:
-            mecombo_content = mecombo_file.read()
-
-        mecombo_emodels = {}
-        mecombo_thresholds = {}
-        mecombo_hypamps = {}
-
-        for line in mecombo_content.split('\n')[1:-1]:
-            mecombo_info = line.split('\t')
-            emodel = mecombo_info[4]
-            me_combo = mecombo_info[5]
-            try:
-                threshold = float(mecombo_info[6])
-            except (ValueError, IndexError):
-                threshold = 0.0
-            try:
-                hypamp = float(mecombo_info[7])
-            except (ValueError, IndexError):
-                hypamp = 0.0
-            mecombo_emodels[me_combo] = emodel
-            mecombo_thresholds[me_combo] = threshold
-            mecombo_hypamps[me_combo] = hypamp
-
-        return mecombo_emodels, mecombo_thresholds, mecombo_hypamps
-
-    def get_sonata_mecombo_emodels(self):
-        """Extracts the holding and threshold currents.
-
-        Returns:
-            tuple of dicts containing the threshold and holding
-            currents for every cell.
-        """
-        cell_props = self.bc_circuit.cells.get(
-            None,
-            properties=[
-                "@dynamics:holding_current",
-                "@dynamics:threshold_current",
-                "model_template",
-            ],
-        )
-
-        cell_props["model_template"] = (
-            cell_props["model_template"].str.split("hoc:").str[1]
-        )
-        cell_props = cell_props.set_index("model_template").to_dict()
-
-        mecombo_thresholds = cell_props["@dynamics:threshold_current"]
-        mecombo_holding_currs = cell_props["@dynamics:holding_current"]
-
-        return mecombo_thresholds, mecombo_holding_currs
-
     @cachedmethod(lambda self: self._caches["fetch_gid_cell_info"])
     def fetch_gid_cell_info(self, gid):
         """Fetch bluepy cell info of a gid"""
@@ -1172,9 +1107,8 @@ class SSim:
         """Get the emodel path of a gid"""
 
         me_combo = self.fetch_mecombo_name(gid)
-
         if self.use_mecombotsv:
-            emodel_name = self.mecombo_emodels[me_combo]
+            emodel_name = self.bc_circuit.emodels.get_mecombo_info(gid)["emodel"]
         else:
             emodel_name = me_combo
 
@@ -1213,10 +1147,10 @@ class SSim:
             (self.fetch_morph_name(gid), self.morph_extension)
 
         if self.use_mecombotsv or self.node_properties_available:
-            me_combo = self.fetch_mecombo_name(gid)
+            emodel_properties = self.bc_circuit.emodels.get_mecombo_info(gid)
             extra_values = {
-                'threshold_current': self.mecombo_thresholds[me_combo],
-                'holding_current': self.mecombo_hypamps[me_combo]
+                'threshold_current': emodel_properties["threshold_current"],
+                'holding_current': emodel_properties["holding_current"]
             }
             cell_kwargs = {
                 'template_filename': emodel_path,
