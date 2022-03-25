@@ -653,18 +653,14 @@ class Cell(InjectableMixin, PlottableMixin):
         self.delayed_weights.put((delay, (sid, weight)))
 
     def pre_gids(self):
-        """List of gids of cells that connect to this cell.
+        """List of unique gids of cells that connect to this cell.
 
         Returns
         -------
         A list of gids of cells that connect to this cell.
         """
-
-        pre_gid_list = set()
-        for syn_id in self.synapses:
-            pre_gid_list.add(self.synapses[syn_id].pre_gid)
-
-        return list(pre_gid_list)
+        pre_gids = {self.synapses[syn_id].pre_gid for syn_id in self.synapses}
+        return list(pre_gids)
 
     def pre_gid_synapse_ids(self, pre_gid):
         """List of synapse_ids of synapses a cell uses to connect to this cell.
