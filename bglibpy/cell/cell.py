@@ -33,9 +33,10 @@ from bglibpy import printv
 from bglibpy.cell.template import NeuronTemplate
 from bglibpy.cell.section_distance import EuclideanSectionDistance
 from bglibpy.cell.injector import InjectableMixin
+from bglibpy.cell.plotting import PlottableMixin
 
 
-class Cell(InjectableMixin):
+class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
     def __init__(self, template_filename, morphology_name,
@@ -1021,75 +1022,6 @@ class Cell(InjectableMixin):
     def getNumberOfSegments(self):
         """Get the number of segments in the cell."""
         return sum(section.nseg for section in self.all)
-
-    def add_plot_window(self, var_list, xlim=None, ylim=None, title=""):
-        """Add a window to plot a variable."""
-        xlim = [0, 1000] if xlim is None else xlim
-        ylim = [-100, 100] if ylim is None else ylim
-        for var_name in var_list:
-            if var_name not in self.recordings:
-                self.add_recording(var_name)
-        self.plot_windows.append(bglibpy.PlotWindow(
-            var_list, self, xlim, ylim, title))
-        self.plot_callback_necessary = True
-
-    def add_dendrogram(
-            self,
-            variable=None,
-            active=False,
-            save_fig_path=None,
-            interactive=False,
-            scale_bar=True,
-            scale_bar_size=10.0,
-            fig_title=None):
-        """Show a dendrogram of the cell."""
-        self.init_psections()
-        cell_dendrogram = bglibpy.Dendrogram(
-            self.psections,
-            variable=variable,
-            active=active,
-            save_fig_path=save_fig_path,
-            interactive=interactive,
-            scale_bar=scale_bar,
-            scale_bar_size=scale_bar_size,
-            fig_title=fig_title)
-        cell_dendrogram.redraw()
-        self.cell_dendrograms.append(cell_dendrogram)
-        if active:
-            self.plot_callback_necessary = True
-
-    def init_callbacks(self):
-        """Initialize the callback function (if necessary)."""
-        if not self.delayed_weights.empty():
-            self.fih_weights = neuron.h.FInitializeHandler(
-                1, self.weights_callback)
-
-        if self.plot_callback_necessary:
-            self.fih_plots = neuron.h.FInitializeHandler(1, self.plot_callback)
-
-    def weights_callback(self):
-        """Callback function that updates the delayed weights,
-        when a certain delay has been reached"""
-        while not self.delayed_weights.empty() and \
-                abs(self.delayed_weights.queue[0][0] - neuron.h.t) < \
-                neuron.h.dt:
-            (_, (sid, weight)) = self.delayed_weights.get()
-            if sid in self.connections:
-                if self.connections[sid].post_netcon is not None:
-                    self.connections[sid].post_netcon.weight[0] = weight
-
-        if not self.delayed_weights.empty():
-            neuron.h.cvode.event(self.delayed_weights.queue[0][0],
-                                 self.weights_callback)
-
-    def plot_callback(self):
-        """Update all the windows."""
-        for window in self.plot_windows:
-            window.redraw()
-        for cell_dendrogram in self.cell_dendrograms:
-            cell_dendrogram.redraw()
-
-        neuron.h.cvode.event(neuron.h.t + 1, self.plot_callback)
 
     @property
     def info_dict(self):
