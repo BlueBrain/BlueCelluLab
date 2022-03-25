@@ -129,10 +129,8 @@ class Cell(InjectableMixin, PlottableMixin):
         self.recordings = {}  # Recordings in this cell
         self.voltage_recordings = {}  # Voltage recordings in this cell
         self.synapses = {}  # Synapses on this cell
-        self.netstims = {}  # Netstims connected to this cell
         self.connections = {}  # Outside connections to this cell
 
-        self.pre_spiketrains = {}
         self.ips = {}
         self.syn_mini_netcons = {}
         self.serialized = None
