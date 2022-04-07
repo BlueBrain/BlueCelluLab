@@ -270,6 +270,7 @@ class Synapse:
             self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_d_AMPA
             self.hsynapse.Use = self.hsynapse.Use_d
 
+        self.hsynapse.tau_d_AMPA = self.syn_DTC
         self.hsynapse.Dep = abs(self.syn_D)
         self.hsynapse.Fac = abs(self.syn_F)
 

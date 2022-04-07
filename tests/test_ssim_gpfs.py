@@ -585,7 +585,7 @@ def test_ssim_glusynapse():
     voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
     voltage_diff = voltage_bglibpy - voltage_bglib
     rms_error = np.sqrt(np.mean(voltage_diff ** 2))
-    assert rms_error < 0.025
+    assert rms_error < 1e-3
 
 
 @pytest.mark.v6
