@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- #pylint: disable=C0302, W0123
+# -*- coding: utf-8 -*- #pylint: disable=C0302
 
 """
 Cell class
@@ -10,14 +10,8 @@ Cell class
 
 # pylint: disable=F0401, R0915, R0914
 
-# WARNING: I am ignoring pylint warnings which don't allow one to use eval()
-# This might be a possible security risk, but in this specific case,
-# avoiding eval() is not trivial at all, due to Neuron's complex attributes
-# Since importing the neuron module is already a big security risk on it's
-# own, I'm ignoring this warning for the moment
 
 import os
-
 import queue
 import json
 
@@ -27,6 +21,7 @@ from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
 from bglibpy import tools
+from bglibpy.exceptions import BGLibPyError
 from bglibpy.importer import neuron
 from bglibpy import psection
 from bglibpy import printv
@@ -34,6 +29,7 @@ from bglibpy.cell.template import NeuronTemplate
 from bglibpy.cell.section_distance import EuclideanSectionDistance
 from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
+from bglibpy.neuron_interpreter import eval_neuron
 
 
 class Cell(InjectableMixin, PlottableMixin):
@@ -485,10 +481,12 @@ class Cell(InjectableMixin, PlottableMixin):
         if dt:
             # This float_epsilon stuff is some magic from M. Hines to make
             # the time points fall exactly on the dts
-            recording.record(eval(var_name),
-                             self.get_precise_record_dt(dt))
+            recording.record(
+                eval_neuron(var_name, self=self, neuron=bglibpy.neuron),
+                self.get_precise_record_dt(dt),
+            )
         else:
-            recording.record(eval(var_name))
+            recording.record(eval_neuron(var_name, self=self, neuron=bglibpy.neuron))
         self.recordings[var_name] = recording
 
     @staticmethod
@@ -526,12 +524,12 @@ class Cell(InjectableMixin, PlottableMixin):
                Segment x coordinate
         """
 
-        recording = neuron.h.Vector()
+        recording = bglibpy.neuron.h.Vector()
 
         recording.record(
-            eval(
+            eval_neuron(
                 'neuron.h.%s(%f)._ref_v' %
-                (section.name(), segx)))
+                (section.name(), segx), neuron=bglibpy.neuron))
 
         self.voltage_recordings['%s(%f)' % (section.name(), segx)] = recording
 
@@ -550,9 +548,9 @@ class Cell(InjectableMixin, PlottableMixin):
         if recording_name in self.voltage_recordings:
             return self.voltage_recordings[recording_name].to_python()
         else:
-            raise Exception('get_voltage_recording: Voltage recording %s'
-                            ' was not added previously using '
-                            'add_voltage_recording' % recording_name)
+            raise BGLibPyError('get_voltage_recording: Voltage recording %s'
+                               ' was not added previously using '
+                               'add_voltage_recording' % recording_name)
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
@@ -578,7 +576,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def get_recording(self, var_name):
         """Get recorded values.
-
 
         Returns
         -------

@@ -10,6 +10,7 @@ Represent a Neuron Segment in Python (for drawing)
 """
 
 import bglibpy
+from bglibpy.neuron_interpreter import eval_neuron
 
 type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b'}
 
@@ -75,9 +76,7 @@ class PSegment:
                                            variable,
                                            self.hsegment.x),
                                           0):
-            # pylint: disable=W0123
-            return eval("self.hsegment." + variable)
-            # pylint: enable=W0123
+            return eval_neuron(f"self.hsegment.{variable}", self=self)
 
         else:
             return None

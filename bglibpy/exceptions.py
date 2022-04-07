@@ -29,3 +29,8 @@ class OldNeurodamusVersionError(BGLibPyError):
 class ConfigError(BGLibPyError):
     """Error due to invalid settings in BlueConfig"""
     pass
+
+
+class NeuronEvalError(BGLibPyError):
+    """Raise when an unsupported code string is sent to neuron."""
+    pass

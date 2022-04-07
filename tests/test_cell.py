@@ -15,6 +15,7 @@ import pytest
 
 import bglibpy
 from bglibpy.cell.template import NeuronTemplate, shorten_and_hash_string
+from bglibpy.exceptions import BGLibPyError
 
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -117,6 +118,10 @@ class TestCellBaseClass1:
         self.cell.add_recording(varname)
         assert varname in self.cell.recordings
 
+        second_varname = 'self.apical[1](0.6)._ref_v'
+        self.cell.add_recording(second_varname, dt=0.025)
+        assert second_varname in self.cell.recordings
+
     def test_add_recordings(self):
         """Cell: Test cell.add_recordings"""
         varnames = [
@@ -135,6 +140,18 @@ class TestCellBaseClass1:
         for section in all_sections:
             varname = 'neuron.h.%s(0.5)._ref_v' % section.name()
             assert varname in self.cell.recordings
+
+    def test_manual_add_allsection_voltage_recordings(self):
+        """Cell: Test cell.add_voltage_recording."""
+        all_sections = self.cell.cell.getCell().all
+        last_section = None
+        for section in all_sections:
+            self.cell.add_voltage_recording(section, 0.5)
+            recording = self.cell.get_voltage_recording(section, 0.5)
+            assert len(recording) == 0
+            last_section = section
+        with pytest.raises(BGLibPyError):
+            self.cell.get_voltage_recording(last_section, 0.7)
 
     def test_euclid_section_distance(self):
         """Cell: Test cell.euclid_section_distance"""
