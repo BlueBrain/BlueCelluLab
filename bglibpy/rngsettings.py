@@ -62,6 +62,7 @@ class RNGSettings(metaclass=Singleton):
                 self.base_seed = 0  # in case the seed is not set, it's 0
         else:
             self.base_seed = base_seed
+        bglibpy.neuron.h.globalSeed = self.base_seed
 
         if self._mode == 'Random123':
             rng = bglibpy.neuron.h.Random()
@@ -71,21 +72,25 @@ class RNGSettings(metaclass=Singleton):
             self.synapse_seed = int(blueconfig.Run['SynapseSeed'])
         else:
             self.synapse_seed = 0
+        bglibpy.neuron.h.synapseSeed = self.synapse_seed
 
         if blueconfig and 'IonChannelSeed' in blueconfig.Run:
             self.ionchannel_seed = int(blueconfig.Run['IonChannelSeed'])
         else:
             self.ionchannel_seed = 0
+        bglibpy.neuron.h.ionchannelSeed = self.ionchannel_seed
 
         if blueconfig and 'StimulusSeed' in blueconfig.Run:
             self.stimulus_seed = int(blueconfig.Run['StimulusSeed'])
         else:
             self.stimulus_seed = 0
+        bglibpy.neuron.h.stimulusSeed = self.stimulus_seed
 
         if blueconfig and 'MinisSeed' in blueconfig.Run:
             self.minis_seed = int(blueconfig.Run['MinisSeed'])
         else:
             self.minis_seed = 0
+        bglibpy.neuron.h.minisSeed = self.minis_seed
 
         if base_noise_seed is None:
             self.base_noise_seed = 0
