@@ -729,10 +729,16 @@ def check_empty_topology():
 
 
 class Singleton(type):
+    """Singleton metaclass implementation.
+
+        Source: https://stackoverflow.com/a/6798042/1935611
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(
                 *args, **kwargs)
+        else:  # to run init on the same object
+            cls._instances[cls].__init__(*args, **kwargs)
         return cls._instances[cls]

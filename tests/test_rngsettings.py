@@ -14,6 +14,10 @@ def test_setting_rngmodes():
     rng_obj.mode = "UpdatedMCell"
     assert(bglibpy.neuron.h.rngMode == 2)
 
+    bglibpy.RNGSettings(mode="Random123")
+    assert(bglibpy.neuron.h.rngMode == 1)
+    assert rng_obj.mode == "Random123"
+
     try:
         rng_obj.mode = "MersenneTwister"
     except Exception as e:

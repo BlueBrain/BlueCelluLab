@@ -82,19 +82,19 @@ def test_singleton():
     class TestClass(metaclass=Singleton):
         """Class to test Singleton object creation."""
 
-        n_instances = 0
+        n_init_calls = 0
 
         def __init__(self):
-            print("I'm instantiated")
-            TestClass.n_instances += 1
+            print("I'm called but not re-instantiated")
+            TestClass.n_init_calls += 1
 
     test_obj1 = TestClass()
     test_obj2 = TestClass()
-    test_objs = [TestClass() for x in range(10)]
+    test_objs = [TestClass() for _ in range(10)]
 
     assert test_obj1 is test_obj2
     assert id(test_obj1) == id(test_obj2)
 
     assert len(set(test_objs)) == 1
 
-    assert TestClass.n_instances == 1
+    assert TestClass.n_init_calls == 12
