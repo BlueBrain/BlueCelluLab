@@ -5,7 +5,7 @@ import math
 import numpy as np
 
 import bglibpy
-from bglibpy import printv, BGLibPyError, tools
+from bglibpy import BGLibPyError, printv, tools
 from bglibpy.cell.random import gamma
 
 

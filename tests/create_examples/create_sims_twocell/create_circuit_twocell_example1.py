@@ -2,10 +2,12 @@
 
 """Test the BluePy extractor"""
 
-from bglibpy import bluepy
-import bluepy.extractor
-import shutil
 import os
+import shutil
+
+import bluepy.extractor
+
+from bglibpy import bluepy
 
 
 def create_extracted_circuit(old_circuitname, output_path):

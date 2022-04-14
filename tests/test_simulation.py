@@ -8,9 +8,9 @@
 import os
 
 import numpy as np
-import bglibpy
-
 from pytest import approx
+
+import bglibpy
 
 script_dir = os.path.dirname(__file__)
 

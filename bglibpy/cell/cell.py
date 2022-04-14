@@ -11,24 +11,21 @@ Cell class
 # pylint: disable=F0401, R0915, R0914
 
 
+import json
 import os
 import queue
-import json
 
 import numpy as np
-
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-from bglibpy import tools
-from bglibpy.exceptions import BGLibPyError
-from bglibpy.importer import neuron
-from bglibpy import psection
-from bglibpy import printv
-from bglibpy.cell.template import NeuronTemplate
-from bglibpy.cell.section_distance import EuclideanSectionDistance
+from bglibpy import printv, psection, tools
 from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
+from bglibpy.cell.section_distance import EuclideanSectionDistance
+from bglibpy.cell.template import NeuronTemplate
+from bglibpy.exceptions import BGLibPyError
+from bglibpy.importer import neuron
 from bglibpy.neuron_interpreter import eval_neuron
 
 
@@ -82,31 +79,31 @@ class Cell(InjectableMixin, PlottableMixin):
                 self.cell = getattr(
                     neuron.h,
                     self.template_name)(
-                    gid,
-                    morph_dir,
-                    morphology_name,
-                    *[extra_values[name] for name in attr_names.split(";")])
+                        gid,
+                        morph_dir,
+                        morphology_name,
+                        *[extra_values[name] for name in attr_names.split(";")])
 
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
-                gid,
-                morph_dir,
-                morphology_name)
+                    gid,
+                    morph_dir,
+                    morphology_name)
         elif template_format == 'v6_ais_scaler':
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
-                gid,
-                morph_dir,
-                morphology_name,
-                extra_values['AIS_scaler'])
+                    gid,
+                    morph_dir,
+                    morphology_name,
+                    extra_values['AIS_scaler'])
         else:
             self.cell = getattr(
                 neuron.h,
                 self.template_name)(
-                gid,
-                morphology_name)
+                    gid,
+                    morphology_name)
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         # WARNING: this finitialize 'must' be here, otherwhise the

@@ -119,8 +119,8 @@ class Synapse:
             self.use_gabaab_helper(post_sec_id, randomize_gaba_risetime)
         elif self.is_excitatory():
             if (
-                'ModOverride' in self.connection_parameters
-                and self.connection_parameters['ModOverride'] == "GluSynapse"
+                    'ModOverride' in self.connection_parameters
+                    and self.connection_parameters['ModOverride'] == "GluSynapse"
             ):
                 self.use_glusynapse_helper(
                     syn_description, post_sec_id)
@@ -159,7 +159,7 @@ class Synapse:
             ProbGABAAB_EMS(self.post_segx,
                            sec=self.cell.get_hsection(post_sec_id))
 
-        if (randomize_gaba_risetime == "True"):
+        if randomize_gaba_risetime == "True":
             rng = bglibpy.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(

@@ -8,7 +8,7 @@ RNG settings of BGLibPy
 """
 
 import bglibpy
-from bglibpy import printv, Singleton
+from bglibpy import Singleton, printv
 
 default_rng_mode = "Compatibility"
 

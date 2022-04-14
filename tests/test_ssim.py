@@ -8,9 +8,9 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-import bglibpy
 from bluepy_configfile.configfile import BlueConfig
 
+import bglibpy
 from bglibpy.exceptions import ConfigError
 
 script_dir = os.path.dirname(__file__)

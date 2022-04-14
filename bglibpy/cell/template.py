@@ -1,9 +1,9 @@
 """Module for handling NEURON hoc templates."""
 
-import string
+import datetime
 import hashlib
 import re
-import datetime
+import string
 
 import bglibpy
 from bglibpy import printv

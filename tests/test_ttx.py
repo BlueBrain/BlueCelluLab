@@ -6,6 +6,7 @@
 import os
 
 import pytest
+
 import bglibpy
 
 script_dir = os.path.dirname(__file__)

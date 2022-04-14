@@ -8,6 +8,7 @@ Class that represents a connection between two cells in BGLibPy
 """
 
 from bluepy.enums import Synapse as BLPSynapse
+
 import bglibpy
 
 

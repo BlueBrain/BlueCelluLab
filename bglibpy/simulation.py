@@ -11,11 +11,10 @@
 # pylint: disable=R0913
 
 import sys
+
 import bglibpy
+from bglibpy import printv, printv_err, tools
 from bglibpy.importer import neuron
-from bglibpy import printv
-from bglibpy import printv_err
-from bglibpy import tools
 
 
 class Simulation:

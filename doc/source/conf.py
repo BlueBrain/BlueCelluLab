@@ -15,6 +15,7 @@ BGLibPy documentation build configuration file, created by
 
 
 import pkg_resources
+
 bglibpy_version = pkg_resources.get_distribution('bglibpy').version
 
 # If extensions (or modules to document with autodoc) are in another directory,

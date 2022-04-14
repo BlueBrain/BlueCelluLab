@@ -1,7 +1,9 @@
 import os
 import sys
-import binreports
+
 import h5py
+
+import binreports
 import progressbar as pb
 
 # br = binreports.BinReport(os.path.join("/bgscratch/bbp/ebmuller/simulations/8papers/runs/01.09.11/centerSurround/e1Hz_i2Hz_nominis_I4_Ge80_oldNMDA","soma.bbp"))

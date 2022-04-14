@@ -17,7 +17,6 @@ import bglibpy
 from bglibpy.cell.template import NeuronTemplate, shorten_and_hash_string
 from bglibpy.exceptions import BGLibPyError
 
-
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
 

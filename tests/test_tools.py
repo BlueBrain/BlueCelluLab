@@ -6,7 +6,9 @@
 """Unit tests for tools.py"""
 
 import os
+
 from pytest import approx
+
 import bglibpy
 from bglibpy.tools import Singleton
 

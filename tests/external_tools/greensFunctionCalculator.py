@@ -1,10 +1,10 @@
-import numpy as np
 import math
-import scipy.optimize
-
-from sys import argv, stdout
 import os
 import time
+from sys import argv, stdout
+
+import numpy as np
+import scipy.optimize
 
 # auxiliary tanh function because the numpy one is bad
 

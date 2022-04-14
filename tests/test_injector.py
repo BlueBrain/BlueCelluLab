@@ -1,10 +1,10 @@
 """Unit tests for the injector module."""
 
-import os
 import math
+import os
 
 import numpy as np
-from pytest import approx, raises, mark
+from pytest import approx, raises
 
 import bglibpy
 from bglibpy.exceptions import BGLibPyError

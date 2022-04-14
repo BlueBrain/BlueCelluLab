@@ -15,17 +15,12 @@ import os
 import re
 import warnings
 
-from cachetools import cachedmethod, LRUCache
-
 import numpy as np
-
-from bglibpy import bluepy
-import bglibpy
-from bglibpy import printv
-from bglibpy import tools
-
 from bluepy.enums import Synapse as BLPSynapse
+from cachetools import LRUCache, cachedmethod
 
+import bglibpy
+from bglibpy import bluepy, printv, tools
 from bglibpy.exceptions import BGLibPyError, ConfigError
 
 
@@ -432,7 +427,7 @@ class SSim:
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
-        if syn_descriptions_popids is {}:
+        if syn_descriptions_popids == {}:
             printv(
                 "Warning: No presynaptic cells found for gid %d, "
                 "no synapses added" % gid, 2)
@@ -544,8 +539,8 @@ class SSim:
                 connection = None
                 if real_synapse_connection:
                     if (
-                        user_pre_spike_trains is not None
-                        and pre_gid in user_pre_spike_trains
+                            user_pre_spike_trains is not None
+                            and pre_gid in user_pre_spike_trains
                     ):
                         raise BGLibPyError(
                             """Specifying prespike trains of real connections"""
@@ -634,8 +629,8 @@ class SSim:
                     'syn_description=%s, connection=%s, frequency=%s' %
                     (str(syn_id),
                      str(syn_description),
-                        str(connection_parameters),
-                        str(mini_frequencies)),
+                     str(connection_parameters),
+                     str(mini_frequencies)),
                     50)
 
                 self.cells[gid].add_replay_minis(
@@ -996,7 +991,7 @@ class SSim:
             show_progress=show_progress)
 
     def get_mainsim_voltage_trace(
-        self, gid=None, t_start=None, t_stop=None, t_step=None
+            self, gid=None, t_start=None, t_stop=None, t_step=None
     ):
         """Get the voltage trace from a cell from the main simulation.
 

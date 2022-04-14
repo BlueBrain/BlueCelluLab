@@ -2,11 +2,11 @@
 
 # pylint: disable=E1101,W0201,F0401,E0611,W0212
 
-import os
 import itertools
+import os
 
-import pytest
 import numpy as np
+import pytest
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy

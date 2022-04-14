@@ -3,14 +3,15 @@ Synapse test file. Uses ball-and-stick models
 Models simulated in N disticnt ways, all shoudl
 """
 
-import psp
-import numpy as np
+import sys
+
+import bluepy
 import matplotlib.pyplot as plt
+import numpy as np
 
 import bglibpy
-import bluepy
+import psp
 
-import sys
 # sys.path.append('/home/torben/sandbox/willem/DendriteApprox/')
 # from greensFunctionCalculator import *
 

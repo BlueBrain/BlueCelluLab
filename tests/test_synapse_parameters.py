@@ -3,13 +3,13 @@
 import os
 from pathlib import Path
 
+import bluepy
 import numpy as np
 import pandas as pd
 import pytest
+from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-import bluepy
-from bluepy.enums import Synapse as BLPSynapse
 
 tests_dir = Path(__file__).resolve().parent
 

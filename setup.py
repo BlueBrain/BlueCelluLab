@@ -2,7 +2,9 @@
 """ BGLibPy setup """
 
 import sys
+
 import setuptools
+
 import versioneer
 
 if sys.version_info[:2] < (3, 7):

@@ -6,6 +6,7 @@
 """Unit tests for BGLib functionality"""
 
 import os
+
 import bglibpy
 
 script_dir = os.path.dirname(__file__)

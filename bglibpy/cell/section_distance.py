@@ -22,16 +22,15 @@ class EuclideanSectionDistance:
     projection : string
                  planes to project on, e.g. 'xy'
     """
-
-    """Euclidean distance between  positions on 2 sections."""
+    # pylint: disable=invalid-name
 
     def __call__(
-        self,
-        hsection1=None,
-        hsection2=None,
-        location1=None,
-        location2=None,
-        projection=None,
+            self,
+            hsection1=None,
+            hsection2=None,
+            location1=None,
+            location2=None,
+            projection=None,
     ):
         """Computes and returns the distance."""
         xs_interp1, ys_interp1, zs_interp1 = self.grindaway(hsection1)

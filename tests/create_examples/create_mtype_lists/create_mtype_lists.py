@@ -5,9 +5,10 @@ Generate a few lists of GIDs associated with some M-type. These are later used \
 to validate ssim.get_gids_of_mtypes
 """
 
-import sys
-import re
 import pickle
+import re
+import sys
+
 import bglibpy
 
 BLUE_CONFIG = "/bgscratch/bbp/l5/projects/proj1/2013.01.14/simulations/SomatosensoryCxS1-v4.lowerCellDensity.r151/Silberberg/Control_Mg0p5/BlueConfig"

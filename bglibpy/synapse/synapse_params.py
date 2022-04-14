@@ -4,7 +4,7 @@ from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
 
 import bglibpy
-from bglibpy import printv, BGLibPyError
+from bglibpy import BGLibPyError, printv
 
 
 class SynDescription:
