@@ -7,6 +7,7 @@
 /jekylltest
 /doc/build
 .debug
+.profiling
 .vscode
 /.python-version
 coverage.xml

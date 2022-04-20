@@ -19,7 +19,7 @@ import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-from bglibpy import printv, psection, tools
+from bglibpy import lazy_printv, psection, tools
 from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
 from bglibpy.cell.section_distance import EuclideanSectionDistance
@@ -402,7 +402,7 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bglibpy.neuron.h.area(segment.x, sec=section)
         return area
 
-    def synlocation_to_segx(self, isec, ipt, syn_offset):
+    def synlocation_to_segx(self, isec, ipt, syn_offset) -> float:
         """Translate a synaptic (secid, ipt, offset) to a x coordinate.
 
         Parameters
@@ -454,9 +454,9 @@ class Cell(InjectableMixin, PlottableMixin):
             distance = 1 - distance
 
         if distance < 0:
-            printv("WARNING: synlocation_to_segx found negative distance \
-                    at curr_sec(%s) syn_offset: %f"
-                   % (neuron.h.secname(sec=curr_sec), syn_offset), 1)
+            lazy_printv("WARNING: synlocation_to_segx found negative distance \
+                        at curr_sec({cs}) syn_offset: {so}", 1,
+                        cs=neuron.h.secname(sec=curr_sec), so=syn_offset)
             return 0
         else:
             return distance
@@ -602,7 +602,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None:
-            printv('WARNING: add_single_synapse: skipping a synapse at \
+            lazy_printv('WARNING: add_single_synapse: skipping a synapse at \
                         isec %d ipt %f' % (isec, ipt), 1)
             return False
 
@@ -619,13 +619,9 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.synapses[synapse_id] = synapse
 
-        printv(
-            'Added synapse to cell %d: %s' %
-            (self.gid,
-             json.dumps(
-                 synapse.info_dict,
-                 cls=tools.NumpyEncoder)),
-            50)
+        lazy_printv(
+            'Added synapse to cell {gid}: {s_info_dict}', 50, gid=self.gid,
+            s_info_dict=json.dumps(synapse.info_dict, cls=tools.NumpyEncoder))
 
         return True
 
@@ -932,7 +928,7 @@ class Cell(InjectableMixin, PlottableMixin):
                     secnumber = int(self.cell.getCell().nSecAxonalOrig +
                                     self.cell.getCell().nSecSoma +
                                     self.cell.getCell().nSecBasal + apicnumber)
-                    printv(apicnumber, secnumber, 1)
+                    lazy_printv(apicnumber, secnumber, 1)
                 else:
                     raise Exception(
                         "somaticbranches: No apic or \

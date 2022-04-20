@@ -13,6 +13,7 @@
 import collections
 import os
 import re
+from typing import List
 import warnings
 
 import numpy as np
@@ -20,7 +21,7 @@ from bluepy.enums import Synapse as BLPSynapse
 from cachetools import LRUCache, cachedmethod
 
 import bglibpy
-from bglibpy import bluepy, printv, tools
+from bglibpy import bluepy, lazy_printv, tools
 from bglibpy.exceptions import BGLibPyError, ConfigError
 
 
@@ -138,8 +139,8 @@ class SSim:
         self.extracellular_calcium = \
             float(self.bc.Run['ExtracellularCalcium']) \
             if 'ExtracellularCalcium' in self.bc.Run else None
-        printv('Setting extracellular calcium to: %s' %
-               str(self.extracellular_calcium), 50)
+        lazy_printv('Setting extracellular calcium to: %s' %
+                    str(self.extracellular_calcium), 50)
 
         self.spike_threshold = \
             float(self.bc.Run['SpikeThreshold']) \
@@ -296,7 +297,7 @@ class SSim:
         """
 
         if synapse_detail is not None:
-            printv(
+            lazy_printv(
                 'WARNING: SSim: synapse_detail is deprecated and will '
                 'removed from future release of BGLibPy', 2)
             if synapse_detail > 0:
@@ -386,7 +387,7 @@ class SSim:
                 add_relativelinear_stimuli=add_relativelinear_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli,
                 add_shotnoise_stimuli=add_shotnoise_stimuli)
-            printv("Added stimuli for gid %d" % gid, 2)
+            lazy_printv("Added stimuli for gid {gid}", 2, gid=gid)
 
     def _add_synapses(
             self, intersect_pre_gids=None, add_minis=None,
@@ -415,7 +416,7 @@ class SSim:
                     projection=projection,
                     projections=projections)
 
-    def _add_gid_synapses(self, gid, intersect_pre_gids=None, add_minis=None,
+    def _add_gid_synapses(self, gid: int, intersect_pre_gids=None, add_minis=None,
                           projection=None, projections=None):
         syn_descriptions_popids = self.get_syn_descriptions_dict(
             gid,
@@ -428,18 +429,18 @@ class SSim:
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
         if syn_descriptions_popids == {}:
-            printv(
-                "Warning: No presynaptic cells found for gid %d, "
-                "no synapses added" % gid, 2)
+            lazy_printv(
+                "Warning: No presynaptic cells found for gid {gid}, "
+                "no synapses added", 2, gid=gid)
         else:
             for syn_id, (syn_description,
                          popids) in syn_descriptions_popids.items():
                 self._instantiate_synapse(gid, syn_id, syn_description,
                                           add_minis=add_minis, popids=popids)
-            printv("Added %d synapses for gid %d" %
-                   (len(syn_descriptions_popids), gid), 2)
+            lazy_printv("Added {s_desc_len} synapses for gid {gid}",
+                        2, s_desc_len=len(syn_descriptions_popids), gid=gid)
             if add_minis:
-                printv("Added minis for gid %d" % gid, 2)
+                lazy_printv("Added minis for gid %d" % gid, 2)
 
     @staticmethod
     def _intersect_pre_gids(syn_descriptions, pre_gids):
@@ -553,7 +554,7 @@ class SSim:
                         stim_dt=self.dt,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    printv("Added real connection between pre_gid %d and \
+                    lazy_printv("Added real connection between pre_gid %d and \
                             post_gid %d, syn_id %s" % (pre_gid,
                                                        post_gid,
                                                        str(syn_id)), 5)
@@ -566,7 +567,7 @@ class SSim:
                         stim_dt=self.dt,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    printv(
+                    lazy_printv(
                         "Added replay connection from pre_gid %d to "
                         "post_gid %d, syn_id %s" %
                         (pre_gid, post_gid, syn_id), 5)
@@ -581,21 +582,19 @@ class SSim:
                                 weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
-                printv("Added synaptic connections for target post_gid %d" %
-                       post_gid, 2)
+                lazy_printv("Added synaptic connections for target post_gid %d" %
+                            post_gid, 2)
 
-    def _add_cells(self, gids):
-        """Instantiate cells from a gid list"""
+    def _add_cells(self, gids: List[int]) -> None:
+        """Instantiate cells from a gid list."""
         self.gids = gids
         self.cells = {}
 
         for gid in self.gids:
-            printv(
-                'Adding gid %d from emodel %s and morph %s' %
-                (gid,
-                 self.fetch_emodel_name(gid),
-                 self.fetch_morph_name(gid)),
-                1)
+            lazy_printv(
+                'Adding gid {gid} from emodel {emodel} and morph {morph}',
+                1, gid=gid, emodel=self.fetch_emodel_name(gid),
+                morph=self.fetch_morph_name(gid))
 
             self.cells[gid] = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
 
@@ -603,8 +602,8 @@ class SSim:
                 for expression in self.neuronconfigure_expressions[gid]:
                     self.cells[gid].execute_neuronconfigure(expression)
 
-    def _instantiate_synapse(self, gid, syn_id, syn_description,
-                             add_minis=None, popids=(0, 0)):
+    def _instantiate_synapse(self, gid: int, syn_id, syn_description,
+                             add_minis=None, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
 
@@ -624,14 +623,10 @@ class SSim:
                 popids=popids, extracellular_calcium=self.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.fetch_mini_frequencies(gid)
-                printv(
-                    'Adding minis for synapse %s: '
-                    'syn_description=%s, connection=%s, frequency=%s' %
-                    (str(syn_id),
-                     str(syn_description),
-                     str(connection_parameters),
-                     str(mini_frequencies)),
-                    50)
+                lazy_printv('Adding minis for synapse {sid}: syn_description={s_desc}, '
+                            'connection={conn_params}, frequency={freq}',
+                            50, sid=syn_id, s_desc=syn_description,
+                            conn_params=connection_parameters, freq=mini_frequencies)
 
                 self.cells[gid].add_replay_minis(
                     syn_id,
@@ -676,11 +671,9 @@ class SSim:
                 "Synapses don't implement minis_single_vesicle."
                 "More recent neurodamus model required."
             )
-        printv(
-            "Setting synapses minis_single_vesicle to %d"
-            % minis_single_vesicle,
-            50,
-        )
+        lazy_printv(
+            f"Setting synapses minis_single_vesicle to {minis_single_vesicle}",
+            50)
         bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
             minis_single_vesicle
         )
@@ -691,7 +684,8 @@ class SSim:
             minis_single_vesicle
         )
 
-    def _add_stimuli_gid(self, gid,
+    def _add_stimuli_gid(self,
+                         gid: int,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
                          add_relativelinear_stimuli=False,
@@ -737,8 +731,8 @@ class SSim:
                         if add_relativelinear_stimuli:
                             self._add_relativelinear(gid, stimulus)
                     elif stimulus.Pattern == 'SynapseReplay':
-                        printv("Found stimulus with pattern %s, ignoring" %
-                               stimulus['Pattern'], 1)
+                        lazy_printv("Found stimulus with pattern %s, ignoring" %
+                                    stimulus['Pattern'], 1)
                     elif stimulus.Pattern == 'ShotNoise':
                         if add_shotnoise_stimuli:
                             self._add_replay_shotnoise(
@@ -976,9 +970,9 @@ class SSim:
             sim.add_cell(self.cells[gid])
 
         if show_progress:
-            printv("Warning: show_progress enabled, this will very likely"
-                   "break the exact reproducibility of large network"
-                   "simulations", 2)
+            lazy_printv("Warning: show_progress enabled, this will very likely"
+                        "break the exact reproducibility of large network"
+                        "simulations", 2)
 
         sim.run(
             t_stop,
@@ -1098,9 +1092,8 @@ class SSim:
             me_combo = str(cell_info['me_combo'])
         return me_combo
 
-    def fetch_emodel_name(self, gid):
-        """Get the emodel path of a gid"""
-
+    def fetch_emodel_name(self, gid: int) -> str:
+        """Get the emodel path of a gid."""
         me_combo = self.fetch_mecombo_name(gid)
         if self.use_mecombotsv:
             emodel_name = self.bc_circuit.emodels.get_mecombo_info(gid)["emodel"]
@@ -1109,14 +1102,10 @@ class SSim:
 
         return emodel_name
 
-    def fetch_morph_name(self, gid):
-        """Get the morph name of a gid"""
-
+    def fetch_morph_name(self, gid: int) -> str:
+        """Get the morph name of a gid."""
         cell_info = self.fetch_gid_cell_info(gid)
-
-        morph_name = str(cell_info['morphology'])
-
-        return morph_name
+        return str(cell_info['morphology'])
 
     def fetch_mini_frequencies(self, gid):
         """Get inhibitory frequency of gid"""
@@ -1214,8 +1203,8 @@ def _parse_outdat(path):
     # convert Series to DataFrame with 2 columns for `groupby` operation
     spike_df = spikes.to_frame().reset_index()
     if (spike_df["t"] < 0).any():
-        printv('WARNING: SSim: Found negative spike times in out.dat ! '
-               'Clipping them to 0', 2)
+        lazy_printv('WARNING: SSim: Found negative spike times in out.dat ! '
+                    'Clipping them to 0', 2)
         spike_df["t"].clip(lower=0., inplace=True)
 
     outdat = spike_df.groupby("gid")["t"].apply(np.array)

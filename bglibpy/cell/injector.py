@@ -5,7 +5,7 @@ import math
 import numpy as np
 
 import bglibpy
-from bglibpy import BGLibPyError, printv, tools
+from bglibpy import BGLibPyError, lazy_printv, tools
 from bglibpy.cell.random import gamma
 
 
@@ -178,9 +178,9 @@ class InjectableMixin:
             seed=noise_seed,
             noisestim_count=noisestim_count)
 
-        printv("Added noise stimulus to gid %d: "
-               "delay=%f, duration=%f, mean=%f, variance=%f" %
-               (self.gid, delay, duration, mean, variance), 50)
+        lazy_printv("Added noise stimulus to gid %d: "
+                    "delay=%f, duration=%f, mean=%f, variance=%f" %
+                    (self.gid, delay, duration, mean, variance), 50)
         return tstim
 
     def add_replay_hypamp(self, stimulus):
@@ -191,9 +191,9 @@ class InjectableMixin:
         amp = self.hypamp
         tstim.pulse(delay, duration, amp)
         self.persistent.append(tstim)
-        printv("Added hypamp stimulus to gid %d: "
-               "delay=%f, duration=%f, amp=%f" %
-               (self.gid, delay, duration, amp), 50)
+        lazy_printv("Added hypamp stimulus to gid %d: "
+                    "delay=%f, duration=%f, amp=%f" %
+                    (self.gid, delay, duration, amp), 50)
         return tstim
 
     def add_replay_relativelinear(self, stimulus):
@@ -205,9 +205,9 @@ class InjectableMixin:
         tstim.pulse(delay, duration, amp)
         self.persistent.append(tstim)
 
-        printv("Added relative linear stimulus to gid %d: "
-               "delay=%f, duration=%f, amp=%f " %
-               (self.gid, delay, duration, amp), 50)
+        lazy_printv("Added relative linear stimulus to gid %d: "
+                    "delay=%f, duration=%f, amp=%f " %
+                    (self.gid, delay, duration, amp), 50)
         return tstim
 
     def _get_shotnoise_step_rand(self, shotnoise_stim_count, seed=None):
@@ -216,8 +216,8 @@ class InjectableMixin:
             seed1 = shotnoise_stim_count + 2997
             seed2 = self.rng_settings.stimulus_seed + 19216
             seed3 = self.gid + 123 if seed is None else seed
-            printv("Using shot noise seeds %d %d %d" %
-                   (seed1, seed2, seed3), 50)
+            lazy_printv("Using shot noise seeds %d %d %d" %
+                        (seed1, seed2, seed3), 50)
             rng = bglibpy.neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
@@ -230,7 +230,7 @@ class InjectableMixin:
                               tau_D, tau_R, rate, amp_mean, amp_var,
                               duration, dt=0.25, rng=None):
         if rng is None:
-            printv("Using a default RNG for shot noise generation", 50)
+            lazy_printv("Using a default RNG for shot noise generation", 50)
             rng = bglibpy.neuron.h.Random()  # Creates a default RNG
 
         tvec = bglibpy.neuron.h.Vector()
@@ -238,7 +238,7 @@ class InjectableMixin:
         ntstep = len(tvec)  # total number of timesteps
 
         rate_ms = rate / 1000  # rate in 1 / ms [mHz]
-        napprox = 1 + int(duration * rate_ms)            # approximate number of events, at least one
+        napprox = 1 + int(duration * rate_ms)  # approximate number of events, at least one
         napprox = int(napprox + 3 * math.sqrt(napprox))  # better bound, as in elephant
 
         exp_scale = 1 / rate  # scale parameter of exponential distribution of time intervals
@@ -368,11 +368,11 @@ class InjectableMixin:
         if shotnoise_seed is None:
             shotnoise_seed = seed
 
-        printv("Added shot noise stimulus to gid %d: "
-               "delay=%f, duration=%f, rate=%f, amp_mean=%f, "
-               "amp_var=%f tau_D=%f tau_R=%f" %
-               (self.gid, delay, duration, rate, amp_mean,
-                amp_var, tau_D, tau_R), 50)
+        lazy_printv("Added shot noise stimulus to gid %d: "
+                    "delay=%f, duration=%f, rate=%f, amp_mean=%f, "
+                    "amp_var=%f tau_D=%f tau_R=%f" %
+                    (self.gid, delay, duration, rate, amp_mean,
+                     amp_var, tau_D, tau_R), 50)
 
         return self.add_shotnoise_step(section, segx,
                                        tau_D, tau_R, rate, amp_mean, amp_var,
@@ -417,11 +417,11 @@ class InjectableMixin:
         if shotnoise_seed is None:
             shotnoise_seed = seed
 
-        printv("Added relative shot noise stimulus to gid %d: "
-               "delay=%f, duration=%f, mean=%f, var=%f, "
-               "amp_cv=%f tau_D=%f tau_R=%f" %
-               (self.gid, delay, duration, mean, var,
-                amp_cv, tau_D, tau_R), 50)
+        lazy_printv("Added relative shot noise stimulus to gid %d: "
+                    "delay=%f, duration=%f, mean=%f, var=%f, "
+                    "amp_cv=%f tau_D=%f tau_R=%f" %
+                    (self.gid, delay, duration, mean, var,
+                     amp_cv, tau_D, tau_R), 50)
 
         return self.add_shotnoise_step(section, segx,
                                        tau_D, tau_R, rate, amp_mean, amp_var,

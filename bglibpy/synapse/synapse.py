@@ -11,7 +11,7 @@ import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-from bglibpy.tools import printv
+from bglibpy.tools import lazy_printv
 
 
 class Synapse:
@@ -370,7 +370,7 @@ class Synapse:
 
         u_scale_factor = np.vectorize(f_scale)(u_hill_coefficient,
                                                extracellular_calcium)
-        printv(
+        lazy_printv(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %
             (u_hill_coefficient, extracellular_calcium, u_scale_factor),

@@ -6,7 +6,7 @@ import re
 import string
 
 import bglibpy
-from bglibpy import printv
+from bglibpy import lazy_printv
 
 
 class NeuronTemplate:
@@ -36,8 +36,8 @@ class NeuronTemplate:
         good_neuron_versiondate = datetime.date(2014, 3, 20)
 
         if neuron_versiondate >= good_neuron_versiondate:
-            printv("This Neuron version supports renaming "
-                   "templates, enabling...", 5)
+            lazy_printv("This Neuron version supports renaming "
+                        "templates, enabling...", 5)
             # add bglibpy to the template name, so that we don't interfere with
             # templates load outside of bglibpy
             template_name = "%s_bglibpy" % template_name
@@ -63,8 +63,8 @@ class NeuronTemplate:
 
             bglibpy.neuron.h(template_content)
         else:
-            printv("This Neuron version doesn't support renaming "
-                   "templates, disabling...", 5)
+            lazy_printv("This Neuron version doesn't support renaming "
+                        "templates, disabling...", 5)
             bglibpy.neuron.h.load_file(template_filename)
 
         return template_name
@@ -151,7 +151,7 @@ def get_neuron_compliant_template_name(name):
         template_name = shorten_and_hash_string(template_name,
                                                 keep_length=40,
                                                 hash_length=9)
-        printv(
+        lazy_printv(
             "Converted template name %s to %s to make it "
             "NEURON compliant" %
             (name, template_name), 50)

@@ -8,12 +8,14 @@
 
 """
 
+
 # pylint: disable=R0913
 
 import sys
 
 import bglibpy
-from bglibpy import printv, printv_err, tools
+import contextlib
+from bglibpy import lazy_printv, printv_err, tools
 from bglibpy.importer import neuron
 
 
@@ -77,7 +79,7 @@ class Simulation:
     # pylint: disable=C0103,R0912,R0914
     def run(
             self,
-            maxtime,
+            maxtime: float,
             cvode=True,
             cvode_minstep=None,
             cvode_maxstep=None,
@@ -113,7 +115,7 @@ class Simulation:
                 neuron.h.cvode.maxstep(cvode_maxstep)
         else:
             if cvode_old_status:
-                printv(
+                lazy_printv(
                     "WARNING: cvode was activated outside of Simulation, "
                     "temporarily disabling it in run() because cvode=False "
                     "was set", 2)
@@ -122,11 +124,8 @@ class Simulation:
         neuron.h.v_init = v_init
 
         for cell in self.cells:
-            try:
+            with contextlib.suppress(AttributeError):
                 cell.re_init_rng(use_random123_stochkv=use_random123_stochkv)
-            except AttributeError:
-                pass
-
         neuron.h.dt = dt
         neuron.h.steps_per_ms = 1.0 / dt
 
@@ -136,7 +135,7 @@ class Simulation:
         # initialized heavily influence the random number generator
         # e.g. finitialize() + step() != run()
 
-        printv('Running a simulation until %f ms ...' % maxtime, 1)
+        lazy_printv('Running a simulation until {t} ms ...', 1, t=maxtime)
 
         self.init_callbacks()
 
@@ -161,13 +160,13 @@ class Simulation:
                            exception.__class__.__name__, exception), 1)
         finally:
             if cvode_old_status:
-                printv(
+                lazy_printv(
                     "WARNING: cvode was activated outside of Simulation, "
                     "this might make it impossible to load templates with "
                     "stochastic channels", 2)
             neuron.h.cvode_active(cvode_old_status)
 
-        printv('Finished simulation', 1)
+        lazy_printv('Finished simulation.', 1)
 
     # pylint: enable=C0103,R0912
 

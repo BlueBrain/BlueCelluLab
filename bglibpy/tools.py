@@ -93,8 +93,8 @@ class deprecated:
         return rep_func
 
 
-def printv(message, verbose_level):
-    """Print the message to stdout depending on the verbose level
+def lazy_printv(message: str, verbose_level: int, **kwargs: dict) -> None:
+    """Lazily print the message to stdout depending on the verbose level
 
        Parameters
        ----------
@@ -103,9 +103,11 @@ def printv(message, verbose_level):
        verbose_level: int
                       Message will only be printed if the verbose level is
                       higher or equal to this number
+        kwargs: dict
+                rest of the arguments to be used in formatting
     """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
-        print(message)
+        print(message.format(**kwargs))
 
 
 def printv_err(message, verbose_level):
@@ -146,9 +148,7 @@ def load_nrnmechanisms(libnrnmech_path):
 def parse_complete_BlueConfig(fName):
     """ Simplistic parser of the BlueConfig file """
     bc = open(fName, 'r')
-    uber_hash = {}  # collections.OrderedDict
-    for keyword in BLUECONFIG_KEYWORDS:
-        uber_hash[keyword] = {}
+    uber_hash = {keyword: {} for keyword in BLUECONFIG_KEYWORDS}
     line = bc.next()
 
     block_number = 0
@@ -311,7 +311,7 @@ def search_hyp_current(template_name, morphology_name, target_voltage,
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
         template_name, morphology_name, med_current)
-    printv("Detected voltage: %f" % new_target_voltage, 1)
+    lazy_printv("Detected voltage: %f" % new_target_voltage, 1)
     if abs(new_target_voltage - target_voltage) < .5:
         return med_current
     elif new_target_voltage > target_voltage:
@@ -370,12 +370,12 @@ def search_threshold_current(template_name, morphology_name, hyp_level,
                              inj_start, inj_stop, min_current, max_current):
     """Search current necessary to reach threshold"""
     med_current = min_current + abs(min_current - max_current) / 2
-    printv("Med current %d" % med_current, 1)
+    lazy_printv("Med current %d" % med_current, 1)
 
     spike_detected = detect_spike_step(
         template_name, morphology_name, hyp_level, inj_start, inj_stop,
         med_current)
-    printv("Spike threshold detection at: %f nA" % med_current, 1)
+    lazy_printv("Spike threshold detection at: %f nA" % med_current, 1)
 
     if abs(max_current - min_current) < .01:
         return max_current
@@ -383,7 +383,7 @@ def search_threshold_current(template_name, morphology_name, hyp_level,
         return search_threshold_current(template_name, morphology_name,
                                         hyp_level, inj_start, inj_stop,
                                         min_current, med_current)
-    elif not spike_detected:
+    else:
         return search_threshold_current(template_name, morphology_name,
                                         hyp_level, inj_start, inj_stop,
                                         med_current, max_current)
@@ -443,9 +443,9 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     voltage = ssim.get_voltage_trace(gid)
     SS_voltage = np.mean(voltage[np.where(
         (time < tstop) & (time > tstart))])
-    printv("%s: Calculated SS voltage for gid %d "
-           "with step level %f nA: %s mV" %
-           (process_name, gid, step_level, SS_voltage), 1)
+    lazy_printv("%s: Calculated SS voltage for gid %d "
+                "with step level %f nA: %s mV" %
+                (process_name, gid, step_level, SS_voltage), 1)
 
     # print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
 
@@ -495,8 +495,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     if nestlevel > max_nestlevel:
         return (float('nan'), (None, None))
     elif nestlevel == 1:
-        printv("%s: Searching for current to bring gid %d to %f mV" %
-               (process_name, gid, target_voltage), 1)
+        lazy_printv("%s: Searching for current to bring gid %d to %f mV" %
+                    (process_name, gid, target_voltage), 1)
     med_current = min_current + abs(min_current - max_current) / 2
     (new_target_voltage, (time, voltage)) = \
         calculate_SS_voltage_replay(blueconfig, gid, med_current,

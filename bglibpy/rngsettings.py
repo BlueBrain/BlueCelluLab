@@ -8,7 +8,7 @@ RNG settings of BGLibPy
 """
 
 import bglibpy
-from bglibpy import Singleton, printv
+from bglibpy import Singleton, lazy_printv
 
 default_rng_mode = "Compatibility"
 
@@ -53,7 +53,7 @@ class RNGSettings(metaclass=Singleton):
         else:
             self.mode = mode
 
-        printv("Setting rng mode to: %s" % self._mode, 50)
+        lazy_printv("Setting rng mode to: {mode}", 50, mode=self._mode)
 
         if base_seed is None:
             if blueconfig and 'BaseSeed' in blueconfig.Run:

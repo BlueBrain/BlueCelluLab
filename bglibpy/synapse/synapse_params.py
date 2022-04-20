@@ -4,7 +4,7 @@ from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
 
 import bglibpy
-from bglibpy import BGLibPyError, printv
+from bglibpy import BGLibPyError, lazy_printv
 
 
 class SynDescription:
@@ -79,13 +79,14 @@ def create_syn_description_dict(all_properties, bc_circuit, bc,
 
     syn_descriptions_dict = {}
     if not all_synapse_sets:
-        printv('No synapses found', 5)
+        lazy_printv('No synapses found', 5)
     else:
-        printv(f'Found a total of {len(all_synapse_sets)} synapse sets', 5)
+        lazy_printv('Found a total of {n_syn_sets} synapse sets',
+                    5, n_syn_sets=len(all_synapse_sets))
 
         for proj_name, (synapse_set, using_sonata) in all_synapse_sets.items():
-            printv('Retrieving a total of %d synapses for set %s' %
-                   (synapse_set.shape[0], proj_name), 5)
+            lazy_printv('Retrieving a total of {n_syn} synapses for set {syn_set}',
+                        5, n_syn=synapse_set.shape[0], syn_set=proj_name)
 
             popids = get_popids(bc, ignore_populationid_error, proj_name)
 
@@ -220,13 +221,11 @@ def get_synapses_by_connectomes(connectomes, all_properties, gid):
                               BLPSynapse.NRRP]:
             if test_property not in connectome.available_properties:
                 connectome_properties.remove(test_property)
-                printv(
-                    'WARNING: %s not found, disabling' %
-                    test_property, 50)
+                lazy_printv(f'WARNING: {test_property} not found, disabling', 50)
 
         if isinstance(connectome._impl, SonataConnectome):
             using_sonata = True
-            printv('Using sonata style synapse file, not nrn.h5', 50)
+            lazy_printv('Using sonata style synapse file, not nrn.h5', 50)
             # load 'afferent_section_pos' instead of '_POST_DISTANCE'
             if 'afferent_section_pos' in connectome.available_properties:
                 connectome_properties[
