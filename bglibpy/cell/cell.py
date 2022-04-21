@@ -747,16 +747,16 @@ class Cell(InjectableMixin, PlottableMixin):
                 raise Exception('Synapse not inhibitory nor excitatory, '
                                 'can not set minis frequency')
 
-        if spont_minis_rate is not None:
+        if spont_minis_rate is not None and spont_minis_rate > 0:
+            sec = self.get_hsection(post_sec_id)
             # add the *minis*: spontaneous synaptic events
             self.ips[syn_id] = bglibpy.neuron.h.\
-                InhPoissonStim(location,
-                               sec=self.get_hsection(post_sec_id))
+                InhPoissonStim(location, sec=sec)
 
-            delay = 0.1
             self.syn_mini_netcons[syn_id] = bglibpy.neuron.h.\
-                NetCon(self.ips[syn_id], synapse.hsynapse,
-                       -30, delay, weight * weight_scalar)
+                NetCon(self.ips[syn_id], synapse.hsynapse, sec=sec)
+            self.syn_mini_netcons[syn_id].delay = 0.1
+            self.syn_mini_netcons[syn_id].weight[0] = weight * weight_scalar
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 synapse.hsynapse).split('[')[0]

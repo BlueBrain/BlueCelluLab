@@ -497,7 +497,7 @@ class TestSSimBaseClassSingleVesicleMinis:
 
         self.ssim = bglibpy.ssim.SSim(
             test_single_vesicle_path,
-            record_dt=self.record_dt)
+            record_dt=self.record_dt, print_cellstate=True)
 
         self.gid = 4138379
         self.ssim.instantiate_gids(

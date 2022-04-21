@@ -34,7 +34,7 @@ class SSim:
 
     def __init__(self, blueconfig_filename, dt=0.025, record_dt=None,
                  base_seed=None, base_noise_seed=None, rng_mode=None,
-                 ignore_populationid_error=False):
+                 ignore_populationid_error=False, print_cellstate=False):
         """Object dealing with BlueConfig configured Small Simulations
 
         Parameters
@@ -63,6 +63,8 @@ class SSim:
                     and UpdatedMCell.
         ignore_populationid_error: bool
                     Flag to ignore the missing population ids of projections.
+        print_cellstate: bool
+                    Flag to use NEURON prcellstate for simulation GIDs
         """
         self.dt = dt
         self.record_dt = record_dt
@@ -70,6 +72,7 @@ class SSim:
         self.bc_simulation = bluepy.Simulation(blueconfig_filename)
         self.bc_circuit = self.bc_simulation.circuit
         self.bc = self.bc_simulation.config
+        self.pc = bglibpy.neuron.h.ParallelContext() if print_cellstate else None
 
         self._caches = {
             "is_group_target": LRUCache(maxsize=1000),
@@ -552,6 +555,7 @@ class SSim:
                         pre_spiketrain=None,
                         pre_cell=self.cells[pre_gid],
                         stim_dt=self.dt,
+                        parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
                     lazy_printv("Added real connection between pre_gid %d and \
@@ -597,6 +601,11 @@ class SSim:
                 morph=self.fetch_morph_name(gid))
 
             self.cells[gid] = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
+            if self.pc is not None:
+                self.pc.set_gid2node(gid, self.pc.id())  # register GID for this node
+                nc = self.cells[gid].create_netcon_spikedetector(
+                    None, location=self.spike_location, threshold=self.spike_threshold)
+                self.pc.cell(gid, nc)  # register cell spike detector
 
             if gid in self.neuronconfigure_expressions:
                 for expression in self.neuronconfigure_expressions[gid]:
@@ -965,7 +974,7 @@ class SSim:
             else:
                 v_init = -65  # default
 
-        sim = bglibpy.Simulation()
+        sim = bglibpy.Simulation(self.pc)
         for gid in self.gids:
             sim.add_cell(self.cells[gid])
 

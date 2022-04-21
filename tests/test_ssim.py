@@ -367,7 +367,7 @@ class TestSSimBaseClass_twocell_all:
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
-        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
+        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1, print_cellstate=True)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
             synapse_detail=2,

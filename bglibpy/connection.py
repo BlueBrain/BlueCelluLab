@@ -22,6 +22,7 @@ class Connection:
             pre_spiketrain=None,
             pre_cell=None,
             stim_dt=None,
+            parallel_context=None,
             spike_threshold=-30,
             spike_location="soma"):
         self.persistent = []
@@ -31,6 +32,7 @@ class Connection:
         self.pre_cell = pre_cell
         self.pre_spiketrain = pre_spiketrain
         self.post_synapse = post_synapse
+        self.pc = parallel_context
 
         if 'Weight' in self.connection_parameters:
             self.weight_scalar = self.connection_parameters['Weight']
@@ -66,7 +68,8 @@ class Connection:
         elif self.pre_cell is not None:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(
                 self.post_synapse.hsynapse, location=spike_location,
-                threshold=spike_threshold)
+                threshold=spike_threshold) if self.pc is None else \
+                self.pc.gid_connect(self.pre_cell.gid, self.post_synapse.hsynapse)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
             self.post_netcon.threshold = spike_threshold

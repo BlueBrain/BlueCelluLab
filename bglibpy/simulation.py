@@ -23,12 +23,13 @@ class Simulation:
 
     """Class that represents a neuron simulation"""
 
-    def __init__(self):
+    def __init__(self, parallel_context=None):
         self.cells = []
         self.fih_progress = None
         self.progress = None
         self.progress_closed = None
         self.progress_dt = None
+        self.pc = parallel_context
 
     def add_cell(self, new_cell):
         """Add a cell to a simulation"""
@@ -150,6 +151,10 @@ class Simulation:
                     neuron.h.fadvance()
                 neuron.h.dt = save_dt
                 neuron.h.t = 0.0
+
+        if self.pc is not None:
+            for cell in self.cells:
+                self.pc.prcellstate(cell.gid, f"bglibpy_t={bglibpy.neuron.h.t}")
 
         # pylint: disable=W0703
         try:
