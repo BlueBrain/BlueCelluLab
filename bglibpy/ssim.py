@@ -19,6 +19,7 @@ import warnings
 import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
 from cachetools import LRUCache, cachedmethod
+import pandas as pd
 
 import bglibpy
 from bglibpy import bluepy, lazy_printv, tools
@@ -410,65 +411,50 @@ class SSim:
         for gid in self.gids:
             if add_local_synapses:
                 self._add_gid_synapses(
-                    gid, intersect_pre_gids=intersect_pre_gids,
+                    gid, pre_gids=intersect_pre_gids,
                     add_minis=add_minis)
             if add_projection_synapses:
                 self._add_gid_synapses(
-                    gid, intersect_pre_gids=intersect_pre_gids,
+                    gid, pre_gids=intersect_pre_gids,
                     add_minis=add_minis,
                     projection=projection,
                     projections=projections)
 
-    def _add_gid_synapses(self, gid: int, intersect_pre_gids=None, add_minis=None,
-                          projection=None, projections=None):
-        syn_descriptions_popids = self.get_syn_descriptions_dict(
-            gid,
-            projection=projection, projections=projections)
+    def _add_gid_synapses(
+        self, gid: int, pre_gids=None, add_minis=None, projection=None, projections=None
+    ) -> None:
+        syn_descriptions = self.get_syn_descriptions(
+            gid, projection=projection, projections=projections)
 
-        if intersect_pre_gids is not None:
-            syn_descriptions_popids = self._intersect_pre_gids(
-                syn_descriptions_popids, intersect_pre_gids)
+        if pre_gids is not None:
+            syn_descriptions = self._intersect_pre_gids(
+                syn_descriptions, pre_gids)
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
-        if syn_descriptions_popids == {}:
+        if syn_descriptions.empty:
             lazy_printv(
                 "Warning: No presynaptic cells found for gid {gid}, "
                 "no synapses added", 2, gid=gid)
         else:
-            for syn_id, (syn_description,
-                         popids) in syn_descriptions_popids.items():
-                self._instantiate_synapse(gid, syn_id, syn_description,
+            for idx, syn_description in syn_descriptions.iterrows():
+                popids = syn_description["source_popid"], syn_description["target_popid"]
+                self._instantiate_synapse(gid, idx, syn_description,
                                           add_minis=add_minis, popids=popids)
             lazy_printv("Added {s_desc_len} synapses for gid {gid}",
-                        2, s_desc_len=len(syn_descriptions_popids), gid=gid)
+                        2, s_desc_len=len(syn_descriptions), gid=gid)
             if add_minis:
                 lazy_printv("Added minis for gid %d" % gid, 2)
 
     @staticmethod
-    def _intersect_pre_gids(syn_descriptions, pre_gids):
+    def _intersect_pre_gids(syn_descriptions, pre_gids) -> pd.DataFrame:
         """Return the synapse descriptions with pre_gids intersected."""
-        return {
-            syn_id: syn_description
-            for syn_id, syn_description in syn_descriptions.items()
-            if syn_description[0][BLPSynapse.PRE_GID] in pre_gids
-        }
+        return syn_descriptions[syn_descriptions[BLPSynapse.PRE_GID].isin(pre_gids)]
 
-    @tools.deprecated("get_syn_descriptions_dict")
-    def get_syn_descriptions(self, gid, projection=None, projections=None):
-        """Get synapse description arrays from bluepy"""
-        syn_descriptions = [
-            v for _,
-            v in sorted(
-                self.get_syn_descriptions_dict(
-                    gid,
-                    projection=projection,
-                    projections=projections).items())]
-
-        return syn_descriptions
-
-    def get_syn_descriptions_dict(self, gid, projection=None, projections=None):
-        """Get synapse descriptions dict from bluepy, Keys are synapse ids."""
+    def get_syn_descriptions(
+        self, gid, projection=None, projections=None
+    ) -> pd.DataFrame:
+        """Get synapse descriptions dataframe."""
         is_glusynapse_used = any(
             x
             for x in self.connection_entries

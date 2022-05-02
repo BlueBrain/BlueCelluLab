@@ -684,10 +684,10 @@ class TestSSimBaseClass_full:
                     pre_target, post_target, return_synapse_ids=True), 1))[0]
             syn_id = syn_ids[0][1]
 
-            syn_desc = self.ssim.get_syn_descriptions(post_gid)[syn_id]
+            syn_desc = self.ssim.get_syn_descriptions(post_gid).loc[('', syn_id)]
 
-            assert pre_gid == syn_desc[0][BLPSynapse.PRE_GID]
-            syn_type = syn_desc[0][BLPSynapse.TYPE]
+            assert pre_gid == syn_desc[BLPSynapse.PRE_GID]
+            syn_type = syn_desc[BLPSynapse.TYPE]
 
             evaluated_params = self.ssim._evaluate_connection_parameters(
                 pre_gid,
@@ -699,10 +699,9 @@ class TestSSimBaseClass_full:
         """SSim: Check if SynapseConfigure works correctly"""
         gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
         self.ssim.instantiate_gids([gid], synapse_detail=0)
-        pre_datas = [x[0] for x in self.ssim.get_syn_descriptions(gid)]
-        first_inh_syn = next(x for x in pre_datas if x[BLPSynapse.TYPE] < 100)
+        pre_datas = self.ssim.get_syn_descriptions(gid)
+        first_inh_syn = pre_datas[pre_datas[BLPSynapse.TYPE] < 100].iloc[0]
         sid = int(first_inh_syn.name[1])
-        syn_params = pre_datas[sid]
         connection_parameters = {
             'SynapseConfigure': [
                 '%s.e_GABAA = -80.5 %s.e_GABAB = -101.0',
@@ -711,7 +710,7 @@ class TestSSimBaseClass_full:
             'Weight': 2.0}
         self.ssim.cells[gid].add_replay_synapse(
             ('', sid),
-            syn_params,
+            first_inh_syn,
             connection_parameters)
 
         assert(

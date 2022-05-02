@@ -2,9 +2,10 @@
 
 from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
+import pandas as pd
 
 import bglibpy
-from bglibpy import BGLibPyError, lazy_printv
+from bglibpy import lazy_printv
 
 
 class SynDescription:
@@ -31,28 +32,28 @@ class SynDescription:
     def gabaab_ampanmda_syn_description(self, bc_circuit, bc,
                                         ignore_populationid_error, gid,
                                         projection=None, projections=None):
-        """Wraps create_syn_description dict w. ampanmda/gabaab properties."""
-        return create_syn_description_dict(
+        """Wraps create_syn_descriptions ampanmda/gabaab properties."""
+        return create_syn_descriptions(
             self.common_properties, bc_circuit, bc, ignore_populationid_error,
             gid, projection, projections)
 
     def glusynapse_syn_description(self, bc_circuit, bc,
                                    ignore_populationid_error, gid,
                                    projection=None, projections=None):
-        """Wraps create_syn_description dict with glusynapse properties."""
+        """Wraps create_syn_descriptions with glusynapse properties."""
         glusynapse_only_properties = [
             "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
             "gmax_p_AMPA", "theta_d", "theta_p"]
         all_properties = self.common_properties + glusynapse_only_properties
-        return create_syn_description_dict(
+        return create_syn_descriptions(
             all_properties, bc_circuit, bc,
             ignore_populationid_error, gid, projection, projections)
 
 
-def create_syn_description_dict(all_properties, bc_circuit, bc,
-                                ignore_populationid_error, gid,
-                                projection=None, projections=None):
-    """Get synapse descriptions dict from bluepy, Keys are synapse ids
+def create_syn_descriptions(all_properties, bc_circuit, bc,
+                            ignore_populationid_error, gid,
+                            projection=None, projections=None) -> pd.DataFrame:
+    """Get synapse descriptions dataframe annotated with popids.
 
     Args:
         all_properties: list of properties of synapses to be retrieved
@@ -68,67 +69,42 @@ def create_syn_description_dict(all_properties, bc_circuit, bc,
         BGLibPyError: raised when there is a duplicated synapse id.
 
     Returns:
-        dict: indexed by projection name and synapse id.
-        Values contain synapse properties series and popids tuple.
+        pd.DataFrame: multiindex containing synapse description with popids
     """
     connectomes = get_connectomes_dict(bc_circuit, projection=projection,
                                        projections=projections)
 
-    all_synapse_sets = get_synapses_by_connectomes(connectomes,
-                                                   all_properties, gid)
+    synapses = get_synapses_by_connectomes(connectomes, all_properties, gid)
 
-    syn_descriptions_dict = {}
-    if not all_synapse_sets:
-        lazy_printv('No synapses found', 5)
-    else:
-        lazy_printv('Found a total of {n_syn_sets} synapse sets',
-                    5, n_syn_sets=len(all_synapse_sets))
+    if BLPSynapse.NRRP in synapses:
+        check_nrrp_value(synapses)
 
-        for proj_name, (synapse_set, using_sonata) in all_synapse_sets.items():
-            lazy_printv('Retrieving a total of {n_syn} synapses for set {syn_set}',
-                        5, n_syn=synapse_set.shape[0], syn_set=proj_name)
-
-            popids = get_popids(bc, ignore_populationid_error, proj_name)
-
-            for syn_id, (edge_id, synapse) in enumerate(
-                    synapse_set.iterrows()):
-
-                syn_id_proj = (proj_name, syn_id)
-                if syn_id_proj in syn_descriptions_dict:
-                    raise BGLibPyError("BGLibPy SSim: trying to add "
-                                       f"synapse id {syn_id_proj} twice!")
-                if BLPSynapse.NRRP in synapse:
-                    check_nrrp_value(gid, syn_id, synapse)
-
-                if using_sonata:
-                    synapse["edge_id"] = edge_id
-
-                syn_descriptions_dict[syn_id_proj] = synapse, popids
-
-    return syn_descriptions_dict
+    proj_ids = synapses.index.get_level_values(0)
+    pop_ids = [get_popids(bc, ignore_populationid_error, proj_id) for proj_id in proj_ids]
+    source_popids, target_popids = zip(*pop_ids)
+    synapses = synapses.assign(source_popid=source_popids, target_popid=target_popids)
+    return synapses
 
 
-def check_nrrp_value(gid, syn_id, synapse_desc):
+def check_nrrp_value(synapses: pd.DataFrame) -> None:
     """Assures the nrrp values fits the conditions.
 
     Args:
-        gid (int): cell identification
-        syn_id (int): synapse identification
-        synapse_desc (pandas.Series): synapse description
+        synapses: synapse description
 
     Raises:
         ValueError: when NRRP is <= 0
         ValueError: when NRRP cannot ve cast to integer
     """
-    if synapse_desc[BLPSynapse.NRRP] <= 0:
+    if any(synapses[BLPSynapse.NRRP] <= 0):
         raise ValueError(
             'Value smaller than 0.0 found for Nrrp: '
-            f'{synapse_desc[BLPSynapse.NRRP]} at synapse {syn_id} in gid {gid}'
+            f'{synapses[BLPSynapse.NRRP]} at synapse {synapses}.'
         )
-    if synapse_desc[BLPSynapse.NRRP] != int(synapse_desc[BLPSynapse.NRRP]):
+    if any(synapses[BLPSynapse.NRRP] != synapses[BLPSynapse.NRRP].astype(int)):
         raise ValueError(
             'Non-integer value for Nrrp found: '
-            f'{synapse_desc[BLPSynapse.NRRP]} at synapse {syn_id} in gid {gid}'
+            f'{synapses[BLPSynapse.NRRP]} at synapse {synapses}.'
         )
 
 
@@ -197,7 +173,7 @@ def get_connectomes_dict(bc_circuit, projection, projections):
     return connectomes
 
 
-def get_synapses_by_connectomes(connectomes, all_properties, gid):
+def get_synapses_by_connectomes(connectomes, all_properties, gid) -> pd.DataFrame:
     """Creates a dict of connectome ids and synapse properties dataframe.
 
     Args:
@@ -206,13 +182,10 @@ def get_synapses_by_connectomes(connectomes, all_properties, gid):
         gid (int): cell identification
 
     Returns:
-        dict of pandas.DataFrame: synapses dataframes indexed by connectome ids
+        pandas.DataFrame: synapses dataframes indexed by projection, edge and synapse ids
     """
-    all_synapse_sets = {}
+    all_synapses = pd.DataFrame()
     for proj_name, connectome in connectomes.items():
-        using_sonata = False
-
-        # list() to make a copy
         connectome_properties = list(all_properties)
 
         # older circuit don't have these properties
@@ -224,7 +197,6 @@ def get_synapses_by_connectomes(connectomes, all_properties, gid):
                 lazy_printv(f'WARNING: {test_property} not found, disabling', 50)
 
         if isinstance(connectome._impl, SonataConnectome):
-            using_sonata = True
             lazy_printv('Using sonata style synapse file, not nrn.h5', 50)
             # load 'afferent_section_pos' instead of '_POST_DISTANCE'
             if 'afferent_section_pos' in connectome.available_properties:
@@ -240,12 +212,15 @@ def get_synapses_by_connectomes(connectomes, all_properties, gid):
             # synlocation_to_segx)
             if 'afferent_section_pos' in connectome.available_properties:
                 synapses[BLPSynapse.POST_SEGMENT_ID] = -1
-
         else:
             synapses = connectome.afferent_synapses(
                 gid, properties=connectome_properties
             )
 
+        synapses = synapses.reset_index(drop=True)
+        synapses.index = pd.MultiIndex.from_tuples(
+            [(proj_name, x) for x in synapses.index],
+            names=["proj_id", "synapse_id"])
         # io/synapse_reader.py:_patch_delay_fp_inaccuracies from
         # py-neurodamus
         dt = bglibpy.neuron.h.dt
@@ -253,5 +228,15 @@ def get_synapses_by_connectomes(connectomes, all_properties, gid):
             synapses[BLPSynapse.AXONAL_DELAY] / dt + 1e-5
         ).astype('i4') * dt
 
-        all_synapse_sets[proj_name] = (synapses, using_sonata)
-    return all_synapse_sets
+        lazy_printv('Retrieving a total of {n_syn} synapses for set {syn_set}',
+                    5, n_syn=synapses.shape[0], syn_set=proj_name)
+
+        all_synapses = pd.concat([all_synapses, synapses])
+
+    if all_synapses.empty:
+        lazy_printv('No synapses found', 5)
+    else:
+        lazy_printv('Found a total of {n_syn_sets} synapse sets',
+                    5, n_syn_sets=len(synapses))
+
+    return all_synapses
