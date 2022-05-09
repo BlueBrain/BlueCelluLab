@@ -17,12 +17,13 @@ from typing import List
 import warnings
 
 import numpy as np
+import bluepy
 from bluepy.enums import Synapse as BLPSynapse
 from cachetools import LRUCache, cachedmethod
 import pandas as pd
 
 import bglibpy
-from bglibpy import bluepy, lazy_printv, tools
+from bglibpy import lazy_printv, tools
 from bglibpy.exceptions import BGLibPyError, ConfigError
 
 
@@ -483,11 +484,11 @@ class SSim:
     @staticmethod
     def merge_pre_spike_trains(*train_dicts) -> dict:
         """Merge presynaptic spike train dicts"""
-        train_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
+        filtered_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
 
-        all_keys = set().union(*[d.keys() for d in train_dicts])
+        all_keys = set().union(*[d.keys() for d in filtered_dicts])
         return {
-            k: np.sort(np.concatenate([d[k] for d in train_dicts if k in d]))
+            k: np.sort(np.concatenate([d[k] for d in filtered_dicts if k in d]))
             for k in all_keys
         }
 

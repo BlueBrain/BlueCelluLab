@@ -3,6 +3,7 @@
 import datetime
 import hashlib
 import re
+from typing import Set
 import string
 
 import bglibpy
@@ -11,7 +12,7 @@ from bglibpy import lazy_printv
 
 class NeuronTemplate:
     """NeuronTemplate representation."""
-    used_template_names = set()
+    used_template_names: Set[str] = set()
 
     @classmethod
     def load(cls, template_filename: str) -> str:
@@ -27,7 +28,7 @@ class NeuronTemplate:
             template_content = template_file.read()
 
         match = re.search(r"begintemplate\s*(\S*)", template_content)
-        template_name = match.group(1)
+        template_name = match.group(1)  # type:ignore
 
         neuron_versiondate_string = bglibpy.neuron.h.nrnversion(4)
         neuron_versiondate = datetime.datetime.strptime(

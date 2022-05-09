@@ -13,7 +13,6 @@ from greensFunctionCalculator import *
 # import sys
 # sys.path = ["/home/vangeit/local/bglibpy/lib64/python2.6/site-packages"]+ sys.path
 
-# from bglibpy import bluepy
 # import bluepy
 
 

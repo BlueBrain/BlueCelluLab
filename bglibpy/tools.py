@@ -13,6 +13,7 @@ import multiprocessing
 import multiprocessing.pool
 import os
 import sys
+from typing import Any, Dict
 import warnings
 from pathlib import Path
 
@@ -93,7 +94,7 @@ class deprecated:
         return rep_func
 
 
-def lazy_printv(message: str, verbose_level: int, **kwargs: dict) -> None:
+def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
     """Lazily print the message to stdout depending on the verbose level
 
        Parameters
@@ -103,7 +104,7 @@ def lazy_printv(message: str, verbose_level: int, **kwargs: dict) -> None:
        verbose_level: int
                       Message will only be printed if the verbose level is
                       higher or equal to this number
-        kwargs: dict
+        kwargs: Any
                 rest of the arguments to be used in formatting
     """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
@@ -465,7 +466,7 @@ class NoDaemonProcess(multiprocessing.Process):
     def _set_daemon(self, value):
         """Set daemon flag"""
         pass
-    daemon = property(_get_daemon, _set_daemon)
+    daemon = property(_get_daemon, _set_daemon)  # type:ignore
 
 # pylint: disable=W0223, R0911
 
@@ -732,7 +733,7 @@ class Singleton(type):
 
         Source: https://stackoverflow.com/a/6798042/1935611
     """
-    _instances = {}
+    _instances: Dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:

@@ -21,7 +21,7 @@ def _recursive_evaluate(node: ast.AST, context: Dict[str, Any]) -> Any:
         return func(*args)
     if isinstance(node, ast.Subscript):
         base = _recursive_evaluate(node.value, context)
-        index = _recursive_evaluate(node.slice.value, context)
+        index = _recursive_evaluate(node.slice.value, context)  # type: ignore
         return base[index]
     raise NeuronEvalError("Unexpected code!")
 
