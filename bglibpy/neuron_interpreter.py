@@ -1,9 +1,12 @@
 """Module to interpret neuron code strings."""
 
 import ast
+import sys
 from typing import Any, Dict
 
 from bglibpy import NeuronEvalError
+
+PY39_PLUS = sys.version_info >= (3, 9)
 
 
 def _recursive_evaluate(node: ast.AST, context: Dict[str, Any]) -> Any:
@@ -21,7 +24,10 @@ def _recursive_evaluate(node: ast.AST, context: Dict[str, Any]) -> Any:
         return func(*args)
     if isinstance(node, ast.Subscript):
         base = _recursive_evaluate(node.value, context)
-        index = _recursive_evaluate(node.slice.value, context)  # type: ignore
+        if PY39_PLUS:
+            index = _recursive_evaluate(node.slice, context)
+        else:
+            index = _recursive_evaluate(node.slice.value, context)  # type: ignore
         return base[index]
     raise NeuronEvalError("Unexpected code!")
 

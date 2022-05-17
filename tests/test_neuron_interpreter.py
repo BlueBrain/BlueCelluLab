@@ -28,3 +28,5 @@ def test_eval_neuron_with_cell():
     )
 
     eval_neuron("self.axonal[1](0.5)._ref_v", self=cell)
+    AXON_LOC = "self.axonal[1](0.5)._ref_v"
+    cell.add_recordings(["neuron.h._ref_t", AXON_LOC], dt=cell.record_dt)
