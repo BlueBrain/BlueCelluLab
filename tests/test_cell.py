@@ -95,17 +95,6 @@ class TestCellBaseClass1:
         assert math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001
         assert math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001
 
-    def test_add_recording(self):
-        """Cell: Test if add_recording gives deprecation warning"""
-        import warnings
-        warnings.simplefilter('default')
-        varname = 'self.apical[1](0.5)._ref_v'
-        with warnings.catch_warnings(record=True) as w:
-            self.cell.add_recording(varname)
-            assert(
-                len([warning for warning in w
-                     if issubclass(warning.category, DeprecationWarning)]) > 0)
-
     def test_get_hsection(self):
         """Cell: Test cell.get_hsection"""
         assert isinstance(
