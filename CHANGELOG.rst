@@ -2,8 +2,75 @@ Changelog
 =========
 
 
-4.6 (2022-02-25)
+4.7 (2022-05-24)
 ----------------
+- Include tests in coverage. [Anil Tuncel]
+- Support Simplify AST for subscription bpo-34822. [Anil Tuncel]
+- Add mypy to tox:lint environment. [Anil Tuncel]
+- Add self.hsynapse.gmax_NMDA in glusynapse helper #BBPBGLIB-809. [Anil
+  Tuncel]
+- Representing synapse description as a multiindex dataframe. [Anil
+  Tuncel]
+- Support debugging gids with prcellstate. [Sirio Bolaños Puchet]
+- Performance: lazily evaluate string expressions used in logging. [Anil
+  Tuncel]
+- Addressing some of pylint warnings. [Anil Tuncel]
+- Singleton RNG: __init__ can be run multiple times on the same
+  instance. [Anil Tuncel]
+
+  this is more intuitive for the end users
+- Add globalseed,synapseseed,ionchannelseed,stimulusseed,minisseed to
+  bglibpy.neuron.h. [Anil Tuncel]
+- Have a limited neuron interpreter to control neuron code evaluation.
+  [Anil Tuncel]
+- FIX glusynapse parser to read tau_d_AMPA parameter. [Anil Tuncel]
+- Remove unused cell attributes: netstims and pre_spiketrains. [Anil
+  Tuncel]
+- Refactor: use set comprehension in get_pre_gids. [Anil Tuncel]
+- Extract cell's plotting functionality to cell.plotting.PlottableMixin.
+  [Anil Tuncel]
+- Performance: avoid materialising mecombo parameters in ssim class.
+  [Anil Tuncel]
+- Fixing Ca++ dep. U_SE scaling of GluSynapse. [Ecker András]
+- Merge_pre_spike_train to always return a dict. [Anil Tuncel]
+- Use to_numpy for pandas to numpy conversion. [Anil Tuncel]
+
+  https://pandas-docs.github.io/pandas-docs-travis/whatsnew/v0.24.0.html\#accessing-the-values-in-a-series-or-index
+- Add support for SYNAPSES__minis_single_vesicle in conditions block.
+  [Anil Tuncel]
+- Parse SYNAPSES__init_depleted global condition parameter. [Anil
+  Tuncel]
+- Speeding up _parse_outdat() [András Ecker]
+- Tox run the v6 tests isolated. [Anil Tuncel]
+- Revert "DEBUG: run only test_relative_shotnoise in v6 and check rms in
+  assert" [Anil Tuncel]
+
+  This reverts commit f0259f6397dd55ea3a515a2c163f435d4bb9ffdc.
+- DEBUG: run only test_relative_shotnoise in v6 and check rms in assert.
+  [Anil Tuncel]
+- Add test comparing relative shot noise to Neurodamus. [SBP]
+- Update test_add_replay_relative_shotnoise. [SBP]
+- Fix ssim to use new parameters in add_replay*shotnoise. [SBP]
+- Take section and segx as parameters in add_replay_shotnoise. [Anil
+  Tuncel]
+- Unit tests to check edge cases in shotnoise. [Anil Tuncel]
+- Add unit test for test_add_replay_relative_shotnoise. [Anil Tuncel]
+- Pass section and segx as argument to add_replay_relative_shotnoise.
+  [Anil Tuncel]
+- Use 0 as default value for stim count in
+  add_replay_relative_shotnoise. [Anil Tuncel]
+- Add unit test test_get_relative_shotnoise_params. [Anil Tuncel]
+- Add unit test for add_shotnoise_step. [Anil Tuncel]
+- Use 0 as default value for shotnoise_stim_count to prevent type error.
+  [Anil Tuncel]
+- Implement shot noise stimuli. [SBP]
+- Refactor Cell class: add injector, template, section_distance modules.
+  [Anil Tuncel]
+
+
+4.6 (2022-02-28)
+----------------
+- Docs: update CHANGELOG.rst. [Anil Tuncel]
 - Docs: update bglibpy and neurodamus repository urls. [Anil Tuncel]
 - Docs: updated documentation link on package json. [Anil Tuncel]
 - Glusynapse support #bglpy-86. [Anil Tuncel]
