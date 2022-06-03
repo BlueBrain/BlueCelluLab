@@ -1011,32 +1011,24 @@ class SSim:
         time = report.get_gid(report.gids[0]).index.to_numpy()
         return time
 
-    @tools.deprecated("get_voltage_trace")
-    def get_voltage_traces(self):
-        """Get the voltage traces from all the cells as a dictionary
-           based on gid"""
-        vm = {}
-        for gid in self.gids:
-            vm[gid] = self.cells[gid].get_soma_voltage()
-        return vm
-
     def get_time(self):
-        """Get the time vector for the recordings"""
+        """Get the time vector for the recordings, contains negative times.
+
+        The negative times occur as a result of ForwardSkip.
+        """
         return self.cells[self.gids[0]].get_time()
 
     def get_time_trace(self):
         """Get the time vector for the recordings, negative times removed"""
-        time = self.cells[self.gids[0]].get_time()
-        pos_time = time[np.where(time >= 0.0)]
-        return pos_time
+        time = self.get_time()
+        return time[np.where(time >= 0.0)]
 
     def get_voltage_trace(self, gid):
         """Get the voltage vector for the gid, negative times removed"""
 
         time = self.get_time()
         voltage = self.cells[gid].get_soma_voltage()
-        pos_voltage = voltage[np.where(time >= 0.0)]
-        return pos_voltage
+        return voltage[np.where(time >= 0.0)]
 
     def delete(self):
         """Delete ssim"""

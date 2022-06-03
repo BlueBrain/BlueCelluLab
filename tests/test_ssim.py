@@ -176,7 +176,6 @@ class TestSSimBaseClass_twocell_forwardskip:
         """SSim: Test get_time_trace and get_voltage_trace return pos values"""
 
         time = self.ssim_bglibpy.get_time()
-        voltage = self.ssim_bglibpy.get_voltage_traces()[self.gid]
         time_trace = self.ssim_bglibpy.get_time_trace()
         voltage_trace = self.ssim_bglibpy.get_voltage_trace(self.gid)
 
@@ -185,7 +184,7 @@ class TestSSimBaseClass_twocell_forwardskip:
         assert len(time[np.where(time >= 0.0)]) == time_trace_len
         assert len(time[np.where(time < 0.0)]) == 10
 
-        assert len(voltage) == time_len
+        assert time_len == time_trace_len + 10
 
         assert len(voltage_trace) == time_trace_len
 

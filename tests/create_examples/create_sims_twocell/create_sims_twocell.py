@@ -144,7 +144,7 @@ def main():
     import pylab
     pylab.figure()
     time_bglibpy = ssim_bglibpy.get_time()
-    voltage_bglibpy = ssim_bglibpy.get_voltage_traces()[1]
+    voltage_bglibpy = ssim_bglibpy.get_voltage_trace(1)
     pylab.plot(time_bglibpy, voltage_bglibpy, 'b-', label="BGLibPy")
     pylab.plot(
         ssim_bglib.bc_simulation.reports.soma.time_range,
