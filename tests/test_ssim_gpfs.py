@@ -7,6 +7,7 @@ import os
 
 import numpy as np
 import pytest
+from pytest import approx
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
@@ -557,6 +558,17 @@ class TestSSimBaseClassSingleVesicleMinis:
         rms_error = np.sqrt(np.mean(voltage_diff ** 2))
 
         assert rms_error < 14.91
+
+
+@pytest.mark.v6
+def test_node_dynamics_params():
+    """To assure dynamics params from sonata get extacted correctly."""
+    config = "/gpfs/bbp.cscs.ch/project/proj148/scratch/V1/CircuitConfig"
+    ssim = bglibpy.SSim(config)
+    cell_info = ssim.bc_circuit.cells.get(1)
+    assert cell_info["@dynamics:holding_current"] == approx(-0.025167, abs=1e-6)
+    assert cell_info["@dynamics:threshold_current"] == approx(0.054562, abs=1e-6)
+    assert cell_info["@dynamics:AIS_scaler"] == approx(2.220992, abs=1e-6)
 
 
 @pytest.mark.v6

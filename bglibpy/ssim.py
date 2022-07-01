@@ -1119,20 +1119,40 @@ class SSim:
             (self.fetch_morph_name(gid), self.morph_extension)
 
         if self.use_mecombotsv or self.node_properties_available:
-            emodel_properties = self.bc_circuit.emodels.get_mecombo_info(gid)
-            extra_values = {
-                'threshold_current': emodel_properties["threshold_current"],
-                'holding_current': emodel_properties["holding_current"]
-            }
+            template_format = 'v6'
+
+            if self.use_mecombotsv:
+                emodel_properties = self.bc_circuit.emodels.get_mecombo_info(gid)
+                extra_values = {
+                    'threshold_current': emodel_properties["threshold_current"],
+                    'holding_current': emodel_properties["holding_current"]
+                }
+            elif self.node_properties_available:
+                emodel_properties = self.bc_circuit.cells.get(
+                    gid,
+                    properties=["@dynamics:threshold_current", "@dynamics:holding_current", ],
+                )
+                extra_values = {
+                    'threshold_current': emodel_properties["@dynamics:threshold_current"],
+                    'holding_current': emodel_properties["@dynamics:holding_current"]
+                }
+
+                if "@dynamics:AIS_scaler" in self.bc_circuit.cells.available_properties:
+                    template_format = 'v6_ais_scaler'
+                    extra_values['AIS_scaler'] = self.bc_circuit.cells.get(
+                        gid,
+                        properties=["@dynamics:AIS_scaler", ])["@dynamics:AIS_scaler"]
+
             cell_kwargs = {
                 'template_filename': emodel_path,
                 'morphology_name': morph_filename,
                 'gid': gid,
                 'record_dt': self.record_dt,
+                'rng_settings': self.rng_settings,
+
+                'template_format': template_format,
                 'morph_dir': self.morph_dir,
-                'template_format': 'v6',
                 'extra_values': extra_values,
-                'rng_settings': self.rng_settings
             }
         else:
             cell_kwargs = {
@@ -1140,7 +1160,7 @@ class SSim:
                 'morphology_name': self.morph_dir,
                 'gid': gid,
                 'record_dt': self.record_dt,
-                'rng_settings': self.rng_settings
+                'rng_settings': self.rng_settings,
             }
 
         return cell_kwargs
