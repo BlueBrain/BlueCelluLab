@@ -358,19 +358,13 @@ class Synapse:
         if extracellular_calcium is None or u_hill_coefficient is None:
             return 1.0
 
-        def hill(extracellular_calcium, y, K_half):
-            return y * extracellular_calcium**4 / (
-                K_half**4 + extracellular_calcium**4)
+        def constrained_hill(K_half, y) -> float:
+            """Calculates the constrained hill coefficient."""
+            K_half_fourth = K_half**4
+            y_fourth = y**4
+            return (K_half_fourth + 16) / 16 * y_fourth / (K_half_fourth + y_fourth)
 
-        def constrained_hill(K_half):
-            y_max = (K_half**4 + 16) / 16
-            return lambda x: hill(x, y_max, K_half)
-
-        def f_scale(x, y):
-            return constrained_hill(x)(y)
-
-        u_scale_factor = np.vectorize(f_scale)(u_hill_coefficient,
-                                               extracellular_calcium)
+        u_scale_factor = constrained_hill(u_hill_coefficient, extracellular_calcium)
         lazy_printv(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %
