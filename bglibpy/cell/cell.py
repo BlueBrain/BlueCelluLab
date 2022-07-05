@@ -800,8 +800,7 @@ class Cell(InjectableMixin, PlottableMixin):
                         self.rng_settings.minis_seed
                 else:
                     raise ValueError(
-                        "Cell: Unknown rng mode: %s" %
-                        self.rng_settings.mode)
+                        f"Cell: Unknown rng mode: {self.rng_settings.mode}")
 
                 exprng.MCellRan4(exp_seed1, exp_seed2)
                 exprng.negexp(1.0)
@@ -1050,8 +1049,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def hsynapses(self):
         """Contains a dictionary of all the hoc synapses
         in the cell with as key the gid"""
-        return dict((gid, synapse.hsynapse) for (gid, synapse)
-                    in self.synapses.items())
+        return {gid: synapse.hsynapse for (gid, synapse) in self.synapses.items()}
 
     def __del__(self):
         self.delete()

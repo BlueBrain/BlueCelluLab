@@ -168,15 +168,6 @@ class TestInjector:
         assert tstim.stim.to_python() == [0.0, 0.1104372, 0.1104372, 0.0, 0.0]
         assert tstim.tvec.to_python() == [4.0, 4.0, 24.0, 24.0, 24.0]
 
-    def test_gen_shotnoise_signal(self):
-        rng = bglibpy.neuron.h.Random()
-        rng.Random123(1, 2, 3)
-        time_vec, stim_vec = self.cell._gen_shotnoise_signal(4.0, 0.4, 2E3, 40E-3, 16E-4, 2,
-                                                             rng=rng)
-        assert list(time_vec) == approx([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
-        assert list(stim_vec) == approx([0.0, 0.0, 0.0, 0.0, 0.0, 0.0700357,
-                                         0.1032799, 0.1170881, 0.1207344, 0.0])
-
     def test_get_shotnoise_step_rand(self):
         rng_obj = bglibpy.RNGSettings()
         rng_obj.mode = "Random123"
@@ -230,15 +221,6 @@ class TestInjector:
              0.0137462, 0.034025, 0.04967694, 0.05614846, 0.]))
         assert tvec.to_python() == approx(
             [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
-
-    def test_get_relative_shotnoise_params(self):
-        """Unit test for _get_relative_shotnoise_params."""
-        rate, amp_mean, amp_var = self.cell._get_relative_shotnoise_params(
-            mean=40e-3, var=16e-4, tau_D=4.0, tau_R=0.4, cv_square=0.63**2
-        )
-        assert rate == approx(158.73863636363635)
-        assert amp_mean == approx(0.048776006926722876)
-        assert amp_var == approx(0.0009442643342459686)
 
     def test_add_replay_relative_shotnoise(self):
         """Unit test for add_replay_relative_shotnoise."""
