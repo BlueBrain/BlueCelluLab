@@ -14,9 +14,9 @@ def create_extracted_circuit(old_circuitname, output_path):
     "..."
     circuit = bluepy.Circuit(old_circuitname)
 
-    print '#########'
-    print circuit
-    print '#########'
+    print('#########')
+    print(circuit)
+    print('#########')
 
     # gids = circuit.mvddb.select_gids(bluepy.targets.mvddb.Neuron.hyperColumn==2, bluepy.targets.mvddb.MType.name=="L5_TTPC1")[:2]
     # [76477, 76478]
@@ -28,7 +28,7 @@ def create_extracted_circuit(old_circuitname, output_path):
     extracted.extract_and_write(output_path, keep_empty_targets=False)
 
     new_circuitconfig = os.path.join(output_path, "CircuitConfig")
-    print new_circuitconfig
+    print(new_circuitconfig)
     with open(new_circuitconfig, "r") as new_circuitconfig_file:
         new_circuitconfig_content = new_circuitconfig_file.read()
 
@@ -49,8 +49,8 @@ def create_extracted_circuit(old_circuitname, output_path):
 def main():
     """Main"""
 
-    print 'Create a test circuit with just two cells from %s' \
-        % "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig"
+    print('Create a test circuit with just two cells from %s' \
+        % "/bgscratch/bbp/circuits/23.07.12/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/CircuitConfig")
 
     output_path = "../../examples/circuit_twocell_example1/"
     shutil.rmtree(output_path)

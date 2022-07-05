@@ -34,11 +34,11 @@ def surface(r, h):
 cell = bglibpy.Cell("ballstick.hoc", "./")
 soma_L, soma_D, soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
     0.5, sec=cell.soma)
-print 'SOMA L=%f, diam=%f,surf=%f' % (soma_L, soma_D, soma_A)
+print('SOMA L=%f, diam=%f,surf=%f' % (soma_L, soma_D, soma_A))
 
 dend0_L, dend0_D, dend0_A = cell.basal[0].L, cell.basal[0].diam, \
     bglibpy.neuron.h.area(0.5, sec=cell.basal[0])
-print 'DENDRITE L=%f, diam=%f,surf=%f' % (dend0_L, dend0_D, dend0_A)
+print('DENDRITE L=%f, diam=%f,surf=%f' % (dend0_L, dend0_D, dend0_A))
 
 ''' I assume uniform passive properties shared by the soma and dendrites '''
 CM = cell.soma.cm
@@ -66,7 +66,7 @@ def run_hines_bs(soma_l, soma_d):
     dend.L = dend0_L
     dend.diam = dend0_D
     dend.nseg = cell.basal[0].nseg
-    print 'rune_hines: dend.nseg=%f' % (dend.nseg)
+    print('rune_hines: dend.nseg=%f' % (dend.nseg))
     dend.cm = CM
     dend.Ra = RA
     dend.insert('pas')
@@ -106,7 +106,7 @@ def run_hines_bs(soma_l, soma_d):
 
 d_derived = 10
 l_derived = soma_A / (2 * np.pi * d_derived / 2.0)
-print 'soma_A=%f, derived D=%f, L=%f -> A=%f' % (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived))
+print('soma_A=%f, derived D=%f, L=%f -> A=%f' % (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived)))
 hines_t, hines_v = run_hines_bs(l_derived, d_derived)
 plt.plot(hines_t, hines_v, label='PyNEURON - ExpSyn')
 

@@ -15,7 +15,7 @@ def create_extracted_simulation(
         fill_outdat=False):
     """..."""
 
-    print "Creating new example in %s" % output_path
+    print("Creating new example in %s" % output_path)
     outputdir = os.path.join(output_path, "output")
     # pylint: disable=W0704
     try:
@@ -67,10 +67,10 @@ def create_extracted_simulation(
     outdat_file.close()
 
     import subprocess
-    print os.getcwd()
-    print "Running Neurodamus ..."
+    print(os.getcwd())
+    print("Running Neurodamus ...")
     subprocess.call("./run.sh")
-    print "Neurodamus finished"
+    print("Neurodamus finished")
 
     os.chdir("output")
 
@@ -89,7 +89,7 @@ def main():
     dt = 0.025
     record_dt = 0.1
 
-    print 'Create a test simulation with just two cells and no extra blocks in the BlueConfig'
+    print('Create a test simulation with just two cells and no extra blocks in the BlueConfig')
 
     with open("templates/run.sh.template") as runsh_templatefile:
         runsh_template = runsh_templatefile.read()

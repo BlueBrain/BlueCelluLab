@@ -18,13 +18,13 @@ def main():
         synapse_detail=2)
 
     cell_info_dict = ssim_bglibpy.cells[1].info_dict
-    print 'Content:', cell_info_dict
+    print('Content:', cell_info_dict)
 
     cell_info_dict_filename = 'cell1_info_dict.pickle'
-    print 'Writing file %s ...' % cell_info_dict_filename,
+    print('Writing file %s ...' % cell_info_dict_filename, end=' ')
     with open(cell_info_dict_filename, 'w') as cell_info_dict_file:
         pickle.dump(cell_info_dict, cell_info_dict_file)
-    print 'Done'
+    print('Done')
 
 
 if __name__ == '__main__':

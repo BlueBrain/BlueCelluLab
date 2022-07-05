@@ -131,7 +131,7 @@ class greensFunctionCalculator:
         self.HH = HH
 
         if readconfig == 1:
-            from ConfigParser import ConfigParser
+            from configparser import ConfigParser
             conffile = conffilename
             fid = open(conffile, 'r')
             config = ConfigParser()
@@ -269,7 +269,7 @@ class greensFunctionCalculator:
                 soma
         '''
         synseg = synapsedendrite
-        inds = np.array(range(len(self.diams)))
+        inds = np.array(list(range(len(self.diams))))
         nosynseg = np.where(inds != synseg)[0]
         L = self.lengths[synseg]
         D = synapseloc * L
@@ -455,9 +455,9 @@ class greensFunctionCalculator:
 
         # ~ fftarr[0] = sum((arr[0:-1]+arr[1:])/2.)*(ds)/(2*math.pi)
         if test == 1:
-            print 'Tests:'
-            print 'Int: ', sum((arr[0:-1] + arr[1:]) / 2.) * (ds) / (2 * math.pi), ', Trans zero freq: ', fftarr[0]
-            print 'G zero_freq: ', arr[len(samplefreqs) / 2].real, ', G integral: ', (fftarr[0].real / 2. + sum(fftarr[1:-1].real) + fftarr[-1].real / 2.) * dt
+            print('Tests:')
+            print('Int: ', sum((arr[0:-1] + arr[1:]) / 2.) * (ds) / (2 * math.pi), ', Trans zero freq: ', fftarr[0])
+            print('G zero_freq: ', arr[len(samplefreqs) / 2].real, ', G integral: ', (fftarr[0].real / 2. + sum(fftarr[1:-1].real) + fftarr[-1].real / 2.) * dt)
 
         return fftarr.real, t
 
@@ -523,7 +523,7 @@ class pneuron:
         self.E_eq = E_eq
         self.E_r = E_r
         if readconfig == 1:
-            from ConfigParser import ConfigParser
+            from configparser import ConfigParser
             conffile = conffilename
             fid = open(conffile, 'r')
             config = ConfigParser()
@@ -712,7 +712,7 @@ class aneuron:
         self.HHparams = []
 
         if readconfig == 1:
-            from ConfigParser import ConfigParser
+            from configparser import ConfigParser
             conffile = 'ball2stick.cfg'
             fid = open(conffile, 'r')
             config = ConfigParser()
