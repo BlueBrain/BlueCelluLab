@@ -16,12 +16,12 @@ class TestInjector:
     """Test the InjectMixin."""
 
     @classmethod
-    def setup_method(self):
-        self.cell = bglibpy.Cell(
-            "%s/examples/cell_example1/test_cell.hoc" % script_dir,
-            "%s/examples/cell_example1/test_cell.asc" % script_dir)
-        self.sim = bglibpy.Simulation()
-        self.sim.add_cell(self.cell)
+    def setup_method(cls):
+        cls.cell = bglibpy.Cell(f"{script_dir}/examples/cell_example1/test_cell.hoc",
+                                f"{script_dir}/examples/cell_example1/test_cell.asc")
+
+        cls.sim = bglibpy.Simulation()
+        cls.sim.add_cell(cls.cell)
 
     def test_inject_pulse(self):
         """Test the pulse train injection."""
