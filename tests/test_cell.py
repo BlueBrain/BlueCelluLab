@@ -64,8 +64,8 @@ def test_shorten_and_hash_string():
     long_label = "test-cell" * 10
     assert len(shorten_and_hash_string(long_label)) < len(long_label)
 
-class TestCellBaseClass1:
 
+class TestCellBaseClass1:
     """First Cell test class"""
 
     def setup(self):
@@ -180,7 +180,7 @@ class TestCellBaseClass1:
                 sec=hsection2)
             import numpy as np
             distance_hand = np.sqrt((x1 - x2) ** 2
-                                       + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+                                    + (y1 - y2) ** 2 + (z1 - z2) ** 2)
             assert distance_euclid == distance_hand
 
 

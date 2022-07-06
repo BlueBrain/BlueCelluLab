@@ -26,7 +26,7 @@ class TestInjector:
     def test_inject_pulse(self):
         """Test the pulse train injection."""
         stimulus = {
-            "Delay": 2, "Duration": 20, "AmpStart": 4,"Frequency": 5, "Width": 2}
+            "Delay": 2, "Duration": 20, "AmpStart": 4, "Frequency": 5, "Width": 2}
         tstim = self.cell.add_pulse(stimulus)
         assert tstim.stim.to_python() == [0.0, 4.0, 4.0, 0.0, 0.0]
         assert tstim.tvec.to_python() == [2.0, 2.0, 4.0, 4.0, 22.0]
@@ -43,7 +43,7 @@ class TestInjector:
 
     def test_inject_ramp(self):
         """Test the ramp injection."""
-        tstim = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level= 0.5, stop_level=1)
+        tstim = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level=0.5, stop_level=1)
         assert tstim.stim.to_python() == [0.0, 0.0, 0.5, 1.0, 0.0, 0.0]
         assert tstim.tvec.to_python() == [0.0, 2.0, 2.0, 6.0, 6.0, 6.0]
 
@@ -56,7 +56,7 @@ class TestInjector:
         seclamp_obj = self.cell.add_voltage_clamp(
             stop_time=stop_time, level=amp, rs=rs,
             current_record_name=n_recording
-            )
+        )
         assert seclamp_obj.amp1 == amp
         assert seclamp_obj.dur1 == stop_time
         assert seclamp_obj.rs == rs
@@ -78,7 +78,7 @@ class TestInjector:
         seclamp_obj = self.cell.add_voltage_clamp(
             stop_time=stop_time, level=amp, rs=rs,
             current_record_name=n_recording
-            )
+        )
         assert seclamp_obj.amp1 == amp
         assert seclamp_obj.dur1 == stop_time
         assert seclamp_obj.rs == rs
@@ -86,7 +86,7 @@ class TestInjector:
         self.sim.run(10, dt=1, cvode=False)
         current = self.cell.get_recording("test_volt_clamp_dt")
         assert current == approx(np.array(
-            [ 66.5, -10.76796553, 17.8876999, 13.47384441, 12.09052411]), abs=1e-3)
+            [66.5, -10.76796553, 17.8876999, 13.47384441, 12.09052411]), abs=1e-3)
 
     def test_get_noise_step_rand(self):
         """Unit test for _get_noise_step_rand."""
@@ -99,7 +99,7 @@ class TestInjector:
         rng.Random123()
         rng.poisson(4)
         rng.MCellRan4()
-        assert rng.uniform(1,15) == 2.9755221367813647
+        assert rng.uniform(1, 15) == 2.9755221367813647
 
     def test_add_noise_step(self):
         """Test adding a step current with noise on top."""
@@ -116,7 +116,8 @@ class TestInjector:
              1.7068988305615118, 1.7574514888132944, 2.055318487170783,
              1.8673307717912755, 1.932569903725156, 1.9394341839268754,
              1.8843667144133713, 1.8175816051992186, 1.927545675194812, 0.0]))
-        assert tstim.tvec.to_python() == [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,
+        assert tstim.tvec.to_python() == [
+            2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,
             5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 0.0]
 
     def test_add_noise_step_with_seed(self):
@@ -130,18 +131,19 @@ class TestInjector:
         assert tstim.stim.as_numpy() == approx(np.array(
             [0., 1.84104848, 1.97759473, 2.22855241, 1.80930735,
              2.09799701, 2.10379869, 2.29691643, 2.26258353, 2.14120033,
-             1.93326057, 1.94724241, 1.87856356, 2.4008308 , 1.91991524,
+             1.93326057, 1.94724241, 1.87856356, 2.4008308, 1.91991524,
              1.50814262, 1.83374623, 0.]))
 
-        assert tstim.tvec.to_python() == [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,
-         5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 0.0]
+        assert tstim.tvec.to_python() == [
+            2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,
+            5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 0.0]
 
     def test_add_replay_noise(self):
         """Unit test for add_replay_noise."""
         rng_obj = bglibpy.RNGSettings()
         rng_obj.mode = "Compatibility"
         stimulus = {
-            "MeanPercent": 1, "Variance": 0.1, "Delay": 4,"Duration": 10}
+            "MeanPercent": 1, "Variance": 0.1, "Delay": 4, "Duration": 10}
         tstim = self.cell.add_replay_noise(stimulus, noise_seed=1)
         assert tstim.stim.as_numpy() == approx(np.array(
             [0., -0.00780348, 0.00048122, 0.01570763, -0.00972932,
@@ -149,7 +151,8 @@ class TestInjector:
              -0.00220868, -0.00136035, -0.00552732, 0.02616032, -0.00301838,
              -0.02800195, -0.00824653, -0.00273605, 0.00022639, 0.009682,
              0.00787559, 0.]), abs=1e-5)
-        assert tstim.tvec.to_python() == [4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0,
+        assert tstim.tvec.to_python() == [
+            4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0,
             7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0,
             13.5, 14.0, 0.0]
 
@@ -235,9 +238,9 @@ class TestInjector:
         segx = 0.5
         tvec, svec = self.cell.add_replay_relative_shotnoise(soma, segx, stimulus)
         assert svec.to_python() == approx([0., 0., 0., 0., 0.0204470197, 0.0301526984,
-                                    0.0341840080, 0.0352485557, 0.0347913472, 0.])
+                                          0.0341840080, 0.0352485557, 0.0347913472, 0.])
         assert tvec.to_python() == approx([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                                    2.0, 2.0])
+                                          2.0, 2.0])
 
         with raises(BGLibPyError):
             invalid_stim = {"DecayTime": 4.0, "RiseTime": 4.0, "Dt": 0.25,

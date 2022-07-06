@@ -10,6 +10,7 @@ from bglibpy.neuron_interpreter import eval_neuron
 
 script_dir = os.path.dirname(__file__)
 
+
 def test_eval_neuron():
     """Unit test for the eval_neuron function."""
     eval_neuron("bglibpy.neuron.h.nil", bglibpy=bglibpy)
@@ -19,6 +20,7 @@ def test_eval_neuron():
         eval_neuron("bglibpy.neuron.h.nil; 2-1", bglibpy=bglibpy)
     with raises(NeuronEvalError):
         eval_neuron("a=1")
+
 
 def test_eval_neuron_with_cell():
     """Test the eval neuron function using a cell."""

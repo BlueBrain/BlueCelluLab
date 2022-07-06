@@ -5,6 +5,7 @@ from pytest import approx
 
 from bglibpy import Synapse
 
+
 def test_calc_u_scale_factor():
     """Test calculation of u_scale_factor against its old implementation."""
     def hill(extracellular_calcium, y, K_half):

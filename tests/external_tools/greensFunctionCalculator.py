@@ -1,10 +1,9 @@
 import math
-import os
 import time
-from sys import argv, stdout
+from sys import stdout
 
 import numpy as np
-import scipy.optimize
+
 
 # auxiliary tanh function because the numpy one is bad
 
@@ -456,8 +455,10 @@ class greensFunctionCalculator:
         # ~ fftarr[0] = sum((arr[0:-1]+arr[1:])/2.)*(ds)/(2*math.pi)
         if test == 1:
             print('Tests:')
-            print('Int: ', sum((arr[0:-1] + arr[1:]) / 2.) * (ds) / (2 * math.pi), ', Trans zero freq: ', fftarr[0])
-            print('G zero_freq: ', arr[len(samplefreqs) / 2].real, ', G integral: ', (fftarr[0].real / 2. + sum(fftarr[1:-1].real) + fftarr[-1].real / 2.) * dt)
+            print('Int: ', sum((arr[0:-1] + arr[1:]) / 2.) * (ds) /
+                  (2 * math.pi), ', Trans zero freq: ', fftarr[0])
+            print('G zero_freq: ', arr[len(samplefreqs) / 2].real, ', G integral: ',
+                  (fftarr[0].real / 2. + sum(fftarr[1:-1].real) + fftarr[-1].real / 2.) * dt)
 
         return fftarr.real, t
 

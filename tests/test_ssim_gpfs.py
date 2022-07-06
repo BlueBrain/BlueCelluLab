@@ -14,8 +14,10 @@ import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
+
 def proj_path(n):
     return f"/gpfs/bbp.cscs.ch/project/proj{n}/"
+
 
 # Example ReNCCv2 sim used in BluePy use cases
 renccv2_bc_1_path = os.path.join(
@@ -91,9 +93,9 @@ test_relative_shotnoise_path = os.path.join(
     "BlueConfig"
 )
 
+
 @pytest.mark.v5
 class TestSSimBaseClass_full_run:
-
     """Class to test SSim with full circuit"""
 
     def setup(self):
@@ -589,7 +591,7 @@ def test_ssim_glusynapse():
     ssim = bglibpy.SSim(plasticity_sim_path, record_dt=0.1)
     gids = [3424064, 3424037]
     ssim.instantiate_gids(gids, add_synapses=True, add_stimuli=True,
-        add_replay=False, intersect_pre_gids=[3424064])
+                          add_replay=False, intersect_pre_gids=[3424064])
     tstop = 750
     ssim.run(tstop)
     cell = gids[1]  # postcell
@@ -601,11 +603,10 @@ def test_ssim_glusynapse():
 
 
 @pytest.mark.v6
-@pytest.mark.parametrize("sim_path,expected_val",[
+@pytest.mark.parametrize("sim_path,expected_val", [
     (plasticity_sim_path, (0.12349485646988291, 0.04423470638285594)),
     (risetime_sim_path, (0.12349485646988291, 0.04423470638285594)),
-    (no_rand_risetime_sim_path, (0.2, 0.2))
-    ])
+    (no_rand_risetime_sim_path, (0.2, 0.2))])
 def test_ssim_rand_gabaab_risetime(sim_path, expected_val):
     """Test for randomize_Gaba_risetime in BlueConfig Conditions block."""
     ssim = bglibpy.SSim(sim_path, record_dt=0.1)

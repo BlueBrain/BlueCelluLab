@@ -198,7 +198,7 @@ def test_syn_dict_proj83_sim1():
     a_syn_idx = ('', 313)
 
     syn_params_gt = np.array(
-        [2.52158100e+06,  7.25000000e-01, 1.29000000e+02, -1.00000000e+00,
+        [2.52158100e+06, 7.25000000e-01, 1.29000000e+02, -1.00000000e+00,
          4.69802350e-01, 7.61569560e-01, 4.97424483e-01, 6.66551819e+02,
          1.65781898e+01, 1.79162169e+00, 1.14000000e+02, 1.00000000e+00,
          2.78999996e+00, 6.99999988e-01, 0, 0])
@@ -244,7 +244,7 @@ def test_syn_dict_proj55_sim1_with_projections():
     ssim = bglibpy.SSim(blueconfig)
     syn_descriptions = ssim.get_syn_descriptions(
         gid, projections=["ML_afferents", "CT_afferents"]
-        )
+    )
 
     assert len(syn_descriptions) == 488
     ml_afferent_syn_idx = ("ML_afferents", 5)

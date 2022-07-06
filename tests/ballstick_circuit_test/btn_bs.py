@@ -51,12 +51,12 @@ def compute_some_settings_from_ASC_file():
     cell = bglibpy.Cell("ballstick.hoc", "./")
     soma_L, soma_D, soma_A = cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
         0.5, sec=cell.soma)
-    print ('SOMA L=%f, diam=%f,surf=%f' % (soma_L, soma_D, soma_A))
+    print('SOMA L=%f, diam=%f,surf=%f' % (soma_L, soma_D, soma_A))
 
     dend0_L, dend0_D, dend0_A = cell.basal[0].L, cell.basal[0].diam, \
         bglibpy.neuron.h.area(0.5, sec=cell.basal[0])
     dend0_NSEG = cell.basal[0].nseg
-    print ('DENDRITE L=%f, diam=%f,surf=%f' % (dend0_L, dend0_D, dend0_A))
+    print('DENDRITE L=%f, diam=%f,surf=%f' % (dend0_L, dend0_D, dend0_A))
 
     ''' I assume uniform passive properties shared by the soma and dendrites '''
     CM = cell.soma.cm
@@ -80,7 +80,7 @@ def run_hines_bs(soma_l, soma_d):
     dend.L = dend0_L
     dend.diam = dend0_D
     dend.nseg = dend0_NSEG
-    print ('rune_hines: dend.nseg=%f' % (dend.nseg))
+    print('rune_hines: dend.nseg=%f' % (dend.nseg))
     dend.cm = CM
     dend.Ra = RA
     dend.insert('pas')
@@ -132,7 +132,7 @@ def run_analytic(dt):
     outF.write('diams: [%f]\n' % (dend0_D))
     outF.close()
 
-    print ('going to do the analytical stuff')
+    print('going to do the analytical stuff')
     v_willem, t_willem = compute_system([[SYN_ACTIVATION_T]], T_STOP, dt,
                                         conffile_name=f_name, numsyn=1,
                                         syndend=[0], synloc=[SYN_LOC],
@@ -175,8 +175,8 @@ def test_bs_expsyn_pyneuron_vs_bglibpy(graph=False):
     ''' Run the Golden Standard: PyNEURON '''
     d_derived = 10
     l_derived = soma_A / (2 * np.pi * d_derived / 2.0)
-    print ('soma_A=%f, derived D=%f, L=%f -> A=%f' % \
-        (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived)))
+    print('soma_A=%f, derived D=%f, L=%f -> A=%f' %
+          (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived)))
     hines_t, hines_v = run_hines_bs(l_derived, d_derived)
 
     ''' Run with bglibpy (Werner) '''
@@ -201,8 +201,8 @@ def test_bs_expsyn_pyneuron_vs_analytic(graph=False):
     ''' Run the Golden Standard: PyNEURON '''
     d_derived = 10
     l_derived = soma_A / (2 * np.pi * d_derived / 2.0)
-    print ('soma_A=%f, derived D=%f, L=%f -> A=%f' % \
-        (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived)))
+    print('soma_A=%f, derived D=%f, L=%f -> A=%f' %
+          (soma_A, d_derived, l_derived, surface(d_derived / 2.0, l_derived)))
     hines_t, hines_v = run_hines_bs(l_derived, d_derived)
 
     ''' Compute the Pseudo/Semi-Analytical solution (Willem)'''

@@ -57,12 +57,13 @@ def test_merge_pre_spike_trains():
             train2,
             train3))
 
+
 class TestConditionParameters:
     """Tests the parsing and evaluation of condition parameters."""
 
     def setup(self):
         conf_pre_path = os.path.join(
-        script_dir, "examples", "sim_twocell_all")
+            script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
         modified_conf = bglibpy.tools.blueconfig_append_path(
@@ -149,8 +150,8 @@ class TestSonataNodeInput:
 
         assert ssim.node_properties_available
 
-class TestSSimBaseClass_twocell_forwardskip:
 
+class TestSSimBaseClass_twocell_forwardskip:
     """Class to test SSim with two cell circuit"""
 
     def setup(self):
