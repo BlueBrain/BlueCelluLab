@@ -9,6 +9,19 @@ from bglibpy.cell.random import gamma
 
 def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
                          duration, dt=0.25, rng=None):
+    """
+    Adds a Poisson shot noise signal with gamma-distributed amplitudes and
+    bi-exponential impulse response.
+
+    tau_D: bi-exponential decay time [ms]
+    tau_R: bi-exponential rise time [ms]
+    rate: Poisson event rate [Hz]
+    amp_mean: mean of gamma-distributed amplitudes [nA]
+    amp_var: variance of gamma-distributed amplitudes [nA^2]
+    duration: duration of signal [ms]
+    dt: timestep [ms]
+    rng: random number generator object
+    """
     if rng is None:
         lazy_printv("Using a default RNG for shot noise generation", 50)
         rng = bglibpy.neuron.h.Random()  # Creates a default RNG
