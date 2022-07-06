@@ -112,3 +112,50 @@ def get_relative_shotnoise_params(mean, var, tau_D, tau_R, cv_square):
     amp_var = cv_square * amp_mean ** 2
 
     return rate, amp_mean, amp_var
+
+
+def gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt=0.25, rng=None):
+    """
+    Adds an Ornstein-Uhlenbeck process with given correlation time,
+    standard deviation and mean value.
+
+    tau: correlation time [ms], white noise if zero
+    sigma: standard deviation [uS]
+    mean: mean value [uS]
+    duration: duration of signal [ms]
+    dt: timestep [ms]
+    rng: random number generator object
+    """
+
+    if rng is None:
+        lazy_printv("Using a default RNG for Ornstein-Uhlenbeck process", 50)
+        rng = bglibpy.neuron.h.Random()  # Creates a default RNG
+
+    tvec = bglibpy.neuron.h.Vector()
+    tvec.indgen(0, duration, dt)  # time vector
+    ntstep = len(tvec)  # total number of timesteps
+
+    svec = bglibpy.neuron.h.Vector(ntstep, 0)  # stim vector
+
+    noise = bglibpy.neuron.h.Vector(ntstep)  # Gaussian noise
+    rng.normal(0.0, 1.0)
+    noise.setrand(rng)  # generate Gaussian noise
+
+    if tau < 1e-9:
+        svec = noise.mul(sigma)  # white noise
+    else:
+        mu = math.exp(-dt / tau)  # auxiliar factor [unitless]
+        A = sigma * math.sqrt(1 - mu * mu)  # amplitude [uS]
+        noise.mul(A)  # scale noise by amplitude [uS]
+
+        # Exact update formula (independent of dt) from Gillespie 1996
+        for n in range(1, ntstep):
+            svec.x[n] = svec[n - 1] * mu + noise[n]  # signal [uS]
+
+    svec.add(mean)  # shift signal by mean value [uS]
+
+    # append zero at end
+    tvec.append(duration)
+    svec.append(.0)
+
+    return tvec, svec
