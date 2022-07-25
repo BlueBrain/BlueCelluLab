@@ -7,12 +7,49 @@ from typing import Set
 import string
 
 import bglibpy
-from bglibpy import lazy_printv
+from bglibpy import lazy_printv, neuron
 
 
 class NeuronTemplate:
     """NeuronTemplate representation."""
+
     used_template_names: Set[str] = set()
+
+    def __init__(
+        self, template_filename: str, morph_dir: str, morph_fname: str
+    ) -> None:
+        """Load the hoc template and init object."""
+        self.template_name = self.load(template_filename)
+        self.morph_dir = morph_dir
+        self.morph_fname = morph_fname
+
+    def get_cell(
+        self, template_format: str, gid: int, extra_values: dict
+    ) -> neuron.hoc.HocObject:
+        """Returns the hoc object matching the template format."""
+        if template_format == "v6":
+            attr_names = getattr(
+                neuron.h, self.template_name + "_NeededAttributes", None
+            )
+            if attr_names is not None:
+                cell = getattr(neuron.h, self.template_name)(
+                    gid,
+                    self.morph_dir,
+                    self.morph_fname,
+                    *[extra_values[name] for name in attr_names.split(";")]
+                )
+
+            cell = getattr(neuron.h, self.template_name)(
+                gid, self.morph_dir, self.morph_fname
+            )
+        elif template_format == "v6_ais_scaler":
+            cell = getattr(neuron.h, self.template_name)(
+                gid, self.morph_dir, self.morph_fname, extra_values["AIS_scaler"]
+            )
+        else:
+            cell = getattr(neuron.h, self.template_name)(gid, self.morph_fname)
+
+        return cell
 
     @classmethod
     def load(cls, template_filename: str) -> str:
@@ -32,40 +69,47 @@ class NeuronTemplate:
 
         neuron_versiondate_string = bglibpy.neuron.h.nrnversion(4)
         neuron_versiondate = datetime.datetime.strptime(
-            neuron_versiondate_string,
-            "%Y-%m-%d").date()
+            neuron_versiondate_string, "%Y-%m-%d"
+        ).date()
         good_neuron_versiondate = datetime.date(2014, 3, 20)
 
         if neuron_versiondate >= good_neuron_versiondate:
-            lazy_printv("This Neuron version supports renaming "
-                        "templates, enabling...", 5)
+            lazy_printv(
+                "This Neuron version supports renaming " "templates, enabling...", 5
+            )
             # add bglibpy to the template name, so that we don't interfere with
             # templates load outside of bglibpy
             template_name = "%s_bglibpy" % template_name
-            template_name = get_neuron_compliant_template_name(
-                template_name)
+            template_name = get_neuron_compliant_template_name(template_name)
             if template_name in cls.used_template_names:
                 new_template_name = template_name
                 while new_template_name in cls.used_template_names:
                     new_template_name = "%s_x" % new_template_name
-                    new_template_name = \
-                        get_neuron_compliant_template_name(
-                            new_template_name)
+                    new_template_name = get_neuron_compliant_template_name(
+                        new_template_name
+                    )
 
                 template_name = new_template_name
 
             cls.used_template_names.add(template_name)
-            template_content = re.sub(r"begintemplate\s*(\S*)",
-                                      "begintemplate %s" % template_name,
-                                      template_content)
-            template_content = re.sub(r"endtemplate\s*(\S*)",
-                                      "endtemplate %s" % template_name,
-                                      template_content)
+            template_content = re.sub(
+                r"begintemplate\s*(\S*)",
+                "begintemplate %s" % template_name,
+                template_content,
+            )
+            template_content = re.sub(
+                r"endtemplate\s*(\S*)",
+                "endtemplate %s" % template_name,
+                template_content,
+            )
 
             bglibpy.neuron.h(template_content)
         else:
-            lazy_printv("This Neuron version doesn't support renaming "
-                        "templates, disabling...", 5)
+            lazy_printv(
+                "This Neuron version doesn't support renaming "
+                "templates, disabling...",
+                5,
+            )
             bglibpy.neuron.h.load_file(template_filename)
 
         return template_name
@@ -97,14 +141,16 @@ def shorten_and_hash_string(label, keep_length=40, hash_length=9):
     """
 
     if hash_length > 20:
-        raise ValueError('Parameter hash_length should not exceed 20, '
-                         ' received: {}'.format(hash_length))
+        raise ValueError(
+            "Parameter hash_length should not exceed 20, "
+            " received: {}".format(hash_length)
+        )
 
     if len(label) <= keep_length + hash_length + 1:
         return label
 
-    hash_string = hashlib.sha1(label.encode('utf-8')).hexdigest()
-    return '{}_{}'.format(label[0:keep_length], hash_string[0:hash_length])
+    hash_string = hashlib.sha1(label.encode("utf-8")).hexdigest()
+    return "{}_{}".format(label[0:keep_length], hash_string[0:hash_length])
 
 
 def check_compliance_with_neuron(template_name):
@@ -123,10 +169,12 @@ def check_compliance_with_neuron(template_name):
                 True if compliant, false otherwise.
     """
     max_len = 50
-    return (template_name and
-            template_name[0].isalpha() and
-            template_name.replace('_', '').isalnum() and
-            len(template_name) <= max_len)
+    return (
+        template_name
+        and template_name[0].isalpha()
+        and template_name.replace("_", "").isalnum()
+        and len(template_name) <= max_len
+    )
 
 
 def get_neuron_compliant_template_name(name):
@@ -147,13 +195,13 @@ def get_neuron_compliant_template_name(name):
     """
     template_name = name
     if not check_compliance_with_neuron(template_name):
-        template_name = template_name.lstrip(
-            string.digits).replace("-", "_")
-        template_name = shorten_and_hash_string(template_name,
-                                                keep_length=40,
-                                                hash_length=9)
+        template_name = template_name.lstrip(string.digits).replace("-", "_")
+        template_name = shorten_and_hash_string(
+            template_name, keep_length=40, hash_length=9
+        )
         lazy_printv(
             "Converted template name %s to %s to make it "
-            "NEURON compliant" %
-            (name, template_name), 50)
+            "NEURON compliant" % (name, template_name),
+            50,
+        )
     return template_name

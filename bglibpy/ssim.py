@@ -23,7 +23,7 @@ from cachetools import LRUCache, cachedmethod
 import pandas as pd
 
 import bglibpy
-from bglibpy import lazy_printv, tools
+from bglibpy import lazy_printv
 from bglibpy.exceptions import BGLibPyError, ConfigError
 
 
@@ -98,7 +98,6 @@ class SSim:
 
         self.ignore_populationid_error = ignore_populationid_error
         self.connection_entries = self.bc.typed_sections('Connection')
-        self.all_targets = self.bc_circuit.cells.targets
         self.check_connection_entries()
 
         self.gids = []

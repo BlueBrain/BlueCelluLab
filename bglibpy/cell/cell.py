@@ -19,13 +19,12 @@ import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-from bglibpy import lazy_printv, psection, tools
+from bglibpy import lazy_printv, neuron, psection, tools
 from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
 from bglibpy.cell.section_distance import EuclideanSectionDistance
 from bglibpy.cell.template import NeuronTemplate
 from bglibpy.exceptions import BGLibPyError
-from bglibpy.importer import neuron
 from bglibpy.neuron_interpreter import eval_neuron
 
 
@@ -62,6 +61,7 @@ class Cell(InjectableMixin, PlottableMixin):
         rng_settings: bglibpy.RNGSettings
                       random number generation setting object used by the Cell.
         """
+        super().__init__()
         # Persistent objects, like clamps, that exist as long
         # as the object exists
         self.persistent = []
@@ -71,39 +71,8 @@ class Cell(InjectableMixin, PlottableMixin):
                                     % template_filename)
 
         # Load the template
-        self.template_name = NeuronTemplate.load(template_filename)
-
-        if template_format == 'v6':
-            attr_names = getattr(neuron.h, self.template_name + "_NeededAttributes", None)
-            if attr_names is not None:
-                self.cell = getattr(
-                    neuron.h,
-                    self.template_name)(
-                        gid,
-                        morph_dir,
-                        morphology_name,
-                        *[extra_values[name] for name in attr_names.split(";")])
-
-            self.cell = getattr(
-                neuron.h,
-                self.template_name)(
-                    gid,
-                    morph_dir,
-                    morphology_name)
-        elif template_format == 'v6_ais_scaler':
-            self.cell = getattr(
-                neuron.h,
-                self.template_name)(
-                    gid,
-                    morph_dir,
-                    morphology_name,
-                    extra_values['AIS_scaler'])
-        else:
-            self.cell = getattr(
-                neuron.h,
-                self.template_name)(
-                    gid,
-                    morphology_name)
+        neuron_template = NeuronTemplate(template_filename, morph_dir, morphology_name)
+        self.cell = neuron_template.get_cell(template_format, gid, extra_values)
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         # WARNING: this finitialize 'must' be here, otherwhise the
@@ -128,7 +97,6 @@ class Cell(InjectableMixin, PlottableMixin):
         self.syn_mini_netcons = {}
         self.serialized = None
 
-        self.soma = [x for x in self.cell.getCell().somatic][0]
         # Be careful when removing this,
         # time recording needs this push
         self.soma.push()
@@ -141,14 +109,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
-        self.cell_dendrograms = []
-        self.plot_windows = []
 
-        self.fih_plots = None
-        self.fih_weights = None
-
-        # As long as no PlotWindow or active Dendrogram exist, don't update
-        self.plot_callback_necessary = False
         self.delayed_weights = queue.PriorityQueue()
         self.secname_to_isec = {}
         self.secname_to_hsection = {}
@@ -1024,12 +985,11 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def delete(self):
         """Delete the cell."""
+        self.delete_plottable()
         if hasattr(self, 'cell') and self.cell is not None:
             if self.cell.getCell() is not None:
                 self.cell.getCell().clear()
 
-            self.fih_plots = None
-            self.fih_weights = None
             self.connections = None
             self.synapses = None
 
