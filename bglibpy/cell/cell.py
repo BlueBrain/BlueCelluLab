@@ -23,6 +23,7 @@ from bglibpy import lazy_printv, neuron, psection, tools
 from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
 from bglibpy.cell.section_distance import EuclideanSectionDistance
+from bglibpy.cell.sonata_proxy import SonataProxy
 from bglibpy.cell.template import NeuronTemplate
 from bglibpy.exceptions import BGLibPyError
 from bglibpy.neuron_interpreter import eval_neuron
@@ -138,6 +139,11 @@ class Cell(InjectableMixin, PlottableMixin):
 
         neuron.h.pop_section()  # Undoing soma push
         # self.init_psections()
+        self.sonata_proxy = None
+
+    def connect_to_circuit(self, sonata_proxy: SonataProxy) -> None:
+        """Connect this cell to a circuit via sonata proxy."""
+        self.sonata_proxy = sonata_proxy
 
     def init_psections(self):
         """Initialize the psections list.
@@ -308,36 +314,6 @@ class Cell(InjectableMixin, PlottableMixin):
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
-
-    def execute_neuronconfigure(self, expression, sections=None):
-        """Execute a statement from a BlueConfig NeuronConfigure block.
-
-        Parameters
-        ----------
-        expression : string
-                     Expression to evaluate on this cell object
-        sections : string
-                   Section group this expression has to be evaluated on
-                   Possible values are
-                   'axonal', 'basal', 'apical', 'somatic', 'dendritic', None
-                   When None is passed, the expression is evaluated on all
-                   sections
-
-        """
-        sections_map = {'axonal': self.axonal, 'basal': self.basal,
-                        'apical': self.apical, 'somatic': self.somatic,
-                        'dendritic': self.basal + self.apical + self.somatic,
-                        None: self.all}
-
-        for section in sections_map[sections]:
-            sec_expression = \
-                expression.replace('%s', neuron.h.secname(sec=section))
-            if '%g' in expression:
-                for segment in section:
-                    seg_expression = sec_expression.replace('%g', segment.x)
-                    bglibpy.neuron.h('execute1(%s, 0)' % seg_expression)
-            else:
-                bglibpy.neuron.h('execute1(%s, 0)' % sec_expression)
 
     def area(self):
         """Calculate the total area of the cell.

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Represents a python version of Neuron Section (for drawing)
+Represents a python version of NEURON Section (for drawing)
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.

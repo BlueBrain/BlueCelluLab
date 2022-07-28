@@ -26,4 +26,8 @@ class ConfigError(BGLibPyError):
 
 
 class NeuronEvalError(BGLibPyError):
-    """Raise when an unsupported code string is sent to neuron."""
+    """Raise when an unsupported code string is sent to NEURON."""
+
+
+class MissingSonataPropertyError(BGLibPyError):
+    """Raise when a property is missing from SONATA."""

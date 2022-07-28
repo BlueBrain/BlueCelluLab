@@ -25,3 +25,14 @@ def test_setting_rngmodes():
 
     # make sure only one object is created
     assert (rng_obj is bglibpy.RNGSettings())
+
+
+def test_str_repr_obj():
+    """Test the str and repr methods of RNGSettings."""
+    rng_obj = bglibpy.RNGSettings(mode="UpdatedMCell")
+    assert repr(rng_obj) == "RNGSettings(mode=UpdatedMCell, base_seed=0, " \
+                            "base_noise_seed=0, synapse_seed=0, " \
+                            "ionchannel_seed=0, stimulus_seed=0, " \
+                            "minis_seed=0)"
+
+    assert str(rng_obj) == repr(rng_obj)

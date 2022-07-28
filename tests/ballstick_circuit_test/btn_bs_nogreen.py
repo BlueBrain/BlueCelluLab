@@ -153,7 +153,7 @@ ns.noise = 0
 nc = bglibpy.neuron.h.NetCon(ns, syn, 0, SYN_DELAY, SYN_G * 1000.0)
 
 sim = bglibpy.Simulation()
-sim.addCell(cell)
+sim.add_cell(cell)
 sim.run(T_STOP, v_init=V_INIT, cvode=False, dt=0.025)
 werner_t = cell.get_time()
 werner_v = cell.get_soma_voltage()
@@ -179,7 +179,7 @@ ns.noise = 0
 nc = bglibpy.neuron.h.NetCon(ns, syn, 0, SYN_DELAY, SYN_G)
 
 sim = bglibpy.Simulation()
-sim.addCell(cell)
+sim.add_cell(cell)
 sim.run(T_STOP, v_init=V_INIT, cvode=False, dt=DT)
 werner_t = cell.get_time()
 werner_v = cell.get_soma_voltage()

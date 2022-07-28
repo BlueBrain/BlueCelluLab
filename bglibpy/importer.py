@@ -14,12 +14,12 @@ import os
 
 
 #####
-# Load Neuron hoc files
+# Load NEURON hoc files
 #####
 
 
 def _nrn_disable_banner():
-    """Disable Neuron banner"""
+    """Disable NEURON banner"""
 
     import importlib.util
     import ctypes
@@ -41,7 +41,7 @@ def _nrn_disable_banner():
 
 
 def import_neuron():
-    """Import neuron simulator"""
+    """Import NEURON simulator"""
     _nrn_disable_banner()
 
     import neuron

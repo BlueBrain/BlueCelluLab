@@ -1,5 +1,7 @@
 Run Default
 {
+
+    Prefix /bgscratch/bbp/release/02.04.12
     MorphologyPath ../circuit_twocell_example1/morphologies
     METypePath ../circuit_twocell_example1/ccells
 
@@ -15,14 +17,15 @@ Run Default
     Dt 0.025
 
     BaseSeed 12345
-    ExtracellularCalcium 1.25
 }
 
-# Extra settings for synapses
-Conditions synapses
+
+Connection changeUse
 {
-    randomize_Gaba_risetime False
-    SYNAPSES__init_depleted 1
-    SYNAPSES__minis_single_vesicle 1
-    cao_CR_GluSynapse 1.25
+    Source Excitatory
+    Destination Excitatory
+    Weight 1.0
+    SynapseConfigure %s.Dep = 1.0
+    SpontMinis 100.0
+    UnsupportedDelay 5000
 }

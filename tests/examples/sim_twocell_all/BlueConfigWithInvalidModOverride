@@ -13,16 +13,14 @@ Run Default
     CircuitTarget mc2_Layer5
     Duration 100
     Dt 0.025
-
-    BaseSeed 12345
-    ExtracellularCalcium 1.25
 }
 
-# Extra settings for synapses
-Conditions synapses
+Connection plasticity
 {
-    randomize_Gaba_risetime False
-    SYNAPSES__init_depleted 1
-    SYNAPSES__minis_single_vesicle 1
-    cao_CR_GluSynapse 1.25
+    Source Excitatory
+    Destination Excitatory
+    ModOverride NonExistingModNotEvenGlusynapse
+    Weight 1.0
+    SpontMinis 0.0
+    SynapseConfigure %s.theta_d_GB = -1 %s.theta_p_GB = -1 %s.verbose = 1
 }

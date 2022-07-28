@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Represent a Neuron Segment in Python (for drawing)
+Represent a NEURON Segment in Python (for drawing)
 
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.

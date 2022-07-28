@@ -114,3 +114,19 @@ class RNGSettings(metaclass=Singleton):
         else:
             bglibpy.neuron.h.rngMode = options[new_val]
             self._mode = new_val
+
+    def __repr__(self) -> str:
+        """Returns a string representation of the object."""
+        return "RNGSettings(mode={mode}, base_seed={base_seed}, " \
+               "base_noise_seed={base_noise_seed}, " \
+               "synapse_seed={synapse_seed}, " \
+               "ionchannel_seed={ionchannel_seed}, " \
+               "stimulus_seed={stimulus_seed}, " \
+               "minis_seed={minis_seed})".format(
+                   mode=self.mode,
+                   base_seed=self.base_seed,
+                   base_noise_seed=self.base_noise_seed,
+                   synapse_seed=self.synapse_seed,
+                   ionchannel_seed=self.ionchannel_seed,
+                   stimulus_seed=self.stimulus_seed,
+                   minis_seed=self.minis_seed)

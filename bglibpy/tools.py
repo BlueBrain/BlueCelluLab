@@ -135,13 +135,13 @@ def _me():
 
 def load_nrnmechanisms(libnrnmech_path):
     """
-    Load another shared library with neuron mechanisms
+    Load another shared library with NEURON mechanisms
     (Created by nrnivmodl)
 
     Parameters
     ----------
     libnrnmech_path: string
-                     Path to a neuron mechanisms file
+                     Path to a NEURON mechanisms file
     """
     neuron.h.nrn_load_dll(libnrnmech_path)
 

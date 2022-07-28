@@ -1,98 +1,94 @@
 Run Default
 {
-        Date    22:11:12
-        Time    14:27:09
-          svnPath https://bbpteam.epfl.ch/svn/bluebrain
-          Version 1094
-           Prefix /bgscratch/bbp/release/02.04.12
-   MorphologyPath ../circuit_twocell_example1/morphologies
-       METypePath ../circuit_twocell_example1/ccells
 
-      CircuitPath ../circuit_twocell_example1
-          nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+    Prefix /bgscratch/bbp/release/02.04.12
+    MorphologyPath ../circuit_twocell_example1/morphologies
+    METypePath ../circuit_twocell_example1/ccells
 
-        CurrentDir ./
-      OutputRoot .//output
-      TargetFile .//user.target
+    CircuitPath ../circuit_twocell_example1
+    nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+
+    CurrentDir ./
+    OutputRoot .//output
+    TargetFile .//user.target
 
     CircuitTarget mc2_Layer5
-         Duration 100
-               Dt 0.025
+    Duration 100
+    Dt 0.025
 
-         BaseSeed 12345
+    BaseSeed 12345
 }
 
 Report soma
 {
-        Target Mosaic
-        Type compartment
-        ReportOn v
-        Unit mV
-        Format Bin
-        Dt 0.1
-        StartTime 0
-        EndTime 20000
+    Target Mosaic
+    Type compartment
+    ReportOn v
+    Unit mV
+    Format Bin
+    Dt 0.1
+    StartTime 0
+    EndTime 20000
 }
 
 Stimulus spikeReplay
 {
-        Mode Current
-        Delay 0
-        Duration 100
-        Pattern SynapseReplay
-        SpikeFile output/out.dat.original
-}      
+    Mode Current
+    Delay 0
+    Duration 100
+    Pattern SynapseReplay
+    SpikeFile output/out.dat.original
+}
 
 StimulusInject spikeReplayIntooneCell
 {
-        Stimulus spikeReplay
-        Target Mosaic
+    Stimulus spikeReplay
+    Target Mosaic
 }
 
 Stimulus ThresholdExc
 {
-
-              Mode Current
-           Pattern Noise
-       MeanPercent 120
-          Variance 1.0
-             Delay 0.000000
-          Duration 20000.000000
+    Mode Current
+    Pattern Noise
+    MeanPercent 120
+    Variance 1.0
+    Delay 0.000000
+    Duration 20000.000000
 }
 
 StimulusInject ThresholdIntoExc
 {
-        Stimulus ThresholdExc
-        Target Excitatory
+    Stimulus ThresholdExc
+    Target Excitatory
 }
 
 Stimulus hypamp
 {
-        Mode Current
-  Pattern Hyperpolarizing
-        Delay 0.0
-  Duration 20000.0
+    Mode Current
+    Pattern Hyperpolarizing
+    Delay 0.0
+    Duration 20000.0
 }
 
 StimulusInject hypamp_mosaic
 {
-        Stimulus hypamp
-        Target Mosaic
+    Stimulus hypamp
+    Target Mosaic
 } 
 
 Connection changeUse
 {
-              Source Excitatory
-         Destination Excitatory
-              Weight 1.0
+    Source Excitatory
+    Destination Excitatory
+    Weight 1.0
     SynapseConfigure %s.Dep = 1.0
-          SpontMinis 100.0
-}
+    SpontMinis 100.0
+    }
 
 Connection scheme_minus2
 {
-              Source Excitatory
-         Destination Excitatory
-              Weight 1.0
+    Source Excitatory
+    Destination Excitatory
+    Weight 1.0
     SynapseConfigure %s.NMDA_ratio = 0.4
-}          
+}

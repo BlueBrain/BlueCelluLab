@@ -12,19 +12,23 @@
 
 import collections
 import os
-import re
-from typing import List
+from typing import Any, DefaultDict, List
 import warnings
 
 import numpy as np
-import bluepy
 from bluepy.enums import Synapse as BLPSynapse
-from cachetools import LRUCache, cachedmethod
 import pandas as pd
 
 import bglibpy
 from bglibpy import lazy_printv
-from bglibpy.exceptions import BGLibPyError, ConfigError
+from bglibpy.cell.sonata_proxy import SonataProxy
+from bglibpy.circuit import CircuitAccess, parse_outdat, SimulationValidator
+from bglibpy.exceptions import BGLibPyError
+from bglibpy.simulation import (
+    set_minis_single_vesicle_values,
+    set_global_condition_parameters,
+    set_tstop_value
+)
 
 
 class SSim:
@@ -71,46 +75,21 @@ class SSim:
         self.dt = dt
         self.record_dt = record_dt
         self.blueconfig_filename = blueconfig_filename
-        self.bc_simulation = bluepy.Simulation(blueconfig_filename)
-        self.bc_circuit = self.bc_simulation.circuit
-        self.bc = self.bc_simulation.config
+        self.circuit_access = CircuitAccess(blueconfig_filename)
+        SimulationValidator(self.circuit_access).validate()
+
         self.pc = bglibpy.neuron.h.ParallelContext() if print_cellstate else None
-
-        self._caches = {
-            "is_group_target": LRUCache(maxsize=1000),
-            "target_has_gid": LRUCache(maxsize=1000),
-            "get_target_gids": LRUCache(maxsize=16),
-            "fetch_gid_cell_info": LRUCache(maxsize=100),
-        }
-
-        if self.node_properties_available:
-            self.use_mecombotsv = False
-        elif 'MEComboInfoFile' in self.bc.Run:
-            self.use_mecombotsv = True
-        else:
-            self.use_mecombotsv = False
 
         self.rng_settings = bglibpy.RNGSettings(
             rng_mode,
-            self.bc,
+            self.circuit_access.bc,
             base_seed=base_seed,
             base_noise_seed=base_noise_seed)
 
         self.ignore_populationid_error = ignore_populationid_error
-        self.connection_entries = self.bc.typed_sections('Connection')
-        self.check_connection_entries()
 
         self.gids = []
         self.cells = {}
-
-        self.neuronconfigure_entries = \
-            self.bc.typed_sections("NeuronConfigure")
-        self.neuronconfigure_expressions = {}
-        for entry in self.neuronconfigure_entries:
-            for gid in self.bc_circuit.cells.ids(entry.Target):
-                conf = entry.Configure
-                self.neuronconfigure_expressions.\
-                    setdefault(gid, []).append(conf)
 
         self.gids_instantiated = False
         self.connections = \
@@ -118,74 +97,28 @@ class SSim:
                 lambda: collections.defaultdict(
                     lambda: None))
 
-        self.emodels_dir = self.bc.Run['METypePath']
-        self.morph_dir = self.bc.Run['MorphologyPath']
-
         # Make sure tstop is set correctly, because it is used by the
         # TStim noise stimulus
-        if 'Duration' in self.bc.Run:
-            bglibpy.neuron.h.tstop = float(self.bc.Run['Duration'])
-
-        if 'MorphologyType' in self.bc.Run:
-            self.morph_extension = self.bc.Run['MorphologyType']
-        else:
-            # backwards compatible
-            if self.morph_dir[-3:] == "/h5":
-                self.morph_dir = self.morph_dir[:-3]
-
-            # latest circuits don't have asc dir
-            asc_dir = os.path.join(self.morph_dir, 'ascii')
-            if os.path.exists(asc_dir):
-                self.morph_dir = asc_dir
-
-            self.morph_extension = 'asc'
-
-        self.extracellular_calcium = \
-            float(self.bc.Run['ExtracellularCalcium']) \
-            if 'ExtracellularCalcium' in self.bc.Run else None
-        lazy_printv('Setting extracellular calcium to: %s' %
-                    str(self.extracellular_calcium), 50)
+        if 'Duration' in self.circuit_access.bc.Run:
+            set_tstop_value(float(self.circuit_access.bc.Run['Duration']))
 
         self.spike_threshold = \
-            float(self.bc.Run['SpikeThreshold']) \
-            if 'SpikeThreshold' in self.bc.Run else -30
+            float(self.circuit_access.bc.Run['SpikeThreshold']) \
+            if 'SpikeThreshold' in self.circuit_access.bc.Run else -30
 
-        if 'SpikeLocation' in self.bc.Run:
-            self.spike_location = self.bc.Run['SpikeLocation']
-            if self.spike_location not in ["soma", "AIS"]:
-                raise bglibpy.ConfigError(
-                    "Possible options for SpikeLocation are 'soma' and 'AIS'")
+        if 'SpikeLocation' in self.circuit_access.bc.Run:
+            self.spike_location = self.circuit_access.bc.Run['SpikeLocation']
         else:
             self.spike_location = "soma"
 
-        if "MinisSingleVesicle" in self.bc.Run:
+        if "MinisSingleVesicle" in self.circuit_access.bc.Run:
             warnings.warn("""Specifying MinisSingleVesicle in the run block
                              is deprecated, please use the conditions block.""")
-            minis_single_vesicle = int(self.bc.Run["MinisSingleVesicle"])
-            self._parse_minis_single_vesicle(minis_single_vesicle)
+            minis_single_vesicle = int(self.circuit_access.bc.Run["MinisSingleVesicle"])
+            set_minis_single_vesicle_values(minis_single_vesicle)
 
-    @property
-    def node_properties_available(self):
-        """Checks if the node properties can be used."""
-        node_props = {
-            "@dynamics:holding_current",
-            "@dynamics:threshold_current",
-            "model_template",
-        }
-
-        return node_props.issubset(self.bc_circuit.cells.available_properties)
-
-    @property
-    def base_seed(self):
-        """Baseseed of sim"""
-
-        return self.rng_settings.base_seed
-
-    @property
-    def base_noise_seed(self):
-        """Baseseed of noise stimuli in sim"""
-
-        return self.rng_settings.base_noise_seed
+        condition_parameters = self.circuit_access.condition_parameters_dict()
+        set_global_condition_parameters(condition_parameters)
 
     # pylint: disable=R0913
     def instantiate_gids(self, gids, synapse_detail=None,
@@ -338,7 +271,7 @@ class SSim:
                 raise ValueError('SSim: projections and add_projections '
                                  'can not be used at the same time')
             projections = [proj.name
-                           for proj in self.bc.typed_sections('Projection')]
+                           for proj in self.circuit_access.bc.typed_sections('Projection')]
 
         self._add_cells(gids)
         if add_stimuli:
@@ -455,16 +388,11 @@ class SSim:
         self, gid, projection=None, projections=None
     ) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
-        is_glusynapse_used = any(
-            x
-            for x in self.connection_entries
-            if "ModOverride" in x and x["ModOverride"] == "GluSynapse"
-        )
         syn_description_builder = bglibpy.synapse.SynDescription()
-        if is_glusynapse_used:
+        if self.circuit_access.is_glusynapse_used:
             return syn_description_builder.glusynapse_syn_description(
-                self.bc_circuit,
-                self.bc,
+                self.circuit_access.bluepy_circuit,
+                self.circuit_access.bc,
                 self.ignore_populationid_error,
                 gid,
                 projection,
@@ -472,8 +400,8 @@ class SSim:
             )
         else:
             return syn_description_builder.gabaab_ampanmda_syn_description(
-                self.bc_circuit,
-                self.bc,
+                self.circuit_access.bluepy_circuit,
+                self.circuit_access.bc,
                 self.ignore_populationid_error,
                 gid,
                 projection,
@@ -504,9 +432,9 @@ class SSim:
         if add_replay:
             if outdat_path is None:
                 outdat_path = os.path.join(
-                    self.bc.Run['OutputRoot'],
+                    self.circuit_access.bc.Run['OutputRoot'],
                     'out.dat')
-            pre_spike_trains = _parse_outdat(outdat_path)
+            pre_spike_trains = parse_outdat(outdat_path)
         else:
             pre_spike_trains = {}
 
@@ -583,19 +511,17 @@ class SSim:
         for gid in self.gids:
             lazy_printv(
                 'Adding gid {gid} from emodel {emodel} and morph {morph}',
-                1, gid=gid, emodel=self.fetch_emodel_name(gid),
-                morph=self.fetch_morph_name(gid))
+                1, gid=gid, emodel=self.circuit_access.fetch_emodel_name(gid),
+                morph=self.circuit_access.fetch_morph_name(gid))
 
-            self.cells[gid] = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
+            self.cells[gid] = cell = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
+            if self.circuit_access.node_properties_available:
+                cell.connect_to_circuit(SonataProxy(gid, self.circuit_access))
             if self.pc is not None:
                 self.pc.set_gid2node(gid, self.pc.id())  # register GID for this node
                 nc = self.cells[gid].create_netcon_spikedetector(
                     None, location=self.spike_location, threshold=self.spike_threshold)
                 self.pc.cell(gid, nc)  # register cell spike detector
-
-            if gid in self.neuronconfigure_expressions:
-                for expression in self.neuronconfigure_expressions[gid]:
-                    self.cells[gid].execute_neuronconfigure(expression)
 
     def _instantiate_synapse(self, gid: int, syn_id, syn_description,
                              add_minis=None, popids=(0, 0)) -> None:
@@ -610,14 +536,13 @@ class SSim:
             syn_type)
 
         if connection_parameters["add_synapse"]:
-            condition_parameters = self._condition_parameters_dict()
+            condition_parameters = self.circuit_access.condition_parameters_dict()
 
-            self._evaluate_condition_parameters(condition_parameters)
             self.cells[gid].add_replay_synapse(
                 syn_id, syn_description, connection_parameters, condition_parameters,
-                popids=popids, extracellular_calcium=self.extracellular_calcium)
+                popids=popids, extracellular_calcium=self.circuit_access.extracellular_calcium)
             if add_minis:
-                mini_frequencies = self.fetch_mini_frequencies(gid)
+                mini_frequencies = self.circuit_access.fetch_mini_frequencies(gid)
                 lazy_printv('Adding minis for synapse {sid}: syn_description={s_desc}, '
                             'connection={conn_params}, frequency={freq}',
                             50, sid=syn_id, s_desc=syn_description,
@@ -629,55 +554,6 @@ class SSim:
                     connection_parameters,
                     popids=popids,
                     mini_frequencies=mini_frequencies)
-
-    def _evaluate_condition_parameters(self, condition_parameters):
-        """Domain specific checks for the conditions block."""
-        if "cao_CR_GluSynapse" in condition_parameters:
-            cao_cr_glusynapse = condition_parameters["cao_CR_GluSynapse"]
-
-            if cao_cr_glusynapse != self.extracellular_calcium:
-                raise ConfigError("cao_CR_GluSynapse is not equal to ExtracellularCalcium")
-
-            bglibpy.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
-
-        if "SYNAPSES__init_depleted" in condition_parameters:
-            init_depleted = condition_parameters["SYNAPSES__init_depleted"]
-            bglibpy.neuron.h.init_depleted_GluSynapse = init_depleted
-            bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS = init_depleted
-            bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS = init_depleted
-        if "SYNAPSES__minis_single_vesicle" in condition_parameters:
-            minis_single_vesicle = int(
-                condition_parameters["SYNAPSES__minis_single_vesicle"])
-            self._parse_minis_single_vesicle(minis_single_vesicle)
-
-        if "randomize_Gaba_risetime" in condition_parameters:
-            randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
-
-            if randomize_gaba_risetime not in ["True", "False", "0", "false"]:
-                raise ConfigError("Invalid randomize_Gaba_risetime value"
-                                  f": {randomize_gaba_risetime}.")
-
-    @staticmethod
-    def _parse_minis_single_vesicle(minis_single_vesicle: int) -> None:
-        """Parse the minis_single_vesicle value from the blueconfig."""
-        if not hasattr(
-                bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"):
-            raise bglibpy.OldNeurodamusVersionError(
-                "Synapses don't implement minis_single_vesicle."
-                "More recent neurodamus model required."
-            )
-        lazy_printv(
-            f"Setting synapses minis_single_vesicle to {minis_single_vesicle}",
-            50)
-        bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
-            minis_single_vesicle
-        )
-        bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
-            minis_single_vesicle
-        )
-        bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
-            minis_single_vesicle
-        )
 
     def _add_stimuli_gid(self,
                          gid: int,
@@ -698,47 +574,41 @@ class SSim:
         noisestim_count = 0
         shotnoise_stim_count = 0
 
-        for entry in self.bc.values():
+        for entry in self.circuit_access.bc.values():
             if entry.section_type == 'StimulusInject':
                 destination = entry.Target
                 # retrieve the stimulus to apply
                 stimulus_name = entry.Stimulus
                 # bluepy magic to add underscore Stimulus underscore
                 # stimulus_name
-                stimulus = self.bc['Stimulus_%s' % stimulus_name]
-                gids_of_target = self.bc_circuit.cells.ids(destination)
+                stimulus = self.circuit_access.bc['Stimulus_%s' % stimulus_name]
+                gids_of_target = self.circuit_access.bluepy_circuit.cells.ids(destination)
                 if gid in gids_of_target:
                     if stimulus.Pattern == 'Noise':
                         if add_noise_stimuli:
-                            self._add_replay_noise(
-                                gid,
-                                stimulus,
-                                noisestim_count=noisestim_count)
+                            self.cells[gid].add_replay_noise(
+                                stimulus, noisestim_count=noisestim_count)
                     elif stimulus.Pattern == 'Hyperpolarizing':
                         if add_hyperpolarizing_stimuli:
-                            self._add_replay_hypamp_injection(
-                                gid,
-                                stimulus)
+                            self.cells[gid].add_replay_hypamp(stimulus)
                     elif stimulus.Pattern == 'Pulse':
                         if add_pulse_stimuli:
-                            self._add_pulse(gid, stimulus)
+                            self.cells[gid].add_pulse(stimulus)
                     elif stimulus.Pattern == 'RelativeLinear':
                         if add_relativelinear_stimuli:
-                            self._add_relativelinear(gid, stimulus)
+                            self.cells[gid].add_replay_relativelinear(stimulus)
                     elif stimulus.Pattern == 'SynapseReplay':
                         lazy_printv("Found stimulus with pattern %s, ignoring" %
                                     stimulus['Pattern'], 1)
                     elif stimulus.Pattern == 'ShotNoise':
                         if add_shotnoise_stimuli:
-                            self._add_replay_shotnoise(
-                                gid,
-                                stimulus,
+                            self.cells[gid].add_replay_shotnoise(
+                                self.cells[gid].soma, 0.5, stimulus,
                                 shotnoise_stim_count=shotnoise_stim_count)
                     elif stimulus.Pattern == 'RelativeShotNoise':
                         if add_shotnoise_stimuli:
-                            self._add_replay_relative_shotnoise(
-                                gid,
-                                stimulus,
+                            self.cells[gid].add_replay_relative_shotnoise(
+                                self.cells[gid].soma, 0.5, stimulus,
                                 shotnoise_stim_count=shotnoise_stim_count)
                     else:
                         raise Exception("Found stimulus with pattern %s, "
@@ -749,159 +619,57 @@ class SSim:
                 if stimulus.Pattern in ['ShotNoise', 'RelativeShotNoise']:
                     shotnoise_stim_count += 1
 
-    def _add_replay_hypamp_injection(self, gid, stimulus):
-        """Add injections from the replay"""
-        self.cells[gid].add_replay_hypamp(stimulus)
+    def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type) -> dict:
+        """ Apply connection blocks in order for pre_gid, post_gid to determine
+            a final connection override for this pair (pre_gid, post_gid)."""
+        parameters: DefaultDict[str, Any] = collections.defaultdict(list)
+        parameters['add_synapse'] = True
 
-    def _add_relativelinear(self, gid, stimulus):
-        """Add relative linear injections from the replay"""
-        self.cells[gid].add_replay_relativelinear(stimulus)
+        for entry in self.circuit_access.connection_entries:
+            src, dest = entry['Source'], entry['Destination']
 
-    def _add_pulse(self, gid, stimulus):
-        """Add injections from the replay"""
-        self.cells[gid].add_pulse(stimulus)
-
-    def _add_replay_noise(
-            self,
-            gid,
-            stimulus,
-            noisestim_count=None):
-        """Add noise injection from the replay"""
-        self.cells[gid].add_replay_noise(
-            stimulus,
-            noisestim_count=noisestim_count)
-
-    def _add_replay_shotnoise(
-            self,
-            gid,
-            stimulus,
-            shotnoise_stim_count=None):
-        """Add shot noise injection from the replay"""
-        self.cells[gid].add_replay_shotnoise(
-            self.cells[gid].soma, 0.5, stimulus,
-            shotnoise_stim_count=shotnoise_stim_count)
-
-    def _add_replay_relative_shotnoise(
-            self,
-            gid,
-            stimulus,
-            shotnoise_stim_count=None):
-        """Add shot noise injection from the replay"""
-        self.cells[gid].add_replay_relative_shotnoise(
-            self.cells[gid].soma, 0.5, stimulus,
-            shotnoise_stim_count=shotnoise_stim_count)
-
-    @staticmethod
-    def check_connection_contents(contents):
-        """Check the contents of a connection block,
-           to see if we support all the fields"""
-
-        allowed_keys = set(['Weight', 'SynapseID', 'SpontMinis',
-                            'SynapseConfigure', 'Source', 'ModOverride',
-                            'Destination', 'Delay', 'CreateMode'])
-        for key in contents.keys():
-            if key not in allowed_keys:
-                raise Exception(
-                    "Key %s in Connection blocks not supported by BGLibPy"
-                    % key)
-
-    @staticmethod
-    def is_cell_target(target, gid):
-        """Check if target is cell"""
-
-        return target == 'a%d' % gid
-
-    @cachedmethod(lambda self: self._caches["is_group_target"])
-    def is_group_target(self, target):
-        """Check if target is group of cells"""
-
-        return target in self.bc_circuit.cells.targets
-
-    @cachedmethod(lambda self: self._caches["get_target_gids"])
-    def get_target_gids(self, target):
-        """Return GIDs in target as a set"""
-
-        return set(self.bc_circuit.cells.ids(target))
-
-    @cachedmethod(lambda self: self._caches["target_has_gid"])
-    def target_has_gid(self, target, gid):
-
-        gid_found = (gid in self.get_target_gids(target))
-        return gid_found
-
-    def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type):
-        """ Apply connection blocks in order for pre_gid, post_gid to
-            determine a final connection override for this pair
-            (pre_gid, post_gid)
-
-        Parameters
-        -----------
-        gid : int
-              gid of the post-synaptic cell
-
-        """
-        parameters = {'add_synapse': True}
-
-        for entry in self.connection_entries:
-            entry_name = entry.name
-            src = entry['Source']
-            dest = entry['Destination']
-
-            src_matches = self.is_cell_target(src, pre_gid) or \
-                (self.target_has_gid(src, pre_gid))
-            dest_matches = self.is_cell_target(dest, post_gid) or \
-                (self.target_has_gid(dest, post_gid))
+            src_matches = self.circuit_access.is_cell_target(src, pre_gid) or \
+                (self.circuit_access.target_has_gid(src, pre_gid))
+            dest_matches = self.circuit_access.is_cell_target(dest, post_gid) or \
+                (self.circuit_access.target_has_gid(dest, post_gid))
 
             if src_matches and dest_matches:
                 # whatever specified in this block, is applied to gid
                 apply_parameters = True
-                keys = set(entry.keys())
 
-                if 'SynapseID' in keys and int(entry['SynapseID']) != syn_type:
+                if 'SynapseID' in entry and int(entry['SynapseID']) != syn_type:
                     apply_parameters = False
 
-                if 'Delay' in keys:
-                    parameters.setdefault('DelayWeights', []).append((
+                if 'Delay' in entry:
+                    parameters['DelayWeights'].append((
                         float(entry['Delay']),
                         float(entry['Weight'])))
                     apply_parameters = False
 
                 if apply_parameters:
-                    if 'CreateMode' in keys:
+                    if 'CreateMode' in entry:
                         if entry['CreateMode'] == 'NoCreate':
                             parameters['add_synapse'] = False
                         else:
                             raise Exception('Connection %s: Unknown '
                                             'CreateMode option %s'
-                                            % (entry_name,
+                                            % (entry.name,
                                                entry['CreateMode']))
-                    if 'Weight' in keys:
+                    if 'Weight' in entry:
                         parameters['Weight'] = float(entry['Weight'])
-                    if 'SpontMinis' in keys:
+                    if 'SpontMinis' in entry:
                         parameters['SpontMinis'] = float(
                             entry['SpontMinis'])
-                    if 'SynapseConfigure' in keys:
+                    if 'SynapseConfigure' in entry:
                         conf = entry['SynapseConfigure']
                         # collect list of applicable configure blocks to be
                         # applied with a "hoc exec" statement
-                        parameters.setdefault(
-                            'SynapseConfigure', []).append(conf)
-                    if 'ModOverride' in keys:
+                        parameters['SynapseConfigure'].append(conf)
+                    if 'ModOverride' in entry:
                         mod_name = entry['ModOverride']
-                        if not hasattr(bglibpy.neuron.h, mod_name):
-                            raise bglibpy.ConfigError(
-                                f"Mod file for {mod_name} is not found.")
                         parameters['ModOverride'] = mod_name
 
         return parameters
-
-    def _condition_parameters_dict(self):
-        """Returns parameters of global condition block of the blueconfig."""
-        try:
-            condition_entries = self.bc.typed_sections('Conditions')[0]
-        except IndexError:
-            return {}
-        return condition_entries.to_dict()
 
     def initialize_synapses(self):
         """ Resets the state of all synapses of all cells to initial values """
@@ -942,21 +710,21 @@ class SSim:
                        will not be exactly reproduced.
         """
         if t_stop is None:
-            t_stop = float(self.bc.Run['Duration'])
+            t_stop = float(self.circuit_access.bc.Run['Duration'])
         if dt is None:
-            dt = float(self.bc.Run['Dt'])
+            dt = float(self.circuit_access.bc.Run['Dt'])
         if forward_skip_value is None:
-            if 'ForwardSkip' in self.bc.Run:
+            if 'ForwardSkip' in self.circuit_access.bc.Run:
                 forward_skip_value = float(
-                    self.bc.Run['ForwardSkip'])
+                    self.circuit_access.bc.Run['ForwardSkip'])
         if celsius is None:
-            if 'Celsius' in self.bc.Run:
-                celsius = float(self.bc.Run['Celsius'])
+            if 'Celsius' in self.circuit_access.bc.Run:
+                celsius = float(self.circuit_access.bc.Run['Celsius'])
             else:
                 celsius = 34  # default
         if v_init is None:
-            if 'V_Init' in self.bc.Run:
-                v_init = float(self.bc.Run['V_Init'])
+            if 'V_Init' in self.circuit_access.bc.Run:
+                v_init = float(self.circuit_access.bc.Run['V_Init'])
             else:
                 v_init = -65  # default
 
@@ -997,7 +765,7 @@ class SSim:
         """
 
         voltage = (
-            self.bc_simulation.report("soma")
+            self.circuit_access.bluepy_sim.report("soma")
             .get_gid(gid, t_start=t_start, t_end=t_stop, t_step=t_step)
             .to_numpy()
         )
@@ -1006,7 +774,7 @@ class SSim:
     def get_mainsim_time_trace(self):
         """Get the time trace from the main simulation"""
 
-        report = self.bc_simulation.report('soma')
+        report = self.circuit_access.bluepy_sim.report('soma')
         time = report.get_gid(report.gids[0]).index.to_numpy()
         return time
 
@@ -1030,10 +798,10 @@ class SSim:
         return voltage[np.where(time >= 0.0)]
 
     def delete(self):
-        """Delete ssim"""
+        """Delete ssim and all of its attributes.
 
-        # This code might look weird, but it's to make sure cells are properly
-        # delete by python
+        NEURON objects are explicitly needed to be deleted.
+        """
         if hasattr(self, 'cells'):
             for _, cell in self.cells.items():
                 cell.delete()
@@ -1045,89 +813,19 @@ class SSim:
         """Destructor"""
         self.delete()
 
-    # Auxialliary methods ###
-
-    def check_connection_entries(self):
-        """Check all connection entries at once"""
-        gid_pttrn = re.compile("^a[0-9]+")
-        for entry in self.connection_entries:
-            self.check_connection_contents(entry)
-            src = entry['Source']
-            dest = entry['Destination']
-            for target in (src, dest):
-                if not (self.is_group_target(target) or gid_pttrn.match(target)):
-                    raise bglibpy.TargetDoesNotExist("%s target does not exist" % target)
-
-    @cachedmethod(lambda self: self._caches["fetch_gid_cell_info"])
-    def fetch_gid_cell_info(self, gid):
-        """Fetch bluepy cell info of a gid"""
-        if gid in self.bc_circuit.cells.ids():
-            cell_info = self.bc_circuit.cells.get(gid)
-        else:
-            raise Exception("Gid %d not found in circuit" % gid)
-
-        return cell_info
-
-    def fetch_mecombo_name(self, gid):
-        """Fetch mecombo name for a certain gid"""
-
-        cell_info = self.fetch_gid_cell_info(gid)
-        if self.node_properties_available:
-            me_combo = str(cell_info['model_template'])
-            me_combo = me_combo.split('hoc:')[1]
-        else:
-            me_combo = str(cell_info['me_combo'])
-        return me_combo
-
-    def fetch_emodel_name(self, gid: int) -> str:
-        """Get the emodel path of a gid."""
-        me_combo = self.fetch_mecombo_name(gid)
-        if self.use_mecombotsv:
-            emodel_name = self.bc_circuit.emodels.get_mecombo_info(gid)["emodel"]
-        else:
-            emodel_name = me_combo
-
-        return emodel_name
-
-    def fetch_morph_name(self, gid: int) -> str:
-        """Get the morph name of a gid."""
-        cell_info = self.fetch_gid_cell_info(gid)
-        return str(cell_info['morphology'])
-
-    def fetch_mini_frequencies(self, gid):
-        """Get inhibitory frequency of gid"""
-
-        cell_info = self.fetch_gid_cell_info(gid)
-
-        inh_mini_frequency = cell_info['inh_mini_frequency'] \
-            if 'inh_mini_frequency' in cell_info else None
-
-        exc_mini_frequency = cell_info['exc_mini_frequency'] \
-            if 'exc_mini_frequency' in cell_info else None
-
-        return exc_mini_frequency, inh_mini_frequency
-
     def fetch_cell_kwargs(self, gid):
         """Get the kwargs to instantiate a gid's Cell object"""
-        emodel_path = os.path.join(
-            self.emodels_dir,
-            self.fetch_emodel_name(gid) +
-            '.hoc')
-
-        morph_filename = '%s.%s' % \
-            (self.fetch_morph_name(gid), self.morph_extension)
-
-        if self.use_mecombotsv or self.node_properties_available:
+        if self.circuit_access.use_mecombo_tsv or self.circuit_access.node_properties_available:
             template_format = 'v6'
 
-            if self.use_mecombotsv:
-                emodel_properties = self.bc_circuit.emodels.get_mecombo_info(gid)
+            if self.circuit_access.use_mecombo_tsv:
+                emodel_properties = self.circuit_access.bluepy_circuit.emodels.get_mecombo_info(gid)
                 extra_values = {
                     'threshold_current': emodel_properties["threshold_current"],
                     'holding_current': emodel_properties["holding_current"]
                 }
-            elif self.node_properties_available:
-                emodel_properties = self.bc_circuit.cells.get(
+            elif self.circuit_access.node_properties_available:
+                emodel_properties = self.circuit_access.bluepy_circuit.cells.get(
                     gid,
                     properties=["@dynamics:threshold_current", "@dynamics:holding_current", ],
                 )
@@ -1136,83 +834,30 @@ class SSim:
                     'holding_current': emodel_properties["@dynamics:holding_current"]
                 }
 
-                if "@dynamics:AIS_scaler" in self.bc_circuit.cells.available_properties:
+                if "@dynamics:AIS_scaler" in self.circuit_access.bluepy_circuit.cells.available_properties:
                     template_format = 'v6_ais_scaler'
-                    extra_values['AIS_scaler'] = self.bc_circuit.cells.get(
+                    extra_values['AIS_scaler'] = self.circuit_access.bluepy_circuit.cells.get(
                         gid,
                         properties=["@dynamics:AIS_scaler", ])["@dynamics:AIS_scaler"]
 
             cell_kwargs = {
-                'template_filename': emodel_path,
-                'morphology_name': morph_filename,
+                'template_filename': self.circuit_access.emodel_path(gid),
+                'morphology_name': self.circuit_access.morph_filename(gid),
                 'gid': gid,
                 'record_dt': self.record_dt,
                 'rng_settings': self.rng_settings,
 
                 'template_format': template_format,
-                'morph_dir': self.morph_dir,
+                'morph_dir': self.circuit_access.morph_dir,
                 'extra_values': extra_values,
             }
         else:
             cell_kwargs = {
-                'template_filename': emodel_path,
-                'morphology_name': self.morph_dir,
+                'template_filename': self.circuit_access.emodel_path(gid),
+                'morphology_name': self.circuit_access.morph_dir,
                 'gid': gid,
                 'record_dt': self.record_dt,
                 'rng_settings': self.rng_settings,
             }
 
         return cell_kwargs
-
-    def get_gids_of_targets(self, targets=None):
-
-        gids = []
-        for target in targets:
-            gids.extend(self.bc_circuit.cells.ids(target))
-
-        return gids
-
-    def get_gids_of_mtypes(self, mtypes=None):
-        """
-        Helper function that, provided a BlueConfig, returns all the GIDs \
-        associated with a specified M-type. (For instance, when you only want \
-        to insert synapses of a specific pathway)
-
-
-        Parameters
-        ----------
-        mtypes : list
-            List of M-types (each as a string). Wildcards are *not* allowed, \
-            the strings must represent the true M-type names. A list with \
-            names can be found here: \
-            bbpteam.epfl.ch/projects/spaces/display/MEETMORPH/m-types
-
-        Returns
-        -------
-        gids : list
-            List of all GIDs associated with one of the specified M-types
-
-        """
-        gids = []
-        for mtype in mtypes:
-            gids.extend(
-                self.bc_circuit.cells.get({bluepy.Cell.MTYPE: mtype}).
-                index.values)
-
-        return gids
-
-
-def _parse_outdat(path):
-    """Parse the replay spiketrains in a out.dat formatted file
-       pointed to by path"""
-
-    spikes = bluepy.impl.spike_report.SpikeReport.load(path).get()
-    # convert Series to DataFrame with 2 columns for `groupby` operation
-    spike_df = spikes.to_frame().reset_index()
-    if (spike_df["t"] < 0).any():
-        lazy_printv('WARNING: SSim: Found negative spike times in out.dat ! '
-                    'Clipping them to 0', 2)
-        spike_df["t"].clip(lower=0., inplace=True)
-
-    outdat = spike_df.groupby("gid")["t"].apply(np.array)
-    return outdat.to_dict()

@@ -5,25 +5,24 @@
 
 """Tests for the Simulation class"""
 
-import os
+import pathlib
 
 import numpy as np
 from pytest import approx
 
 import bglibpy
 
-script_dir = os.path.dirname(__file__)
+parent_dir = pathlib.Path(__file__).resolve().parent.parent
 
 
 class TestCellBaseClass:
-
     """Base test class"""
 
     def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "%s/examples/cell_example1/test_cell.hoc" % script_dir,
-            "%s/examples/cell_example1" % script_dir)
+            parent_dir / "examples/cell_example1/test_cell.hoc",
+            str(parent_dir / "examples/cell_example1"))
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         assert isinstance(self.sim, bglibpy.Simulation)
@@ -34,19 +33,18 @@ class TestCellBaseClass:
         del self.sim
 
     def test_run(self):
-        """Simulation: Run the simulation for 100 ms"""
-        self.sim.run(100)
+        """Simulation: Run the simulation for 20 ms"""
+        self.sim.run(20)
 
 
 class TestCellcSTUTRandom123BaseClass:
-
     """Base test class"""
 
     def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
-            "%s/examples/cell_example_cstut" % script_dir)
+            parent_dir / "examples/cell_example_cstut/cSTUT_7.hoc",
+            str(parent_dir / "examples/cell_example_cstut"))
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         assert isinstance(self.sim, bglibpy.Simulation)
@@ -80,8 +78,8 @@ class TestCellcSTUTBaseClass:
     def setup_method(self):
         """Setup"""
         self.cell = bglibpy.Cell(
-            "%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,
-            "%s/examples/cell_example_cstut" % script_dir)
+            parent_dir / "examples/cell_example_cstut/cSTUT_7.hoc",
+            str(parent_dir / "examples/cell_example_cstut"))
         self.sim = bglibpy.Simulation()
         self.sim.add_cell(self.cell)
         assert isinstance(self.sim, bglibpy.Simulation)

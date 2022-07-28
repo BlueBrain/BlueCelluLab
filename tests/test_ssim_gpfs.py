@@ -520,7 +520,7 @@ class TestSSimBaseClassSingleVesicleMinis:
 
     def test_fetch_emodel_name(self):
         """Test to check if the emodel name is correct."""
-        emodel_name = self.ssim.fetch_emodel_name(self.gid)
+        emodel_name = self.ssim.circuit_access.fetch_emodel_name(self.gid)
         assert emodel_name == "cADpyr_L5TPC"
 
     def test_fetch_cell_kwargs_extra_values(self):
@@ -552,7 +552,7 @@ class TestSSimBaseClassSingleVesicleMinis:
         """Makes sure recording at AIS from bglibpy and ND produce the same."""
         ais_voltage_bglibpy = self.cell.get_ais_voltage()
 
-        ais_report = self.ssim.bc_simulation.report('axon_SONATA')
+        ais_report = self.ssim.circuit_access.bluepy_sim.report('axon_SONATA')
         ais_voltage_mainsim = ais_report.get_gid(self.gid).to_numpy()
 
         assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
@@ -567,7 +567,7 @@ def test_node_dynamics_params():
     """To assure dynamics params from sonata get extacted correctly."""
     config = "/gpfs/bbp.cscs.ch/project/proj148/scratch/V1/CircuitConfig"
     ssim = bglibpy.SSim(config)
-    cell_info = ssim.bc_circuit.cells.get(1)
+    cell_info = ssim.circuit_access.bluepy_circuit.cells.get(1)
     assert cell_info["@dynamics:holding_current"] == approx(-0.025167, abs=1e-6)
     assert cell_info["@dynamics:threshold_current"] == approx(0.054562, abs=1e-6)
     assert cell_info["@dynamics:AIS_scaler"] == approx(2.220992, abs=1e-6)
@@ -640,16 +640,14 @@ class TestSSimBaseClass_full:
             ['L23_BTC'], ['L23_BTC', 'L23_LBC'], ['L5_TTPC1', 'L6_TPC_L1']]
 
         for mtypes in mtypes_list:
-            mtypes_gids = self.ssim.get_gids_of_mtypes(mtypes=mtypes)
+            mtypes_gids = self.ssim.circuit_access.get_gids_of_mtypes(mtypes=mtypes)
 
             mtypes_filename = os.path.join(
                 script_dir, 'examples/mtype_lists', '%s.%s' %
                 ('_'.join(mtypes), 'txt'))
-            # np.savetxt(mtypes_filename, mtypes_gids)
-            expected_gids = np.loadtxt(mtypes_filename)
 
-            np.testing.assert_array_equal(
-                expected_gids, mtypes_gids)
+            expected_gids = set(np.loadtxt(mtypes_filename))
+            assert expected_gids == mtypes_gids
 
     def test_evaluate_connection_parameters(self):
         """SSim: Check if Connection block parsers yield expected output"""
@@ -693,7 +691,7 @@ class TestSSimBaseClass_full:
 
         for pre_target, post_target, params in target_params:
             pre_gid, post_gid, syn_ids = list(itertools.islice(
-                self.ssim.bc_circuit.connectome.iter_connections(
+                self.ssim.circuit_access.bluepy_circuit.connectome.iter_connections(
                     pre_target, post_target, return_synapse_ids=True), 1))[0]
             syn_id = syn_ids[0][1]
 
@@ -710,7 +708,7 @@ class TestSSimBaseClass_full:
 
     def test_add_replay_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
-        gid = int(self.ssim.get_gids_of_targets(['L5_MC'])[0])
+        gid = self.ssim.circuit_access.get_gids_of_targets(['L5_MC']).pop()
         self.ssim.instantiate_gids([gid], synapse_detail=0)
         pre_datas = self.ssim.get_syn_descriptions(gid)
         first_inh_syn = pre_datas[pre_datas[BLPSynapse.TYPE] < 100].iloc[0]

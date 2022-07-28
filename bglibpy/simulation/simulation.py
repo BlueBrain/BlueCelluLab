@@ -177,10 +177,3 @@ class Simulation:
 
     def __del__(self):
         pass
-
-    @tools.deprecated
-    # pylint: disable=C0103
-    def addCell(self, new_cell):
-        """Add a cell to a simulation"""
-        self.add_cell(new_cell)
-    # pylint: enable=C0103
