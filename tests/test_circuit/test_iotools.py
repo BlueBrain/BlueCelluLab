@@ -17,7 +17,7 @@ def test_parse_outdat():
 
     outdat = parse_outdat(
         script_dir / "examples/sim_twocell_minis_replay/output/out.dat")
-    assert(45 in outdat[2])
+    assert 45 in outdat[2]
 
     outdat_with_negatives = parse_outdat(
         script_dir / "examples/sim_twocell_minis_replay/output/out-contains-negatives.dat")

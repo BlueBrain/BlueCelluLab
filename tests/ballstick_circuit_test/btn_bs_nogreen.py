@@ -163,10 +163,10 @@ werner_t = cell.get_time()
 werner_v = cell.get_soma_voltage()
 plt.plot(werner_t, werner_v, label='bglibpy dt=0.001 - ProbAMPANMDA_EMS')
 
-del(sim)
-del(syn)
-del(ns)
-del(nc)
+del sim
+del syn
+del ns
+del nc
 
 syn = bglibpy.neuron.h.ExpSyn(SYN_LOC, sec=cell.basal[0])
 syn.tau = SYN_DECAY
@@ -184,10 +184,10 @@ sim.run(T_STOP, v_init=V_INIT, cvode=False, dt=DT)
 werner_t = cell.get_time()
 werner_v = cell.get_soma_voltage()
 plt.plot(werner_t, werner_v, label='bglibpy - ExpSyn')
-del(sim)
-del(syn)
-del(ns)
-del(nc)
+del sim
+del syn
+del ns
+del nc
 
 
 ''' Eilif's BGLIB'''

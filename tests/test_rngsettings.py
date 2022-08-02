@@ -6,16 +6,16 @@ import bglibpy
 def test_setting_rngmodes():
     """Test the setting of rng mode."""
     rng_obj = bglibpy.RNGSettings(mode="Compatibility")
-    assert(bglibpy.neuron.h.rngMode == 0)
+    assert bglibpy.neuron.h.rngMode == 0
 
     rng_obj.mode = "Random123"
-    assert(bglibpy.neuron.h.rngMode == 1)
+    assert bglibpy.neuron.h.rngMode == 1
 
     rng_obj.mode = "UpdatedMCell"
-    assert(bglibpy.neuron.h.rngMode == 2)
+    assert bglibpy.neuron.h.rngMode == 2
 
     bglibpy.RNGSettings(mode="Random123")
-    assert(bglibpy.neuron.h.rngMode == 1)
+    assert bglibpy.neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
 
     try:
@@ -24,7 +24,7 @@ def test_setting_rngmodes():
         assert isinstance(e, bglibpy.UndefinedRNGException)
 
     # make sure only one object is created
-    assert (rng_obj is bglibpy.RNGSettings())
+    assert rng_obj is bglibpy.RNGSettings()
 
 
 def test_str_repr_obj():

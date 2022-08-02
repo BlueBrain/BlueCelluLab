@@ -126,7 +126,7 @@ class TestSSimBaseClass_twocell_forwardskip:
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_empty:
@@ -165,12 +165,12 @@ class TestSSimBaseClass_twocell_empty:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < 0.2)
+        assert rms_error < 0.2
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_replay:
@@ -219,7 +219,7 @@ class TestSSimBaseClass_twocell_replay:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < .2)
+        assert rms_error < .2
 
     def test_disable_replay(self):
         """SSim: Check if disabling the stimuli creates a different result"""
@@ -233,13 +233,13 @@ class TestSSimBaseClass_twocell_replay:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy_withoutreplay - voltage_bglib) ** 2))
-        assert(rms_error > .2)
+        assert rms_error > .2
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy_withoutreplay.delete()
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_all_realconn:
@@ -278,12 +278,12 @@ class TestSSimBaseClass_twocell_all_realconn:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < 1.0)
+        assert rms_error < 1.0
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_all:
@@ -325,15 +325,15 @@ class TestSSimBaseClass_twocell_all:
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        assert(rms_error < 1.0)
+        assert rms_error < 1.0
 
     def test_pre_gids(self):
         """SSim: Test pre_gids() of the cells for a two cell circuit"""
 
         pre_gids = self.ssim_bglibpy.cells[self.gid].pre_gids()
 
-        assert(len(pre_gids) == 1)
-        assert(pre_gids[0] == 2)
+        assert len(pre_gids) == 1
+        assert pre_gids[0] == 2
 
     def test_pre_gid_synapse_ids(self):
         """SSim: Test pre_gid_synapse_ids() of the cells for a two """ \
@@ -344,7 +344,7 @@ class TestSSimBaseClass_twocell_all:
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 def rms(trace1, trace2):
@@ -389,13 +389,12 @@ class TestSSimBaseClass_twocell_all_intersect:
             traces[option] = ssim_bglibpy.get_voltage_trace(self.gid)
             ssim_bglibpy.delete()
 
-        assert(rms(traces['intersect'], traces['no_intersect']) == 0.0)
-        assert(
-            rms(traces['intersect'], traces['wrong_intersect']) > 0.0)
+        assert (rms(traces['intersect'], traces['no_intersect']) == 0.0)
+        assert (rms(traces['intersect'], traces['wrong_intersect']) > 0.0)
 
     def teardown(self):
         """Teardown"""
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_all_presynspiketrains:
@@ -438,7 +437,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains:
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_all_mvr:
@@ -481,7 +480,7 @@ class TestSSimBaseClass_twocell_all_mvr:
             np.mean(
                 (self.voltage_bglib_all - self.voltage_bglib_mvr) ** 2))
 
-        assert(rms_error > 10)
+        assert rms_error > 10
 
         '''
         import matplotlib
@@ -510,20 +509,20 @@ class TestSSimBaseClass_twocell_all_mvr:
             np.mean(
                 (voltage_bglibpy_mvr - self.voltage_bglib_mvr) ** 2))
 
-        assert(rms_error < 1.0)
+        assert rms_error < 1.0
 
     def test_synapseconfigure(self):
         """SSim: Test if synapseconfigure with mvr works correctly"""
 
         first_synapse = self.ssim_bglibpy_mvr.cells[self.gid].synapses[('', 0)]
-        assert(
+        assert (
             '%s.Nrrp = 3.0' == first_synapse.synapseconfigure_cmds[-1])
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglib_all.delete()
         self.ssim_bglibpy_mvr.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_synapseid:
@@ -571,23 +570,23 @@ class TestSSimBaseClass_twocell_synapseid:
         voltage_bglib_all = ssim_bglib_all.get_mainsim_voltage_trace(
             gid=self.gid)
 
-        assert (len(voltage_bglib_all) == 1000)
+        assert len(voltage_bglib_all) == 1000
 
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < .5)
+        assert rms_error < .5
 
         rms_error_all = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib_all) ** 2))
 
-        assert(rms_error_all > 10.0)
+        assert rms_error_all > 10.0
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_minis_replay:
@@ -629,7 +628,7 @@ class TestSSimBaseClass_twocell_minis_replay:
 
         voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
-        assert(len(voltage_bglib) == 1000)
+        assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
@@ -637,7 +636,7 @@ class TestSSimBaseClass_twocell_minis_replay:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < 1.0)
+        assert rms_error < 1.0
 
     def test_disable_minis(self):
         """SSim: Check if disabling the minis creates a different result"""
@@ -651,13 +650,13 @@ class TestSSimBaseClass_twocell_minis_replay:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy_withoutminis - voltage_bglib) ** 2))
-        assert(rms_error > 1.0)
+        assert rms_error > 1.0
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy_withoutminis.delete()
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_noisestim:
@@ -699,7 +698,7 @@ class TestSSimBaseClass_twocell_noisestim:
 
         voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
-        assert(len(voltage_bglib) == 1000)
+        assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
@@ -707,7 +706,7 @@ class TestSSimBaseClass_twocell_noisestim:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
-        assert(rms_error < 1.0)
+        assert rms_error < 1.0
 
     def test_disable_stimuli(self):
         """SSim: Check if disabling the stimuli creates a different result"""
@@ -721,13 +720,13 @@ class TestSSimBaseClass_twocell_noisestim:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
-        assert(rms_error > 1.0)
+        assert rms_error > 1.0
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_twocell_pulsestim:
@@ -768,7 +767,7 @@ class TestSSimBaseClass_twocell_pulsestim:
 
         voltage_bglib = self.ssim_bglibpy.get_mainsim_voltage_trace(self.gid)
 
-        assert (len(voltage_bglib) == 1000)
+        assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
             0:len(voltage_bglib)]
@@ -777,7 +776,7 @@ class TestSSimBaseClass_twocell_pulsestim:
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        assert(rms_error < 2.5)
+        assert rms_error < 2.5
 
     def test_disable_stimuli(self):
         """SSim: Check if disabling the pulse stimuli creates a different """ \
@@ -792,13 +791,13 @@ class TestSSimBaseClass_twocell_pulsestim:
         rms_error = np.sqrt(
             np.mean(
                 (voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
-        assert(rms_error > 20.0)
+        assert rms_error > 20.0
 
     def teardown(self):
         """Teardown"""
         self.ssim_bglibpy_withoutstim.delete()
         self.ssim_bglibpy.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
 
 class TestSSimBaseClass_syns:
@@ -826,11 +825,11 @@ class TestSSimBaseClass_syns:
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
     def test_run(self):
         """SSim: Check if Cells.hsynapses return the right dictionary."""
-        assert(
+        assert (
             isinstance(
                 self.ssim.cells[self.gid].hsynapses[('', 3)].Use,
                 float))

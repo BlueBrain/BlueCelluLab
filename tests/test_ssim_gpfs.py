@@ -157,12 +157,12 @@ class TestSSimBaseClass_full_realconn:
         self.ssim = bglibpy.ssim.SSim(
             renccv2_bc_1_path, record_dt=self.record_dt
         )
-        assert(isinstance(self.ssim, bglibpy.SSim))
+        assert isinstance(self.ssim, bglibpy.SSim)
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
     def test_run(self):
         """SSim: Check if a multi - cell full replay of a simulation """ \
@@ -189,7 +189,7 @@ class TestSSimBaseClass_full_realconn:
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        assert(rms_error < 2.0)
+        assert rms_error < 2.0
 
 
 '''
@@ -233,13 +233,13 @@ class TestSSimBaseClass_v6_full_run:
         self.ssim = bglibpy.ssim.SSim(
             v6_test_bc_1_path, record_dt=self.record_dt
         )
-        assert(isinstance(self.ssim, bglibpy.SSim))
+        assert isinstance(self.ssim, bglibpy.SSim)
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
 
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
     def test_run(self):
         """SSim: Check if a full replay of a simulation run """ \
@@ -266,7 +266,7 @@ class TestSSimBaseClass_v6_full_run:
             np.mean(
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
-        assert(rms_error < 0.5)
+        assert rms_error < 0.5
 
 
 '''
@@ -347,10 +347,6 @@ class TestSSimBaseClass_thalamus:
         self.record_dt = 0.1
         self.len_voltage = self.t_stop / self.record_dt
 
-    def teardown(self):
-        """Teardown"""
-        pass
-
     def test_run(self):
         """SSim: Check if replay of thalamus simulation for the cells of
         interest gives similar output to the main simulation
@@ -359,7 +355,6 @@ class TestSSimBaseClass_thalamus:
         gids = [35089, 37922, 38466, 40190, 42227]
 
         for gid in gids:
-
             ssim = bglibpy.ssim.SSim(
                 test_thalamus_path,
                 record_dt=self.record_dt)
@@ -426,10 +421,6 @@ class TestSSimBaseClass_v6_rnd123_1:
         self.record_dt = 0.1
         self.len_voltage = self.t_stop / self.record_dt
 
-    def teardown(self):
-        """Teardown"""
-        pass
-
     def test_run(self):
         """SSim: Check if a full replay with random 123 of a simulation """ \
             """gives the same output trace for O1v6a"""
@@ -483,7 +474,7 @@ class TestSSimBaseClass_v6_rnd123_1:
             assert rms_error < 10.0
 
             self.ssim.delete()
-            assert(bglibpy.tools.check_empty_topology())
+            assert bglibpy.tools.check_empty_topology()
 
 
 @pytest.mark.v6
@@ -516,7 +507,7 @@ class TestSSimBaseClassSingleVesicleMinis:
         """Teardown"""
         del self.cell
         self.ssim.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
     def test_fetch_emodel_name(self):
         """Test to check if the emodel name is correct."""
@@ -626,16 +617,15 @@ class TestSSimBaseClass_full:
     def setup(self):
         """Setup"""
         self.ssim = bglibpy.ssim.SSim(renccv2_bc_1_path)
-        assert(isinstance(self.ssim, bglibpy.SSim))
+        assert isinstance(self.ssim, bglibpy.SSim)
 
     def teardown(self):
         """Teardown"""
         self.ssim.delete()
-        assert(bglibpy.tools.check_empty_topology())
+        assert bglibpy.tools.check_empty_topology()
 
     def test_generate_mtype_list(self):
         """SSim: Test generate_mtype_list"""
-
         mtypes_list = [
             ['L23_BTC'], ['L23_BTC', 'L23_LBC'], ['L5_TTPC1', 'L6_TPC_L1']]
 
@@ -724,16 +714,16 @@ class TestSSimBaseClass_full:
             first_inh_syn,
             connection_parameters)
 
-        assert(
+        assert (
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAA == -80.6
         )
-        assert(
+        assert (
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.e_GABAB == -101.0
         )
-        assert(
+        assert (
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_d_GABAA == 10.0
         )
-        assert(
+        assert (
             self.ssim.cells[gid].synapses[('', sid)].hsynapse.tau_r_GABAA == 1.0
         )
 

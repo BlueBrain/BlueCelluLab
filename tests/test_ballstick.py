@@ -116,9 +116,9 @@ def run_pyneuron(soma_l, soma_d, params):
     voltage = np.array(v_vec)
     time = np.array(t_vec)
 
-    del(syn)
-    del(ns)
-    del(nc)
+    del syn
+    del ns
+    del nc
 
     return time, voltage
 
@@ -154,10 +154,10 @@ def run_pyneuron_with_template(params):
 
     cell.getCell().clear()
 
-    del(syn)
-    del(ns)
-    del(nc)
-    del(cell)
+    del syn
+    del ns
+    del nc
+    del cell
 
     return time, voltage
 
@@ -181,11 +181,11 @@ def run_bglibpy(params):
     bglibpy_t = cell.get_time()
     bglibpy_v = cell.get_soma_voltage()
 
-    del(sim)
-    del(syn)
-    del(ns)
-    del(nc)
-    del(cell)
+    del sim
+    del syn
+    del ns
+    del nc
+    del cell
 
     return bglibpy_t, bglibpy_v
 

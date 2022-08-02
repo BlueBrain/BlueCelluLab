@@ -158,10 +158,10 @@ def run_bglib_bs():
     sim.run(T_STOP, v_init=V_INIT, cvode=False, dt=DT)
     werner_t = cell.get_time()
     werner_v = cell.get_soma_voltage()
-    del(sim)
-    del(syn)
-    del(ns)
-    del(nc)
+    del sim
+    del syn
+    del ns
+    del nc
     return werner_t, werner_v
 
 
@@ -184,7 +184,7 @@ def test_bs_expsyn_pyneuron_vs_bglibpy(graph=False):
     # numpy.testing.assert_array_almost_equal(hines_v,werner_v,1,err_msg=\
     #                                        'Werner != Hines')
 
-    if(graph):
+    if graph:
         plt.plot(werner_t, werner_v, 'g', label='werner')
         plt.plot(hines_t, hines_v, 'b', label='hines, derived')
         plt.legend(loc=0)
@@ -211,7 +211,7 @@ def test_bs_expsyn_pyneuron_vs_analytic(graph=False):
     # numpy.testing.assert_array_almost_equal(hines_v,v_willem,1,err_msg=\
     #                                        'Willem != Hines')
 
-    if(graph):
+    if graph:
         plt.plot(t_willem, v_willem, 'r', label='willem, DT=%f' % (DT))
         plt.plot(hines_t, hines_v, 'b', label='hines, derived')
         plt.legend(loc=0)
@@ -241,11 +241,11 @@ def test_bs_ProbAMPANMDAEMS_pyneuron_vs_bglibpy():
     werner_t = cell.get_time()
     werner_v = cell.get_soma_voltage()
 
-    del(sim)
-    del(ns)
-    del(nc)
-    del(syn)
-    del(cell)
+    del sim
+    del ns
+    del nc
+    del syn
+    del cell
 
     # assert False == True
 
