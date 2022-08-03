@@ -14,10 +14,10 @@ packageurl: https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/bglibpy
 major: {major_version}
 description: Simulate small amount of cells from large simulation
 repository: https://bbpgitlab.epfl.ch/cells/bglibpy
-externaldoc: https://bbpteam.epfl.ch/documentation/projects/BGLibPy/latest/index.html
+externaldoc: https://bbpteam.epfl.ch/documentation/projects/bglibpy/latest/index.html
 updated: {date}
 maintainers: Werner Van Geit
-name: BGLibPy
+name: bglibpy
 license: BBP-internal-confidential
 issuesurl: https://bbpteam.epfl.ch/project/issues/projects/BGLPY
 version: {version}
@@ -45,11 +45,11 @@ def main():
     doc_dir = os.path.abspath(doc_dir)
 
     with cd(doc_dir):
-        print('Reading BGLibPy version ...')
+        print('Reading bglibpy version ...')
         bglibpy_version = pkg_resources.get_distribution('bglibpy').version
         bglibpy_major_version = bglibpy_version.split('.')[0]
         bglibpy_minor_version = bglibpy_version.split('.')[1]
-        print('BGLibPy version is: %s' % bglibpy_version)
+        print('bglibpy version is: %s' % bglibpy_version)
 
         finished_filename = '.doc_version'
 
