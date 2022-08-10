@@ -22,7 +22,7 @@ setuptools.setup(
     dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
                       "dev/+simple/bluepy/"],
     install_requires=[
-        "bluepy[bbp]>=2.4.2.dev1",
+        "bluepy[bbp]>=2.4.2",
         "cachetools",
         "numpy>=1.8.0",
         "matplotlib>=3.0.0",
