@@ -7,8 +7,8 @@ from bglibpy.circuit import CircuitAccess
 
 
 test_relative_ornstein_path = (
-    "/gpfs/bbp.cscs.ch/data/scratch/proj96/home/ecker/simulations/"
-    "LayerWiseEOUNoise_Ca1p15/BlueConfig")
+    "/gpfs/bbp.cscs.ch/project/proj96/home/tuncel/simulations/"
+    "test_sonata_proxy/BlueConfig")
 
 
 class TestSonataProxy:
