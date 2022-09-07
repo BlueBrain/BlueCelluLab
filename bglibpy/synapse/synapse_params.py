@@ -96,12 +96,16 @@ def check_nrrp_value(synapses: pd.DataFrame) -> None:
         ValueError: when NRRP is <= 0
         ValueError: when NRRP cannot ve cast to integer
     """
-    if any(synapses[BLPSynapse.NRRP] <= 0):
+    # remove nan ones, don't check them they're an artifact of pd Join
+    nrrp_series = synapses[~synapses[BLPSynapse.NRRP].isna()][[BLPSynapse.NRRP]]
+
+    if any(nrrp_series.values <= 0):
         raise ValueError(
             'Value smaller than 0.0 found for Nrrp: '
-            f'{synapses[BLPSynapse.NRRP]} at synapse {synapses}.'
+            f'in {nrrp_series}.'
         )
-    if any(synapses[BLPSynapse.NRRP] != synapses[BLPSynapse.NRRP].astype(int)):
+
+    if any(nrrp_series.values != nrrp_series.astype(int).values):
         raise ValueError(
             'Non-integer value for Nrrp found: '
             f'{synapses[BLPSynapse.NRRP]} at synapse {synapses}.'
@@ -164,12 +168,11 @@ def get_connectomes_dict(bc_circuit, projection, projections):
             raise ValueError(
                 'Cannot combine projection and projections arguments.')
 
-    if projections is None:
-        connectomes = {'': bc_circuit.connectome}
-    else:
-        connectomes = {
-            this_projection: bc_circuit.projection(this_projection)
-            for this_projection in projections}
+    connectomes = {'': bc_circuit.connectome}
+    if projections is not None:
+        proj_conns = {p: bc_circuit.projection(p) for p in projections}
+        connectomes.update(proj_conns)
+
     return connectomes
 
 

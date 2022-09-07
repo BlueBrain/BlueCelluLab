@@ -7,7 +7,6 @@ Class that represents a synapse in BGLibPy
          Do not distribute without further notice.
 """
 
-import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
@@ -88,7 +87,10 @@ class Synapse:
             self.rng_settings = cell.rng_settings
 
         if BLPSynapse.NRRP in syn_description:
-            self.Nrrp = int(syn_description[BLPSynapse.NRRP])
+            try:
+                self.Nrrp = int(syn_description[BLPSynapse.NRRP])
+            except ValueError:
+                self.Nrrp = None
         else:
             self.Nrrp = None
 

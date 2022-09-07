@@ -51,6 +51,34 @@ def test_get_connectomes_dict():
         bglibpy.synapse.get_connectomes_dict(bc_circuit, "projection1", ["projection2"])
 
 
+@pytest.mark.thal
+def test_get_connectomes_dict_with_projections():
+    """Test the retrieval of projection and the local connectomes."""
+    test_thalamus_path = os.path.join(
+        proj55_path,
+        "tuncel/simulations/release",
+        "2020-08-06-v2",
+        "bglibpy-thal-test-with-projections",
+        "BlueConfig",
+    )
+    bc_simulation = bluepy.Simulation(test_thalamus_path)
+    bc_circuit = bc_simulation.circuit
+
+    # empty
+    assert bglibpy.synapse.get_connectomes_dict(bc_circuit, None, None).keys() == {""}
+
+    connectomes_dict = bglibpy.synapse.get_connectomes_dict(
+        bc_circuit, "ML_afferents", None)
+
+    # single projection
+    assert connectomes_dict.keys() == {"", "ML_afferents"}
+
+    # multiple projections
+    all_connectomes = bglibpy.synapse.get_connectomes_dict(
+        bc_circuit, None, ["ML_afferents", "CT_afferents"])
+    assert all_connectomes.keys() == {"", "ML_afferents", "CT_afferents"}
+
+
 def test_get_synapses_by_connectomes():
     """Test get_synapses_by_connectomes function."""
     conf_pre_path = tests_dir / "examples" / "sim_twocell_all"
@@ -246,21 +274,35 @@ def test_syn_dict_proj55_sim1_with_projections():
         gid, projections=["ML_afferents", "CT_afferents"]
     )
 
-    assert len(syn_descriptions) == 488
+    synapse_index = ([
+        BLPSynapse.PRE_GID, BLPSynapse.AXONAL_DELAY,
+        BLPSynapse.POST_SECTION_ID, BLPSynapse.POST_SEGMENT_ID,
+        BLPSynapse.POST_SEGMENT_OFFSET, BLPSynapse.G_SYNX, BLPSynapse.U_SYN,
+        BLPSynapse.D_SYN, BLPSynapse.F_SYN, BLPSynapse.DTC, BLPSynapse.TYPE,
+        'source_popid', 'target_popid'])
+
+    assert len(syn_descriptions) == 843
     ml_afferent_syn_idx = ("ML_afferents", 5)
+    ml_afferent_res = syn_descriptions.loc[ml_afferent_syn_idx].dropna()  # drop nan values
+    ml_afferent_res = ml_afferent_res[synapse_index]  # reorder based on synapse index
 
     ml_afferent_syn_params_gt = np.array(
         [1.00018400e+06, 1.07500000e+00, 5.60000000e+02, 3.60000000e+01,
          1.94341523e-01, 4.27851178e+00, 5.03883432e-01, 6.66070118e+02,
          1.18374201e+01, 1.72209917e+00, 1.20000000e+02, 1, 0])
+    ml_afferent_gt = pd.Series(data=ml_afferent_syn_params_gt, index=synapse_index)
 
-    assert np.allclose(syn_descriptions.loc[ml_afferent_syn_idx], ml_afferent_syn_params_gt)
+    assert np.allclose(ml_afferent_res, ml_afferent_gt)
 
     ct_afferent_syn_idx = ("CT_afferents", 49)
+    ct_afferent_res = syn_descriptions.loc[ct_afferent_syn_idx].dropna()  # drop nan values
+    ct_afferent_res = ct_afferent_res[synapse_index]  # reorder based on synapse index
 
     ct_afferent_syn_params_gt = np.array(
         [2.00921500e+06, 1.40000000e+00, 5.53000000e+02, 9.00000000e+01,
          7.34749257e-01, 1.79559005e-01, 1.64240128e-01, 3.69520016e+02,
          1.80942025e+02, 2.89750268e+00, 1.20000000e+02, 2, 0])
 
-    assert np.allclose(syn_descriptions.loc[ct_afferent_syn_idx], ct_afferent_syn_params_gt)
+    ct_afferent_gt = pd.Series(data=ct_afferent_syn_params_gt, index=synapse_index)
+
+    assert np.allclose(ct_afferent_res, ct_afferent_gt)

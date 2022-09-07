@@ -27,6 +27,7 @@ setuptools.setup(
         "numpy>=1.8.0",
         "matplotlib>=3.0.0",
         "bluepy-configfile>=0.1.18",
+        "pandas>=1.4",
         ],
     keywords=[
         'computational neuroscience',
