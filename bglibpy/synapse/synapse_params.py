@@ -75,14 +75,21 @@ def create_syn_descriptions(all_properties, bc_circuit, bc,
                                        projections=projections)
 
     synapses = get_synapses_by_connectomes(connectomes, all_properties, gid)
+    if synapses.empty:
+        return synapses
 
     if BLPSynapse.NRRP in synapses:
         check_nrrp_value(synapses)
 
     proj_ids = synapses.index.get_level_values(0)
-    pop_ids = [get_popids(bc, ignore_populationid_error, proj_id) for proj_id in proj_ids]
+
+    pop_ids = [
+        get_popids(bc, ignore_populationid_error, proj_id) for proj_id in proj_ids
+    ]
     source_popids, target_popids = zip(*pop_ids)
-    synapses = synapses.assign(source_popid=source_popids, target_popid=target_popids)
+    synapses = synapses.assign(
+        source_popid=source_popids, target_popid=target_popids
+    )
     return synapses
 
 
