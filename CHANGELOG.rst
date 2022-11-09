@@ -6,49 +6,59 @@ Changelog
 
 The business logic of BGLibPy no longer makes any assumptions on bluepy or bluepy-configfile or snap (in the future) API and data structures. BGLibPy has an interface to abstract circuit access logic. The implementation code (written using bluepy (or snap in the future)) adheres to that interface (dependency inversion).
 
-## Rationale
+Rationale
+~~~~~~~~~~~~
 
 1. No module except for circuit_access and tests should know about the bluepy API or data structures.
 2. Separate the information coming from config file from the information coming from circuit. All config default values shall therefore be defined in one place and in nowhere else in the code.
 3. Add type annotations to the circuit access functions to be sure bluepy or snap implementations will follow the same signatures.
 E.g. if one is returning numpy.ndarray, the other should not return the same values in a list. Assure this through static type checking.
 
-## API Changes
+API Changes
+~~~~~~~~~~~~
 
 * ssim constructor: rename `blueconfig_filename` argument into `simulation_config`
 * instantiate_gids: Don't take 3 different arguments named `projection`, `projections`, `add_projections`.
 Use only `add_projections`. This avoids confusion and simplifies the downstream logic that deals with projections and synapses.
 
-Signature: `add_projections: Union[bool, List[str]] = False`
+Signature:
+
+`add_projections: bool | List[str] = False`
 
 Docstring:
 
-```
+
 add_projections:
                  If True, adds all of the projection blocks of the
                  BlueConfig. If False, no projections are added.
                  If list, adds only the projections in the list.
-```
 
 
-## Performance
+
+Performance
+~~~~~~~~~~~~
 
 * Loop interchange in add_stimuli. Before it was iterating for each cell, for each stimuli.
 The problem here was that stimuli entries are defined in the blueconfig and they were loaded from the same blueconfig file **n_cell** times.
 With the loop interchange, stimuli entries are loaded **only one time** and added to the cells.
+
 * return Set[int] int gell_cell_ids to avoid searching. To figure out if a cell belongs to a target, the cell's id was searched in all target ids which can be a very long list of files. With this change the search becomes hash and takes constant time.
 
 
-## Removed
+Removed
+~~~~~~~~~~~~
 
 * Out of date blueconfig parser functions. The up-to-date parser is available at bluepy-configfile
 * Remove unused methods returning unavailable bb5 paths
 
-## Simplification
+Simplification
+~~~~~~~~~~~~
+
 * remove condition nestedness by 1 level in _add_stimuli
 * avoid iterating all config for StimulusInject, iterate only StimulusInject blocks using bluepyconfigfile's api
 
-## Tests
+Tests
+~~~~~~~~~~~~
 
 * modify coveragerc to support concurrency
 
