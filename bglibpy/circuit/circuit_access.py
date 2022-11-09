@@ -49,7 +49,9 @@ class CircuitAccess:
         """Return the cell ids of a group."""
         return set(self._bluepy_circuit.cells.ids(group))
 
-    def get_cell_properties(self, gid: int, properties: list[str] | str) -> str:
+    def get_cell_properties(
+        self, gid: int, properties: list[str] | str
+    ) -> pd.DataFrame | pd.Series:
         """Get a property of a cell."""
         if isinstance(properties, str):
             properties = [properties]
