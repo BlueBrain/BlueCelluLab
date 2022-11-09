@@ -15,9 +15,8 @@ class SonataProxy:
 
     def get_property(self, property_name: str) -> Any:
         """Get a property of a cell."""
-        if property_name in self.circuit_access.bluepy_circuit.cells.available_properties:
-            return self.circuit_access.bluepy_circuit.cells.get(
-                self.gid, properties=[property_name])
+        if property_name in self.circuit_access.available_cell_properties:
+            return self.circuit_access.get_cell_properties(self.gid, property_name)
         raise MissingSonataPropertyError(f"{property_name} property is not available.")
 
     get_input_resistance = partialmethod(get_property, "@dynamics:input_resistance")

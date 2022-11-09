@@ -1,9 +1,129 @@
 Changelog
 =========
 
+4.9 (2022-11-02)
+----------------
+
+The business logic of BGLibPy no longer makes any assumptions on bluepy or bluepy-configfile or snap (in the future) API and data structures. BGLibPy has an interface to abstract circuit access logic. The implementation code (written using bluepy (or snap in the future)) adheres to that interface (dependency inversion).
+
+## Rationale
+
+1. No module except for circuit_access and tests should know about the bluepy API or data structures.
+2. Separate the information coming from config file from the information coming from circuit. All config default values shall therefore be defined in one place and in nowhere else in the code.
+3. Add type annotations to the circuit access functions to be sure bluepy or snap implementations will follow the same signatures.
+E.g. if one is returning numpy.ndarray, the other should not return the same values in a list. Assure this through static type checking.
+
+## API Changes
+
+* ssim constructor: rename `blueconfig_filename` argument into `simulation_config`
+* instantiate_gids: Don't take 3 different arguments named `projection`, `projections`, `add_projections`.
+Use only `add_projections`. This avoids confusion and simplifies the downstream logic that deals with projections and synapses.
+
+Signature: `add_projections: Union[bool, List[str]] = False`
+
+Docstring:
+
+```
+add_projections:
+                 If True, adds all of the projection blocks of the
+                 BlueConfig. If False, no projections are added.
+                 If list, adds only the projections in the list.
+```
+
+
+## Performance
+
+* Loop interchange in add_stimuli. Before it was iterating for each cell, for each stimuli.
+The problem here was that stimuli entries are defined in the blueconfig and they were loaded from the same blueconfig file **n_cell** times.
+With the loop interchange, stimuli entries are loaded **only one time** and added to the cells.
+* return Set[int] int gell_cell_ids to avoid searching. To figure out if a cell belongs to a target, the cell's id was searched in all target ids which can be a very long list of files. With this change the search becomes hash and takes constant time.
+
+
+## Removed
+
+* Out of date blueconfig parser functions. The up-to-date parser is available at bluepy-configfile
+* Remove unused methods returning unavailable bb5 paths
+
+## Simplification
+* remove condition nestedness by 1 level in _add_stimuli
+* avoid iterating all config for StimulusInject, iterate only StimulusInject blocks using bluepyconfigfile's api
+
+## Tests
+
+* modify coveragerc to support concurrency
+
+
+4.8 (2022-09-07)
+----------------
+
+Implement a layer responsible of circuit and simulation access.
+
+### Why now?
+
+- Required before fully supporting the sonata specification (including reports and config files).
+- Neurodamus now supports full-sonata simulations, soon there will be simulations without blueconfig and out.dat
+- Various custom stimuli in cell/injector module require access to a subset of Sonata Node properties (#BGLPY-103).
+Passing each Node property required by a single stimuli to every cell object can no longer be the solution.
+- Abstracting away the bluepy layer enables supporting bluepy alternatives e.g. snap in the future.
+snap: https://github.com/BlueBrain/snap
+
+### Changes
+
+A summary of all changes introduced are listed below.
+
+#### Other design changes
+- add SonataProxy to interface Cell with Sonata
+- create a validate module for circuit/simulation config validation.
+- Separate BlueConfig validation and object creation (e.g. synapse or connection object creation)
+- create neuron_globals in simulation module to set global NEURON simulator variables
+
+#### Documentation changes
+
+- use NEURON when referring to the simulator.
+
+#### Deprecates
+
+- storing and parsing of neuronconfigure_entries that are no longer in the standard.
+- remove addCell method deprecated 9 years ago
+- remove ssim wrappers of cell/injector functions
+
+#### Performance
+
+- separate parser and validator in minis single vesicle to avoid validating the same BlueConfig multiple times
+- call validator only once in SSim's constructor
+- in `get_gids_of_mtypes`, use `bluepy_circuit.cells.ids` instead of `bluepy_circuit.cells.get` to avoid creating and retrieving `pd.DataFrame` objects.
+
+#### Debugging
+
+- add __repr__ for RNGSettings useful in debugging & logging
+
+#### Testing
+
+- Testing of circuit/simulation properties are simpler, with no SSim and gpfs dependency.
+- More fine grained code coverage through unit tests, (catches some edge cases that were missed in the large functional tests)
+
+#### Bug fix
+
+- get_gids_of_mtypes and get_gids_of_targets to return set to avoid duplicated gids coming from multiple targets or mtypes
+
+#### Typing
+
+- annotate config filepath types accepted by bluepy-configfile
+- use type annotations to avoid docstrings becoming out-of-date
+- add pandas stubs
+
+### Future work
+
+- some bluepy objects are still accessed from other modules e.g. Synapses.
+Decouple the bluepy dependency from other modules.
+E.g. If pop_ids is needed, don't pass the bc object, pass pop_ids only.
 
 4.7 (2022-05-24)
 ----------------
+- PERFORMANCE: ~22.4x speedup in add_synapses on large simulations
+Source: https://bbpgitlab.epfl.ch/cells/bglibpy/-/merge_requests/48
+- PERFORMANCE: ~160x speedup in _intersect_pre_gids on large simulations
+Source: https://bbpgitlab.epfl.ch/cells/bglibpy/-/merge_requests/48
 - Include tests in coverage. [Anil Tuncel]
 - Support Simplify AST for subscription bpo-34822. [Anil Tuncel]
 - Add mypy to tox:lint environment. [Anil Tuncel]

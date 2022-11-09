@@ -3,13 +3,14 @@
 import os
 from pathlib import Path
 
-import bluepy
 import numpy as np
 import pandas as pd
 import pytest
 from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
+from bglibpy.circuit import CircuitAccess
+from tests.helpers.circuit import blueconfig_append_path
 
 tests_dir = Path(__file__).resolve().parent
 
@@ -35,61 +36,15 @@ def test_check_nrrp_value():
         bglibpy.synapse.check_nrrp_value(synapses)
 
 
-def test_get_connectomes_dict():
-    """Test creation of connectome dict."""
-    conf_pre_path = tests_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
-        conf_pre_path / "BlueConfig", conf_pre_path
-    )
-    bc_simulation = bluepy.Simulation(modified_conf)
-    bc_circuit = bc_simulation.circuit
-
-    connectomes_dict = bglibpy.synapse.get_connectomes_dict(bc_circuit, None, None)
-    assert connectomes_dict.keys() == {""}
-
-    with pytest.raises(ValueError):
-        bglibpy.synapse.get_connectomes_dict(bc_circuit, "projection1", ["projection2"])
-
-
-@pytest.mark.thal
-def test_get_connectomes_dict_with_projections():
-    """Test the retrieval of projection and the local connectomes."""
-    test_thalamus_path = os.path.join(
-        proj55_path,
-        "tuncel/simulations/release",
-        "2020-08-06-v2",
-        "bglibpy-thal-test-with-projections",
-        "BlueConfig",
-    )
-    bc_simulation = bluepy.Simulation(test_thalamus_path)
-    bc_circuit = bc_simulation.circuit
-
-    # empty
-    assert bglibpy.synapse.get_connectomes_dict(bc_circuit, None, None).keys() == {""}
-
-    connectomes_dict = bglibpy.synapse.get_connectomes_dict(
-        bc_circuit, "ML_afferents", None)
-
-    # single projection
-    assert connectomes_dict.keys() == {"", "ML_afferents"}
-
-    # multiple projections
-    all_connectomes = bglibpy.synapse.get_connectomes_dict(
-        bc_circuit, None, ["ML_afferents", "CT_afferents"])
-    assert all_connectomes.keys() == {"", "ML_afferents", "CT_afferents"}
-
-
 def test_get_synapses_by_connectomes():
     """Test get_synapses_by_connectomes function."""
     conf_pre_path = tests_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfig", conf_pre_path
     )
-    bc_simulation = bluepy.Simulation(modified_conf)
-    bc_circuit = bc_simulation.circuit
+    circuit_access = CircuitAccess(modified_conf)
 
-    gid = 1
-    connectomes_dict = bglibpy.synapse.get_connectomes_dict(bc_circuit, None, None)
+    connectomes_dict = circuit_access.get_connectomes_dict(None)
     all_properties = [
         BLPSynapse.PRE_GID,
         BLPSynapse.AXONAL_DELAY,
@@ -106,6 +61,7 @@ def test_get_synapses_by_connectomes():
         BLPSynapse.U_HILL_COEFFICIENT,
         BLPSynapse.CONDUCTANCE_RATIO]
 
+    gid = 1
     synapses = bglibpy.synapse.get_synapses_by_connectomes(
         connectomes_dict, all_properties, gid)
 
@@ -119,7 +75,7 @@ def test_syn_dict_example_sims():
     gid = 1
     conf_pre_path = tests_dir / "examples" / "sim_twocell_all"
 
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfig", conf_pre_path
     )
 

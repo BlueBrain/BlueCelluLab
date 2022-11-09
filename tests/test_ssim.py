@@ -5,11 +5,10 @@
 import os
 
 import numpy as np
-import pytest
 from bluepy_configfile.configfile import BlueConfig
 
 import bglibpy
-from bglibpy.exceptions import ConfigError
+from tests.helpers.circuit import blueconfig_append_path
 
 script_dir = os.path.dirname(__file__)
 
@@ -95,7 +94,7 @@ class TestSSimBaseClass_twocell_forwardskip:
             script_dir, "examples", "sim_twocell_empty")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglibpy = bglibpy.SSim(modified_conf)
@@ -139,7 +138,7 @@ class TestSSimBaseClass_twocell_empty:
         conf_pre_path = os.path.join(
             script_dir, "examples", "sim_twocell_empty")
 
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -183,7 +182,7 @@ class TestSSimBaseClass_twocell_replay:
         conf_pre_path = os.path.join(
             script_dir, "examples", "sim_twocell_replay")
 
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -251,7 +250,7 @@ class TestSSimBaseClass_twocell_all_realconn:
         self.gid = 1
         conf_pre_path = os.path.join(
             script_dir, "examples", "sim_twocell_all")
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
@@ -297,7 +296,7 @@ class TestSSimBaseClass_twocell_all:
             script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -365,7 +364,7 @@ class TestSSimBaseClass_twocell_all_intersect:
             script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
-        self.modified_conf = bglibpy.tools.blueconfig_append_path(
+        self.modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -408,7 +407,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains:
             script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
@@ -451,7 +450,7 @@ class TestSSimBaseClass_twocell_all_mvr:
             script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglib_all = bglibpy.SSim(modified_conf)
@@ -460,7 +459,7 @@ class TestSSimBaseClass_twocell_all_mvr:
 
         conf_pre_path_mvr = os.path.join(
             script_dir, "examples", "sim_twocell_all_mvr")
-        modified_conf_mvr = bglibpy.tools.blueconfig_append_path(
+        modified_conf_mvr = blueconfig_append_path(
             os.path.join(conf_pre_path_mvr, "BlueConfig"), conf_pre_path_mvr
         )
         self.ssim_bglibpy_mvr = bglibpy.SSim(modified_conf_mvr, record_dt=0.1)
@@ -536,7 +535,7 @@ class TestSSimBaseClass_twocell_synapseid:
             script_dir, "examples", "sim_twocell_synapseid"
         )
 
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
@@ -562,7 +561,7 @@ class TestSSimBaseClass_twocell_synapseid:
         conf_pre_path_all = os.path.join(
             script_dir, "examples", "sim_twocell_all")
 
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path_all, "BlueConfig"), conf_pre_path_all)
 
         ssim_bglib_all = bglibpy.SSim(modified_conf)
@@ -600,7 +599,7 @@ class TestSSimBaseClass_twocell_minis_replay:
             script_dir, "examples", "sim_twocell_minis_replay")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -670,7 +669,7 @@ class TestSSimBaseClass_twocell_noisestim:
             script_dir, "examples", "sim_twocell_noisestim")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
 
@@ -740,7 +739,7 @@ class TestSSimBaseClass_twocell_pulsestim:
             script_dir, "examples", "sim_twocell_pulsestim")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
@@ -811,7 +810,7 @@ class TestSSimBaseClass_syns:
             script_dir, "examples", "sim_twocell_all")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(conf_pre_path, "BlueConfig"), conf_pre_path
         )
         self.ssim = bglibpy.SSim(modified_conf, record_dt=0.1)

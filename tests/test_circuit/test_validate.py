@@ -8,6 +8,7 @@ import pytest
 
 import bglibpy
 from bglibpy.circuit import CircuitAccess, SimulationValidator
+from tests.helpers.circuit import blueconfig_append_path
 
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ class TestSimulationValidator:
         conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             conf_pre_path / "BlueConfigWithConditions", conf_pre_path
         )
         circuit_access = CircuitAccess(modified_conf)
@@ -33,23 +34,23 @@ class TestSimulationValidator:
         with pytest.raises(bglibpy.OldNeurodamusVersionError):
             self.sim_val.check_single_vesicle_minis_settings()
 
-    @patch("bglibpy.circuit.CircuitAccess.condition_parameters_dict")
+    @patch("bglibpy.circuit.config.SimulationConfig.condition_parameters_dict")
     def test_check_randomize_gaba_risetime(self, mock_cond_params):
         mock_cond_params.return_value = {"randomize_Gaba_risetime": "InBetweenTrueAndFalse"}
         with pytest.raises(bglibpy.ConfigError):
             self.sim_val.check_randomize_gaba_risetime()
 
-    @patch("bglibpy.circuit.CircuitAccess.condition_parameters_dict")
+    @patch("bglibpy.circuit.config.SimulationConfig.condition_parameters_dict")
     def test_check_cao_cr_glusynapse_value(self, mock_cond_params):
         mock_cond_params.return_value = {"cao_CR_GluSynapse": "999999999"}
-        assert self.sim_val.circuit_access.extracellular_calcium == 1.25
+        assert self.sim_val.circuit_access.config.extracellular_calcium == 1.25
         with pytest.raises(bglibpy.ConfigError):
             self.sim_val.check_cao_cr_glusynapse_value()
 
 
 def test_check_spike_location():
     conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfigWithInvalidSpikeLocation", conf_pre_path
     )
     circuit_access = CircuitAccess(modified_conf)
@@ -60,7 +61,7 @@ def test_check_spike_location():
 
 def test_check_mod_override_file():
     conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfigWithInvalidModOverride", conf_pre_path
     )
     circuit_access = CircuitAccess(modified_conf)
@@ -71,7 +72,7 @@ def test_check_mod_override_file():
 
 def test_check_connection_entries_with_invalid_connection_content():
     conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfigWithInvalidConnectionContents", conf_pre_path
     )
     circuit_access = CircuitAccess(modified_conf)
@@ -82,7 +83,7 @@ def test_check_connection_entries_with_invalid_connection_content():
 
 def test_check_connection_entries():
     conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
-    modified_conf = bglibpy.tools.blueconfig_append_path(
+    modified_conf = blueconfig_append_path(
         conf_pre_path / "BlueConfigWithInvalidConnectionEntries", conf_pre_path
     )
     circuit_access = CircuitAccess(modified_conf)

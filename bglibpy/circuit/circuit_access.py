@@ -1,29 +1,32 @@
 """Layer to abstract the circuit access functionality from the rest of BGLibPy."""
 
+from __future__ import annotations
 import os
 from pathlib import Path
-from typing import List, Optional, Set, Tuple, Union
+from typing import Optional
 
 import bluepy
 from bluepy_configfile.configfile import BlueConfig
 from bluepy.enums import Cell
 from cachetools import LRUCache, cachedmethod
+import numpy as np
 import pandas as pd
 
 from bglibpy.exceptions import BGLibPyError
+from bglibpy.circuit.config import SimulationConfig
 
 
 class CircuitAccess:
     """Encapsulated circuit data and functions."""
 
-    def __init__(self, circuit_config: Union[str, BlueConfig]) -> None:
+    def __init__(self, circuit_config: str | BlueConfig) -> None:
         """Initialize bluepy circuit object."""
         if isinstance(circuit_config, str) and not Path(circuit_config).exists():
             raise FileNotFoundError(f"Circuit config file {circuit_config} not found.")
 
-        self.bluepy_sim = bluepy.Simulation(circuit_config)
-        self.bluepy_circuit = self.bluepy_sim.circuit
-        self.bc = self.bluepy_sim.config
+        self._bluepy_sim = bluepy.Simulation(circuit_config)
+        self._bluepy_circuit = self._bluepy_sim.circuit
+        self.config = SimulationConfig(self._bluepy_sim.config)
 
         self._caches: dict = {
             "is_group_target": LRUCache(maxsize=1000),
@@ -34,12 +37,58 @@ class CircuitAccess:
         }
 
     @property
+    def available_cell_properties(self) -> set:
+        """Retrieve the available properties from connectome."""
+        return self._bluepy_circuit.cells.available_properties
+
+    def get_emodel_info(self, gid: int) -> dict:
+        """Return the emodel info for a gid."""
+        return self._bluepy_circuit.emodels.get_mecombo_info(gid)
+
+    def get_cell_ids(self, group: str) -> set[int]:
+        """Return the cell ids of a group."""
+        return set(self._bluepy_circuit.cells.ids(group))
+
+    def get_cell_properties(self, gid: int, properties: list[str] | str) -> str:
+        """Get a property of a cell."""
+        if isinstance(properties, str):
+            properties = [properties]
+        return self._bluepy_circuit.cells.get(gid, properties=properties)
+
+    def get_connectomes_dict(self, projections: Optional[list[str] | str]) -> dict:
+        """Get the connectomes dictionary indexed by projections or connectome ids."""
+        if isinstance(projections, str):
+            projections = [projections]
+
+        connectomes = {'': self._bluepy_circuit.connectome}
+        if projections is not None:
+            proj_conns = {p: self._bluepy_circuit.projection(p) for p in projections}
+            connectomes.update(proj_conns)
+
+        return connectomes
+
+    def get_soma_voltage(
+        self, gid: int, t_start: float, t_end: float, t_step: float
+    ) -> np.ndarray:
+        """Retrieve the soma voltage of main simulation."""
+        return (
+            self._bluepy_sim.report("soma")
+            .get_gid(gid, t_start=t_start, t_end=t_end, t_step=t_step)
+            .to_numpy()
+        )
+
+    def get_soma_time_trace(self) -> np.ndarray:
+        """Retrieve the time trace from the main simulation."""
+        report = self._bluepy_sim.report('soma')
+        return report.get_gid(report.gids[0]).index.to_numpy()
+
+    @property
     def use_mecombo_tsv(self) -> bool:
         """Property that decides whether to use mecombo_tsv."""
         _use_mecombo_tsv = False
         if self.node_properties_available:
             _use_mecombo_tsv = False
-        elif 'MEComboInfoFile' in self.bc.Run:
+        elif 'MEComboInfoFile' in self.config.bc.Run:
             _use_mecombo_tsv = True
         else:
             _use_mecombo_tsv = False
@@ -53,12 +102,12 @@ class CircuitAccess:
     @cachedmethod(lambda self: self._caches["is_group_target"])
     def is_group_target(self, target: str) -> bool:
         """Check if target is a group of cells."""
-        return target in self.bluepy_circuit.cells.targets
+        return target in self._bluepy_circuit.cells.targets
 
     @cachedmethod(lambda self: self._caches["_get_target_gids"])
     def _get_target_gids(self, target: str) -> set:
         """Return GIDs in target as a set."""
-        return set(self.bluepy_circuit.cells.ids(target))
+        return set(self._bluepy_circuit.cells.ids(target))
 
     @cachedmethod(lambda self: self._caches["target_has_gid"])
     def target_has_gid(self, target: str, gid: int) -> bool:
@@ -68,8 +117,8 @@ class CircuitAccess:
     @cachedmethod(lambda self: self._caches["fetch_gid_cell_info"])
     def fetch_gid_cell_info(self, gid: int) -> pd.DataFrame:
         """Fetch bluepy cell info of a gid"""
-        if gid in self.bluepy_circuit.cells.ids():
-            return self.bluepy_circuit.cells.get(gid)
+        if gid in self._bluepy_circuit.cells.ids():
+            return self._bluepy_circuit.cells.get(gid)
         else:
             raise BGLibPyError(f"Gid {gid} not found in circuit")
 
@@ -87,7 +136,7 @@ class CircuitAccess:
         """Get the emodel path of a gid."""
         me_combo = self.fetch_mecombo_name(gid)
         if self.use_mecombo_tsv:
-            emodel_name = self.bluepy_circuit.emodels.get_mecombo_info(gid)["emodel"]
+            emodel_name = self._bluepy_circuit.emodels.get_mecombo_info(gid)["emodel"]
         else:
             emodel_name = me_combo
 
@@ -118,91 +167,26 @@ class CircuitAccess:
             "model_template",
         }
 
-        return node_props.issubset(self.bluepy_circuit.cells.available_properties)
+        return node_props.issubset(self._bluepy_circuit.cells.available_properties)
 
-    @cachedmethod(lambda self: self._caches["condition_parameters_dict"])
-    def condition_parameters_dict(self) -> dict:
-        """Returns parameters of global condition block of the blueconfig."""
-        try:
-            condition_entries = self.bc.typed_sections('Conditions')[0]
-        except IndexError:
-            return {}
-        return condition_entries.to_dict()
-
-    @property
-    def connection_entries(self):
-        return self.bc.typed_sections('Connection')
-
-    @property
-    def is_glusynapse_used(self) -> bool:
-        """Checks if glusynapse is used in the simulation config."""
-        is_glusynapse_used = any(
-            x
-            for x in self.connection_entries
-            if "ModOverride" in x and x["ModOverride"] == "GluSynapse"
-        )
-        return is_glusynapse_used
-
-    def get_gids_of_mtypes(self, mtypes: List[str]) -> Set[int]:
+    def get_gids_of_mtypes(self, mtypes: list[str]) -> set[int]:
         """Returns all the gids belonging to one of the input mtypes."""
         gids = set()
         for mtype in mtypes:
-            gids |= set(self.bluepy_circuit.cells.ids({Cell.MTYPE: mtype}))
+            gids |= set(self._bluepy_circuit.cells.ids({Cell.MTYPE: mtype}))
 
         return gids
 
-    def get_gids_of_targets(self, targets: List[str]) -> Set[int]:
+    def get_gids_of_targets(self, targets: list[str]) -> set[int]:
         """Return all the gids belonging to one of the input targets."""
         gids = set()
         for target in targets:
-            gids |= set(self.bluepy_circuit.cells.ids(target))
+            gids |= set(self._bluepy_circuit.cells.ids(target))
 
         return gids
 
-    def get_morph_dir_and_extension(self) -> Tuple[str, str]:
-        """Get the tuple of morph_dir and extension."""
-        morph_dir = self.bc.Run['MorphologyPath']
-
-        if 'MorphologyType' in self.bc.Run:
-            morph_extension = self.bc.Run['MorphologyType']
-        else:
-            # backwards compatible
-            if morph_dir[-3:] == "/h5":
-                morph_dir = morph_dir[:-3]
-
-            # latest circuits don't have asc dir
-            asc_dir = os.path.join(morph_dir, 'ascii')
-            if os.path.exists(asc_dir):
-                morph_dir = asc_dir
-
-            morph_extension = 'asc'
-
-        return morph_dir, morph_extension
-
-    @property
-    def morph_dir(self) -> str:
-        _morph_dir, _ = self.get_morph_dir_and_extension()
-        return _morph_dir
-
-    @property
-    def morph_extension(self) -> str:
-        _, _morph_extension = self.get_morph_dir_and_extension()
-        return _morph_extension
-
     def morph_filename(self, gid: int) -> str:
-        return f"{self.fetch_morph_name(gid)}.{self.morph_extension}"
-
-    @property
-    def emodels_dir(self) -> str:
-        return self.bc.Run['METypePath']
+        return f"{self.fetch_morph_name(gid)}.{self.config.morph_extension}"
 
     def emodel_path(self, gid: int) -> str:
-        return os.path.join(self.emodels_dir, f"{self.fetch_emodel_name(gid)}.hoc")
-
-    @property
-    def extracellular_calcium(self) -> Optional[float]:
-        """Get the extracellular calcium value."""
-        if 'ExtracellularCalcium' in self.bc.Run:
-            return float(self.bc.Run['ExtracellularCalcium'])
-        else:
-            return None
+        return os.path.join(self.config.emodels_dir, f"{self.fetch_emodel_name(gid)}.hoc")

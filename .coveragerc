@@ -1,2 +1,4 @@
 [run]
 omit = bglibpy/_version.py
+concurrency = multiprocessing
+parallel = true

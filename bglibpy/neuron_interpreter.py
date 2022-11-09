@@ -1,15 +1,16 @@
 """Module to interpret NEURON code strings."""
 
+from __future__ import annotations
 import ast
 import sys
-from typing import Any, Dict
+from typing import Any
 
 from bglibpy import NeuronEvalError
 
 PY39_PLUS = sys.version_info >= (3, 9)
 
 
-def _recursive_evaluate(node: ast.AST, context: Dict[str, Any]) -> Any:
+def _recursive_evaluate(node: ast.AST, context: dict[str, Any]) -> Any:
     """A limited evaluator for evaluating NEURON code string."""
     if isinstance(node, ast.Constant):
         return node.value

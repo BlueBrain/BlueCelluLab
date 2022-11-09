@@ -24,7 +24,7 @@ class SimulationValidator:
     def check_connection_entries(self):
         """Check all connection entries at once"""
         gid_pttrn = re.compile("^a[0-9]+")
-        for entry in self.circuit_access.connection_entries:
+        for entry in self.circuit_access.config.connection_entries:
             self.check_connection_contents(entry)
             src = entry['Source']
             dest = entry['Destination']
@@ -46,7 +46,7 @@ class SimulationValidator:
 
     def check_single_vesicle_minis_settings(self):
         """Check against missing single vesicle attribute."""
-        condition_parameters = self.circuit_access.condition_parameters_dict()
+        condition_parameters = self.circuit_access.config.condition_parameters_dict()
         if "SYNAPSES__minis_single_vesicle" in condition_parameters:
             if not hasattr(
                     bglibpy.neuron.h, "minis_single_vesicle_ProbAMPANMDA_EMS"):
@@ -57,7 +57,7 @@ class SimulationValidator:
 
     def check_randomize_gaba_risetime(self):
         """Make sure the gaba risetime has an expected value."""
-        condition_parameters = self.circuit_access.condition_parameters_dict()
+        condition_parameters = self.circuit_access.config.condition_parameters_dict()
         if "randomize_Gaba_risetime" in condition_parameters:
             randomize_gaba_risetime = condition_parameters["randomize_Gaba_risetime"]
 
@@ -67,24 +67,24 @@ class SimulationValidator:
 
     def check_cao_cr_glusynapse_value(self):
         """Make sure cao_CR_GluSynapse is equal to ExtracellularCalcium."""
-        condition_parameters = self.circuit_access.condition_parameters_dict()
+        condition_parameters = self.circuit_access.config.condition_parameters_dict()
         if "cao_CR_GluSynapse" in condition_parameters:
             cao_cr_glusynapse = condition_parameters["cao_CR_GluSynapse"]
 
-            if cao_cr_glusynapse != self.circuit_access.extracellular_calcium:
+            if cao_cr_glusynapse != self.circuit_access.config.extracellular_calcium:
                 raise ConfigError("cao_CR_GluSynapse is not equal to ExtracellularCalcium")
 
     def check_spike_location(self):
         """Allow only accepted spike locations."""
-        if 'SpikeLocation' in self.circuit_access.bc.Run:
-            spike_location = self.circuit_access.bc.Run['SpikeLocation']
+        if 'SpikeLocation' in self.circuit_access.config.bc.Run:
+            spike_location = self.circuit_access.config.bc.Run['SpikeLocation']
             if spike_location not in ["soma", "AIS"]:
                 raise bglibpy.ConfigError(
                     "Possible options for SpikeLocation are 'soma' and 'AIS'")
 
     def check_mod_override_file(self):
         """Assure mod files are present for all overrides in connection blocks."""
-        for entry in self.circuit_access.connection_entries:
+        for entry in self.circuit_access.config.connection_entries:
             if 'ModOverride' in entry:
                 mod_name = entry['ModOverride']
                 if not hasattr(bglibpy.neuron.h, mod_name):

@@ -6,7 +6,7 @@ import numpy as np
 from bglibpy import lazy_printv
 
 
-def parse_outdat(path):
+def parse_outdat(path: str) -> dict:
     """Parse the replay spiketrains in a out.dat formatted file
        pointed to by path"""
 

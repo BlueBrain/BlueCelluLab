@@ -543,7 +543,7 @@ class TestSSimBaseClassSingleVesicleMinis:
         """Makes sure recording at AIS from bglibpy and ND produce the same."""
         ais_voltage_bglibpy = self.cell.get_ais_voltage()
 
-        ais_report = self.ssim.circuit_access.bluepy_sim.report('axon_SONATA')
+        ais_report = self.ssim.circuit_access._bluepy_sim.report('axon_SONATA')
         ais_voltage_mainsim = ais_report.get_gid(self.gid).to_numpy()
 
         assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
@@ -558,7 +558,7 @@ def test_node_dynamics_params():
     """To assure dynamics params from sonata get extacted correctly."""
     config = "/gpfs/bbp.cscs.ch/project/proj148/scratch/V1/CircuitConfig"
     ssim = bglibpy.SSim(config)
-    cell_info = ssim.circuit_access.bluepy_circuit.cells.get(1)
+    cell_info = ssim.circuit_access._bluepy_circuit.cells.get(1)
     assert cell_info["@dynamics:holding_current"] == approx(-0.025167, abs=1e-6)
     assert cell_info["@dynamics:threshold_current"] == approx(0.054562, abs=1e-6)
     assert cell_info["@dynamics:AIS_scaler"] == approx(2.220992, abs=1e-6)
@@ -681,7 +681,7 @@ class TestSSimBaseClass_full:
 
         for pre_target, post_target, params in target_params:
             pre_gid, post_gid, syn_ids = list(itertools.islice(
-                self.ssim.circuit_access.bluepy_circuit.connectome.iter_connections(
+                self.ssim.circuit_access._bluepy_circuit.connectome.iter_connections(
                     pre_target, post_target, return_synapse_ids=True), 1))[0]
             syn_id = syn_ids[0][1]
 

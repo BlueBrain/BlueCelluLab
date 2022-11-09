@@ -1,6 +1,7 @@
 """Plotting functions for the cell module."""
 
-from typing import List
+from __future__ import annotations
+
 import bglibpy
 
 
@@ -9,8 +10,8 @@ class PlottableMixin:
 
     def __init__(self) -> None:
         """Store the persistent objects."""
-        self.cell_dendrograms: List[bglibpy.Dendrogram] = []
-        self.plot_windows: List[bglibpy.PlotWindow] = []
+        self.cell_dendrograms: list[bglibpy.Dendrogram] = []
+        self.plot_windows: list[bglibpy.PlotWindow] = []
 
         self.fih_plots = None
         self.fih_weights = None

@@ -1,11 +1,9 @@
-'''
-Static tools for bglibpy
-'''
+"""Static tools for bglibpy."""
+
 
 # pylint: disable=R0914, R0913
 
-import copy
-import inspect
+from __future__ import annotations
 import io
 import json
 import math
@@ -13,30 +11,25 @@ import multiprocessing
 import multiprocessing.pool
 import os
 import sys
-from typing import Any, Dict
+from typing import Any, Optional
 import warnings
-from pathlib import Path
 
 import numpy as np
-from bluepy_configfile.configfile import BlueConfig
 
 import bglibpy
 from bglibpy import neuron
 
-BLUECONFIG_KEYWORDS = [
-    'Run', 'Stimulus', 'StimulusInject', 'Report', 'Connection']
-
 
 VERBOSE_LEVEL = 0
-ENV_VERBOSE_LEVEL = None
+ENV_VERBOSE_LEVEL: Optional[str] = None
 
 
-def set_verbose(level=1):
-    """Set the verbose level of BGLibPy
+def set_verbose(level: int = 1) -> None:
+    """Set the verbose level of BGLibPy.
 
        Parameters
        ----------
-       level : int
+       level :
                Verbose level, the higher the more verbosity.
                Level 0 means 'completely quiet', except if some very serious
                errors or warnings are encountered.
@@ -44,36 +37,21 @@ def set_verbose(level=1):
     bglibpy.VERBOSE_LEVEL = level
 
 
-def set_verbose_from_env():
-    """Get verbose level from environment"""
+def set_verbose_from_env() -> None:
+    """Get verbose level from environment."""
     bglibpy.ENV_VERBOSE_LEVEL = os.environ.get('BGLIBPY_VERBOSE_LEVEL')
 
     if bglibpy.ENV_VERBOSE_LEVEL is not None:
-        bglibpy.ENV_VERBOSE_LEVEL = int(bglibpy.ENV_VERBOSE_LEVEL)
         set_verbose(int(bglibpy.ENV_VERBOSE_LEVEL))
 
 
 set_verbose_from_env()
 
 
-def get_release_ccells():
-    """Return the path to the release ccells directory."""
-    return "/bgscratch/bbp/release/CCells/b24.07.12"
-
-
-def get_release_morphologies():
-    """Return the path to the release morphologies directory."""
-    return "/bgscratch/bbp/release/morphologies/31.05.12"
-
-
 class deprecated:
-
-    """Decorator to mark a function as deprecated"""
+    """Decorator to mark a function as deprecated."""
 
     def __init__(self, new_function=""):
-        """A decorator that shows a warning message when a deprecated function
-        is used
-        """
         self.new_function = new_function
 
     def __call__(self, func):
@@ -95,7 +73,7 @@ class deprecated:
 
 
 def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
-    """Lazily print the message to stdout depending on the verbose level
+    """Lazily print the message to stdout depending on the verbose level.
 
        Parameters
        ----------
@@ -111,8 +89,8 @@ def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
         print(message.format(**kwargs))
 
 
-def printv_err(message, verbose_level):
-    """Print the message to stderr depending on the verbose level
+def printv_err(message: str, verbose_level: int) -> None:
+    """Print the message to stderr depending on the verbose level.
 
        Parameters
        ----------
@@ -123,19 +101,12 @@ def printv_err(message, verbose_level):
                       higher or equal to this number
     """
     if verbose_level <= bglibpy.VERBOSE_LEVEL:
-        print >> sys.stderr, message
+        print(message, file=sys.stderr)
 
 
-def _me():
-    """Used for debgugging. Reads the stack and provides info about which
-    function called"""
-    print('Call -> from %s::%s' %
-          (inspect.stack()[1][1], inspect.stack()[1][3]))
-
-
-def load_nrnmechanisms(libnrnmech_path):
+def load_nrnmechanisms(libnrnmech_path: str) -> None:
     """
-    Load another shared library with NEURON mechanisms
+    Load another shared library with NEURON mechanisms.
     (Created by nrnivmodl)
 
     Parameters
@@ -146,62 +117,9 @@ def load_nrnmechanisms(libnrnmech_path):
     neuron.h.nrn_load_dll(libnrnmech_path)
 
 
-def parse_complete_BlueConfig(fName):
-    """ Simplistic parser of the BlueConfig file """
-    bc = open(fName, 'r')
-    uber_hash = {keyword: {} for keyword in BLUECONFIG_KEYWORDS}
-    line = bc.next()
-
-    block_number = 0
-
-    while line != '':
-        stripped_line = line.strip()
-        if stripped_line.startswith('#'):
-            # continue to next line
-            line = bc.next()
-        elif stripped_line == '':
-            # print 'found empty line'
-            try:
-                line = bc.next()
-            except StopIteration:
-                # print 'I think i am at the end of the file'
-                break
-        elif stripped_line.split()[0].strip() in BLUECONFIG_KEYWORDS:
-            key = stripped_line.split()[0].strip()
-            value = stripped_line.split()[1].strip()
-            parsed_dict = _parse_block_statement(bc)
-            parsed_dict['block_number'] = block_number
-            uber_hash[key][value] = parsed_dict
-            block_number = block_number + 1
-            line = bc.next()
-        else:
-            line = bc.next()
-    return uber_hash
-
-
-def _parse_block_statement(file_object):
-    ''' parse the content of the blocks in BlueConfig'''
-    file_object.next()  # skip the opening "}"
-    line = file_object.next().strip()
-    ret_dict = {}
-    while not line.startswith('}'):
-        if len(line) == 0 or line.startswith('#'):
-            line = file_object.next().strip()
-        else:
-            key = line.split(' ')[0].strip()
-            values = line.split(' ')[1:]
-            for value in values:
-                if value == '':
-                    pass
-                else:
-                    ret_dict[key] = value
-            line = file_object.next().strip()
-    return ret_dict
-
-
 def calculate_inputresistance(template_name, morphology_name,
                               current_delta=0.01):
-    """Calculate the input resistance at rest of the cell"""
+    """Calculate the input resistance at rest of the cell."""
     rest_voltage = calculate_SS_voltage(template_name, morphology_name, 0.0)
     step_voltage = calculate_SS_voltage(
         template_name, morphology_name, current_delta)
@@ -212,7 +130,7 @@ def calculate_inputresistance(template_name, morphology_name,
 
 
 def calculate_SS_voltage(template_name, morphology_name, step_level):
-    """Calculate the steady state voltage at a certain current step"""
+    """Calculate the steady state voltage at a certain current step."""
     pool = multiprocessing.Pool(processes=1)
     SS_voltage = pool.apply(
         calculate_SS_voltage_subprocess, [
@@ -250,8 +168,7 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
 
 
 def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
-    """Subprocess wrapper of holding_current"""
-
+    """Subprocess wrapper of holding_current."""
     cell = bglibpy.Cell(**cell_kwargs)
 
     if enable_ttx:
@@ -278,10 +195,7 @@ def holding_current(
         gid=None,
         circuit_path=None,
         enable_ttx=False):
-    """
-    Calculate the holding current necessary for a given holding voltage
-    """
-
+    """Calculate the holding current necessary for a given holding voltage."""
     if gid is not None and circuit_path is not None:
         ssim = bglibpy.SSim(circuit_path)
 
@@ -296,7 +210,7 @@ def holding_current(
 
 
 def template_accepts_cvode(template_name):
-    """Return True if template_name can be run with cvode"""
+    """Return True if template_name can be run with cvode."""
     with open(template_name, "r") as template_file:
         template_content = template_file.read()
     if "StochKv" in template_content:
@@ -363,13 +277,13 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
 
 
 def detect_spike(voltage):
-    """Detect if there is a spike in the voltage trace"""
+    """Detect if there is a spike in the voltage trace."""
     return np.max(voltage) > -20
 
 
 def search_threshold_current(template_name, morphology_name, hyp_level,
                              inj_start, inj_stop, min_current, max_current):
-    """Search current necessary to reach threshold"""
+    """Search current necessary to reach threshold."""
     med_current = min_current + abs(min_current - max_current) / 2
     lazy_printv("Med current %d" % med_current, 1)
 
@@ -392,7 +306,7 @@ def search_threshold_current(template_name, morphology_name, hyp_level,
 
 def detect_threshold_current(template_name, morphology_name, hyp_level,
                              inj_start, inj_stop):
-    """Search current necessary to reach threshold"""
+    """Search current necessary to reach threshold."""
     return search_threshold_current(template_name, morphology_name,
                                     hyp_level, inj_start, inj_stop, 0.0, 1.0)
 
@@ -400,7 +314,7 @@ def detect_threshold_current(template_name, morphology_name, hyp_level,
 def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
                                 stop_time=None, ignore_timerange=False,
                                 timeout=600):
-    """Calculate the steady state voltage at a certain current step"""
+    """Calculate the steady state voltage at a certain current step."""
     pool = multiprocessing.Pool(processes=1)
     # print "Calculate_SS_voltage_replay %f" % step_level
     result = pool.apply_async(calculate_SS_voltage_replay_subprocess,
@@ -427,7 +341,7 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     ssim = bglibpy.SSim(blueconfig)
     if ignore_timerange:
         tstart = 0
-        tstop = int(ssim.bc.Run.Duration)
+        tstop = int(ssim.circuit_access.config.duration)
     else:
         tstart = start_time
         tstop = stop_time
@@ -546,8 +460,7 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
 
 
 class search_hyp_function:
-
-    """Function object"""
+    """Function object."""
 
     def __init__(self, blueconfig, **kwargs):
         self.blueconfig = blueconfig
@@ -662,37 +575,6 @@ def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600,
     pool.terminate()
 
 
-def blueconfig_append_path(blueconfig, path, fields=None):
-    """Appends path to the certain path fields in a given blueconfig.
-
-    Args:
-        blueconfig : config object or BlueConfig file path
-        fields (list): collection of fields (str) to be modified
-        path (str or pathlib.Path): path to be appended to the fields
-         of blueconfig
-
-    Returns:
-        bluepy_configfile.configfile.BlueConfigFile: modified config object
-    """
-
-    # bluepyconfigfile doesn't support pathlib yet
-    if isinstance(blueconfig, Path):
-        blueconfig = str(blueconfig)
-    with open(blueconfig) as f:
-        blueconfig = BlueConfig(f)
-
-    if not fields:
-        fields = ["MorphologyPath", "METypePath", "CircuitPath",
-                  "nrnPath", "CurrentDir", "OutputRoot", "TargetFile"]
-
-    new_bc = copy.deepcopy(blueconfig)
-    for field in fields:
-        old_value = new_bc.Run.__getattr__(field)
-        new_value = (Path(path) / old_value).absolute()
-        new_bc.Run.__setattr__(field, str(new_value))
-    return new_bc
-
-
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
@@ -719,9 +601,8 @@ class get_stdout(list):
         sys.stdout = self.orig_stdout
 
 
-def check_empty_topology():
-    """Return true if NEURON simulator topology command is empty"""
-
+def check_empty_topology() -> bool:
+    """Return true if NEURON simulator topology command is empty."""
     with get_stdout() as stdout:
         bglibpy.neuron.h.topology()
 
@@ -733,7 +614,7 @@ class Singleton(type):
 
         Source: https://stackoverflow.com/a/6798042/1935611
     """
-    _instances: Dict[Any, Any] = {}
+    _instances: dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:

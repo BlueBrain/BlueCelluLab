@@ -16,6 +16,7 @@ import pytest
 import bglibpy
 from bglibpy.cell.template import NeuronTemplate, shorten_and_hash_string
 from bglibpy.exceptions import BGLibPyError
+from tests.helpers.circuit import blueconfig_append_path
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -196,7 +197,7 @@ class TestCellBaseClassSynapses:
             script_dir, "examples", "sim_twocell_synapseid")
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             os.path.join(self.conf_pre_path, "BlueConfig"), self.conf_pre_path)
 
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)

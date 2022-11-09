@@ -1,11 +1,14 @@
 """Hoc compatible synapse parameters representation."""
 
+from __future__ import annotations
+from typing import Optional
 from bluepy.enums import Synapse as BLPSynapse
 from bluepy.impl.connectome_sonata import SonataConnectome
 import pandas as pd
 
 import bglibpy
 from bglibpy import lazy_printv
+from bglibpy.circuit.circuit_access import CircuitAccess
 
 
 class SynDescription:
@@ -29,50 +32,43 @@ class SynDescription:
             BLPSynapse.CONDUCTANCE_RATIO,
         ]
 
-    def gabaab_ampanmda_syn_description(self, bc_circuit, bc,
+    def gabaab_ampanmda_syn_description(self, circuit: CircuitAccess,
                                         ignore_populationid_error, gid,
-                                        projection=None, projections=None):
-        """Wraps create_syn_descriptions ampanmda/gabaab properties."""
+                                        projections=None):
+        """Wraps create_syn_descriptions with ampanmda/gabaab properties."""
         return create_syn_descriptions(
-            self.common_properties, bc_circuit, bc, ignore_populationid_error,
-            gid, projection, projections)
+            self.common_properties, circuit, ignore_populationid_error,
+            gid, projections)
 
-    def glusynapse_syn_description(self, bc_circuit, bc,
+    def glusynapse_syn_description(self, circuit: CircuitAccess,
                                    ignore_populationid_error, gid,
-                                   projection=None, projections=None):
+                                   projections=None):
         """Wraps create_syn_descriptions with glusynapse properties."""
         glusynapse_only_properties = [
             "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
             "gmax_p_AMPA", "theta_d", "theta_p"]
         all_properties = self.common_properties + glusynapse_only_properties
         return create_syn_descriptions(
-            all_properties, bc_circuit, bc,
-            ignore_populationid_error, gid, projection, projections)
+            all_properties, circuit,
+            ignore_populationid_error, gid, projections)
 
 
-def create_syn_descriptions(all_properties, bc_circuit, bc,
-                            ignore_populationid_error, gid,
-                            projection=None, projections=None) -> pd.DataFrame:
+def create_syn_descriptions(
+    all_properties: list,
+    circuit: CircuitAccess,
+    ignore_populationid_error: bool,
+    gid: int,
+    projections: Optional[list[str] | str],
+) -> pd.DataFrame:
     """Get synapse descriptions dataframe annotated with popids.
 
     Args:
         all_properties: list of properties of synapses to be retrieved
-        bc_circuit (bluepy.circuit.Circuit): bluepy circuit object
-        bc (bluepy_configfile.configfile.BlueConfigFile): blueconfig object
-        ignore_populationid_error (bool): whether to ignore the error
-        gid (int): cell identification
-        projection (string): name of projection of interest. Defaults to None.
-        projections (list): list of projections. Defaults to None.
-
-    Raises:
-        BGLibPyError: raised when gid doesn't match with syn_gid.
-        BGLibPyError: raised when there is a duplicated synapse id.
 
     Returns:
         pd.DataFrame: multiindex containing synapse description with popids
     """
-    connectomes = get_connectomes_dict(bc_circuit, projection=projection,
-                                       projections=projections)
+    connectomes = circuit.get_connectomes_dict(projections)
 
     synapses = get_synapses_by_connectomes(connectomes, all_properties, gid)
     if synapses.empty:
@@ -82,9 +78,9 @@ def create_syn_descriptions(all_properties, bc_circuit, bc,
         check_nrrp_value(synapses)
 
     proj_ids = synapses.index.get_level_values(0)
-
     pop_ids = [
-        get_popids(bc, ignore_populationid_error, proj_id) for proj_id in proj_ids
+        circuit.config.get_population_ids(ignore_populationid_error, proj_id)
+        for proj_id in proj_ids
     ]
     source_popids, target_popids = zip(*pop_ids)
     synapses = synapses.assign(
@@ -117,70 +113,6 @@ def check_nrrp_value(synapses: pd.DataFrame) -> None:
             'Non-integer value for Nrrp found: '
             f'{synapses[BLPSynapse.NRRP]} at synapse {synapses}.'
         )
-
-
-def get_popids(bc, ignore_populationid_error, proj_name):
-    """Retrieve the population ids of a projection.
-
-    Args:
-        bc (bluepy_configfile.configfile.BlueConfigFile): blueconfig object
-        ignore_populationid_error (bool): whether to ignore the error
-        proj_name (str): name of the projection
-
-    Raises:
-        bglibpy.PopulationIDMissingError: if the id is missing and this error
-        is not ignored.
-
-    Returns:
-        tuple: source and target population ids.
-    """
-    if proj_name in [proj.name for proj in bc.typed_sections("Projection")]:
-        if "PopulationID" in bc[f"Projection_{proj_name}"]:
-            source_popid = int(bc[f"Projection_{proj_name}"]["PopulationID"])
-        elif ignore_populationid_error:
-            source_popid = 0
-        else:
-            raise bglibpy.PopulationIDMissingError(
-                "PopulationID is missing from projection,"
-                " block this will lead to wrong rng seeding."
-                " If you anyway want to overwrite this,"
-                " pass ignore_populationid_error=True param"
-                " to SSim constructor.")
-    else:
-        source_popid = 0
-    # ATM hard coded in neurodamus
-    target_popid = 0
-    return source_popid, target_popid
-
-
-def get_connectomes_dict(bc_circuit, projection, projections):
-    """Get the connectomes dictionary indexed by projections or connectome ids.
-    If projections are missing, indexed by ''.
-
-    Args:
-        bc_circuit (bluepy.circuit.Circuit): bluepy circuit object
-        projection (string): name of the projection of interest
-        projections (list): list of projections
-
-    Raises:
-        ValueError: raised when projection and projections are both present.
-
-    Returns:
-        dict: connectome dictionary indexed by projections, if present.
-    """
-    if projection is not None:
-        if projections is None:
-            projections = [projection]
-        else:
-            raise ValueError(
-                'Cannot combine projection and projections arguments.')
-
-    connectomes = {'': bc_circuit.connectome}
-    if projections is not None:
-        proj_conns = {p: bc_circuit.projection(p) for p in projections}
-        connectomes.update(proj_conns)
-
-    return connectomes
 
 
 def get_synapses_by_connectomes(connectomes, all_properties, gid) -> pd.DataFrame:

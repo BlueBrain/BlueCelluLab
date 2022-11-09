@@ -11,6 +11,7 @@ from pytest import approx
 
 import bglibpy
 from bglibpy.tools import Singleton
+from tests.helpers.circuit import blueconfig_append_path
 
 script_dir = os.path.dirname(__file__)
 
@@ -30,25 +31,6 @@ def test_calculate_SS_voltage_subprocess():
     assert abs(SS_voltage_stoch - -73.9235504304) < 0.001
 
 
-def test_blueconfig_append_path():
-    """Tools: Test blueconfig_append_path."""
-    conf_pre_path = os.path.join(
-        script_dir, "examples", "sim_twocell_empty"
-    )
-    blueconfig_path = os.path.join(conf_pre_path, "BlueConfig")
-
-    fields = ["MorphologyPath", "METypePath", "CircuitPath",
-              "nrnPath", "CurrentDir", "OutputRoot", "TargetFile"]
-
-    modified_config = bglibpy.tools.blueconfig_append_path(
-        blueconfig_path, conf_pre_path, fields=fields
-    )
-
-    for field in fields:
-        field_val = modified_config.Run.__getattr__(field)
-        assert os.path.isabs(field_val)
-
-
 class TestTools:
 
     """Class to test SSim with two cell circuit"""
@@ -60,7 +42,7 @@ class TestTools:
         )
         blueconfig_path = os.path.join(conf_pre_path, "BlueConfig")
 
-        self.config = bglibpy.tools.blueconfig_append_path(
+        self.config = blueconfig_append_path(
             blueconfig_path, conf_pre_path
         )
 

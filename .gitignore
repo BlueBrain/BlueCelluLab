@@ -14,3 +14,4 @@ coverage.xml
 .coverage
 .coverage*
 *_bglibpy_t=0.0.nrndat
+*.DS_STORE

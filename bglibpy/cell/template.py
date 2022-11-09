@@ -1,9 +1,10 @@
 """Module for handling NEURON hoc templates."""
 
+from __future__ import annotations
+
 import datetime
 import hashlib
 import re
-from typing import Set
 import string
 
 import bglibpy
@@ -13,7 +14,7 @@ from bglibpy import lazy_printv, neuron
 class NeuronTemplate:
     """NeuronTemplate representation."""
 
-    used_template_names: Set[str] = set()
+    used_template_names: set[str] = set()
 
     def __init__(
         self, template_filename: str, morph_dir: str, morph_fname: str

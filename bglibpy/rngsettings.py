@@ -7,10 +7,11 @@ RNG settings of BGLibPy
          Do not distribute without further notice.
 """
 
+from typing import Optional
+
 import bglibpy
 from bglibpy import Singleton, lazy_printv
-
-default_rng_mode = "Compatibility"
+from bglibpy.circuit.circuit_access import CircuitAccess
 
 
 class RNGSettings(metaclass=Singleton):
@@ -20,7 +21,7 @@ class RNGSettings(metaclass=Singleton):
     def __init__(
             self,
             mode=None,
-            blueconfig=None,
+            circuit_access: Optional[CircuitAccess] = None,
             base_seed=None,
             base_noise_seed=None):
         """
@@ -31,9 +32,7 @@ class RNGSettings(metaclass=Singleton):
         mode : str
                    String with rng mode, if not specified mode is taken from
                    BlueConfig
-        blueconfig: bluepy blueconfig object
-                    object received from blueconfig representing the BlueConfig
-                    of the sim
+        circuit: circuit access object, if present seeds are read from simulation
         base_seed: float
                    base seed for entire sim, overrides blueconfig value
         base_noise_seed: float
@@ -42,24 +41,14 @@ class RNGSettings(metaclass=Singleton):
 
         self._mode = ""
         if mode is None:
-            # Ugly, but mimicking neurodamus
-            if blueconfig and 'Simulator' in blueconfig.Run and \
-                    blueconfig.Run['Simulator'] != 'NEURON':
-                self.mode = 'Random123'
-            elif blueconfig and 'RNGMode' in blueconfig.Run:
-                self.mode = blueconfig.Run['RNGMode']
-            else:
-                self.mode = default_rng_mode
+            self.mode = circuit_access.config.rng_mode if circuit_access else "Compatibility"
         else:
             self.mode = mode
 
         lazy_printv("Setting rng mode to: {mode}", 50, mode=self._mode)
 
         if base_seed is None:
-            if blueconfig and 'BaseSeed' in blueconfig.Run:
-                self.base_seed = int(blueconfig.Run['BaseSeed'])
-            else:
-                self.base_seed = 0  # in case the seed is not set, it's 0
+            self.base_seed = circuit_access.config.base_seed if circuit_access else 0
         else:
             self.base_seed = base_seed
         bglibpy.neuron.h.globalSeed = self.base_seed
@@ -68,28 +57,16 @@ class RNGSettings(metaclass=Singleton):
             rng = bglibpy.neuron.h.Random()
             rng.Random123_globalindex(self.base_seed)
 
-        if blueconfig and 'SynapseSeed' in blueconfig.Run:
-            self.synapse_seed = int(blueconfig.Run['SynapseSeed'])
-        else:
-            self.synapse_seed = 0
+        self.synapse_seed = circuit_access.config.synapse_seed if circuit_access else 0
         bglibpy.neuron.h.synapseSeed = self.synapse_seed
 
-        if blueconfig and 'IonChannelSeed' in blueconfig.Run:
-            self.ionchannel_seed = int(blueconfig.Run['IonChannelSeed'])
-        else:
-            self.ionchannel_seed = 0
+        self.ionchannel_seed = circuit_access.config.ionchannel_seed if circuit_access else 0
         bglibpy.neuron.h.ionchannelSeed = self.ionchannel_seed
 
-        if blueconfig and 'StimulusSeed' in blueconfig.Run:
-            self.stimulus_seed = int(blueconfig.Run['StimulusSeed'])
-        else:
-            self.stimulus_seed = 0
+        self.stimulus_seed = circuit_access.config.stimulus_seed if circuit_access else 0
         bglibpy.neuron.h.stimulusSeed = self.stimulus_seed
 
-        if blueconfig and 'MinisSeed' in blueconfig.Run:
-            self.minis_seed = int(blueconfig.Run['MinisSeed'])
-        else:
-            self.minis_seed = 0
+        self.minis_seed = circuit_access.config.minis_seed if circuit_access else 0
         bglibpy.neuron.h.minisSeed = self.minis_seed
 
         if base_noise_seed is None:

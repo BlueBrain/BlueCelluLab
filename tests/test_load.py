@@ -24,7 +24,7 @@ def test_verbose_env():
 
     bglibpy.set_verbose_from_env()
 
-    assert bglibpy.ENV_VERBOSE_LEVEL == 10
+    assert bglibpy.ENV_VERBOSE_LEVEL == "10"
     assert bglibpy.VERBOSE_LEVEL == 10
 
     del os.environ['BGLIBPY_VERBOSE_LEVEL']

@@ -9,6 +9,7 @@ from bglibpy.simulation import (
     set_global_condition_parameters,
     set_tstop_value
 )
+from tests.helpers.circuit import blueconfig_append_path
 
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
@@ -21,11 +22,11 @@ class TestConditionParameters:
         conf_pre_path = parent_dir / "examples" / "sim_twocell_all"
 
         # make the paths absolute
-        modified_conf = bglibpy.tools.blueconfig_append_path(
+        modified_conf = blueconfig_append_path(
             conf_pre_path / "BlueConfigWithConditions", conf_pre_path
         )
         circuit_access = CircuitAccess(modified_conf)
-        self.condition_parameters = circuit_access.condition_parameters_dict()
+        self.condition_parameters = circuit_access.config.condition_parameters_dict()
         self.h = bglibpy.neuron.h
 
     def test_set_global_condition_parameters(self):
