@@ -1,6 +1,6 @@
 """Tests the sonata proxy using a sim on gpfs."""
 
-from pytest import approx
+from pytest import approx, mark
 
 from bglibpy.cell import SonataProxy
 from bglibpy.circuit import CircuitAccess
@@ -18,5 +18,6 @@ class TestSonataProxy:
         gid = 1
         self.sonata_proxy = SonataProxy(gid, circuit_access)
 
+    @mark.v6
     def test_get_input_resistance(self):
         assert self.sonata_proxy.get_input_resistance().iloc[0] == approx(262.087372)
