@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 import os
+from pathlib import Path
 from typing import Optional
 import warnings
 
 from bluepy_configfile.configfile import BlueConfig
+from bluepy.utils import open_utf8
 from cachetools import LRUCache, cachedmethod
 
 from bglibpy.exceptions import PopulationIDMissingError
@@ -14,8 +16,16 @@ from bglibpy.exceptions import PopulationIDMissingError
 class SimulationConfig:
     """Class that handles access to simulation config."""
 
-    def __init__(self, config: BlueConfig) -> None:
-        self.bc = config
+    def __init__(self, config: str | BlueConfig) -> None:
+        if isinstance(config, str):
+            if not Path(config).exists():
+                raise FileNotFoundError(f"Circuit config file {config} not found.")
+            else:
+                with open_utf8(config) as f:
+                    self.bc = BlueConfig(f)
+        else:
+            self.bc = config
+
         self._caches: dict = {
             "condition_parameters_dict": LRUCache(maxsize=1)
         }
@@ -228,3 +238,13 @@ class SimulationConfig:
             return float(self.bc.Run['ExtracellularCalcium'])
         else:
             return None
+
+    def add_section(
+        self,
+        section_type: str,
+        name: str,
+        contents: str,
+        span: Optional[tuple[int, int]] = None,
+        decl_comment: str = "",
+    ) -> None:
+        self.bc.add_section(section_type, name, contents, span, decl_comment)

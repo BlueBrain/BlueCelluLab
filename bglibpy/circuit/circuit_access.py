@@ -19,10 +19,14 @@ from bglibpy.circuit.config import SimulationConfig
 class CircuitAccess:
     """Encapsulated circuit data and functions."""
 
-    def __init__(self, circuit_config: str | BlueConfig) -> None:
+    def __init__(self, circuit_config: str | BlueConfig | SimulationConfig) -> None:
         """Initialize bluepy circuit object."""
         if isinstance(circuit_config, str) and not Path(circuit_config).exists():
             raise FileNotFoundError(f"Circuit config file {circuit_config} not found.")
+
+        # to allow the usage of SimulationConfig outside of Ssim
+        if isinstance(circuit_config, SimulationConfig):
+            circuit_config = circuit_config.bc
 
         self._bluepy_sim = bluepy.Simulation(circuit_config)
         self._bluepy_circuit = self._bluepy_sim.circuit

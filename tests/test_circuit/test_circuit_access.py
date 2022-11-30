@@ -203,6 +203,29 @@ class TestCircuitAccess:
     def test_v_init(self):
         assert self.circuit_access.config.v_init == -65.0
 
+    def test_add_section(self):
+        self.circuit_access.config.add_section(
+            'Connection', 'SpontMinis_Exc',
+            {
+                'MorphologyPath': 'morph_path',
+                'nrnPath': 'nrn_path',
+                'METypePath': 'me_types',
+                'TargetFile': 'target_file',
+                'MorphologyType': 'swc',
+            }
+        )
+        expected = '''\
+Connection SpontMinis_Exc
+{
+  MorphologyPath morph_path
+  nrnPath nrn_path
+  METypePath me_types
+  TargetFile target_file
+  MorphologyType swc
+}
+'''
+        assert str(self.circuit_access.config.bc).endswith(expected)
+
 
 def test_get_connectomes_dict():
     """Test creation of connectome dict."""

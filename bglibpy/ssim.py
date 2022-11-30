@@ -17,12 +17,13 @@ from typing import Any
 
 import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
+from bluepy_configfile.configfile import BlueConfig
 import pandas as pd
-
 import bglibpy
 from bglibpy import lazy_printv
 from bglibpy.cell.sonata_proxy import SonataProxy
 from bglibpy.circuit import CircuitAccess, parse_outdat, SimulationValidator
+from bglibpy.circuit.config import SimulationConfig
 from bglibpy.exceptions import BGLibPyError
 from bglibpy.simulation import (
     set_minis_single_vesicle_values,
@@ -34,7 +35,7 @@ from bglibpy.simulation import (
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
-    def __init__(self, simulation_config: str, dt=0.025, record_dt=None,
+    def __init__(self, simulation_config: str | BlueConfig | SimulationConfig, dt=0.025, record_dt=None,
                  base_seed=None, base_noise_seed=None, rng_mode=None,
                  ignore_populationid_error=False, print_cellstate=False):
         """
@@ -68,6 +69,7 @@ class SSim:
         """
         self.dt = dt
         self.record_dt = record_dt
+
         self.circuit_access = CircuitAccess(simulation_config)
         SimulationValidator(self.circuit_access).validate()
 
