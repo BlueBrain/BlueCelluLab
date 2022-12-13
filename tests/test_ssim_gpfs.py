@@ -69,11 +69,6 @@ test_sscx2020_packages_path = os.path.join(
     "BlueConfig"
 )
 
-hip20180219_1_path = os.path.join(
-    proj_path(42),
-    "circuits/O1/20180219",
-    "CircuitConfig")
-
 plasticity_sim_path = os.path.join(
     proj_path(96),
     "home/tuncel/simulations/glusynapse-pairsim/p_Ca_2_0/", "BlueConfig"
@@ -215,36 +210,8 @@ class TestSSimBaseClass_full_realconn:
         assert rms_error < 2.0
 
 
-'''
-Reenable this once the MOD files are separated out of neurodamus
-@attr('gpfs', 'hip', 'debugtest')
-class TestSSimBaseClass_hip_20180219:
-
-    """Class to test SSim with full circuit and multiple cells """ \
-        """instantiate with real connections"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = bglibpy.ssim.SSim(hip20180219_1_path)
-        assert(isinstance(self.ssim, bglibpy.SSim))
-
-    def teardown(self):
-        """Teardown"""
-        del self.ssim
-
-    def test_run(self):
-        """SSim: Check if a hippocampal cell can be instantiated"""
-        gid = 1111
-        self.ssim.instantiate_gids(
-            [gid],
-            add_synapses=True)
-        print(self.ssim.cells[gid])
-'''
-
-
 @pytest.mark.v6
 class TestSSimBaseClass_v6_full_run:
-
     """Class to test SSim with full circuit"""
 
     def setup(self):
