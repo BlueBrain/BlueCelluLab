@@ -77,7 +77,7 @@ def create_syn_descriptions(
     if BLPSynapse.NRRP in synapses:
         check_nrrp_value(synapses)
 
-    proj_ids = synapses.index.get_level_values(0)
+    proj_ids: list[str] = synapses.index.get_level_values(0).tolist()
     pop_ids = [
         circuit.config.get_population_ids(ignore_populationid_error, proj_id)
         for proj_id in proj_ids
