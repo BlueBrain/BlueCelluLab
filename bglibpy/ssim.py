@@ -754,19 +754,18 @@ class SSim:
 
             cell_kwargs = {
                 'template_filename': self.circuit_access.emodel_path(gid),
-                'morphology_name': self.circuit_access.morph_filename(gid),
+                'morphology_filepath': self.circuit_access.morph_filepath(gid),
                 'gid': gid,
                 'record_dt': self.record_dt,
                 'rng_settings': self.rng_settings,
 
                 'template_format': template_format,
-                'morph_dir': self.circuit_access.config.morph_dir,
                 'extra_values': extra_values,
             }
         else:
             cell_kwargs = {
                 'template_filename': self.circuit_access.emodel_path(gid),
-                'morphology_name': self.circuit_access.config.morph_dir,
+                'morphology_filepath': self.circuit_access.morph_filepath(gid),
                 'gid': gid,
                 'record_dt': self.record_dt,
                 'rng_settings': self.rng_settings,

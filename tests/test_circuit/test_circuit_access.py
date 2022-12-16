@@ -92,21 +92,8 @@ class TestCircuitAccess:
         res = self.circuit_access.get_gids_of_targets(targets=["Mosaic", "Excitatory"])
         assert res == {1, 2}
 
-    def test_get_morph_dir_and_extension(self):
-        f_dir, f_ext = self.circuit_access.config.get_morph_dir_and_extension()
-        assert Path(f_dir).stem == "ascii"
-        assert f_ext == "asc"
-
-    def test_morph_dir(self):
-        res = self.circuit_access.config.morph_dir
-        assert Path(res).stem == "ascii"
-
-    def test_morph_extension(self):
-        res = self.circuit_access.config.morph_extension
-        assert res == "asc"
-
-    def test_morph_filename(self):
-        res = self.circuit_access.morph_filename(gid=1)
+    def test_morph_filepath(self):
+        res = self.circuit_access.morph_filepath(gid=1).rsplit("/", 1)[-1]
         assert res == "dend-C220197A-P2_axon-C060110A3_-_Clone_2.asc"
 
     def test_emodels_dir(self):

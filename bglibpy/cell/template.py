@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import os
 import re
 import string
 
@@ -17,38 +18,37 @@ class NeuronTemplate:
     used_template_names: set[str] = set()
 
     def __init__(
-        self, template_filename: str, morph_dir: str, morph_fname: str
+        self, template_filename: str, morph_filepath: str
     ) -> None:
         """Load the hoc template and init object."""
         self.template_name = self.load(template_filename)
-        self.morph_dir = morph_dir
-        self.morph_fname = morph_fname
+        self.morph_filepath = morph_filepath
 
     def get_cell(
         self, template_format: str, gid: int, extra_values: dict
     ) -> neuron.hoc.HocObject:
         """Returns the hoc object matching the template format."""
         if template_format == "v6":
+            morph_dir, morph_fname = os.path.split(self.morph_filepath)
             attr_names = getattr(
                 neuron.h, self.template_name + "_NeededAttributes", None
             )
             if attr_names is not None:
                 cell = getattr(neuron.h, self.template_name)(
                     gid,
-                    self.morph_dir,
-                    self.morph_fname,
+                    morph_dir,
+                    morph_fname,
                     *[extra_values[name] for name in attr_names.split(";")]
                 )
-
             cell = getattr(neuron.h, self.template_name)(
-                gid, self.morph_dir, self.morph_fname
+                gid, morph_dir, morph_fname
             )
         elif template_format == "v6_ais_scaler":
             cell = getattr(neuron.h, self.template_name)(
-                gid, self.morph_dir, self.morph_fname, extra_values["AIS_scaler"]
+                gid, morph_dir, morph_fname, extra_values["AIS_scaler"]
             )
         else:
-            cell = getattr(neuron.h, self.template_name)(gid, self.morph_fname)
+            cell = getattr(neuron.h, self.template_name)(gid, self.morph_filepath)
 
         return cell
 

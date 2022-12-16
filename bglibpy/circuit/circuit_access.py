@@ -191,8 +191,8 @@ class CircuitAccess:
 
         return gids
 
-    def morph_filename(self, gid: int) -> str:
-        return f"{self.fetch_morph_name(gid)}.{self.config.morph_extension}"
+    def morph_filepath(self, gid: int, source="ascii") -> str:
+        return self._bluepy_circuit.morph.get_filepath(gid, source)
 
     def emodel_path(self, gid: int) -> str:
         return os.path.join(self.config.emodels_dir, f"{self.fetch_emodel_name(gid)}.hoc")

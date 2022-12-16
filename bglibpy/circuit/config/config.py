@@ -98,36 +98,6 @@ class SimulationConfig:
         )
         return is_glusynapse_used
 
-    def get_morph_dir_and_extension(self) -> tuple[str, str]:
-        """Get the tuple of morph_dir and extension."""
-        morph_dir = self.bc.Run['MorphologyPath']
-
-        if 'MorphologyType' in self.bc.Run:
-            morph_extension = self.bc.Run['MorphologyType']
-        else:
-            # backwards compatible
-            if morph_dir[-3:] == "/h5":
-                morph_dir = morph_dir[:-3]
-
-            # latest circuits don't have asc dir
-            asc_dir = os.path.join(morph_dir, 'ascii')
-            if os.path.exists(asc_dir):
-                morph_dir = asc_dir
-
-            morph_extension = 'asc'
-
-        return morph_dir, morph_extension
-
-    @property
-    def morph_dir(self) -> str:
-        _morph_dir, _ = self.get_morph_dir_and_extension()
-        return _morph_dir
-
-    @property
-    def morph_extension(self) -> str:
-        _, _morph_extension = self.get_morph_dir_and_extension()
-        return _morph_extension
-
     @property
     def emodels_dir(self) -> str:
         return self.bc.Run['METypePath']

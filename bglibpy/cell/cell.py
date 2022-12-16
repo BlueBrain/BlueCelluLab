@@ -1,3 +1,4 @@
+from __future__ import annotations
 # -*- coding: utf-8 -*- #pylint: disable=C0302
 
 """
@@ -14,6 +15,7 @@ Cell class
 import json
 import os
 import queue
+from typing import Any, Optional
 
 import numpy as np
 from bluepy.enums import Synapse as BLPSynapse
@@ -29,11 +31,14 @@ from bglibpy.exceptions import BGLibPyError
 from bglibpy.neuron_interpreter import eval_neuron
 
 
+NeuronType = Any
+
+
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
-    def __init__(self, template_filename, morphology_name,
-                 gid=0, record_dt=None, template_format=None, morph_dir=None,
+    def __init__(self, template_filename, morphology_filepath: str,
+                 gid=0, record_dt=None, template_format=None,
                  extra_values=None, rng_settings=None):
         """ Constructor.
 
@@ -41,12 +46,7 @@ class Cell(InjectableMixin, PlottableMixin):
         ----------
         template_filename : string
                         Full path to BGLib template to be loaded
-        morphology_name : string
-                          Morphology name passed to the BGLib template
-                          When the argument ends '.asc', that specific morph
-                          will be loaded otherwise this argument is
-                          interpreted as the directory containing the
-                          morphologies
+        morphology_filepath : path to morphology file
         gid : integer
              GID of the instantiated cell (default: 0)
         record_dt : float
@@ -54,8 +54,6 @@ class Cell(InjectableMixin, PlottableMixin):
                    (default: None)
         template_format: str
                          cell template format such as v6 or v6_air_scaler.
-        morph_dir: str
-                   path to the directory containing morphology file.
         extra_values: dict
                       any extra values such as threshold_current
                        or holding_current.
@@ -65,14 +63,16 @@ class Cell(InjectableMixin, PlottableMixin):
         super().__init__()
         # Persistent objects, like clamps, that exist as long
         # as the object exists
-        self.persistent = []
+        self.persistent: list[NeuronType] = []
+
+        self.morphology_filepath = morphology_filepath
 
         if not os.path.exists(template_filename):
             raise FileNotFoundError("Couldn't find template file [%s]"
                                     % template_filename)
 
         # Load the template
-        neuron_template = NeuronTemplate(template_filename, morph_dir, morphology_name)
+        neuron_template = NeuronTemplate(template_filename, morphology_filepath)
         self.cell = neuron_template.get_cell(template_format, gid, extra_values)
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
@@ -80,7 +80,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
-        self.morphology_name = morphology_name
         self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
         # Set the gid of the cell
@@ -89,13 +88,13 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.rng_settings = rng_settings
 
-        self.recordings = {}  # Recordings in this cell
-        self.voltage_recordings = {}  # Voltage recordings in this cell
-        self.synapses = {}  # Synapses on this cell
-        self.connections = {}  # Outside connections to this cell
+        self.recordings: dict[str, NeuronType] = {}
+        self.voltage_recordings: dict[str, NeuronType] = {}
+        self.synapses: dict[int, bglibpy.Synapse] = {}
+        self.connections: dict[int, bglibpy.Connection] = {}
 
-        self.ips = {}
-        self.syn_mini_netcons = {}
+        self.ips: dict[int, NeuronType] = {}
+        self.syn_mini_netcons: dict[int, NeuronType] = {}
         self.serialized = None
 
         # Be careful when removing this,
@@ -111,10 +110,10 @@ class Cell(InjectableMixin, PlottableMixin):
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
 
-        self.delayed_weights = queue.PriorityQueue()
-        self.secname_to_isec = {}
-        self.secname_to_hsection = {}
-        self.secname_to_psection = {}
+        self.delayed_weights = queue.PriorityQueue()  # type: ignore
+        self.secname_to_isec: dict[str, int] = {}
+        self.secname_to_hsection: dict[str, NeuronType] = {}
+        self.secname_to_psection: dict[str, psection.PSection] = {}
 
         self.extra_values = extra_values
         if template_format == 'v6':
@@ -135,11 +134,11 @@ class Cell(InjectableMixin, PlottableMixin):
         # Used to know when re_init_rng() can be executed
         self.is_made_passive = False
 
-        self.psections = {}
+        self.psections: dict[int, psection.PSection] = {}
 
         neuron.h.pop_section()  # Undoing soma push
         # self.init_psections()
-        self.sonata_proxy = None
+        self.sonata_proxy: Optional[SonataProxy] = None
 
     def connect_to_circuit(self, sonata_proxy: SonataProxy) -> None:
         """Connect this cell to a circuit via sonata proxy."""
@@ -263,7 +262,7 @@ class Cell(InjectableMixin, PlottableMixin):
         except IndexError as e:
             raise IndexError(
                 "BGLibPy get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_name)) from e
+                (section_id, self.morphology_filepath)) from e
         if sec_ref is not None:
             return self.serialized.isec2sec[int(section_id)].sec
         else:
