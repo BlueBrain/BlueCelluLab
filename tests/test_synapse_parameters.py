@@ -160,7 +160,7 @@ def test_syn_dict_proj64_sim2():
     syn_params_gt = np.array(
         [625.0, 2.275, 368.0, 10.0, 3.7314558029174805, 1.5232694149017334,
          0.3078206479549408, 332.729736328125,
-         17.701997756958008, 9.191937446594238, 1.0, 1.0, 0, 0], dtype=np.float)
+         17.701997756958008, 9.191937446594238, 1.0, 1.0, 0, 0], dtype=float)
 
     assert np.array_equal(
         syn_descriptions.loc[a_syn_idx], syn_params_gt, equal_nan=True)
@@ -209,7 +209,7 @@ def test_syn_dict_proj55_sim1():
     syn_params_gt = np.array(
         [32088.0, 4.075, 626.0, -1.0, 0.5044383406639099,
          0.5477614402770996, 0.39246755838394165, 408.77203369140625, 0.0,
-         6.245694637298584, 4.0, 1.0, 0, 0], dtype=np.float)
+         6.245694637298584, 4.0, 1.0, 0, 0], dtype=float)
 
     assert np.array_equal(
         syn_descriptions.loc[a_syn_idx], syn_params_gt, equal_nan=True)
