@@ -14,6 +14,9 @@ import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
+# BB5 compiled NEURON is using the legacy units!
+bglibpy.neuron.h.nrnunit_use_legacy(True)
+
 
 def proj_path(n):
     return f"/gpfs/bbp.cscs.ch/project/proj{n}/"
@@ -88,8 +91,28 @@ no_rand_risetime_sim_path = os.path.join(
     "BlueConfigNoRandRise"
 )
 
+test_shotnoise_path = os.path.join(
+    proj_path(83), "home/tuncel/bglibpy-tests/shotnoise-sim",
+    "BlueConfig"
+)
+
 test_relative_shotnoise_path = os.path.join(
     proj_path(83), "home/bolanos/bglibpy-tests/relative_shotnoise",
+    "BlueConfig"
+)
+
+test_relative_shotnoise_conductance_path = os.path.join(
+    proj_path(83), "home/bolanos/bglibpy-tests/relative_shotnoise_conductance",
+    "BlueConfig"
+)
+
+test_ornstein_path = os.path.join(
+    proj_path(83), "home/tuncel/bglibpy-tests/ornstein_uhlenbeck",
+    "BlueConfig"
+)
+
+test_relative_ornstein_path = os.path.join(
+    proj_path(83), "home/tuncel/bglibpy-tests/relative_ornstein_uhlenbeck/",
     "BlueConfig"
 )
 
@@ -749,20 +772,96 @@ def test_get_voltage_trace():
 
 
 @pytest.mark.v6
-def test_relative_shotnoise():
+def test_shotnoise():
     """Test injection of relative shot noise."""
-    ssim = bglibpy.SSim(test_relative_shotnoise_path, record_dt=0.1)
+    ssim = bglibpy.SSim(test_shotnoise_path, record_dt=0.1)
     gids = [2886525, 3099746, 3425774, 3868780]
     ssim.instantiate_gids(gids, add_synapses=False, add_stimuli=True, add_replay=False)
-    tstop = 500
+    tstop = 250
     ssim.run(tstop)
 
-    rms_tests = []
+    rms_errors = []
     for cell in gids:
         voltage_bglibpy = ssim.get_voltage_trace(cell)
         voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
         voltage_diff = voltage_bglibpy - voltage_bglib
         rms_error = np.sqrt(np.mean(voltage_diff ** 2))
-        rms_tests.append(rms_error < 0.025)
+        rms_errors.append(rms_error < 0.025)
 
-    assert all(rms_tests)
+    assert all(rms_errors)
+
+
+@pytest.mark.v6
+def test_relative_shotnoise():
+    """Test injection of relative shot noise."""
+    ssim = bglibpy.SSim(test_relative_shotnoise_path, record_dt=0.1)
+    gids = [2886525, 3099746, 3425774, 3868780]
+    ssim.instantiate_gids(gids, add_synapses=False, add_stimuli=True, add_replay=False)
+    tstop = 420
+    ssim.run(tstop)
+
+    rms_errors = []
+    for cell in gids:
+        voltage_bglibpy = ssim.get_voltage_trace(cell)
+        voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
+        voltage_diff = voltage_bglibpy - voltage_bglib
+        rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+        rms_errors.append(rms_error < 0.025)
+
+    assert all(rms_errors)
+
+
+@pytest.mark.v6
+def test_relative_shotnoise_conductance():
+    """Test injection of relative shot noise in conductance mode."""
+    ssim = bglibpy.SSim(test_relative_shotnoise_conductance_path, record_dt=0.1)
+    gids = [2886525, 3099746, 3425774, 3868780]
+    ssim.instantiate_gids(gids, add_synapses=False, add_stimuli=True, add_replay=False)
+    tstop = 500
+    ssim.run(tstop)
+
+    rms_errors = []
+    for cell in gids:
+        voltage_bglibpy = ssim.get_voltage_trace(cell)
+        voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
+        voltage_diff = voltage_bglibpy - voltage_bglib
+        rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+        rms_errors.append(rms_error < 0.025)
+
+    assert all(rms_errors)
+
+
+@pytest.mark.v6
+def test_relative_ornstein_uhlenbeck():
+    """Test injection of relative Ornstein-Uhlenbeck noise."""
+    ssim = bglibpy.SSim(test_relative_ornstein_path, record_dt=0.025)
+    gids = [3425774, 3868780, 2886525, 3099746]
+    ssim.instantiate_gids(gids, add_synapses=False, add_stimuli=True, add_replay=False)
+    tstop = 300
+    ssim.run(tstop)
+
+    rms_errors = []
+    for cell in gids:
+        voltage_bglibpy = ssim.get_voltage_trace(cell)
+        voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[:len(voltage_bglibpy)]
+        voltage_diff = voltage_bglibpy - voltage_bglib
+        rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+        rms_errors.append(rms_error < 0.025)
+
+    assert all(rms_errors)
+
+
+@pytest.mark.v6
+def test_ornstein_uhlenbeck():
+    """Test injection of Ornstein-Uhlenbeck noise."""
+    ssim = bglibpy.SSim(test_ornstein_path, record_dt=0.025)
+    gid = 2886525  # from the 'small' target
+    ssim.instantiate_gids([gid], add_synapses=False, add_stimuli=True, add_replay=False)
+    tstop = 500
+    ssim.run(tstop)
+
+    voltage_bglibpy = ssim.get_voltage_trace(gid)
+    voltage_bglib = ssim.get_mainsim_voltage_trace(gid)[:len(voltage_bglibpy)]
+    voltage_diff = voltage_bglibpy - voltage_bglib
+    rms_error = np.sqrt(np.mean(voltage_diff ** 2))
+    assert rms_error < 0.025

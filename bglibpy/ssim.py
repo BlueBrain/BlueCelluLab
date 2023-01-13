@@ -120,7 +120,9 @@ class SSim:
                          intersect_pre_gids=None,
                          interconnect_cells=True,
                          pre_spike_trains=None,
-                         add_shotnoise_stimuli=False):
+                         add_shotnoise_stimuli=False,
+                         add_ornstein_uhlenbeck_stimuli=False,
+                         ):
         """ Instantiate a list of GIDs
 
         Parameters
@@ -208,6 +210,11 @@ class SSim:
                             BlueConfig,
                             Setting add_stimuli=True,
                             will automatically set this option to True.
+        add_ornstein_uhlenbeck_stimuli: Boolean
+                            Process the 'ornstein_uhlenbeck' stimuli blocks
+                            of the BlueConfig,
+                            Setting add_stimuli=True,
+                            will automatically set this option to True.
         """
 
         if synapse_detail is not None:
@@ -257,18 +264,22 @@ class SSim:
             add_relativelinear_stimuli = True
             add_pulse_stimuli = True
             add_shotnoise_stimuli = True
+            add_ornstein_uhlenbeck_stimuli = True
 
         if add_noise_stimuli or \
                 add_hyperpolarizing_stimuli or \
                 add_pulse_stimuli or \
                 add_relativelinear_stimuli or \
-                add_shotnoise_stimuli:
+                add_shotnoise_stimuli or \
+                add_ornstein_uhlenbeck_stimuli:
             self._add_stimuli(
                 add_noise_stimuli=add_noise_stimuli,
                 add_hyperpolarizing_stimuli=add_hyperpolarizing_stimuli,
                 add_relativelinear_stimuli=add_relativelinear_stimuli,
                 add_pulse_stimuli=add_pulse_stimuli,
-                add_shotnoise_stimuli=add_shotnoise_stimuli)
+                add_shotnoise_stimuli=add_shotnoise_stimuli,
+                add_ornstein_uhlenbeck_stimuli=add_ornstein_uhlenbeck_stimuli
+            )
         if add_synapses:
             self._add_synapses(
                 intersect_pre_gids=intersect_pre_gids,
@@ -288,7 +299,9 @@ class SSim:
                      add_hyperpolarizing_stimuli=False,
                      add_relativelinear_stimuli=False,
                      add_pulse_stimuli=False,
-                     add_shotnoise_stimuli=False):
+                     add_shotnoise_stimuli=False,
+                     add_ornstein_uhlenbeck_stimuli=False
+                     ):
         """Instantiate all the stimuli"""
         stimuli_entries = self.circuit_access.config.get_all_stimuli_entries()
         # Also add the injections / stimulations as in the cortical model
@@ -296,6 +309,7 @@ class SSim:
         # Every noise or shot noise stimulus gets a new seed
         noisestim_count = 0
         shotnoise_stim_count = 0
+        ornstein_uhlenbeck_stim_count = 0
 
         for stimulus in stimuli_entries:
             target = stimulus["Target"]
@@ -331,6 +345,17 @@ class SSim:
                         self.cells[gid].add_replay_relative_shotnoise(
                             self.cells[gid].soma, 0.5, stimulus,
                             shotnoise_stim_count=shotnoise_stim_count)
+                elif stimulus["Pattern"] == 'OrnsteinUhlenbeck':
+                    if add_ornstein_uhlenbeck_stimuli:
+                        self.cells[gid].add_ornstein_uhlenbeck(
+                            self.cells[gid].soma, 0.5, stimulus,
+                            stim_count=ornstein_uhlenbeck_stim_count)
+                elif stimulus["Pattern"] == 'RelativeOrnsteinUhlenbeck':
+                    if add_ornstein_uhlenbeck_stimuli:
+                        self.cells[gid].add_relative_ornstein_uhlenbeck(
+                            self.cells[gid].soma, 0.5, stimulus,
+                            stim_count=ornstein_uhlenbeck_stim_count)
+
                 else:
                     raise Exception("Found stimulus with pattern %s, "
                                     "not supported" %
@@ -340,6 +365,8 @@ class SSim:
                 noisestim_count += 1
             elif stimulus["Pattern"] in ['ShotNoise', 'RelativeShotNoise']:
                 shotnoise_stim_count += 1
+            elif stimulus["Pattern"] in ['OrnsteinUhlenbeck', 'RelativeOrnsteinUhlenbeck']:
+                ornstein_uhlenbeck_stim_count += 1
 
     def _add_synapses(
             self, intersect_pre_gids=None, add_minis=None, projections=None):

@@ -1,12 +1,17 @@
 """Contains injection functionality for the cell."""
 
 import math
+import warnings
 
 import numpy as np
 
 import bglibpy
-from bglibpy import BGLibPyError, lazy_printv, tools
-from bglibpy.cell.stimuli_generator import gen_shotnoise_signal, get_relative_shotnoise_params
+from bglibpy import BGLibPyError, ConfigError, lazy_printv, tools
+from bglibpy.cell.stimuli_generator import (
+    gen_ornstein_uhlenbeck,
+    gen_shotnoise_signal,
+    get_relative_shotnoise_params,
+)
 
 
 class InjectableMixin:
@@ -15,13 +20,18 @@ class InjectableMixin:
         self.persistent to explicitly destroy them when their lifetime ends.
     """
 
+    def relativity_proportion(self, stim_mode: str) -> float:
+        """Relativity proportion used in Relative stimuli e.g. relative shotnoise."""
+        if stim_mode == "Conductance":
+            input_resistance = self.sonata_proxy.get_input_resistance().iloc[0]  # type: ignore
+            return 1.0 / input_resistance
+        else:  # Current
+            return self.threshold  # type: ignore
+
     def add_pulse(self, stimulus):
         """Inject pulse stimulus for replay."""
         tstim = bglibpy.neuron.h.TStim(0.5, sec=self.soma)
         if 'Offset' in stimulus.keys():
-            # The meaning of "Offset" is not clear yet, ask Jim
-            # delay = float(stimulus.Delay) +
-            #        float(stimulus.Offset)
             raise BGLibPyError("Found stimulus with pattern %s and Offset, "
                                "not supported" % stimulus['Pattern'])
         else:
@@ -210,6 +220,22 @@ class InjectableMixin:
                     (self.gid, delay, duration, amp), 50)
         return tstim
 
+    def _get_ornstein_uhlenbeck_rand(self, stim_count, seed):
+        """Return rng for ornstein_uhlenbeck simulation."""
+        if self.rng_settings.mode == "Random123":
+            seed1 = stim_count + 2997  # stimulus block
+            seed2 = self.rng_settings.stimulus_seed + 291204  # stimulus type
+            seed3 = self.gid + 123 if seed is None else seed  # GID
+            lazy_printv("Using ornstein_uhlenbeck process seeds %d %d %d" %
+                        (seed1, seed2, seed3), 50)
+            rng = bglibpy.neuron.h.Random()
+            rng.Random123(seed1, seed2, seed3)
+        else:
+            raise BGLibPyError("Shot noise stimulus requires Random123")
+
+        self.persistent.append(rng)
+        return rng
+
     def _get_shotnoise_step_rand(self, shotnoise_stim_count, seed=None):
         """Return rng for shot noise step stimulus"""
         if self.rng_settings.mode == "Random123":
@@ -226,23 +252,38 @@ class InjectableMixin:
         self.persistent.append(rng)
         return rng
 
-    def add_shotnoise_step(self, section, segx,
-                           tau_D, tau_R, rate, amp_mean, amp_var,
-                           delay, duration, dt=0.25,
-                           seed=None, shotnoise_stim_count=0):
-        """Inject a shot noise current signal."""
-        rng = self._get_shotnoise_step_rand(shotnoise_stim_count, seed)
-        tvec, svec = gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean,
-                                          amp_var, duration, dt, rng=rng)
-        tvec.add(delay)  # add delay
-
+    def inject_current_clamp_signal(self, section, segx, tvec, svec):
+        """Inject any signal via current clamp."""
         cs = bglibpy.neuron.h.new_IClamp(segx, sec=section)
-        self.persistent.append(cs)
-        self.persistent.append(tvec)
-        self.persistent.append(svec)
         cs.dur = tvec[-1]
         svec.play(cs._ref_amp, tvec, 1)
 
+        self.persistent.append(cs)
+        self.persistent.append(tvec)
+        self.persistent.append(svec)
+        return tvec, svec
+
+    def inject_dynamic_clamp_signal(self, section, segx, tvec, svec, reversal):
+        """Injects any signal via a dynamic conductance clamp.
+
+        Args:
+            reversal (float): reversal potential of conductance (mV)
+        """
+        clamp = bglibpy.neuron.h.SEClamp(segx, sec=section)
+        clamp.dur1 = tvec[-1]
+        clamp.amp1 = reversal
+        # support delay with initial zero
+        tvec.insrt(0, 0)
+        svec.insrt(0, 0)
+        # replace svec with inverted and clamped signal
+        # rs is in MOhm, so conductance is in uS (micro Siemens)
+        svec = bglibpy.neuron.h.Vector(
+            [1 / x if x > 1E-9 and x < 1E9 else 1E9 for x in svec])
+        svec.play(clamp._ref_rs, tvec, 1)
+
+        self.persistent.append(clamp)
+        self.persistent.append(tvec)
+        self.persistent.append(svec)
         return tvec, svec
 
     def add_replay_shotnoise(
@@ -250,7 +291,6 @@ class InjectableMixin:
             section,
             segx,
             stimulus,
-            shotnoise_seed=None,
             shotnoise_stim_count=None):
         """Add a replay shot noise stimulus."""
         delay = float(stimulus["Delay"])
@@ -268,32 +308,32 @@ class InjectableMixin:
         amp_mean = float(stimulus["AmpMean"])
         amp_var = float(stimulus["AmpVar"])
 
-        seed = stimulus.get("Seed")
-        if seed is not None:
-            seed = int(seed)
+        seed = int(stimulus["Seed"]) if "Seed" in stimulus else None
 
-        if shotnoise_seed is None:
-            shotnoise_seed = seed
-
-        lazy_printv("Added shot noise stimulus to gid %d: "
+        lazy_printv("Adding shot noise stimulus to gid %d: "
                     "delay=%f, duration=%f, rate=%f, amp_mean=%f, "
                     "amp_var=%f tau_D=%f tau_R=%f" %
                     (self.gid, delay, duration, rate, amp_mean,
                      amp_var, tau_D, tau_R), 50)
 
-        return self.add_shotnoise_step(section, segx,
-                                       tau_D, tau_R, rate, amp_mean, amp_var,
-                                       delay, duration, dt, shotnoise_seed,
-                                       shotnoise_stim_count)
+        rng = self._get_shotnoise_step_rand(shotnoise_stim_count, seed)
+        tvec, svec = gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean,
+                                          amp_var, duration, dt, rng=rng)
+        tvec.add(delay)  # add delay
+
+        if stimulus["Mode"] == "Conductance":
+            reversal = float(stimulus.get("Reversal", 0.0))
+            return self.inject_dynamic_clamp_signal(section, segx, tvec, svec, reversal)
+        else:
+            return self.inject_current_clamp_signal(section, segx, tvec, svec)
 
     def add_replay_relative_shotnoise(
             self,
             section,
             segx,
             stimulus,
-            shotnoise_seed=None,
             shotnoise_stim_count=0):
-        """Add a replay shot noise stimulus."""
+        """Add a replay relative shot noise stimulus."""
         delay = float(stimulus["Delay"])
         duration = float(stimulus["Duration"])
 
@@ -310,30 +350,96 @@ class InjectableMixin:
         amp_cv = float(stimulus["AmpCV"])
         cv_square = amp_cv**2
 
-        mean = mean_perc / 100 * self.threshold
-        sd = sd_perc / 100 * self.threshold
+        stim_mode = stimulus["Mode"]
+        rel_prop = self.relativity_proportion(stim_mode)
+
+        mean = mean_perc / 100 * rel_prop
+        sd = sd_perc / 100 * rel_prop
         var = sd * sd
 
         rate, amp_mean, amp_var = get_relative_shotnoise_params(
             mean, var, tau_D, tau_R, cv_square)
 
-        seed = stimulus.get("Seed")
-        if seed is not None:
-            seed = int(seed)
+        seed = int(stimulus["Seed"]) if "Seed" in stimulus else None
 
-        if shotnoise_seed is None:
-            shotnoise_seed = seed
-
-        lazy_printv("Added relative shot noise stimulus to gid %d: "
+        lazy_printv("Adding relative shot noise stimulus to gid %d: "
                     "delay=%f, duration=%f, mean=%f, var=%f, "
                     "amp_cv=%f tau_D=%f tau_R=%f" %
                     (self.gid, delay, duration, mean, var,
                      amp_cv, tau_D, tau_R), 50)
 
-        return self.add_shotnoise_step(section, segx,
-                                       tau_D, tau_R, rate, amp_mean, amp_var,
-                                       delay, duration, dt, shotnoise_seed,
-                                       shotnoise_stim_count)
+        rng = self._get_shotnoise_step_rand(shotnoise_stim_count, seed)
+        tvec, svec = gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean,
+                                          amp_var, duration, dt, rng=rng)
+        tvec.add(delay)  # add delay
+
+        if stim_mode == "Conductance":
+            reversal = float(stimulus.get("Reversal", 0.0))
+            return self.inject_dynamic_clamp_signal(section, segx, tvec, svec, reversal)
+        else:
+            return self.inject_current_clamp_signal(section, segx, tvec, svec)
+
+    def add_ornstein_uhlenbeck(self, section, segx, stimulus, stim_count=0):
+        """Add an Ornstein-Uhlenbeck process, injected as current or conductance."""
+        delay = float(stimulus["Delay"])
+        duration = float(stimulus["Duration"])
+
+        tau = float(stimulus["Tau"])  # relaxation time [ms]
+        dt = float(stimulus.get("Dt", 0.25))
+        sigma = float(stimulus["Sigma"])  # signal stdev [uS]
+        if sigma <= 0:
+            raise ConfigError("Sigma of stimulus must be > 0.")
+
+        mean = float(stimulus["Mean"])    # signal mean [uS]
+        if mean < 0 and abs(mean) > 2 * sigma:
+            lazy_printv("warning, ornstein_uhlenbeck signal is mostly zero.", 2)
+
+        seed = int(stimulus["Seed"]) if "Seed" in stimulus else None
+        rng = self._get_ornstein_uhlenbeck_rand(stim_count, seed)
+        tvec, svec = gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt, rng)
+
+        tvec.add(delay)  # add delay
+
+        if stimulus["Mode"] == "Conductance":
+            reversal = float(stimulus.get("Reversal", 0.0))
+            return self.inject_dynamic_clamp_signal(section, segx, tvec, svec, reversal)
+        else:
+            return self.inject_current_clamp_signal(section, segx, tvec, svec)
+
+    def add_relative_ornstein_uhlenbeck(self, section, segx, stimulus, stim_count=0):
+        """Add an Ornstein-Uhlenbeck process, injected as current or conductance,
+        relative to cell threshold current or inverse input resistance."""
+        delay = float(stimulus["Delay"])
+        duration = float(stimulus["Duration"])
+
+        tau = float(stimulus["Tau"])  # relaxation time [ms]
+        dt = float(stimulus.get("Dt", 0.25))
+
+        mean_perc = float(stimulus["MeanPercent"])
+        sigma_perc = float(stimulus["SDPercent"])
+
+        stim_mode = stimulus["Mode"]
+        rel_prop = self.relativity_proportion(stim_mode)
+
+        sigma = sigma_perc / 100 * rel_prop
+        if sigma <= 0:
+            raise BGLibPyError(f"standard deviation: {sigma}, must be positive.")
+
+        mean = mean_perc / 100 * rel_prop
+        if mean < 0 and abs(mean) > 2 * sigma:
+            warnings.warn(f"relative ornstein uhlenbeck signal is mostly zero.")
+
+        seed = int(stimulus["Seed"]) if "Seed" in stimulus else None
+        rng = self._get_ornstein_uhlenbeck_rand(stim_count, seed)
+        tvec, svec = gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt, rng)
+
+        tvec.add(delay)  # add delay
+
+        if stim_mode == "Conductance":
+            reversal = float(stimulus.get("Reversal", 0.0))
+            return self.inject_dynamic_clamp_signal(section, segx, tvec, svec, reversal)
+        else:
+            return self.inject_current_clamp_signal(section, segx, tvec, svec)
 
     def inject_current_waveform(self, t_content, i_content, section=None,
                                 segx=0.5):

@@ -7,7 +7,8 @@ import numpy as np
 from pytest import approx, raises
 
 import bglibpy
-from bglibpy.exceptions import BGLibPyError
+from bglibpy.cell.stimuli_generator import gen_shotnoise_signal
+from bglibpy.exceptions import BGLibPyError, ConfigError
 
 script_dir = os.path.dirname(__file__)
 
@@ -171,7 +172,20 @@ class TestInjector:
         assert tstim.stim.to_python() == [0.0, 0.1104372, 0.1104372, 0.0, 0.0]
         assert tstim.tvec.to_python() == [4.0, 4.0, 24.0, 24.0, 24.0]
 
+    def test_get_ornstein_uhlenbeck_rand(self):
+        """Unit test to check RNG generated for ornstein_uhlenbeck."""
+        rng_obj = bglibpy.RNGSettings()
+        rng_obj.mode = "Random123"
+        self.cell.rng_settings = rng_obj
+        rng = self.cell._get_ornstein_uhlenbeck_rand(0, 144)
+        assert rng.uniform(1, 15) == 12.477080945047298
+
+        with raises(BGLibPyError):
+            rng_obj.mode = "Compatibility"
+            self.cell._get_ornstein_uhlenbeck_rand(0, 144)
+
     def test_get_shotnoise_step_rand(self):
+        """Unit test to check RNG generated for shotnoise."""
         rng_obj = bglibpy.RNGSettings()
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
@@ -191,7 +205,7 @@ class TestInjector:
         segx = 0.5
         stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Rate": 2E3,
                     "AmpMean": 40E-3, "AmpVar": 16E-4, "Duration": 2,
-                    "Delay": 0, "Seed": 3899663}
+                    "Delay": 0, "Seed": 3899663, "Mode": "Current"}
         time_vec, stim_vec = self.cell.add_replay_shotnoise(soma, segx, stimulus,
                                                             shotnoise_stim_count=3)
         assert list(time_vec) == approx([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5,
@@ -205,25 +219,102 @@ class TestInjector:
                             "Delay": 0, "Seed": 3899663}
             self.cell.add_replay_shotnoise(soma, segx, invalid_stim, shotnoise_stim_count=3)
 
-    def test_add_shotnoise_step(self):
-        """Unit test for the add_shotnoise_step."""
+    def test_add_ornstein_uhlenbeck(self):
+        """Unit test for add_ornstein_uhlenbeck."""
+        rng_obj = bglibpy.RNGSettings(mode="Random123", base_seed=549821)
+        rng_obj.stimulus_seed = 549821
+        self.cell.rng_settings = rng_obj
+        soma = self.cell.soma
+        segx = 0.5
+        stimulus = {"Tau": 2.8, "Sigma": 0.0042, "Mean": 0.029, "Mode": "Current",
+                    "Duration": 2, "Delay": 0, "Dt": 0.25, "Seed": 1}
+        time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
+                                                              stim_count=1)
+
+        assert list(time_vec) == approx([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5,
+                                         1.75, 2.0, 2.0])
+        assert list(stim_vec) == approx([0.029, 0.030066357907250596, 0.0292377422585839,
+                                         0.02740869851318549, 0.02615778315096319,
+                                         0.026618755144424376, 0.026643574535378675,
+                                         0.027504132283051937, 0.028251366180467998, 0.0])
+
+        stimulus = {"Tau": 2.8, "Sigma": 0.0042, "Mean": 0.029, "Mode": "Conductance",
+                    "Reversal": 0, "Duration": 2, "Delay": 0, "Dt": 0.25, "Seed": 1}
+        time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
+                                                              stim_count=1)
+
+        assert list(time_vec) == approx([0, 0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5,
+                                         1.75, 2.0, 2.0])
+        assert list(stim_vec) == approx([1000000000.0, 34.48275862068965, 33.259765053180814,
+                                         34.20236730852261, 36.48476776520164, 38.22953933935253,
+                                         37.56749684853171, 37.5325014544182, 36.35817300865007,
+                                         35.39651829975447, 1000000000.0])
+
+        with raises(ConfigError):
+            stimulus = {"Tau": 2.8, "Sigma": -1, "Mean": 0.029, "Mode": "Current",
+                        "Duration": 2, "Delay": 0, "Dt": 0.25, "Seed": 1}
+            time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
+                                                                  stim_count=1)
+
+    def test_inject_current_clamp_signal(self):
+        """Unit test for inject_current_clamp_signal."""
+        tvec = bglibpy.neuron.h.Vector(np.arange(10))
+        svec = bglibpy.neuron.h.Vector(np.random.normal(0, 0.1, 10))
+
+        original_tvec = bglibpy.neuron.h.Vector().copy(tvec)
+        original_svec = bglibpy.neuron.h.Vector().copy(svec)
+
+        soma = self.cell.soma
+        segx = 0.5
+        self.cell.inject_current_clamp_signal(soma, segx, tvec, svec)
+
+        assert len(self.cell.persistent) == 3
+        assert "IClamp" in self.cell.persistent[0].hname()
+        assert self.cell.persistent[0].dur == tvec[-1]  # check duration
+        # tvec and svec are not modified
+        assert original_tvec.eq(self.cell.persistent[1]) == 1.0
+        assert original_svec.eq(self.cell.persistent[2]) == 1.0
+
+    def test_inject_current_clamp_via_shotnoise_signal(self):
+        """Unit test for inject_current_clamp_signal using a shotnoise_step."""
         rng_obj = bglibpy.RNGSettings()
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
 
         soma = self.cell.soma
         segx = 0.5
-        tvec, svec = self.cell.add_shotnoise_step(section=soma, segx=segx,
-                                                  tau_D=4.0, tau_R=0.4,
-                                                  rate=2e3, amp_mean=40e-3,
-                                                  amp_var=16e-4, delay=0,
-                                                  duration=2)
+        rng = self.cell._get_shotnoise_step_rand(shotnoise_stim_count=0, seed=None)
+        tvec, svec = gen_shotnoise_signal(tau_D=4.0, tau_R=0.4, rate=2e3, amp_mean=40e-3,
+                                          amp_var=16e-4, duration=2, dt=0.25, rng=rng)
+        delay = 0
+        tvec.add(delay)  # add delay
+        tvec, svec = self.cell.inject_current_clamp_signal(soma, segx, tvec, svec)
 
         assert svec.as_numpy() == approx(np.array(
             [0., 0., 0., 0.00822223, 0.01212512,
              0.0137462, 0.034025, 0.04967694, 0.05614846, 0.]))
         assert tvec.to_python() == approx(
             [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.0])
+
+    def test_inject_dynamic_clamp_signal(self):
+        """Unit test for inject_dynamic_clamp_signal."""
+        tvec = bglibpy.neuron.h.Vector(np.arange(10))
+        svec = bglibpy.neuron.h.Vector(np.random.normal(0, 0.1, 10))
+
+        original_tvec = bglibpy.neuron.h.Vector().copy(tvec)
+        original_svec = bglibpy.neuron.h.Vector().copy(svec)
+
+        soma = self.cell.soma
+        segx = 0.5
+        reversal = 1e-3
+        self.cell.inject_dynamic_clamp_signal(soma, segx, tvec, svec, reversal)
+        assert len(self.cell.persistent) == 3
+        assert "SEClamp" in self.cell.persistent[0].hname()
+        assert self.cell.persistent[0].amp1 == reversal
+        assert self.cell.persistent[0].dur1 == tvec[-1]  # check duration
+        # tvec and svec are modified
+        assert original_tvec.eq(self.cell.persistent[1]) != 1.0
+        assert original_svec.eq(self.cell.persistent[2]) != 1.0
 
     def test_add_replay_relative_shotnoise(self):
         """Unit test for add_replay_relative_shotnoise."""
@@ -232,7 +323,7 @@ class TestInjector:
         self.cell.rng_settings = rng_obj
         stimulus = {"DecayTime": 4.0, "RiseTime": 0.4, "Dt": 0.25,
                     "Duration": 2, "MeanPercent": 70, "SDPercent": 40,
-                    "AmpCV": 0.63, "Delay": 0, "Seed": 12}
+                    "AmpCV": 0.63, "Delay": 0, "Seed": 12, "Mode": "Current"}
         self.cell.threshold = 0.184062
         soma = self.cell.soma
         segx = 0.5
