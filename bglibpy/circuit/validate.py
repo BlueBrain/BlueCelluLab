@@ -37,7 +37,7 @@ class SimulationValidator:
         """Check the contents of a connection block,
         to see if we support all the fields"""
 
-        allowed_keys = set(['Weight', 'SynapseID', 'SpontMinis',
+        allowed_keys = set(['Weight', 'SpontMinis',
                             'SynapseConfigure', 'Source', 'ModOverride',
                             'Destination', 'Delay', 'CreateMode'])
         for key in contents.keys():

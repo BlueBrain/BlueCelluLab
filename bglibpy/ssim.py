@@ -593,9 +593,6 @@ class SSim:
                 # whatever specified in this block, is applied to gid
                 apply_parameters = True
 
-                if 'SynapseID' in entry and int(entry['SynapseID']) != syn_type:
-                    apply_parameters = False
-
                 if 'Delay' in entry:
                     parameters['DelayWeights'].append((
                         float(entry['Delay']),

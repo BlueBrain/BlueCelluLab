@@ -186,53 +186,6 @@ class TestCellBaseClass1:
             assert distance_euclid == distance_hand
 
 
-class TestCellBaseClassSynapses:
-
-    """TestCellBaseClassSynapses"""
-
-    def setup(self):
-        """Setup TestCellBaseClassSynapses"""
-        self.gid = 1
-
-        self.conf_pre_path = os.path.join(
-            script_dir, "examples", "sim_twocell_synapseid")
-
-        # make the paths absolute
-        modified_conf = blueconfig_append_path(
-            os.path.join(self.conf_pre_path, "BlueConfig"), self.conf_pre_path)
-
-        self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
-        self.ssim_bglibpy.instantiate_gids(
-            [self.gid],
-            synapse_detail=2)
-
-    def test_info_dict(self):
-        """Cell: Test if info_dict is working as expected"""
-
-        cell1_info_dict = self.ssim_bglibpy.cells[self.gid].info_dict
-
-        import pprint
-        cell1_info_dict_str = pprint.pformat(cell1_info_dict)
-
-        # with open('cell1_info_dict.txt', 'w') as cell_info_dict_file:
-        #    cell_info_dict_file.write(cell1_info_dict_str)
-
-        expected_dict = os.path.join(self.conf_pre_path, "cell1_info_dict.txt")
-
-        with open(expected_dict, 'r') as cell_info_dict_file:
-            cell1_info_dict_expected_str = cell_info_dict_file.read()
-
-        # print(cell1_info_dict_str)
-
-        # print(cell1_info_dict_expected_str)
-        assert cell1_info_dict_str == cell1_info_dict_expected_str
-
-    def teardown(self):
-        """Teardown TestCellBaseClassSynapses"""
-        self.ssim_bglibpy.delete()
-        assert (bglibpy.tools.check_empty_topology())
-
-
 @pytest.mark.debugtest
 class TestCellBaseClassVClamp:
 

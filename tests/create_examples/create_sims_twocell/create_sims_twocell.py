@@ -103,7 +103,6 @@ def main():
         ('all', True),
         ('all_mvr', True),
         ('neuronconfigure', True),
-        ('synapseid', True),
         ('realconn', False)
     ]
 
