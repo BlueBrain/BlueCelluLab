@@ -89,7 +89,6 @@ class Cell(InjectableMixin, PlottableMixin):
         self.rng_settings = rng_settings
 
         self.recordings: dict[str, NeuronType] = {}
-        self.voltage_recordings: dict[str, NeuronType] = {}
         self.synapses: dict[int, bglibpy.Synapse] = {}
         self.connections: dict[int, bglibpy.Connection] = {}
 
@@ -446,7 +445,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Adds recording to AIS."""
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
-    def add_voltage_recording(self, section, segx):
+    def add_voltage_recording(self, section, segx, dt: Optional[float] = None):
         """Add a voltage recording to a certain section(segx)
 
         Parameters
@@ -455,31 +454,25 @@ class Cell(InjectableMixin, PlottableMixin):
                   Section to record from (Neuron section pointer)
         segx : float
                Segment x coordinate
+        dt: recording time step
         """
+        var_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        self.add_recording(var_name, dt)
 
-        recording = bglibpy.neuron.h.Vector()
-
-        recording.record(
-            eval_neuron(
-                'neuron.h.%s(%f)._ref_v' %
-                (section.name(), segx), neuron=bglibpy.neuron))
-
-        self.voltage_recordings['%s(%f)' % (section.name(), segx)] = recording
-
-    def get_voltage_recording(self, section, segx):
+    def get_voltage_recording(self, section, segx: float) -> np.ndarray:
         """Get a voltage recording for a certain section(segx)
 
         Parameters
         ----------
         section : nrnSection
                   Section to record from (Neuron section pointer)
-        segx : float
+        segx :
                Segment x coordinate
         """
 
-        recording_name = '%s(%f)' % (section.name(), segx)
-        if recording_name in self.voltage_recordings:
-            return self.voltage_recordings[recording_name].to_python()
+        recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        if recording_name in self.recordings:
+            return self.get_recording(recording_name)
         else:
             raise BGLibPyError('get_voltage_recording: Voltage recording %s'
                                ' was not added previously using '
@@ -489,33 +482,20 @@ class Cell(InjectableMixin, PlottableMixin):
         """Add a voltage recording to every section of the cell."""
         all_sections = self.cell.getCell().all
         for section in all_sections:
-            var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
-            self.add_recording(var_name)
+            self.add_voltage_recording(section, segx=0.5, dt=self.record_dt)
 
-    def get_allsections_voltagerecordings(self):
-        """Get all the voltage recordings from all the sections.
-
-        Returns
-        -------
-        dict of numpy arrays : dict with secname of sections as keys
-
-        """
-        allSectionVoltages = {}
+    def get_allsections_voltagerecordings(self) -> dict[str, np.ndarray]:
+        """Get all the voltage recordings from all the sections."""
+        all_section_voltages = {}
         all_sections = self.cell.getCell().all
         for section in all_sections:
-            var_name = 'neuron.h.' + section.name() + "(0.5)._ref_v"
-            allSectionVoltages[section.name()] = self.get_recording(var_name)
-        return allSectionVoltages
+            recording = self.get_voltage_recording(section, segx=0.5)
+            all_section_voltages[section.name()] = recording
+        return all_section_voltages
 
-    def get_recording(self, var_name):
-        """Get recorded values.
-
-        Returns
-        -------
-        numpy array : array with the recording var_name variable values
-
-        """
-        return np.array(self.recordings[var_name])
+    def get_recording(self, var_name: str) -> np.ndarray:
+        """Get recorded values."""
+        return np.array(self.recordings[var_name].to_python())
 
     def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
                            condition_parameters=None, base_seed=None,
@@ -920,25 +900,19 @@ class Cell(InjectableMixin, PlottableMixin):
                         maxdiam = child.diam
             return apicaltrunk
 
-    # Disable unused argument warning for dt. This is there for backward
-    # compatibility
-    # pylint: disable=W0613
-
-    # pylint: enable=W0613
-
-    def get_time(self):
+    def get_time(self) -> np.ndarray:
         """Get the time vector."""
         return self.get_recording('neuron.h._ref_t')
 
-    def get_soma_voltage(self):
+    def get_soma_voltage(self) -> np.ndarray:
         """Get a vector of the soma voltage."""
         return self.get_recording('self.soma(0.5)._ref_v')
 
-    def get_ais_voltage(self):
+    def get_ais_voltage(self) -> np.ndarray:
         """Get a vector of AIS voltage."""
         return self.get_recording('self.axonal[1](0.5)._ref_v')
 
-    def getNumberOfSegments(self):
+    def getNumberOfSegments(self) -> int:
         """Get the number of segments in the cell."""
         return sum(section.nseg for section in self.all)
 
@@ -971,10 +945,6 @@ class Cell(InjectableMixin, PlottableMixin):
         if hasattr(self, 'recordings'):
             for recording in self.recordings:
                 del recording
-
-        if hasattr(self, 'voltage_recordings'):
-            for voltage_recording in self.voltage_recordings:
-                del voltage_recording
 
         if hasattr(self, 'persistent'):
             for persistent_object in self.persistent:
