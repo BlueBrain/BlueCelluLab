@@ -124,6 +124,53 @@ To see how enabling minis and synapses affects the recorded voltage:
         pylab.plot(cell.get_time(), cell.get_soma_voltage())
         pylab.show()
 
+Recording the spikes from a cell
+=================================
+
+Bglibpy has the functionality to record the spikes from a cell or a group of cells.
+
+This feature can also be combined with a network simulation.
+
+Let's start with creating a `Cell`, a `Simulation` and adding the cell to the simulation.
+
+.. code-block:: python
+
+        cell = bglibpy.Cell(
+        "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+        "%s/examples/cell_example1" % script_dir)
+        sim = bglibpy.Simulation()
+        sim.add_cell(cell)
+
+Now we can add a spike detector to the cell and enable recording from soma with a threshold of -30.
+
+.. code-block:: python
+
+        cell.start_recording_spikes(None, "soma", -30)
+
+The first parameter of the `start_recording_spikes` method is the target.
+That is the target point process that goes to the `NetCon` object of `NEURON`.
+If it is specified, the `NetCon` connection object will be created between the specified location of the cell and the target.
+
+After starting the recording process, here we add a step current to the cell and run the simulation.
+
+.. code-block:: python
+
+        cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+        sim.run(24, cvode=False)
+
+The resulting spikes can be retrieved as follows.
+
+.. code-block:: python
+
+        spikes = cell.get_spikes(location="soma")
+
+It returns the spikes in a list. A sample output is as follows:
+
+.. code-block:: python
+
+        >>> spikes
+        [3.350000000100014, 11.52500000009988, 19.9750000000994]
+
 Changing the verbosity
 ======================
 By default bglibpy will not print too much to stdout

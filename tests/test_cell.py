@@ -11,6 +11,7 @@ import warnings
 from pathlib import Path
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 import bglibpy
@@ -298,3 +299,18 @@ class TestCellBaseClassVClamp:
                 np.where((time > stop_time) & (time < 1.1 * stop_time))])
 
         assert current_after_vc_end == 0.0
+
+
+def test_get_recorded_spikes():
+    """Cell: Test get_recorded_spikes."""
+    cell = bglibpy.Cell(
+        "%s/examples/cell_example1/test_cell.hoc" % script_dir,
+        "%s/examples/cell_example1" % script_dir)
+    sim = bglibpy.Simulation()
+    sim.add_cell(cell)
+    cell.start_recording_spikes(None, "soma", -30)
+    cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+    sim.run(24, cvode=False)
+    spikes = cell.get_recorded_spikes("soma")
+    ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
+    assert np.allclose(spikes, ground_truth)

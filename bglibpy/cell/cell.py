@@ -620,6 +620,31 @@ class Cell(InjectableMixin, PlottableMixin):
 
         return netcon
 
+    def start_recording_spikes(self, target, location: str, threshold: float = -30):
+        """Start recording spikes in the current cell
+
+        Args:
+            target: target point process
+            location: the spike detection location
+            threshold: spike detection threshold
+        """
+        nc = self.create_netcon_spikedetector(target, location, threshold)
+        spike_vec = bglibpy.neuron.h.Vector()
+        nc.record(spike_vec)
+        self.recordings[f"spike_detector_{location}_{threshold}"] = spike_vec
+
+    def get_recorded_spikes(self, location: str, threshold: float = -30) -> list[float]:
+        """Get recorded spikes in the current cell
+
+        Args:
+            location: the spike detection location
+            threshold: spike detection threshold
+
+        Returns: recorded spikes
+        """
+        result = self.recordings[f"spike_detector_{location}_{threshold}"]
+        return result.to_python()
+
     def add_replay_minis(self, syn_id, syn_description, connection_parameters,
                          base_seed=None, popids=(0, 0), mini_frequencies=None):
         """Add minis from the replay."""
