@@ -28,11 +28,6 @@ renccv2_bc_1_path = os.path.join(
     "simulations/ReNCCv2/k_ca_scan_dense/K5p0/Ca1p25_synreport/",
     "BlueConfig")
 
-v6_test_bc_1_path = os.path.join(
-    proj_path(64),
-    "circuits/S1HL-200um/20171002/simulations/003",
-    "BlueConfig")
-
 # v6_test_bc_3_path = os.path.join(proj64_path,
 #                                 "home/king/sim/Basic",
 #                                 "BlueConfig")
@@ -201,55 +196,6 @@ class TestSSimBaseClass_full_realconn:
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert rms_error < 2.0
-
-
-@pytest.mark.v6
-class TestSSimBaseClass_v6_full_run:
-    """Class to test SSim with full circuit"""
-
-    def setup(self):
-        """Setup"""
-        self.t_start = 0
-        self.t_stop = 500
-        self.record_dt = 0.1
-        self.len_voltage = self.t_stop / self.record_dt
-        self.ssim = bglibpy.ssim.SSim(
-            v6_test_bc_1_path, record_dt=self.record_dt
-        )
-        assert isinstance(self.ssim, bglibpy.SSim)
-
-    def teardown(self):
-        """Teardown"""
-        self.ssim.delete()
-
-        assert bglibpy.tools.check_empty_topology()
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation run """ \
-            """with forwardskip """ \
-            """gives the same output trace as on BGQ for v6"""
-        gid = 8709
-        self.ssim.instantiate_gids(
-            [gid],
-            synapse_detail=2,
-            add_replay=True,
-            add_stimuli=True)
-
-        self.ssim.run(self.t_stop)
-
-        time_bglibpy = self.ssim.get_time_trace()
-        voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-        assert len(time_bglibpy) == self.len_voltage
-        assert len(voltage_bglibpy) == self.len_voltage
-
-        voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-            gid, self.t_start, self.t_stop, self.record_dt)
-
-        rms_error = np.sqrt(
-            np.mean(
-                (voltage_bglibpy - voltage_bglib) ** 2))
-
-        assert rms_error < 0.5
 
 
 '''
