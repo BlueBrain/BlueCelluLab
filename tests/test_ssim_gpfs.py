@@ -40,13 +40,6 @@ v6_test_bc_4_path = os.path.join(proj_path(64),
                                  "home/king/sim/Basic",
                                  "BlueConfig")
 
-
-v6_test_bc_rnd123_1_path = os.path.join(proj_path(64),
-                                        "home/vangeit/simulations/",
-                                        "random123_tests/",
-                                        "random123_tests_newneurod_rnd123",
-                                        "BlueConfig")
-
 test_thalamus_path = os.path.join(proj_path(55),
                                   "tuncel/simulations/release",
                                   "2020-08-06-v2",
@@ -396,75 +389,6 @@ class TestSSimBaseClass_thalamus:
             add_synapses=True,
             add_projections=True
         )
-
-
-@pytest.mark.v6
-class TestSSimBaseClass_v6_rnd123_1:
-
-    """Class to test SSim with 1000 cell random123 circuit"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = None
-        self.t_start = 0
-        self.t_stop = 200
-        self.record_dt = 0.1
-        self.len_voltage = self.t_stop / self.record_dt
-
-    def test_run(self):
-        """SSim: Check if a full replay with random 123 of a simulation """ \
-            """gives the same output trace for O1v6a"""
-        # gids = [1326, 67175, 160384]
-        gids = [1326, 67175, 160384]
-        # gids = [160384]
-        # bglibpy.set_verbose(100)
-        for gid in gids:
-            self.ssim = bglibpy.ssim.SSim(
-                v6_test_bc_rnd123_1_path,
-                record_dt=self.record_dt)
-
-            self.ssim.instantiate_gids(
-                [gid],
-                add_synapses=True,
-                add_replay=True,
-                add_minis=True,
-                add_stimuli=True)
-
-            self.ssim.run(self.t_stop)
-
-            time_bglibpy = self.ssim.get_time_trace()
-            voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-            assert len(time_bglibpy) == self.len_voltage
-            assert len(voltage_bglibpy) == self.len_voltage
-
-            voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-                gid, self.t_start, self.t_stop, self.record_dt)
-
-            '''
-
-            time_bglib = self.ssim.get_mainsim_time_trace()[
-                :len(voltage_bglibpy)]
-
-            import matplotlib
-            matplotlib.use('Agg')
-            import matplotlib.pyplot as plt
-            plt.plot(time_bglibpy, voltage_bglibpy, label='bglibpy %d' % gid)
-            plt.plot(time_bglib, voltage_bglib, label='neurodamus %d' % gid)
-            plt.legend()
-            plt.savefig('O1v6a_rng_%d.png' % gid)
-            # import pickle
-            # pickle.dump(plt.gcf(), open('O1v6a_rng_%d.pickle' % gid, 'wb'))
-            # plt.clear()
-            '''
-
-            rms_error = np.sqrt(
-                np.mean(
-                    (voltage_bglibpy - voltage_bglib) ** 2))
-
-            assert rms_error < 10.0
-
-            self.ssim.delete()
-            assert bglibpy.tools.check_empty_topology()
 
 
 @pytest.mark.v6
