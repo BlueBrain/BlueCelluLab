@@ -28,8 +28,8 @@ class NeuronTemplate:
         self, template_format: str, gid: int, extra_values: dict
     ) -> neuron.hoc.HocObject:
         """Returns the hoc object matching the template format."""
+        morph_dir, morph_fname = os.path.split(self.morph_filepath)
         if template_format == "v6":
-            morph_dir, morph_fname = os.path.split(self.morph_filepath)
             attr_names = getattr(
                 neuron.h, self.template_name + "_NeededAttributes", None
             )
