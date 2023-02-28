@@ -433,7 +433,7 @@ def test_sscx_merge_pre_spike_trains():
     ssim = bglibpy.ssim.SSim(test_sscx2020_packages_path, record_dt=0.1)
     gid = 4138379
     ssim.instantiate_gids([gid], add_minis=True, add_replay=True,
-                          add_stimuli=False, add_synapses=None,
+                          add_stimuli=False, add_synapses=True,
                           intersect_pre_gids=None)
     cell_info_dict = ssim.cells[gid].info_dict
     assert cell_info_dict["connections"] != {}

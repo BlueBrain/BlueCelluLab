@@ -419,6 +419,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains:
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
             add_stimuli=False,
+            add_synapses=True,
             add_replay=False,
             add_minis=False,
             pre_spike_trains={2: [0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]})

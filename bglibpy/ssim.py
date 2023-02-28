@@ -110,8 +110,8 @@ class SSim:
     def instantiate_gids(self, gids,
                          add_replay=False,
                          add_stimuli=False,
-                         add_synapses=None,
-                         add_minis=None,
+                         add_synapses=False,
+                         add_minis=False,
                          add_noise_stimuli=False,
                          add_hyperpolarizing_stimuli=False,
                          add_relativelinear_stimuli=False,
@@ -202,9 +202,6 @@ class SSim:
                             Setting add_stimuli=True,
                             will automatically set this option to True.
         """
-        if add_minis is None:
-            add_minis = False
-
         if self.gids_instantiated:
             raise Exception("SSim: instantiate_gids() called twice on the \
                     same SSim, this is not supported yet")
@@ -216,9 +213,6 @@ class SSim:
                 raise Exception("SSim: you need to set add_synapses to True "
                                 "if you want to specify use add_replay or "
                                 "pre_spike_trains")
-            add_synapses = True
-        elif add_synapses is None:
-            add_synapses = False
 
         if add_projections is True:
             projections = self.circuit_access.config.get_all_projection_names()
@@ -262,8 +256,6 @@ class SSim:
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells,
                                   user_pre_spike_trains=pre_spike_trains)
-
-    # pylint: enable=R0913
 
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
@@ -339,7 +331,7 @@ class SSim:
                 ornstein_uhlenbeck_stim_count += 1
 
     def _add_synapses(
-            self, intersect_pre_gids=None, add_minis=None, projections=None):
+            self, intersect_pre_gids=None, add_minis=False, projections=None):
         """Instantiate all the synapses."""
         for gid in self.gids:
             self._add_gid_synapses(
@@ -348,7 +340,7 @@ class SSim:
                 projections=projections)
 
     def _add_gid_synapses(
-        self, gid: int, pre_gids=None, add_minis=None, projections=None
+        self, gid: int, pre_gids=None, add_minis=False, projections=None
     ) -> None:
         syn_descriptions = self.get_syn_descriptions(
             gid, projections=projections)
@@ -514,7 +506,7 @@ class SSim:
                 self.pc.cell(gid, nc)  # register cell spike detector
 
     def _instantiate_synapse(self, gid: int, syn_id, syn_description,
-                             add_minis=None, popids=(0, 0)) -> None:
+                             add_minis=False, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
 
