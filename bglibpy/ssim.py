@@ -107,7 +107,7 @@ class SSim:
         set_global_condition_parameters(condition_parameters)
 
     # pylint: disable=R0913
-    def instantiate_gids(self, gids, synapse_detail=None,
+    def instantiate_gids(self, gids,
                          add_replay=False,
                          add_stimuli=False,
                          add_synapses=None,
@@ -130,22 +130,8 @@ class SSim:
         gids : list of integers (GIDs)
                Must be a list,
                even in case of instantiation of a single GID.
-        synapse_detail : {0 , 1, 2}
-                         Level of detail. If chosen, all settings are taken
-                         from the "large" cortical simulation.
-                         Possible values:
-
-                         * 0 No synapses
-
-                         * 1 Add synapse of the correct type at the
-                            simulated locations with all settings
-                            as in the "large" simulation
-
-                         * 2 As 1 but with minis
-
         add_replay : Boolean
                      Add presynaptic spiketrains from the large simulation
-                     throws an exception if this is set when synapse_detail < 1
                      If pre_spike_trains is combined with this option the
                      spiketrains will be merged
         add_stimuli : Boolean
@@ -216,22 +202,6 @@ class SSim:
                             Setting add_stimuli=True,
                             will automatically set this option to True.
         """
-
-        if synapse_detail is not None:
-            lazy_printv(
-                'WARNING: SSim: synapse_detail is deprecated and will '
-                'removed from future release of BGLibPy', 2)
-            if synapse_detail > 0:
-                if add_minis is False:
-                    raise Exception('SSim: synapse_detail >= 1 cannot be used'
-                                    ' with add_minis == False')
-                add_synapses = True
-            if synapse_detail > 1:
-                if add_minis is False:
-                    raise Exception('SSim: synapse_detail >= 2 cannot be used'
-                                    ' with add_minis == False')
-                add_minis = True
-
         if add_minis is None:
             add_minis = False
 
@@ -242,7 +212,7 @@ class SSim:
             self.gids_instantiated = True
 
         if pre_spike_trains or add_replay:
-            if add_synapses is not None and add_synapses is False:
+            if add_synapses is False:
                 raise Exception("SSim: you need to set add_synapses to True "
                                 "if you want to specify use add_replay or "
                                 "pre_spike_trains")

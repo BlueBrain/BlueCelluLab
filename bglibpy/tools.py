@@ -349,7 +349,7 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     # (process_name, step_level)
     # print "Calculate_SS_voltage_replay_subprocess instantiating gid ..."
     ssim.instantiate_gids(
-        [gid], synapse_detail=2, add_stimuli=True, add_replay=True)
+        [gid], add_synapses=True, add_minis=True, add_stimuli=True, add_replay=True)
     # print "Calculate_SS_voltage_replay_subprocess instantiating gid done"
 
     ssim.cells[gid].add_ramp(0, tstop, step_level, step_level)

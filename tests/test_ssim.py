@@ -145,7 +145,8 @@ class TestSSimBaseClass_twocell_empty:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -189,7 +190,8 @@ class TestSSimBaseClass_twocell_replay:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -199,7 +201,8 @@ class TestSSimBaseClass_twocell_replay:
             record_dt=0.1)
         self.ssim_bglibpy_withoutreplay.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=False)
         self.ssim_bglibpy_withoutreplay.run()
@@ -256,7 +259,8 @@ class TestSSimBaseClass_twocell_all_realconn:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True,
             interconnect_cells=False)
@@ -303,7 +307,8 @@ class TestSSimBaseClass_twocell_all:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1, print_cellstate=True)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -379,8 +384,8 @@ class TestSSimBaseClass_twocell_all_intersect:
             ssim_bglibpy = bglibpy.SSim(self.modified_conf, record_dt=0.1)
             ssim_bglibpy.instantiate_gids(
                 [self.gid],
-                synapse_detail=1,
                 add_synapses=True,
+                add_minis=False,
                 add_replay=True,
                 intersect_pre_gids=intersect)
             ssim_bglibpy.run()
@@ -465,7 +470,8 @@ class TestSSimBaseClass_twocell_all_mvr:
         self.ssim_bglibpy_mvr = bglibpy.SSim(modified_conf_mvr, record_dt=0.1)
         self.ssim_bglibpy_mvr.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy_mvr.run()
@@ -542,7 +548,8 @@ class TestSSimBaseClass_twocell_minis_replay:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -552,7 +559,8 @@ class TestSSimBaseClass_twocell_minis_replay:
             record_dt=0.1)
         self.ssim_bglibpy_withoutminis.instantiate_gids(
             [self.gid],
-            synapse_detail=1,
+            add_synapses=True,
+            add_minis=False,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy_withoutminis.run()
@@ -612,7 +620,8 @@ class TestSSimBaseClass_twocell_noisestim:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -622,7 +631,8 @@ class TestSSimBaseClass_twocell_noisestim:
             record_dt=0.1)
         self.ssim_bglibpy_withoutstim.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=False,
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
@@ -681,7 +691,8 @@ class TestSSimBaseClass_twocell_pulsestim:
         self.ssim_bglibpy = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim_bglibpy.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True)
         self.ssim_bglibpy.run()
@@ -691,7 +702,8 @@ class TestSSimBaseClass_twocell_pulsestim:
             record_dt=0.1)
         self.ssim_bglibpy_withoutstim.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=False,
             add_replay=True)
         self.ssim_bglibpy_withoutstim.run()
@@ -752,7 +764,8 @@ class TestSSimBaseClass_syns:
         self.ssim = bglibpy.SSim(modified_conf, record_dt=0.1)
         self.ssim.instantiate_gids(
             [self.gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_stimuli=True,
             add_replay=True,
             interconnect_cells=False)

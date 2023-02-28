@@ -127,7 +127,8 @@ class TestSSimBaseClass_full_run:
         gid = 75936
         self.ssim.instantiate_gids(
             [gid],
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_replay=True,
             add_stimuli=True)
 
@@ -178,7 +179,8 @@ class TestSSimBaseClass_full_realconn:
         gids = range(gid, gid + 5)
         self.ssim.instantiate_gids(
             gids,
-            synapse_detail=2,
+            add_synapses=True,
+            add_minis=True,
             add_replay=True,
             add_stimuli=True,
             interconnect_cells=True)
@@ -221,7 +223,8 @@ class TestSSimBaseClass_v6_mvr_run:
 
             self.ssim.instantiate_gids(
                 [gid],
-                synapse_detail=2,
+                add_synapses=True,
+                add_minis=True,
                 add_replay=True,
                 add_stimuli=True)
 
@@ -429,7 +432,7 @@ def test_sscx_merge_pre_spike_trains():
     """Test for reproducing empty cell_info_dict['connections'] bug."""
     ssim = bglibpy.ssim.SSim(test_sscx2020_packages_path, record_dt=0.1)
     gid = 4138379
-    ssim.instantiate_gids([gid], synapse_detail=2, add_replay=True,
+    ssim.instantiate_gids([gid], add_minis=True, add_replay=True,
                           add_stimuli=False, add_synapses=None,
                           intersect_pre_gids=None)
     cell_info_dict = ssim.cells[gid].info_dict
@@ -559,7 +562,7 @@ class TestSSimBaseClass_full:
     def test_add_replay_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
         gid = self.ssim.circuit_access.get_gids_of_targets(['L5_MC']).pop()
-        self.ssim.instantiate_gids([gid], synapse_detail=0)
+        self.ssim.instantiate_gids([gid], add_synapses=False, add_minis=False)
         pre_datas = self.ssim.get_syn_descriptions(gid)
         first_inh_syn = pre_datas[pre_datas[BLPSynapse.TYPE] < 100].iloc[0]
         sid = int(first_inh_syn.name[1])

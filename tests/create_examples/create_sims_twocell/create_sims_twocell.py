@@ -135,7 +135,7 @@ def main():
     ssim_bglibpy = bglibpy.SSim("BlueConfig", record_dt=record_dt)
     bglibpy.set_verbose(100)
     ssim_bglibpy.instantiate_gids(
-        [1, 2], synapse_detail=2, add_stimuli=True, add_replay=True)
+        [1, 2], add_synapses=True, add_minis=True, add_stimuli=True, add_replay=True)
     ssim_bglibpy.run(tstop, dt=dt)
 
     ssim_bglib = bglibpy.SSim("BlueConfig")
