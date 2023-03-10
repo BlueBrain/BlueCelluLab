@@ -65,6 +65,14 @@ def import_mod_lib(neuron):
 
     mod_lib_list = None
     if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
+
+        # Check if the current directory contains 'x86_64'.
+
+        if os.path.isdir('x86_64'):
+            raise Exception("BGLIBPY_MOD_LIBRARY_PATH is set"
+                            " and current directory contains the x86_64 folder."
+                            " Please remove one of them.")
+
         mod_lib_path = os.environ["BGLIBPY_MOD_LIBRARY_PATH"]
         mod_lib_list = mod_lib_path.split(':')
         for mod_lib in mod_lib_list:
