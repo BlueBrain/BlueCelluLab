@@ -233,7 +233,7 @@ class TestSSimBaseClass_v6_mvr_run:
             if gid == 29561:
                 one_synapse = self.ssim.cells[gid].synapses[150]
                 assert(hasattr(one_synapse, 'Nrrp'))
-                assert one_synapse.Nrrp == 3
+                assert one_synapse.syn_description[BLPSynapse.NRRP] == 3
 
             self.ssim.run(500)
 

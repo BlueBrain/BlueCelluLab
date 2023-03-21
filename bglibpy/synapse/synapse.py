@@ -8,6 +8,7 @@ Class that represents a synapse in BGLibPy
 """
 
 from bluepy.enums import Synapse as BLPSynapse
+import pandas as pd
 
 import bglibpy
 from bglibpy.tools import lazy_printv
@@ -52,29 +53,16 @@ class Synapse:
         self.post_gid = cell.gid
         self.syn_id = syn_id
         self.projection, self.sid = self.syn_id
-        self.syn_description = syn_description
+        self.extracellular_calcium = extracellular_calcium
+        self.syn_description = self.update_syn_description(syn_description)
         self.connection_parameters = connection_parameters
         self.hsynapse = None
-        self.extracellular_calcium = extracellular_calcium
 
         self.source_popid, self.target_popid = popids
-        # pylint: disable = C0103
 
-        self.pre_gid = int(syn_description[BLPSynapse.PRE_GID])
-        post_sec_id = syn_description[BLPSynapse.POST_SECTION_ID]
-        self.isec = int(post_sec_id)
-        post_seg_id = syn_description[BLPSynapse.POST_SEGMENT_ID]
-        self.ipt = post_seg_id
-        if post_seg_id == -1:
-            post_seg_distance = syn_description["afferent_section_pos"]
-        else:
-            post_seg_distance = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
-        self.syn_offset = post_seg_distance
+        self.pre_gid = int(self.syn_description[BLPSynapse.PRE_GID])
 
-        self.syn_D = syn_description[BLPSynapse.D_SYN]
-        self.syn_F = syn_description[BLPSynapse.F_SYN]
-        self.syn_DTC = syn_description[BLPSynapse.DTC]
-        self.syn_type = int(syn_description[BLPSynapse.TYPE])
+        self.post_segx = location
 
         if cell.rng_settings is None:
             self.rng_setting = bglibpy.RNGSettings(
@@ -86,29 +74,6 @@ class Synapse:
         else:
             self.rng_settings = cell.rng_settings
 
-        if BLPSynapse.NRRP in syn_description:
-            try:
-                self.Nrrp = int(syn_description[BLPSynapse.NRRP])
-            except ValueError:
-                self.Nrrp = None
-        else:
-            self.Nrrp = None
-
-        self.u_hill_coefficient = (
-            syn_description[BLPSynapse.U_HILL_COEFFICIENT]
-            if BLPSynapse.U_HILL_COEFFICIENT in syn_description else None)
-
-        self.conductance_ratio = (
-            syn_description[BLPSynapse.CONDUCTANCE_RATIO]
-            if BLPSynapse.CONDUCTANCE_RATIO in syn_description else None)
-
-        self.u_scale_factor = self.calc_u_scale_factor(
-            self.u_hill_coefficient, self.extracellular_calcium)
-        self.syn_U = self.u_scale_factor * syn_description[BLPSynapse.U_SYN]
-        self.post_segx = location
-
-        # pylint: enable = C0103
-
         if self.is_inhibitory():
             # see: https://bbpteam.epfl.ch/
             # wiki/index.php/BlueBuilder_Specifications#NRN,
@@ -118,16 +83,15 @@ class Synapse:
             else:
                 randomize_gaba_risetime = "True"
 
-            self.use_gabaab_helper(post_sec_id, randomize_gaba_risetime)
+            self.use_gabaab_helper(randomize_gaba_risetime)
         elif self.is_excitatory():
             if (
                     'ModOverride' in self.connection_parameters
                     and self.connection_parameters['ModOverride'] == "GluSynapse"
             ):
-                self.use_glusynapse_helper(
-                    syn_description, post_sec_id)
+                self.use_glusynapse_helper()
             else:
-                self.use_ampanmda_helper(post_sec_id)
+                self.use_ampanmda_helper()
         else:
             raise Exception('Synapse not inhibitory or excitatory')
 
@@ -141,14 +105,35 @@ class Synapse:
                 hoc_cmd = '{%s}' % hoc_cmd
                 bglibpy.neuron.h(hoc_cmd)
 
-    def use_gabaab_helper(self, post_sec_id, randomize_gaba_risetime):
+    def update_syn_description(self, syn_description: pd.Series) -> pd.Series:
+        """Change data types, compute more columns needed by the simulator."""
+        syn_description[BLPSynapse.POST_SECTION_ID] = int(
+            syn_description[BLPSynapse.POST_SECTION_ID])
+        syn_description[BLPSynapse.TYPE] = int(
+            syn_description[BLPSynapse.TYPE])
+
+        if BLPSynapse.NRRP in syn_description:
+            try:
+                syn_description[BLPSynapse.NRRP] = int(syn_description[BLPSynapse.NRRP])
+            except ValueError:
+                # delete BLPSynapse.NRRP from syn_description
+                syn_description.pop(BLPSynapse.NRRP)
+
+        if BLPSynapse.U_HILL_COEFFICIENT in syn_description:
+            syn_description["u_scale_factor"] = self.calc_u_scale_factor(
+                syn_description[BLPSynapse.U_HILL_COEFFICIENT], self.extracellular_calcium)
+        else:
+            syn_description["u_scale_factor"] = 1.0
+        syn_description[BLPSynapse.U_SYN] *= syn_description["u_scale_factor"]
+        return syn_description
+
+    def use_gabaab_helper(self, randomize_gaba_risetime):
         """Python implementation of the GABAAB helper.
 
         This helper object will encapsulate the hoc actions
          needed to create our typical inhibitory synapse.
 
         Args:
-            post_sec_id (int): post section id of the synapse.
             randomize_gaba_risetime (str): if "True" then RNG code runs
             to set tau_r_GABAA value.
 
@@ -157,9 +142,12 @@ class Synapse:
         """
         self.mech_name = 'ProbGABAAB_EMS'
 
-        self.hsynapse = bglibpy.neuron.h.\
-            ProbGABAAB_EMS(self.post_segx,
-                           sec=self.cell.get_hsection(post_sec_id))
+        self.hsynapse = bglibpy.neuron.h.ProbGABAAB_EMS(
+            self.post_segx,
+            sec=self.cell.get_hsection(
+                self.syn_description[BLPSynapse.POST_SECTION_ID]
+            ),
+        )
 
         if randomize_gaba_risetime == "True":
             rng = bglibpy.neuron.h.Random()
@@ -195,75 +183,77 @@ class Synapse:
             rng.lognormal(0.2, 0.1)
             self.hsynapse.tau_r_GABAA = rng.repick()
 
-        if self.conductance_ratio is not None:
-            self.hsynapse.GABAB_ratio = self.conductance_ratio
+        if BLPSynapse.CONDUCTANCE_RATIO in self.syn_description:
+            self.hsynapse.GABAB_ratio = self.syn_description[BLPSynapse.CONDUCTANCE_RATIO]
 
-        self.hsynapse.tau_d_GABAA = self.syn_DTC
-        self.hsynapse.Use = abs(self.syn_U)
-        self.hsynapse.Dep = abs(self.syn_D)
-        self.hsynapse.Fac = abs(self.syn_F)
+        self.hsynapse.tau_d_GABAA = self.syn_description[BLPSynapse.DTC]
+        self.hsynapse.Use = abs(self.syn_description[BLPSynapse.U_SYN])
+        self.hsynapse.Dep = abs(self.syn_description[BLPSynapse.D_SYN])
+        self.hsynapse.Fac = abs(self.syn_description[BLPSynapse.F_SYN])
 
-        if self.Nrrp is not None:
-            self.hsynapse.Nrrp = self.Nrrp
+        if BLPSynapse.NRRP in self.syn_description:
+            self.hsynapse.Nrrp = self.syn_description[BLPSynapse.NRRP]
 
         self._set_gabaab_ampanmda_rng()
 
         self.hsynapse.synapseID = self.sid
 
-    def use_ampanmda_helper(self, post_sec_id):
+    def use_ampanmda_helper(self):
         """Python implementation of the AMPANMDA helper.
 
         This helper object will encapsulate the hoc actions
          needed to create our typical excitatory synapse.
-
-        Args:
-            post_sec_id (int): post section id of the synapse.
         """
         self.mech_name = 'ProbAMPANMDA_EMS'
 
-        self.hsynapse = bglibpy.neuron.h.\
-            ProbAMPANMDA_EMS(
-                self.post_segx, sec=self.cell.get_hsection(post_sec_id))
-        self.hsynapse.tau_d_AMPA = self.syn_DTC
-        if self.conductance_ratio is not None:
-            self.hsynapse.NMDA_ratio = self.conductance_ratio
+        self.hsynapse = bglibpy.neuron.h.ProbAMPANMDA_EMS(
+            self.post_segx,
+            sec=self.cell.get_hsection(
+                self.syn_description[BLPSynapse.POST_SECTION_ID]
+            ),
+        )
+        self.hsynapse.tau_d_AMPA = self.syn_description[BLPSynapse.DTC]
+        if BLPSynapse.CONDUCTANCE_RATIO in self.syn_description:
+            self.hsynapse.NMDA_ratio = self.syn_description[BLPSynapse.CONDUCTANCE_RATIO]
 
-        self.hsynapse.Use = abs(self.syn_U)
-        self.hsynapse.Dep = abs(self.syn_D)
-        self.hsynapse.Fac = abs(self.syn_F)
+        self.hsynapse.Use = abs(self.syn_description[BLPSynapse.U_SYN])
+        self.hsynapse.Dep = abs(self.syn_description[BLPSynapse.D_SYN])
+        self.hsynapse.Fac = abs(self.syn_description[BLPSynapse.F_SYN])
 
-        if self.Nrrp is not None:
-            self.hsynapse.Nrrp = self.Nrrp
+        if BLPSynapse.NRRP in self.syn_description:
+            self.hsynapse.Nrrp = self.syn_description[BLPSynapse.NRRP]
 
         self._set_gabaab_ampanmda_rng()
         self.hsynapse.synapseID = self.sid
 
-    def use_glusynapse_helper(self, syn_description, post_sec_id):
+    def use_glusynapse_helper(self):
         """Python implementation of the GluSynapse helper.
 
         This helper object will encapsulate the hoc actions
          needed to create our plastic excitatory synapse.
-
-        Args:
-            post_sec_id (int): post section id of the synapse.
         """
         self.mech_name = 'GluSynapse'
 
-        self.hsynapse = bglibpy.neuron.h.\
-            GluSynapse(
-                self.post_segx, sec=self.cell.get_hsection(post_sec_id))
+        self.hsynapse = bglibpy.neuron.h.GluSynapse(
+            self.post_segx,
+            sec=self.cell.get_hsection(
+                self.syn_description[BLPSynapse.POST_SECTION_ID]
+            ),
+        )
 
-        self.hsynapse.Use_d = syn_description["Use_d_TM"] * self.u_scale_factor
-        self.hsynapse.Use_p = syn_description["Use_p_TM"] * self.u_scale_factor
+        self.hsynapse.Use_d = self.syn_description["Use_d_TM"] * \
+            self.syn_description["u_scale_factor"]
+        self.hsynapse.Use_p = self.syn_description["Use_p_TM"] * \
+            self.syn_description["u_scale_factor"]
 
-        self.hsynapse.theta_d_GB = syn_description["theta_d"]
-        self.hsynapse.theta_p_GB = syn_description["theta_p"]
-        self.hsynapse.rho0_GB = syn_description["rho0_GB"]
+        self.hsynapse.theta_d_GB = self.syn_description["theta_d"]
+        self.hsynapse.theta_p_GB = self.syn_description["theta_p"]
+        self.hsynapse.rho0_GB = self.syn_description["rho0_GB"]
 
-        self.hsynapse.volume_CR = syn_description["volume_CR"]
+        self.hsynapse.volume_CR = self.syn_description["volume_CR"]
 
-        self.hsynapse.gmax_d_AMPA = syn_description["gmax_d_AMPA"]
-        self.hsynapse.gmax_p_AMPA = syn_description["gmax_p_AMPA"]
+        self.hsynapse.gmax_d_AMPA = self.syn_description["gmax_d_AMPA"]
+        self.hsynapse.gmax_p_AMPA = self.syn_description["gmax_p_AMPA"]
 
         if self.hsynapse.rho0_GB > bglibpy.neuron.h.rho_star_GB_GluSynapse:
             self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_p_AMPA
@@ -272,13 +262,14 @@ class Synapse:
             self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_d_AMPA
             self.hsynapse.Use = self.hsynapse.Use_d
 
-        self.hsynapse.gmax_NMDA = self.hsynapse.gmax0_AMPA * self.conductance_ratio
-        self.hsynapse.tau_d_AMPA = self.syn_DTC
-        self.hsynapse.Dep = abs(self.syn_D)
-        self.hsynapse.Fac = abs(self.syn_F)
+        self.hsynapse.gmax_NMDA = self.hsynapse.gmax0_AMPA * \
+            self.syn_description[BLPSynapse.CONDUCTANCE_RATIO]
+        self.hsynapse.tau_d_AMPA = self.syn_description[BLPSynapse.DTC]
+        self.hsynapse.Dep = abs(self.syn_description[BLPSynapse.D_SYN])
+        self.hsynapse.Fac = abs(self.syn_description[BLPSynapse.F_SYN])
 
-        if self.Nrrp >= 0:
-            self.hsynapse.Nrrp = self.Nrrp
+        if self.syn_description[BLPSynapse.NRRP] >= 0:
+            self.hsynapse.Nrrp = self.syn_description[BLPSynapse.NRRP]
 
         self.randseed1 = self.cell.gid
         self.randseed2 = 100000 + self.sid
@@ -333,7 +324,7 @@ class Synapse:
                        Only True if synapse is inhibitory
         """
 
-        return self.syn_type < 100
+        return self.syn_description[BLPSynapse.TYPE] < 100
 
     def is_excitatory(self):
         """
@@ -345,7 +336,7 @@ class Synapse:
                        Only True if synapse is excitatory
         """
 
-        return self.syn_type >= 100
+        return self.syn_description[BLPSynapse.TYPE] >= 100
 
     def delete(self):
         """
@@ -386,15 +377,13 @@ class Synapse:
         synapse_dict['synapse_id'] = self.syn_id
         synapse_dict['pre_cell_id'] = self.pre_gid
         synapse_dict['post_cell_id'] = self.post_gid
-        synapse_dict['post_sec_id'] = self.isec
-
-        # Remove cellname using split
-        synapse_dict['post_sec_name'] = bglibpy.neuron.h.secname(
-            sec=self.cell.get_hsection(self.isec)).split('.')[1]
+        synapse_dict['syn_description'] = self.syn_description.to_dict()
+        # if keys are enum make them str
+        synapse_dict['syn_description'] = {
+            str(k): v for k, v in synapse_dict['syn_description'].items()}
 
         synapse_dict['post_segx'] = self.post_segx
         synapse_dict['mech_name'] = self.mech_name
-        synapse_dict['syn_type'] = self.syn_type
         synapse_dict['randseed1'] = self.randseed1
         synapse_dict['randseed2'] = self.randseed2
         synapse_dict['randseed3'] = self.randseed3
@@ -417,12 +406,6 @@ class Synapse:
             raise Exception('Encountered unknow mech_name %s in synapse' %
                             synapse_dict['mech_name'])
 
-        synapse_dict['synapse_parameters']['conductance_ratio'] = \
-            self.conductance_ratio
-        synapse_dict['synapse_parameters']['u_hill_coefficient'] = \
-            self.u_hill_coefficient
-        synapse_dict['synapse_parameters']['u_scale_factor'] = \
-            self.u_scale_factor
         synapse_dict['synapse_parameters']['extracellular_calcium'] = \
             self.extracellular_calcium
 
