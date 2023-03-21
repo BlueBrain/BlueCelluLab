@@ -1,6 +1,39 @@
 Changelog
 =========
 
+4.10 (2023-03-23)
+-----------------
+
+This release adds new functionality and introduces simplifications over the API and codebase.
+
+List of changes
+~~~~~~~~~~~~~~~~
+
+* 988cb64 Remove duplicated fields in Synapse class [Anil Tuncel]
+* d0ccd93 Resolve the conflict between x86_64 and BGLIBPY_MOD_LIBRARY_PATH [Pranav Rai]
+* f3f5ad9 remove 3 unused hoc dependencies [Anil Tuncel]
+* 3d51aa5 make add_synapses/add_minis bool instead of Optional[bool] [Anil Tuncel]
+* 056a681 simplify instantiate_gids [Anil Tuncel]
+* aafe0b1 add NEURON nogui flag [Anil Tuncel]
+* 13315e3 add unit test for NumpyEncoder [Anil Tuncel]
+* e12cd39 remove TestSSimBaseClass_v6_full_run test [Anil Tuncel]
+* ba7aa46 bugfix: possibly unassigned variable in template::get_cell [Anil Tuncel]
+* 8f2f7bb remove random123 simulation test, now all sims are random123 [Anil Tuncel]
+* 3e79d7b remove deprecated SynapseID field of BlueConfig [Anil Tuncel]
+* 43f0fb1 Add functionality to start recording spikes and retrieving them [Anil Tuncel]
+* 85121ec remove duplication in Cell add/retrieve recording/s [Anil Tuncel]
+* 5705115 Removed hip20180219_1 from test_gpfs. The circuit no longer exists [Anil Tuncel]
+* 6e9dad8 implement conductance clamp for shotnoise and OU stimuli [Anil Tuncel]
+* c6ac57b replace deprecated usage of np.float -> float [Anil Tuncel]
+* 6837d64 simplify handling of morphologies from blueconfig to hoc [Anil Tuncel]
+* 4d99a15 address type ambiguity in pandas method usage [Anil Tuncel]
+* d5f2cf7 switch to tox>4.0.0 INFRA-8113 [Anil Tuncel]
+* 1c80557 Resolve NSETM-2070 "Update simulation config" [Eduard Subert]
+* 644e5f5 add v6 mark to test sonata proxy [Anil Tuncel]
+* 0ecea78 fix return type annotation of get_cell_properties [Anil Tuncel]
+* 6a77ac0 update changelog to be sphinx compatible rst [Anil Tuncel]
+
+
 4.9 (2022-11-02)
 ----------------
 
