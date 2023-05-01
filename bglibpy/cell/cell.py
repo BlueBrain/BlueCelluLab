@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from bglibpy.cell.serialized_sections import SerializedSections
 # -*- coding: utf-8 -*- #pylint: disable=C0302
 
 """
@@ -254,7 +256,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         # section are not serialized yet, do it now
         if self.serialized is None:
-            self.serialized = neuron.h.SerializedSections(self.cell.getCell())
+            self.serialized = SerializedSections(self.cell.getCell())
 
         try:
             sec_ref = self.serialized.isec2sec[int(section_id)]
