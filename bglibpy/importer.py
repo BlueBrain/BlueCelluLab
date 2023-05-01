@@ -83,8 +83,6 @@ def import_mod_lib(neuron):
 
 def import_neurodamus(neuron):
     """Import neurodamus"""
-    neuron.h('objref simConfig')
-
     neuron.h.load_file("stdrun.hoc")
     neuron.h.load_file("Cell.hoc")
     neuron.h.load_file("TDistFunc.hoc")
@@ -92,8 +90,6 @@ def import_neurodamus(neuron):
     neuron.h.load_file("RNGSettings.hoc")
 
     neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
-    neuron.h('objref p')
-    neuron.h('p = new PythonObject()')
 
 
 def print_header(neuron, hoc_lib_path, mod_lib_path):
