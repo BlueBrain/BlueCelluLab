@@ -1,0 +1,46 @@
+{
+  "components": {
+    "morphologies_dir": "./components/morphologies/swc",
+    "biophysical_neuron_models_dir": "./components/hoc"
+  },
+  "node_sets_file": "$BASE_DIR/node_sets.json",
+  "networks": {
+    "nodes": [
+      {
+        "nodes_file": "$BASE_DIR/hippocampus_projections/nodes.h5",
+        "node_types_file": null,
+        "populations": {
+          "hippocampus_projections": {
+            "type": "virtual"
+          }
+        }
+      },
+      {
+        "nodes_file": "$BASE_DIR/nodes/nodes.h5",
+        "node_types_file": null,
+        "populations": {
+          "hippocampus_neurons": {
+            "type": "biophysical"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "edges_file": "$BASE_DIR/edges/edges.h5",
+        "edge_types_file": null,
+        "populations": {
+          "hippocampus_neurons__hippocampus_neurons__chemical": {
+            "type": "chemical"
+          },
+          "hippocampus_projections__hippocampus_neurons__chemical": {
+            "type": "chemical"
+          }
+        }
+      }
+    ]
+  },
+  "manifest": {
+    "$BASE_DIR": "./"
+  }
+}

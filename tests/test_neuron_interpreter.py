@@ -3,6 +3,7 @@
 import os
 
 from pytest import raises
+import pytest
 
 import bglibpy
 from bglibpy.exceptions import NeuronEvalError
@@ -22,6 +23,7 @@ def test_eval_neuron():
         eval_neuron("a=1")
 
 
+@pytest.mark.v5
 def test_eval_neuron_with_cell():
     """Test the eval neuron function using a cell."""
     cell = bglibpy.Cell(

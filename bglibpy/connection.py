@@ -6,10 +6,8 @@ Class that represents a connection between two cells in BGLibPy
 @remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
          Do not distribute without further notice.
 """
-
-from bluepy.enums import Synapse as BLPSynapse
-
 import bglibpy
+from bglibpy.circuit import SynapseProperty
 
 
 class Connection:
@@ -26,16 +24,15 @@ class Connection:
             spike_threshold=-30,
             spike_location="soma"):
         self.persistent = []
-        self.delay = post_synapse.syn_description[BLPSynapse.AXONAL_DELAY]
-        self.weight = post_synapse.syn_description[BLPSynapse.G_SYNX]
-        self.connection_parameters = post_synapse.connection_parameters
+        self.delay = post_synapse.syn_description[SynapseProperty.AXONAL_DELAY]
+        self.weight = post_synapse.syn_description[SynapseProperty.G_SYNX]
         self.pre_cell = pre_cell
         self.pre_spiketrain = pre_spiketrain
         self.post_synapse = post_synapse
         self.pc = parallel_context
 
-        if 'Weight' in self.connection_parameters:
-            self.weight_scalar = self.connection_parameters['Weight']
+        if post_synapse.weight is not None:
+            self.weight_scalar = post_synapse.weight
         else:
             self.weight_scalar = 1.0
 

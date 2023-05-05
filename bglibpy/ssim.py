@@ -11,22 +11,27 @@
 # pylint: disable=C0103, R0914, R0912, F0401, R0101
 
 from __future__ import annotations
+from collections.abc import Iterable
 from collections import defaultdict
-import os
-from typing import Any
+from pathlib import Path
+from typing import Any, Optional
 
 import numpy as np
-from bluepy.enums import Synapse as BLPSynapse
-from bluepy_configfile.configfile import BlueConfig
 import pandas as pd
 import bglibpy
 from bglibpy import lazy_printv
+from bglibpy.cell import CellDict
 from bglibpy.cell.sonata_proxy import SonataProxy
-from bglibpy.circuit import CircuitAccess, parse_outdat, SimulationValidator
+from bglibpy.circuit import CellId, SimulationValidator, SynapseProperty
+from bglibpy.circuit.circuit_access import CircuitAccess, BluepyCircuitAccess, SonataCircuitAccess
 from bglibpy.circuit.config import SimulationConfig
+from bglibpy.circuit.format import determine_circuit_format, CircuitFormat
+from bglibpy.circuit.node_id import create_cell_id, create_cell_ids
+from bglibpy.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess
+from bglibpy.stimuli import Pattern
+import bglibpy.stimuli as stimuli
 from bglibpy.exceptions import BGLibPyError
 from bglibpy.simulation import (
-    set_minis_single_vesicle_values,
     set_global_condition_parameters,
     set_tstop_value
 )
@@ -35,9 +40,8 @@ from bglibpy.simulation import (
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
-    def __init__(self, simulation_config: str | BlueConfig | SimulationConfig, dt=0.025, record_dt=None,
-                 base_seed=None, base_noise_seed=None, rng_mode=None,
-                 ignore_populationid_error=False, print_cellstate=False):
+    def __init__(self, simulation_config: str | Path | SimulationConfig, dt=0.025, record_dt=None,
+                 base_seed=None, base_noise_seed=None, rng_mode=None, print_cellstate=False):
         """
 
         Parameters
@@ -62,16 +66,20 @@ class SSim:
                     String with rng mode, if not specified mode is taken from
                     BlueConfig. Possible values are Compatibility, Random123
                     and UpdatedMCell.
-        ignore_populationid_error: bool
-                    Flag to ignore the missing population ids of projections.
         print_cellstate: bool
                     Flag to use NEURON prcellstate for simulation GIDs
         """
         self.dt = dt
         self.record_dt = record_dt
 
-        self.circuit_access = CircuitAccess(simulation_config)
-        SimulationValidator(self.circuit_access).validate()
+        self.circuit_format = determine_circuit_format(simulation_config)
+        if self.circuit_format == CircuitFormat.SONATA:
+            self.circuit_access: CircuitAccess = SonataCircuitAccess(simulation_config)
+            self.simulation_access: SimulationAccess = SonataSimulationAccess(simulation_config)
+        else:
+            self.circuit_access = BluepyCircuitAccess(simulation_config)
+            self.simulation_access = BluepySimulationAccess(simulation_config)
+            SimulationValidator(self.circuit_access).validate()
 
         self.pc = bglibpy.neuron.h.ParallelContext() if print_cellstate else None
 
@@ -81,10 +89,7 @@ class SSim:
             base_seed=base_seed,
             base_noise_seed=base_noise_seed)
 
-        self.ignore_populationid_error = ignore_populationid_error
-
-        self.gids: list[int] = []
-        self.cells: dict[int, bglibpy.Cell] = {}
+        self.cells: CellDict = CellDict()
 
         self.gids_instantiated = False
         self.connections: defaultdict = defaultdict(
@@ -99,37 +104,34 @@ class SSim:
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
 
-        if self.circuit_access.config.deprecated_minis_single_vesicle is not None:
-            minis_single_vesicle = self.circuit_access.config.deprecated_minis_single_vesicle
-            set_minis_single_vesicle_values(minis_single_vesicle)
-
-        condition_parameters = self.circuit_access.config.condition_parameters_dict()
+        condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
 
     # pylint: disable=R0913
-    def instantiate_gids(self, gids,
-                         add_replay=False,
-                         add_stimuli=False,
-                         add_synapses=False,
-                         add_minis=False,
-                         add_noise_stimuli=False,
-                         add_hyperpolarizing_stimuli=False,
-                         add_relativelinear_stimuli=False,
-                         add_pulse_stimuli=False,
-                         add_projections: bool | list[str] = False,
-                         intersect_pre_gids=None,
-                         interconnect_cells=True,
-                         pre_spike_trains=None,
-                         add_shotnoise_stimuli=False,
-                         add_ornstein_uhlenbeck_stimuli=False,
-                         ):
-        """ Instantiate a list of GIDs
+    def instantiate_gids(
+        self,
+        cells: int | tuple[str, int] | list[int] | list[tuple[str, int]],
+        add_replay=False,
+        add_stimuli=False,
+        add_synapses=False,
+        add_minis=False,
+        add_noise_stimuli=False,
+        add_hyperpolarizing_stimuli=False,
+        add_relativelinear_stimuli=False,
+        add_pulse_stimuli=False,
+        add_projections: bool | list[str] = False,
+        intersect_pre_gids=None,
+        interconnect_cells=True,
+        pre_spike_trains: None | dict[tuple[str, int], Iterable] | dict[int, Iterable] = None,
+        add_shotnoise_stimuli=False,
+        add_ornstein_uhlenbeck_stimuli=False,
+    ):
+        """ Instantiate a list of cells
 
         Parameters
         ----------
-        gids : list of integers (GIDs)
-               Must be a list,
-               even in case of instantiation of a single GID.
+        cells :
+               List of cell ids. When a single element, it will be converted to a list
         add_replay : Boolean
                      Add presynaptic spiketrains from the large simulation
                      If pre_spike_trains is combined with this option the
@@ -202,6 +204,24 @@ class SSim:
                             Setting add_stimuli=True,
                             will automatically set this option to True.
         """
+        if not isinstance(cells, Iterable) or isinstance(cells, tuple):
+            cells = [cells]
+
+        # convert to CellId objects
+        cell_ids: list[CellId] = create_cell_ids(cells)
+        if intersect_pre_gids is not None:
+            pre_gids: Optional[list[CellId]] = create_cell_ids(intersect_pre_gids)
+        else:
+            pre_gids = None
+
+        # if pre_spike_trains take int as key then convert to CellId
+        if pre_spike_trains is not None:
+            if isinstance(list(pre_spike_trains.keys())[0], int):
+                pre_spike_trains = {
+                    create_cell_id(gid): pre_spike_trains[gid]  # type: ignore
+                    for gid in pre_spike_trains
+                }
+
         if self.gids_instantiated:
             raise Exception("SSim: instantiate_gids() called twice on the \
                     same SSim, this is not supported yet")
@@ -221,7 +241,7 @@ class SSim:
         else:
             projections = add_projections
 
-        self._add_cells(gids)
+        self._add_cells(cell_ids)
         if add_stimuli:
             add_noise_stimuli = True
             add_hyperpolarizing_stimuli = True
@@ -246,7 +266,7 @@ class SSim:
             )
         if add_synapses:
             self._add_synapses(
-                intersect_pre_gids=intersect_pre_gids,
+                pre_gids=pre_gids,
                 add_minis=add_minis,
                 projections=projections)
         if add_replay or interconnect_cells or pre_spike_trains:
@@ -255,7 +275,7 @@ class SSim:
                                 "add_synapses is False")
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells,
-                                  user_pre_spike_trains=pre_spike_trains)
+                                  user_pre_spike_trains=pre_spike_trains)  # type: ignore
 
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
@@ -274,124 +294,138 @@ class SSim:
         ornstein_uhlenbeck_stim_count = 0
 
         for stimulus in stimuli_entries:
-            target = stimulus["Target"]
-            gids_of_target = self.circuit_access.get_cell_ids(target)
+            target = stimulus.target
+            gids_of_target = self.circuit_access.get_target_cell_ids(target)
 
-            for gid in self.gids:
-                if gid not in gids_of_target:
+            for cell_id in self.cells:
+                if cell_id not in gids_of_target:
                     continue
-
-                if stimulus["Pattern"] == 'Noise':
+                if isinstance(stimulus, stimuli.Noise):
                     if add_noise_stimuli:
-                        self.cells[gid].add_replay_noise(
+                        self.cells[cell_id].add_replay_noise(
                             stimulus, noisestim_count=noisestim_count)
-                elif stimulus["Pattern"] == 'Hyperpolarizing':
+                elif isinstance(stimulus, stimuli.Hyperpolarizing):
                     if add_hyperpolarizing_stimuli:
-                        self.cells[gid].add_replay_hypamp(stimulus)
-                elif stimulus["Pattern"] == 'Pulse':
+                        self.cells[cell_id].add_replay_hypamp(stimulus)
+                elif isinstance(stimulus, stimuli.Pulse):
                     if add_pulse_stimuli:
-                        self.cells[gid].add_pulse(stimulus)
-                elif stimulus["Pattern"] == 'RelativeLinear':
+                        self.cells[cell_id].add_pulse(stimulus)
+                elif isinstance(stimulus, stimuli.RelativeLinear):
                     if add_relativelinear_stimuli:
-                        self.cells[gid].add_replay_relativelinear(stimulus)
-                elif stimulus["Pattern"] == 'SynapseReplay':
-                    lazy_printv("Found stimulus with pattern %s, ignoring" %
-                                stimulus['Pattern'], 1)
-                elif stimulus["Pattern"] == 'ShotNoise':
+                        self.cells[cell_id].add_replay_relativelinear(stimulus)
+                elif isinstance(stimulus, stimuli.ShotNoise):
                     if add_shotnoise_stimuli:
-                        self.cells[gid].add_replay_shotnoise(
-                            self.cells[gid].soma, 0.5, stimulus,
+                        self.cells[cell_id].add_replay_shotnoise(
+                            self.cells[cell_id].soma, 0.5, stimulus,
                             shotnoise_stim_count=shotnoise_stim_count)
-                elif stimulus["Pattern"] == 'RelativeShotNoise':
+                elif isinstance(stimulus, stimuli.RelativeShotNoise):
                     if add_shotnoise_stimuli:
-                        self.cells[gid].add_replay_relative_shotnoise(
-                            self.cells[gid].soma, 0.5, stimulus,
+                        self.cells[cell_id].add_replay_relative_shotnoise(
+                            self.cells[cell_id].soma, 0.5, stimulus,
                             shotnoise_stim_count=shotnoise_stim_count)
-                elif stimulus["Pattern"] == 'OrnsteinUhlenbeck':
+                elif isinstance(stimulus, stimuli.OrnsteinUhlenbeck):
                     if add_ornstein_uhlenbeck_stimuli:
-                        self.cells[gid].add_ornstein_uhlenbeck(
-                            self.cells[gid].soma, 0.5, stimulus,
+                        self.cells[cell_id].add_ornstein_uhlenbeck(
+                            self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
-                elif stimulus["Pattern"] == 'RelativeOrnsteinUhlenbeck':
+                elif isinstance(stimulus, stimuli.RelativeOrnsteinUhlenbeck):
                     if add_ornstein_uhlenbeck_stimuli:
-                        self.cells[gid].add_relative_ornstein_uhlenbeck(
-                            self.cells[gid].soma, 0.5, stimulus,
+                        self.cells[cell_id].add_relative_ornstein_uhlenbeck(
+                            self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
-
                 else:
-                    raise Exception("Found stimulus with pattern %s, "
-                                    "not supported" %
-                                    stimulus["Pattern"])
-                lazy_printv("Added stimuli for gid {gid}", 2, gid=gid)
-            if stimulus["Pattern"] == 'Noise':
+                    raise ValueError("Found stimulus with pattern %s, "
+                                     "not supported" % stimulus.pattern)
+                lazy_printv(f"Added {stimulus} to cell_id {cell_id}", 50)
+
+            if stimulus.pattern == Pattern.NOISE:
                 noisestim_count += 1
-            elif stimulus["Pattern"] in ['ShotNoise', 'RelativeShotNoise']:
+            elif stimulus.pattern in [Pattern.SHOT_NOISE, Pattern.RELATIVE_SHOT_NOISE]:
                 shotnoise_stim_count += 1
-            elif stimulus["Pattern"] in ['OrnsteinUhlenbeck', 'RelativeOrnsteinUhlenbeck']:
+            elif stimulus.pattern in [
+                Pattern.ORNSTEIN_UHLENBECK,
+                Pattern.RELATIVE_ORNSTEIN_UHLENBECK,
+            ]:
                 ornstein_uhlenbeck_stim_count += 1
 
     def _add_synapses(
-            self, intersect_pre_gids=None, add_minis=False, projections=None):
+            self, pre_gids=None, add_minis=False, projections=None):
         """Instantiate all the synapses."""
-        for gid in self.gids:
-            self._add_gid_synapses(
-                gid, pre_gids=intersect_pre_gids,
+        for cell_id in self.cells:
+            self._add_cell_synapses(
+                cell_id, pre_gids=pre_gids,
                 add_minis=add_minis,
                 projections=projections)
 
-    def _add_gid_synapses(
-        self, gid: int, pre_gids=None, add_minis=False, projections=None
+    def _add_cell_synapses(
+        self, cell_id: CellId, pre_gids=None, add_minis=False, projections=None
     ) -> None:
         syn_descriptions = self.get_syn_descriptions(
-            gid, projections=projections)
+            cell_id, projections=projections)
 
         if pre_gids is not None:
-            syn_descriptions = self._intersect_pre_gids(
-                syn_descriptions, pre_gids)
+            if self.circuit_format == CircuitFormat.SONATA:
+                syn_descriptions = self._intersect_pre_gids_cell_ids_multipopulation(
+                    syn_descriptions, pre_gids)
+            else:
+                syn_descriptions = self._intersect_pre_gids(
+                    syn_descriptions, pre_gids)
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
         if syn_descriptions.empty:
             lazy_printv(
                 "Warning: No presynaptic cells found for gid {gid}, "
-                "no synapses added", 2, gid=gid)
+                "no synapses added", 2, gid=cell_id)
         else:
             for idx, syn_description in syn_descriptions.iterrows():
                 popids = syn_description["source_popid"], syn_description["target_popid"]
-                self._instantiate_synapse(gid, idx, syn_description,
+                self._instantiate_synapse(cell_id, idx, syn_description,
                                           add_minis=add_minis, popids=popids)
             lazy_printv("Added {s_desc_len} synapses for gid {gid}",
-                        2, s_desc_len=len(syn_descriptions), gid=gid)
+                        2, s_desc_len=len(syn_descriptions), gid=cell_id)
             if add_minis:
-                lazy_printv("Added minis for gid %d" % gid, 2)
+                lazy_printv(f"Added minis for {cell_id=}", 2)
 
     @staticmethod
-    def _intersect_pre_gids(syn_descriptions, pre_gids) -> pd.DataFrame:
+    def _intersect_pre_gids(syn_descriptions, pre_gids: list[CellId]) -> pd.DataFrame:
         """Return the synapse descriptions with pre_gids intersected."""
-        return syn_descriptions[syn_descriptions[BLPSynapse.PRE_GID].isin(pre_gids)]
+        _pre_gids = {x.id for x in pre_gids}
+        return syn_descriptions[syn_descriptions[SynapseProperty.PRE_GID].isin(_pre_gids)]
+
+    @staticmethod
+    def _intersect_pre_gids_cell_ids_multipopulation(syn_descriptions, pre_cell_ids: list[CellId]) -> pd.DataFrame:
+        """Return the synapse descriptions with pre_cell_ids intersecte. Supports multipopulations."""
+        filtered_rows = syn_descriptions.apply(
+            lambda row: any(
+                cell.population_name == row["source_population_name"] and row[SynapseProperty.PRE_GID] == cell.id
+                for cell in pre_cell_ids
+            ),
+            axis=1,
+        )
+        return syn_descriptions[filtered_rows]
 
     def get_syn_descriptions(
-        self, gid, projections=None
+        self, cell_id: int | tuple[str, int], projections=None
     ) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
+        cell_id = create_cell_id(cell_id)
         syn_description_builder = bglibpy.synapse.SynDescription()
         if self.circuit_access.config.is_glusynapse_used:
             return syn_description_builder.glusynapse_syn_description(
                 self.circuit_access,
-                self.ignore_populationid_error,
-                gid,
+                cell_id,
                 projections,
             )
         else:
             return syn_description_builder.gabaab_ampanmda_syn_description(
                 self.circuit_access,
-                self.ignore_populationid_error,
-                gid,
+                cell_id,
                 projections,
             )
 
     @staticmethod
-    def merge_pre_spike_trains(*train_dicts) -> dict:
+    def merge_pre_spike_trains(*train_dicts) -> dict[CellId, np.ndarray]:
         """Merge presynaptic spike train dicts"""
         filtered_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
 
@@ -406,34 +440,31 @@ class SSim:
             self,
             add_replay=None,
             interconnect_cells=None,
-            outdat_path=None,
             source=None,
             dest=None,
-            user_pre_spike_trains=None):
+            user_pre_spike_trains: None | dict[CellId, Iterable] = None):
         """Instantiate the (replay and real) connections in the network"""
         if add_replay:
-            if outdat_path is None:
-                outdat_path = os.path.join(
-                    self.circuit_access.config.output_root_path,
-                    'out.dat')
-            pre_spike_trains = parse_outdat(outdat_path)
+            pre_spike_trains = self.simulation_access.get_spikes()
         else:
             pre_spike_trains = {}
 
         pre_spike_trains = self.merge_pre_spike_trains(
             pre_spike_trains,
             user_pre_spike_trains)
-        for post_gid in self.gids:
+
+        for post_gid in self.cells:
             if dest and post_gid not in dest:
                 continue
             for syn_id in self.cells[post_gid].synapses:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
-                connection_parameters = synapse.connection_parameters
-                pre_gid = syn_description[BLPSynapse.PRE_GID]
+                delay_weights = synapse.delay_weights
+                pre_gid = CellId(post_gid.population_name, int(syn_description[SynapseProperty.PRE_GID]))
+
                 if source and pre_gid not in source:
                     continue
-                real_synapse_connection = pre_gid in self.gids \
+                real_synapse_connection = pre_gid in self.cells \
                     and interconnect_cells
 
                 connection = None
@@ -454,12 +485,10 @@ class SSim:
                         parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    lazy_printv("Added real connection between pre_gid %d and \
-                            post_gid %d, syn_id %s" % (pre_gid,
-                                                       post_gid,
-                                                       str(syn_id)), 5)
+                    lazy_printv(f"Added real connection between {pre_gid} and \
+                            {post_gid}, {syn_id}", 5)
                 else:
-                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)
+                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)  # type: ignore
                     connection = bglibpy.Connection(
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=pre_spiketrain,
@@ -468,122 +497,90 @@ class SSim:
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
                     lazy_printv(
-                        "Added replay connection from pre_gid %d to "
-                        "post_gid %d, syn_id %s" %
-                        (pre_gid, post_gid, syn_id), 5)
+                        f"Added replay connection from {pre_gid} to "
+                        f"{post_gid}, {syn_id}", 5)
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
-                    if "DelayWeights" in connection_parameters:
-                        for delay, weight_scale in \
-                                connection_parameters['DelayWeights']:
-                            self.cells[post_gid].add_replay_delayed_weight(
-                                syn_id, delay,
-                                weight_scale * connection.weight)
+                    for delay, weight_scale in delay_weights:
+                        self.cells[post_gid].add_replay_delayed_weight(
+                            syn_id, delay,
+                            weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
-                lazy_printv("Added synaptic connections for target post_gid %d" %
-                            post_gid, 2)
+                lazy_printv(f"Added synaptic connections for target {post_gid}", 2)
 
-    def _add_cells(self, gids: list[int]) -> None:
+    def _add_cells(self, cell_ids: list[CellId]) -> None:
         """Instantiate cells from a gid list."""
-        self.gids = gids
-        self.cells = {}
+        self.cells = CellDict()
 
-        for gid in self.gids:
-            lazy_printv(
-                'Adding gid {gid} from emodel {emodel} and morph {morph}',
-                1, gid=gid, emodel=self.circuit_access.fetch_emodel_name(gid),
-                morph=self.circuit_access.fetch_morph_name(gid))
-
-            self.cells[gid] = cell = bglibpy.Cell(**self.fetch_cell_kwargs(gid))
+        for cell_id in cell_ids:
+            self.cells[cell_id] = cell = self.create_cell_from_circuit(cell_id)
             if self.circuit_access.node_properties_available:
-                cell.connect_to_circuit(SonataProxy(gid, self.circuit_access))
+                cell.connect_to_circuit(SonataProxy(cell_id, self.circuit_access))
             if self.pc is not None:
-                self.pc.set_gid2node(gid, self.pc.id())  # register GID for this node
-                nc = self.cells[gid].create_netcon_spikedetector(
+                self.pc.set_gid2node(cell_id.id, self.pc.id())  # register GID for this node
+                nc = self.cells[cell_id].create_netcon_spikedetector(
                     None, location=self.spike_location, threshold=self.spike_threshold)
-                self.pc.cell(gid, nc)  # register cell spike detector
+                self.pc.cell(cell_id.id, nc)  # register cell spike detector
 
-    def _instantiate_synapse(self, gid: int, syn_id, syn_description,
+    def _instantiate_synapse(self, cell_id: CellId, syn_id, syn_description,
                              add_minis=False, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
+        pre_cell_id = CellId(cell_id.population_name, int(syn_description[SynapseProperty.PRE_GID]))
+        syn_connection_parameters = self._evaluate_connection_parameters(
+            pre_cell_id=pre_cell_id,
+            post_cell_id=cell_id)
+        if syn_connection_parameters["add_synapse"]:
+            condition_parameters = self.circuit_access.config.condition_parameters()
 
-        syn_type = syn_description[BLPSynapse.TYPE]
-
-        connection_parameters = self._evaluate_connection_parameters(
-            syn_description[BLPSynapse.PRE_GID],
-            gid,
-            syn_type)
-
-        if connection_parameters["add_synapse"]:
-            condition_parameters = self.circuit_access.config.condition_parameters_dict()
-
-            self.cells[gid].add_replay_synapse(
-                syn_id, syn_description, connection_parameters, condition_parameters,
+            self.cells[cell_id].add_replay_synapse(
+                syn_id, syn_description, syn_connection_parameters, condition_parameters,
                 popids=popids, extracellular_calcium=self.circuit_access.config.extracellular_calcium)
             if add_minis:
-                mini_frequencies = self.circuit_access.fetch_mini_frequencies(gid)
+                mini_frequencies = self.circuit_access.fetch_mini_frequencies(cell_id)
                 lazy_printv('Adding minis for synapse {sid}: syn_description={s_desc}, '
                             'connection={conn_params}, frequency={freq}',
                             50, sid=syn_id, s_desc=syn_description,
-                            conn_params=connection_parameters, freq=mini_frequencies)
+                            conn_params=syn_connection_parameters, freq=mini_frequencies)
 
-                self.cells[gid].add_replay_minis(
+                self.cells[cell_id].add_replay_minis(
                     syn_id,
                     syn_description,
-                    connection_parameters,
+                    syn_connection_parameters,
                     popids=popids,
                     mini_frequencies=mini_frequencies)
 
-    def _evaluate_connection_parameters(self, pre_gid, post_gid, syn_type) -> dict:
+    def _evaluate_connection_parameters(self, pre_cell_id: CellId, post_cell_id: CellId) -> dict:
         """ Apply connection blocks in order for pre_gid, post_gid to determine
             a final connection override for this pair (pre_gid, post_gid)."""
         parameters: defaultdict[str, Any] = defaultdict(list)
         parameters['add_synapse'] = True
 
-        for entry in self.circuit_access.config.connection_entries:
-            src, dest = entry['Source'], entry['Destination']
-
-            src_matches = self.circuit_access.is_cell_target(src, pre_gid) or \
-                (self.circuit_access.target_has_gid(src, pre_gid))
-            dest_matches = self.circuit_access.is_cell_target(dest, post_gid) or \
-                (self.circuit_access.target_has_gid(dest, post_gid))
+        for entry in self.circuit_access.config.connection_entries():
+            src_matches = self.circuit_access.target_contains_cell(entry.source, pre_cell_id)
+            dest_matches = self.circuit_access.target_contains_cell(entry.target, post_cell_id)
 
             if src_matches and dest_matches:
                 # whatever specified in this block, is applied to gid
                 apply_parameters = True
 
-                if 'Delay' in entry:
-                    parameters['DelayWeights'].append((
-                        float(entry['Delay']),
-                        float(entry['Weight'])))
+                if entry.delay is not None:
+                    parameters['DelayWeights'].append((entry.delay, entry.weight))
                     apply_parameters = False
 
                 if apply_parameters:
-                    if 'CreateMode' in entry:
-                        if entry['CreateMode'] == 'NoCreate':
-                            parameters['add_synapse'] = False
-                        else:
-                            raise Exception('Connection %s: Unknown '
-                                            'CreateMode option %s'
-                                            % (entry.name,
-                                               entry['CreateMode']))
-                    if 'Weight' in entry:
-                        parameters['Weight'] = float(entry['Weight'])
-                    if 'SpontMinis' in entry:
-                        parameters['SpontMinis'] = float(
-                            entry['SpontMinis'])
-                    if 'SynapseConfigure' in entry:
-                        conf = entry['SynapseConfigure']
+                    if entry.weight is not None:
+                        parameters['Weight'] = entry.weight
+                    if entry.spont_minis is not None:
+                        parameters['SpontMinis'] = entry.spont_minis
+                    if entry.synapse_configure is not None:
                         # collect list of applicable configure blocks to be
                         # applied with a "hoc exec" statement
-                        parameters['SynapseConfigure'].append(conf)
-                    if 'ModOverride' in entry:
-                        mod_name = entry['ModOverride']
-                        parameters['ModOverride'] = mod_name
-
+                        parameters['SynapseConfigure'].append(entry.synapse_configure)
+                    if entry.mod_override is not None:
+                        parameters['ModOverride'] = entry.mod_override
         return parameters
 
     def initialize_synapses(self):
@@ -636,8 +633,8 @@ class SSim:
             v_init = self.circuit_access.config.v_init
 
         sim = bglibpy.Simulation(self.pc)
-        for gid in self.gids:
-            sim.add_cell(self.cells[gid])
+        for cell_id in self.cells:
+            sim.add_cell(self.cells[cell_id])
 
         if show_progress:
             lazy_printv("Warning: show_progress enabled, this will very likely"
@@ -655,13 +652,13 @@ class SSim:
             show_progress=show_progress)
 
     def get_mainsim_voltage_trace(
-            self, gid=None, t_start=None, t_stop=None, t_step=None
+            self, cell_id: int | tuple[str, int], t_start=None, t_stop=None, t_step=None
     ) -> np.ndarray:
         """Get the voltage trace from a cell from the main simulation.
 
         Parameters
         -----------
-        gid: GID of interest.
+        cell_id: cell id of interest.
         t_start, t_stop: time range of interest,
         report time range is used by default.
         t_step: time step (should be a multiple of report time step T;
@@ -670,29 +667,31 @@ class SSim:
         Returns:
             One dimentional np.ndarray to represent the voltages.
         """
-        return self.circuit_access.get_soma_voltage(gid, t_start, t_stop, t_step)
+        cell_id = create_cell_id(cell_id)
+        return self.simulation_access.get_soma_voltage(cell_id, t_start, t_stop, t_step)
 
     def get_mainsim_time_trace(self) -> np.ndarray:
         """Get the time trace from the main simulation"""
-        return self.circuit_access.get_soma_time_trace()
+        return self.simulation_access.get_soma_time_trace()
 
-    def get_time(self):
+    def get_time(self) -> np.ndarray:
         """Get the time vector for the recordings, contains negative times.
 
         The negative times occur as a result of ForwardSkip.
         """
-        return self.cells[self.gids[0]].get_time()
+        first_key = next(iter(self.cells))
+        return self.cells[first_key].get_time()
 
-    def get_time_trace(self):
-        """Get the time vector for the recordings, negative times removed"""
+    def get_time_trace(self) -> np.ndarray:
+        """Get the time vector for the recordings, negative times removed."""
         time = self.get_time()
         return time[np.where(time >= 0.0)]
 
-    def get_voltage_trace(self, gid):
-        """Get the voltage vector for the gid, negative times removed"""
-
+    def get_voltage_trace(self, cell_id: int | tuple[str, int]) -> np.ndarray:
+        """Get the voltage vector for the cell_id, negative times removed."""
+        cell_id = create_cell_id(cell_id)
         time = self.get_time()
-        voltage = self.cells[gid].get_soma_voltage()
+        voltage = self.cells[cell_id].get_soma_voltage()
         return voltage[np.where(time >= 0.0)]
 
     def delete(self):
@@ -703,58 +702,37 @@ class SSim:
         if hasattr(self, 'cells'):
             for _, cell in self.cells.items():
                 cell.delete()
-            gids = list(self.cells.keys())
-            for gid in gids:
-                del self.cells[gid]
+            cell_ids = list(self.cells.keys())
+            for cell_id in cell_ids:
+                del self.cells[cell_id]
 
     def __del__(self):
-        """Destructor"""
+        """Destructor. Deletes all allocated NEURON objects."""
         self.delete()
 
-    def fetch_cell_kwargs(self, gid):
-        """Get the kwargs to instantiate a gid's Cell object"""
-        if self.circuit_access.use_mecombo_tsv or self.circuit_access.node_properties_available:
-            template_format = 'v6'
+    def fetch_cell_kwargs(self, cell_id: CellId) -> dict:
+        """Get the kwargs to instantiate a Cell object"""
+        emodel_properties = self.circuit_access.get_emodel_properties(cell_id)
+        cell_kwargs = {
+            'template_path': self.circuit_access.emodel_path(cell_id),
+            'morphology_path': self.circuit_access.morph_filepath(cell_id),
+            'gid': cell_id.id,
+            'record_dt': self.record_dt,
+            'rng_settings': self.rng_settings,
 
-            if self.circuit_access.use_mecombo_tsv:
-                emodel_properties = self.circuit_access.get_emodel_info(gid)
-                extra_values = {
-                    'threshold_current': emodel_properties["threshold_current"],
-                    'holding_current': emodel_properties["holding_current"]
-                }
-            elif self.circuit_access.node_properties_available:
-                emodel_properties = self.circuit_access.get_cell_properties(
-                    gid,
-                    properties=["@dynamics:threshold_current", "@dynamics:holding_current", ],
-                )
-                extra_values = {
-                    'threshold_current': emodel_properties["@dynamics:threshold_current"],
-                    'holding_current': emodel_properties["@dynamics:holding_current"]
-                }
-
-                if "@dynamics:AIS_scaler" in self.circuit_access.available_cell_properties:
-                    template_format = 'v6_ais_scaler'
-                    extra_values['AIS_scaler'] = self.circuit_access.get_cell_properties(
-                        gid,
-                        properties=["@dynamics:AIS_scaler", ])["@dynamics:AIS_scaler"]
-
-            cell_kwargs = {
-                'template_filename': self.circuit_access.emodel_path(gid),
-                'morphology_filepath': self.circuit_access.morph_filepath(gid),
-                'gid': gid,
-                'record_dt': self.record_dt,
-                'rng_settings': self.rng_settings,
-
-                'template_format': template_format,
-                'extra_values': extra_values,
-            }
-        else:
-            cell_kwargs = {
-                'template_filename': self.circuit_access.emodel_path(gid),
-                'morphology_filepath': self.circuit_access.morph_filepath(gid),
-                'gid': gid,
-                'record_dt': self.record_dt,
-                'rng_settings': self.rng_settings,
-            }
+            'template_format': self.circuit_access.get_template_format(),
+            'emodel_properties': emodel_properties,
+        }
 
         return cell_kwargs
+
+    def create_cell_from_circuit(self, cell_id: CellId) -> bglibpy.Cell:
+        """Create a Cell object from the circuit"""
+        cell_kwargs = self.fetch_cell_kwargs(cell_id)
+        return bglibpy.Cell(template_path=cell_kwargs['template_path'],
+                            morphology_path=cell_kwargs['morphology_path'],
+                            gid=cell_kwargs['gid'],
+                            record_dt=cell_kwargs['record_dt'],
+                            rng_settings=cell_kwargs['rng_settings'],
+                            template_format=cell_kwargs['template_format'],
+                            emodel_properties=cell_kwargs['emodel_properties'])

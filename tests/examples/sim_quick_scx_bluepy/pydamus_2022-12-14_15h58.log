@@ -1,0 +1,79 @@
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mInitializing Neurodamus... Logfile: pydamus_2022-12-14_15h58.log[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => Neurodamus Mod & Hoc lib loaded.[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mChecking for plugins...[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => Engines Available: ['Base', 'NGV', 'PointNeuron', 'METype'][0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m  : Connections Types: ['NeuroGlial', 'GlioVascular', 'Point', None, 'Synaptic', 'GapJunction', 'NeuroModulation'][0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mSetting up Neurodamus configuration[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mInitializing Simulation Configuration and Validation[0m
+[[33mWARNING[0m] (Dec.14 15:58:08) [33mSetting CurrentDir to '.' is discouraged and shall never be used in production jobs.[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mChecking simulation requirements[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mInitializing hoc config objects[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mUser-defined RNG base seed 1.0[0m
+[[33mWARNING[0m] (Dec.14 15:58:08) [33mCircuit None start.target not available! Skipping[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => Loaded 2 targets[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mChecking Connection Configurations[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => CHECK No Global vars![0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => CHECK No Block Overrides![0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => CHECK No single Weight=0 blocks![0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1m================ CALCULATING LOAD BALANCE ================[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mComputing Load Balance[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1m==================== BUILDING CIRCUIT ====================[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mLOADING NODES[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mLoad-balance object not present. Continuing Round-Robin...[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m -> Discovered node population name: NodeA[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mReading Nodes (METype) info from '/gpfs/bbp.cscs.ch/project/proj37/home/tuncel/bglibpy/tests/examples/sim_quick_scx_bluepy/../circuit_sonata_quick_scx/nodes_A.h5'[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m -> Distributing 'Mosaic_A' target cells Round-Robin[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m => Loaded info about 3 target cells (out of 3)[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mFINALIZING CIRCUIT CELLS[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:08) [39;1mCircuit (default)[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39mFinalizing cells... Gid offset: 0[0m
+[[34mINFO[0m] (Dec.14 15:58:08) [39m > Instantiating cells... (3 in Rank 0)[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m > Updating targets[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m > Initializing cell network[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mLOADING CIRCUIT CONNECTIVITY[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mCircuit (default)[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mInit SynapseRuleManager. Options: {'load_offsets': False}[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mOpening Synapse file /gpfs/bbp.cscs.ch/project/proj37/home/tuncel/bglibpy/tests/examples/sim_quick_scx_bluepy/../circuit_sonata_quick_scx/local_edges_A.h5, population: None[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mLoading connections to population: <ConnectionSet: Default>[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mNo matching Connection blocks. Loading all synapses...[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m * [ALL]. Created 2 connections[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mHandling projections...[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mConfiguring connections...[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mDone, but waiting for all ranks[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1m================ INSTANTIATING SIMULATION ================[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mHandling Replay[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mCreating connections in the simulator[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mInstantiating synapses... Params: {'replay_mode': <ReplayMode.AS_REQUIRED: 1>}[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m * Connections among NodeA -> NodeA, attach src: True[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m => Created 2 synapses[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mStimulus Apply.[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mNo electrodes path. Extracellular class of stimuli will be unavailable[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mInstantiating Stimulus Injects:[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m * [STIM] hypamp_mosaic: hypamp (Hyperpolarizing) -> Mosaic_A[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mEnabling modifications...[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1mReports Enabling[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m * soma_SONATA (Type: compartment, Target: Mosaic_A)[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mPreparing to run simulation...[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mExecuting actions after stdinit...[0m
+[[39;1mSTEP[0m] (Dec.14 15:58:11) [39;1m======================= SIMULATION =======================[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mRunning simulation until t=50 ms[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mSimulation finished.[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mWriting spikes to out.dat[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mCreating .SUCCESS file: 'BlueConfig.SUCCESS'[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mClearing model[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mmalloc_trim: memory released back to the system.[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39mFinished[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m+================================================ TIMEIT STATS =================================================+[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m|                       Event Label                        | Avg.Time | Min.Time | Max.Time | Hits R0 / Total   |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m+---------------------------------------------------------------------------------------------------------------+[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Compute LB                                               |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Cell creation                                            |     2.33 |     2.33 |     2.33 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Synapse creation                                         |     0.04 |     0.04 |     0.04 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Enable Stimulus                                          |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Enable Modifications                                     |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Enable Reports                                           |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| Model Finalized                                          |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m|  ╚ stdinit                                               |     0.00 |     0.00 |     0.00 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m| finished Run                                             |     0.68 |     0.68 |     0.68 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m|  ╚ psolve                                                |     0.68 |     0.68 |     0.68 |       1 / 1       |[0m
+[[34mINFO[0m] (Dec.14 15:58:11) [39m+---------------------------------------------------------------------------------------------------------------+[0m

@@ -1,8 +1,4 @@
 from __future__ import annotations
-
-from bglibpy.cell.serialized_sections import SerializedSections
-# -*- coding: utf-8 -*- #pylint: disable=C0302
-
 """
 Cell class
 
@@ -10,17 +6,12 @@ Cell class
          Do not distribute without further notice.
 
 """
-
-# pylint: disable=F0401, R0915, R0914
-
-
 import json
 import os
 import queue
 from typing import Any, Optional
 
 import numpy as np
-from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
 from bglibpy import lazy_printv, neuron, psection, tools
@@ -28,9 +19,13 @@ from bglibpy.cell.injector import InjectableMixin
 from bglibpy.cell.plotting import PlottableMixin
 from bglibpy.cell.section_distance import EuclideanSectionDistance
 from bglibpy.cell.sonata_proxy import SonataProxy
+from bglibpy.cell.serialized_sections import SerializedSections
 from bglibpy.cell.template import NeuronTemplate
+from bglibpy.circuit.config.sections import Conditions
+from bglibpy.circuit import EmodelProperties, SynapseProperty
 from bglibpy.exceptions import BGLibPyError
 from bglibpy.neuron_interpreter import eval_neuron
+from bglibpy.synapse import SynapseFactory, Synapse
 
 
 NeuronType = Any
@@ -39,16 +34,16 @@ NeuronType = Any
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
-    def __init__(self, template_filename, morphology_filepath: str,
+    def __init__(self, template_path: str, morphology_path: str,
                  gid=0, record_dt=None, template_format=None,
-                 extra_values=None, rng_settings=None):
+                 emodel_properties: Optional[EmodelProperties] = None,
+                 rng_settings=None):
         """ Constructor.
 
         Parameters
         ----------
-        template_filename : string
-                        Full path to BGLib template to be loaded
-        morphology_filepath : path to morphology file
+        template_path : Full path to BGLib template to be loaded
+        morphology_path : path to morphology file
         gid : integer
              GID of the instantiated cell (default: 0)
         record_dt : float
@@ -56,9 +51,7 @@ class Cell(InjectableMixin, PlottableMixin):
                    (default: None)
         template_format: str
                          cell template format such as v6 or v6_air_scaler.
-        extra_values: dict
-                      any extra values such as threshold_current
-                       or holding_current.
+        emodel_properties: properties such as threshold_current, holding_current
         rng_settings: bglibpy.RNGSettings
                       random number generation setting object used by the Cell.
         """
@@ -67,15 +60,15 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[NeuronType] = []
 
-        self.morphology_filepath = morphology_filepath
+        self.morphology_path = morphology_path
 
-        if not os.path.exists(template_filename):
+        if not os.path.exists(template_path):
             raise FileNotFoundError("Couldn't find template file [%s]"
-                                    % template_filename)
+                                    % template_path)
 
         # Load the template
-        neuron_template = NeuronTemplate(template_filename, morphology_filepath)
-        self.cell = neuron_template.get_cell(template_format, gid, extra_values)
+        neuron_template = NeuronTemplate(template_path, morphology_path)
+        self.cell = neuron_template.get_cell(template_format, gid, emodel_properties)
 
         self.soma = [x for x in self.cell.getCell().somatic][0]
         # WARNING: this finitialize 'must' be here, otherwhise the
@@ -91,7 +84,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.rng_settings = rng_settings
 
         self.recordings: dict[str, NeuronType] = {}
-        self.synapses: dict[int, bglibpy.Synapse] = {}
+        self.synapses: dict[int, Synapse] = {}
         self.connections: dict[int, bglibpy.Connection] = {}
 
         self.ips: dict[int, NeuronType] = {}
@@ -116,10 +109,12 @@ class Cell(InjectableMixin, PlottableMixin):
         self.secname_to_hsection: dict[str, NeuronType] = {}
         self.secname_to_psection: dict[str, psection.PSection] = {}
 
-        self.extra_values = extra_values
-        if template_format == 'v6':
-            self.hypamp = self.extra_values['holding_current']
-            self.threshold = self.extra_values['threshold_current']
+        self.emodel_properties = emodel_properties
+        if template_format in ['v6', 'v6_ais_scaler']:
+            if self.emodel_properties is None:
+                raise BGLibPyError('EmodelProperties must be provided for v6 template')
+            self.hypamp: float | None = self.emodel_properties.holding_current
+            self.threshold: float | None = self.emodel_properties.threshold_current
         else:
             try:
                 self.hypamp = self.cell.getHypAmp()
@@ -263,7 +258,7 @@ class Cell(InjectableMixin, PlottableMixin):
         except IndexError as e:
             raise IndexError(
                 "BGLibPy get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_filepath)) from e
+                (section_id, self.morphology_path)) from e
         if sec_ref is not None:
             return self.serialized.isec2sec[int(section_id)].sec
         else:
@@ -358,7 +353,6 @@ class Cell(InjectableMixin, PlottableMixin):
             can be placed
 
         """
-
         if syn_offset < 0.0:
             syn_offset = 0.0
 
@@ -368,10 +362,6 @@ class Cell(InjectableMixin, PlottableMixin):
                 "No section found at isec=%d in gid %d" %
                 (isec, self.gid))
         length = curr_sec.L
-
-        # SONATA has pre-calculated distance field
-        if ipt == -1:
-            return syn_offset
 
         # access section to compute the distance
         if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
@@ -507,33 +497,35 @@ class Cell(InjectableMixin, PlottableMixin):
         This operation can fail.  Returns True on success, otherwise False.
 
         """
-
         if condition_parameters is None:
-            condition_parameters = {}
-        isec = syn_description[BLPSynapse.POST_SECTION_ID]
-        ipt = syn_description[BLPSynapse.POST_SEGMENT_ID]
+            condition_parameters = Conditions.init_empty()
+        isec = syn_description[SynapseProperty.POST_SECTION_ID]
 
-        if ipt == -1:
-            syn_offset = syn_description["afferent_section_pos"]
+        # old circuits don't have it, it needs to be computed via synlocation_to_segx
+        if ("afferent_section_pos" in syn_description and
+                not np.isnan(syn_description["afferent_section_pos"])):
+            # position is pre computed in SONATA
+            location = syn_description["afferent_section_pos"]
         else:
-            syn_offset = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
+            ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
+            syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
+            location = self.synlocation_to_segx(isec, ipt, syn_offset)
 
-        location = self.synlocation_to_segx(isec, ipt, syn_offset)
         if location is None:
             lazy_printv('WARNING: add_single_synapse: skipping a synapse at \
-                        isec %d ipt %f' % (isec, ipt), 1)
+                        isec %d' % (isec), 1)
             return False
 
-        synapse = bglibpy.Synapse(
-            self,
-            location,
-            synapse_id,
-            syn_description,
-            connection_parameters=connection_modifiers,
+        synapse = SynapseFactory.create_synapse(
+            cell=self,
+            location=location,
+            syn_id=synapse_id,
+            syn_description=syn_description,
             condition_parameters=condition_parameters,
             base_seed=base_seed,
             popids=popids,
-            extracellular_calcium=extracellular_calcium)
+            extracellular_calcium=extracellular_calcium,
+            connection_modifiers=connection_modifiers)
 
         self.synapses[synapse_id] = synapse
 
@@ -593,7 +585,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, location, threshold=-30):
+    def create_netcon_spikedetector(self, target, location, threshold: float = -30.0):
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
@@ -657,16 +649,16 @@ class Cell(InjectableMixin, PlottableMixin):
 
         if base_seed is None:
             base_seed = self.rng_settings.base_seed
-        weight = syn_description[BLPSynapse.G_SYNX]
-        post_sec_id = syn_description[BLPSynapse.POST_SECTION_ID]
-        post_seg_id = syn_description[BLPSynapse.POST_SEGMENT_ID]
-        if post_seg_id == -1:
-            post_seg_distance = syn_description["afferent_section_pos"]
+        weight = syn_description[SynapseProperty.G_SYNX]
+        post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
+        if "afferent_section_pos" in syn_description:
+            location = syn_description["afferent_section_pos"]  # position is pre computed in SONATA
         else:
-            post_seg_distance = syn_description[BLPSynapse.POST_SEGMENT_OFFSET]
-        location = self.\
-            synlocation_to_segx(post_sec_id, post_seg_id,
-                                post_seg_distance)
+            post_seg_distance = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
+            post_seg_id = syn_description[SynapseProperty.POST_SEGMENT_ID]
+            location = self.\
+                synlocation_to_segx(post_sec_id, post_seg_id,
+                                    post_seg_distance)
         # todo: False
         if 'Weight' in connection_parameters:
             weight_scalar = connection_parameters['Weight']
@@ -682,13 +674,10 @@ class Cell(InjectableMixin, PlottableMixin):
         if 'SpontMinis' in connection_parameters:
             spont_minis_rate = connection_parameters['SpontMinis']
         else:
-            if synapse.is_excitatory():
+            if synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
                 spont_minis_rate = exc_mini_frequency
-            elif synapse.is_inhibitory():
-                spont_minis_rate = inh_mini_frequency
             else:
-                raise Exception('Synapse not inhibitory nor excitatory, '
-                                'can not set minis frequency')
+                spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
             sec = self.get_hsection(post_sec_id)

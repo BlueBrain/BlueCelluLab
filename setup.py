@@ -22,12 +22,15 @@ setuptools.setup(
     dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
                       "dev/+simple/bluepy/"],
     install_requires=[
-        "bluepy[bbp]>=2.4.2",
+        "bluepy[bbp]>=2.5.0",
         "cachetools",
         "numpy>=1.8.0",
         "matplotlib>=3.0.0",
         "bluepy-configfile>=0.1.18",
         "pandas>=1.0.0",
+        "bluepysnap>=1.0.0,<2.0.0",
+        "libsonata>=0.1.19,<1.0.0",
+        "pydantic>=1.10.2"
         ],
     keywords=[
         'computational neuroscience',

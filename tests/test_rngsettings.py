@@ -1,6 +1,7 @@
 """Unit tests for the RNGSettings class."""
 
 import bglibpy
+from bglibpy.exceptions import UndefinedRNGException
 
 
 def test_setting_rngmodes():
@@ -21,7 +22,7 @@ def test_setting_rngmodes():
     try:
         rng_obj.mode = "MersenneTwister"
     except Exception as e:
-        assert isinstance(e, bglibpy.UndefinedRNGException)
+        assert isinstance(e, UndefinedRNGException)
 
     # make sure only one object is created
     assert rng_obj is bglibpy.RNGSettings()

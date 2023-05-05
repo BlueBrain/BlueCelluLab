@@ -1,0 +1,32 @@
+{
+    "manifest": {
+        "$NETWORK_DIR": "../../circuit_sonata_quick_scx"
+    },
+    "networks": {
+        "nodes": [
+            {
+                "nodes_file": "$NETWORK_DIR/nodes_A.h5",
+                "populations": {
+                    "NodeA": {
+                        "type": "biophysical",
+                        "morphologies_dir": "../../circuit_sonata_quick_scx/components/morphologies/swc",
+                        "biophysical_neuron_models_dir": "../../circuit_sonata_quick_scx/components/hoc",
+                        "alternate_morphologies": {
+                            "neurolucida-asc": "../../circuit_sonata_quick_scx/components/morphologies/asc"
+                        }
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "edges_file": "$NETWORK_DIR/local_edges_A.h5",
+                "populations": {
+                    "NodeA__NodeA__chemical": {
+                        "type": "chemical"
+                    }
+                }
+            }
+        ]
+    }
+}

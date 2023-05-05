@@ -3,7 +3,7 @@
 import numpy as np
 from pytest import approx
 
-from bglibpy import Synapse
+from bglibpy.synapse import Synapse
 
 
 def test_calc_u_scale_factor():

@@ -5,7 +5,7 @@ import ast
 import sys
 from typing import Any
 
-from bglibpy import NeuronEvalError
+from bglibpy.exceptions import NeuronEvalError
 
 PY39_PLUS = sys.version_info >= (3, 9)
 

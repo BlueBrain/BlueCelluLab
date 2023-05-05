@@ -1,0 +1,51 @@
+Run Default
+{
+    CircuitPath ../circuit_sonata_quick_scx
+    MorphologyPath ../circuit_sonata_quick_scx/components/morphologies/asc
+    MorphologyType asc
+    METypePath ../circuit_sonata_quick_scx/components/hoc
+    CellLibraryFile ../circuit_sonata_quick_scx/nodes_A.h5
+    nrnPath ../circuit_sonata_quick_scx/local_edges_A.h5
+    CircuitTarget Mosaic_A
+
+    Simulator NEURON
+    RNGMode Random123
+    BaseSeed 1
+
+    CurrentDir .
+    OutputRoot output
+    TargetFile user.target
+
+    RunMode RR
+    Duration 50
+    Dt 0.025
+}
+
+
+Report soma_SONATA
+{
+        Target Mosaic_A
+        Type compartment
+        ReportOn v
+        Unit mV
+        Format SONATA
+        Dt 1
+        StartTime 0
+        EndTime 10
+}
+
+
+Stimulus hypamp
+{
+        Mode Current
+  Pattern Hyperpolarizing
+        Delay 0.0
+  Duration 4000
+}
+
+
+StimulusInject hypamp_mosaic
+{
+        Stimulus hypamp
+        Target Mosaic_A
+}

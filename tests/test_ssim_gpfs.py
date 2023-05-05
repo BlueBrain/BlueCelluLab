@@ -8,9 +8,10 @@ import os
 import numpy as np
 import pytest
 from pytest import approx
-from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
+from bglibpy.circuit import SynapseProperty
+from bglibpy.circuit.node_id import create_cell_id
 
 script_dir = os.path.dirname(__file__)
 
@@ -233,7 +234,7 @@ class TestSSimBaseClass_v6_mvr_run:
             if gid == 29561:
                 one_synapse = self.ssim.cells[gid].synapses[150]
                 assert(hasattr(one_synapse, 'Nrrp'))
-                assert one_synapse.syn_description[BLPSynapse.NRRP] == 3
+                assert one_synapse.syn_description[SynapseProperty.NRRP] == 3
 
             self.ssim.run(500)
 
@@ -317,28 +318,6 @@ class TestSSimBaseClass_thalamus:
 
             assert rms_error < 0.055
 
-    def test_population_id(self):
-        """Tests the behaviour when the population id is missing."""
-
-        gid = 35089
-        ssim = bglibpy.ssim.SSim(
-            test_thalamus_no_population_id_path,
-            record_dt=0.1)
-
-        with pytest.raises(bglibpy.PopulationIDMissingError):
-            ssim.instantiate_gids(
-                [gid], add_synapses=True, add_projections=True)
-
-        ssim2 = bglibpy.ssim.SSim(
-            test_thalamus_no_population_id_path,
-            record_dt=0.1, ignore_populationid_error=True)
-        # no exception
-        ssim2.instantiate_gids(
-            [gid],
-            add_synapses=True,
-            add_projections=True
-        )
-
 
 @pytest.mark.v6
 class TestSSimBaseClassSingleVesicleMinis:
@@ -374,15 +353,26 @@ class TestSSimBaseClassSingleVesicleMinis:
 
     def test_fetch_emodel_name(self):
         """Test to check if the emodel name is correct."""
-        emodel_name = self.ssim.circuit_access.fetch_emodel_name(self.gid)
+        cell_id = create_cell_id(self.gid)
+        emodel_name = self.ssim.circuit_access._fetch_emodel_name(cell_id)
         assert emodel_name == "cADpyr_L5TPC"
 
-    def test_fetch_cell_kwargs_extra_values(self):
+    def test_fetch_cell_kwargs_emodel_properties(self):
         """Test to verify the kwargs threshold and holding currents."""
-        kwargs = self.ssim.fetch_cell_kwargs(self.gid)
-        assert kwargs["extra_values"]["threshold_current"] == 0.181875
-        assert kwargs["extra_values"]["holding_current"] == pytest.approx(
+        cell_id = create_cell_id(self.gid)
+        kwargs = self.ssim.fetch_cell_kwargs(cell_id)
+        assert kwargs["emodel_properties"].threshold_current == 0.181875
+        assert kwargs["emodel_properties"].holding_current == pytest.approx(
             -0.06993715097820541)
+
+    def test_create_cell_from_circuit(self):
+        """Test to verify the kwargs threshold and holding currents."""
+        cell_id = create_cell_id(self.gid)
+        cell = self.ssim.create_cell_from_circuit(cell_id)
+        assert cell.gid == self.gid
+        assert cell.record_dt == self.record_dt
+        assert cell.threshold == 0.181875
+        assert cell.hypamp == pytest.approx(-0.06993715097820541)
 
     def test_run(self):
         """SSim: Check if a full replay with MinisSingleVesicle """ \
@@ -494,6 +484,7 @@ class TestSSimBaseClass_full:
 
         for mtypes in mtypes_list:
             mtypes_gids = self.ssim.circuit_access.get_gids_of_mtypes(mtypes=mtypes)
+            mtypes_gids = {x.id for x in mtypes_gids}
 
             mtypes_filename = os.path.join(
                 script_dir, 'examples/mtype_lists', '%s.%s' %
@@ -550,21 +541,21 @@ class TestSSimBaseClass_full:
 
             syn_desc = self.ssim.get_syn_descriptions(post_gid).loc[('', syn_id)]
 
-            assert pre_gid == syn_desc[BLPSynapse.PRE_GID]
-            syn_type = syn_desc[BLPSynapse.TYPE]
+            assert pre_gid == syn_desc[SynapseProperty.PRE_GID]
 
+            pre_gid = create_cell_id(pre_gid)
+            post_gid = create_cell_id(post_gid)
             evaluated_params = self.ssim._evaluate_connection_parameters(
                 pre_gid,
-                post_gid,
-                syn_type)
+                post_gid)
             assert params == evaluated_params
 
     def test_add_replay_synapse_SynapseConfigure(self):
         """SSim: Check if SynapseConfigure works correctly"""
-        gid = self.ssim.circuit_access.get_gids_of_targets(['L5_MC']).pop()
+        gid = self.ssim.circuit_access.get_cell_ids_of_targets(['L5_MC']).pop()
         self.ssim.instantiate_gids([gid], add_synapses=False, add_minis=False)
         pre_datas = self.ssim.get_syn_descriptions(gid)
-        first_inh_syn = pre_datas[pre_datas[BLPSynapse.TYPE] < 100].iloc[0]
+        first_inh_syn = pre_datas[pre_datas[SynapseProperty.TYPE] < 100].iloc[0]
         sid = int(first_inh_syn.name[1])
         connection_parameters = {
             'SynapseConfigure': [

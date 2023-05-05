@@ -7,9 +7,12 @@ import hashlib
 import os
 import re
 import string
+from typing import Optional
 
 import bglibpy
 from bglibpy import lazy_printv, neuron
+from bglibpy.circuit import EmodelProperties
+from bglibpy.exceptions import BGLibPyError
 
 
 class NeuronTemplate:
@@ -18,14 +21,14 @@ class NeuronTemplate:
     used_template_names: set[str] = set()
 
     def __init__(
-        self, template_filename: str, morph_filepath: str
+        self, template_filepath: str, morph_filepath: str
     ) -> None:
         """Load the hoc template and init object."""
-        self.template_name = self.load(template_filename)
+        self.template_name = self.load(template_filepath)
         self.morph_filepath = morph_filepath
 
     def get_cell(
-        self, template_format: str, gid: int, extra_values: dict
+        self, template_format: str, gid: int, emodel_properties: Optional[EmodelProperties]
     ) -> neuron.hoc.HocObject:
         """Returns the hoc object matching the template format."""
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
@@ -34,18 +37,28 @@ class NeuronTemplate:
                 neuron.h, self.template_name + "_NeededAttributes", None
             )
             if attr_names is not None:
+                if emodel_properties is None:
+                    raise BGLibPyError(
+                        "EmodelProperties must be provided for template "
+                        "format v6 that specifies _NeededAttributes"
+                    )
                 cell = getattr(neuron.h, self.template_name)(
                     gid,
                     morph_dir,
                     morph_fname,
-                    *[extra_values[name] for name in attr_names.split(";")]
+                    *[emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
                 )
             cell = getattr(neuron.h, self.template_name)(
                 gid, morph_dir, morph_fname
             )
         elif template_format == "v6_ais_scaler":
+            if emodel_properties is None:
+                raise BGLibPyError(
+                    "EmodelProperties must be provided for template "
+                    "format v6_ais_scaler"
+                )
             cell = getattr(neuron.h, self.template_name)(
-                gid, morph_dir, morph_fname, extra_values["AIS_scaler"]
+                gid, morph_dir, morph_fname, emodel_properties.ais_scaler
             )
         else:
             cell = getattr(neuron.h, self.template_name)(gid, self.morph_filepath)

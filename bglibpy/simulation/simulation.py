@@ -12,10 +12,11 @@
 # pylint: disable=R0913
 
 import sys
+from typing import Optional
 
 import bglibpy
 import contextlib
-from bglibpy import lazy_printv, printv_err, tools
+from bglibpy import lazy_printv, printv_err
 from bglibpy.importer import neuron
 
 
@@ -23,15 +24,15 @@ class Simulation:
 
     """Class that represents a neuron simulation"""
 
-    def __init__(self, parallel_context=None):
-        self.cells = []
+    def __init__(self, parallel_context=None) -> None:
+        self.cells: list[bglibpy.Cell] = []
         self.fih_progress = None
         self.progress = None
         self.progress_closed = None
-        self.progress_dt = None
+        self.progress_dt: Optional[float] = None
         self.pc = parallel_context
 
-    def add_cell(self, new_cell):
+    def add_cell(self, new_cell: bglibpy.Cell) -> None:
         """Add a cell to a simulation"""
         self.cells.append(new_cell)
 

@@ -1,3 +1,3 @@
 """Simulation configuration file parser module."""
 
-from .config import SimulationConfig
+from .simulation_config import BluepySimulationConfig, SimulationConfig, SonataSimulationConfig

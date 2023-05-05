@@ -9,12 +9,14 @@ import pathlib
 
 import numpy as np
 from pytest import approx
+import pytest
 
 import bglibpy
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
 
 
+@pytest.mark.v5
 class TestCellBaseClass:
     """Base test class"""
 
@@ -37,6 +39,7 @@ class TestCellBaseClass:
         self.sim.run(20)
 
 
+@pytest.mark.v5
 class TestCellcSTUTRandom123BaseClass:
     """Base test class"""
 
@@ -71,6 +74,7 @@ class TestCellcSTUTRandom123BaseClass:
         assert np.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
 
 
+@pytest.mark.v5
 class TestCellcSTUTBaseClass:
 
     """Base test class"""

@@ -12,6 +12,7 @@ from typing import Optional
 import bglibpy
 from bglibpy import Singleton, lazy_printv
 from bglibpy.circuit.circuit_access import CircuitAccess
+from bglibpy.exceptions import UndefinedRNGException
 
 
 class RNGSettings(metaclass=Singleton):
@@ -84,7 +85,7 @@ class RNGSettings(metaclass=Singleton):
 
         options = {"Compatibility": 0, "Random123": 1, "UpdatedMCell": 2}
         if new_val not in options:
-            raise bglibpy.UndefinedRNGException(
+            raise UndefinedRNGException(
                 "SSim: RNG mode %s not in accepted list: %s"
                 % (self.mode, list(options.keys()))
             )

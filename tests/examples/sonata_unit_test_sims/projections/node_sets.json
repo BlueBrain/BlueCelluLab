@@ -1,0 +1,224 @@
+{
+  "Mosaic": {
+    "population": "hippocampus_neurons"
+  },
+  "HipProjections": {
+    "population": "hippocampus_projections"
+  },
+  "Excitatory": {
+    "synapse_class": "EXC"
+  },
+  "Inhibitory": {
+    "synapse_class": "INH"
+  },
+  "SP_PC": {
+    "mtype": "SP_PC"
+  },
+  "SP_CCKBC": {
+    "mtype": "SP_CCKBC"
+  },
+  "SR_SCA": {
+    "mtype": "SR_SCA"
+  },
+  "SP_BS": {
+    "mtype": "SP_BS"
+  },
+  "SP_Ivy": {
+    "mtype": "SP_Ivy"
+  },
+  "SO_BP": {
+    "mtype": "SO_BP"
+  },
+  "SO_Tri": {
+    "mtype": "SO_Tri"
+  },
+  "SO_OLM": {
+    "mtype": "SO_OLM"
+  },
+  "SO_BS": {
+    "mtype": "SO_BS"
+  },
+  "SP_PVBC": {
+    "mtype": "SP_PVBC"
+  },
+  "SLM_PPA": {
+    "mtype": "SLM_PPA"
+  },
+  "SP_AA": {
+    "mtype": "SP_AA"
+  },
+  "cNAC": {
+    "etype": "cNAC"
+  },
+  "cAC": {
+    "etype": "cAC"
+  },
+  "bAC": {
+    "etype": "bAC"
+  },
+  "cACpyr": {
+    "etype": "cACpyr"
+  },
+  "mc5;SO": {
+    "region": "mc5;SO"
+  },
+  "mc3;SP": {
+    "region": "mc3;SP"
+  },
+  "mc0;SR": {
+    "region": "mc0;SR"
+  },
+  "mc2;SO": {
+    "region": "mc2;SO"
+  },
+  "mc6;SR": {
+    "region": "mc6;SR"
+  },
+  "mc4;SR": {
+    "region": "mc4;SR"
+  },
+  "mc0;SP": {
+    "region": "mc0;SP"
+  },
+  "mc4;SP": {
+    "region": "mc4;SP"
+  },
+  "mc1;SR": {
+    "region": "mc1;SR"
+  },
+  "mc0;SO": {
+    "region": "mc0;SO"
+  },
+  "mc6;SLM": {
+    "region": "mc6;SLM"
+  },
+  "mc6;SO": {
+    "region": "mc6;SO"
+  },
+  "mc5;SLM": {
+    "region": "mc5;SLM"
+  },
+  "mc2;SP": {
+    "region": "mc2;SP"
+  },
+  "mc5;SP": {
+    "region": "mc5;SP"
+  },
+  "mc1;SP": {
+    "region": "mc1;SP"
+  },
+  "mc5;SR": {
+    "region": "mc5;SR"
+  },
+  "mc3;SR": {
+    "region": "mc3;SR"
+  },
+  "mc2;SR": {
+    "region": "mc2;SR"
+  },
+  "mc3;SLM": {
+    "region": "mc3;SLM"
+  },
+  "mc3;SO": {
+    "region": "mc3;SO"
+  },
+  "mc4;SO": {
+    "region": "mc4;SO"
+  },
+  "mc1;SO": {
+    "region": "mc1;SO"
+  },
+  "mc6;SP": {
+    "region": "mc6;SP"
+  },
+  "mc0_Column": {
+    "region": "regex:mc0.*"
+  },
+  "mc1_Column": {
+    "region": "regex:mc1.*"
+  },
+  "mc2_Column": {
+    "region": "regex:mc2.*"
+  },
+  "mc3_Column": {
+    "region": "regex:mc3.*"
+  },
+  "mc4_Column": {
+    "region": "regex:mc4.*"
+  },
+  "mc5_Column": {
+    "region": "regex:mc5.*"
+  },
+  "mc6_Column": {
+    "region": "regex:mc6.*"
+  },
+  "SLM": {
+    "region": "regex:.*SLM"
+  },
+  "SO": {
+    "region": "regex:.*SO"
+  },
+  "SP": {
+    "region": "regex:.*SP"
+  },
+  "SR": {
+    "region": "regex:.*SR"
+  },
+  "CA3_PC": {
+    "population": "hippocampus_projections"
+  },
+  "PV": [
+    "SP_PVBC",
+    "SP_BS",
+    "SP_AA"
+  ],
+  "CCK": [
+    "SP_CCKBC",
+    "SR_SCA",
+    "SLM_PPA"
+  ],
+  "SOM": [
+    "SO_OLM",
+    "SO_BS",
+    "SO_BP",
+    "SO_Tri"
+  ],
+  "BS": [
+    "SO_BS",
+    "SP_BS"
+  ],
+  "BC": [
+    "SP_PVBC",
+    "SP_CCKBC"
+  ],
+  "most_central_100_SP_PC": {
+    "population": "hippocampus_neurons",
+    "node_id": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "most_central_10_SP_PC": {
+    "population": "hippocampus_neurons",
+    "node_id": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  }
+}

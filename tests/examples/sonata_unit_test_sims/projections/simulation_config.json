@@ -1,0 +1,85 @@
+{
+  "manifest": {
+    "$CIRCUIT_DIR": "../../circuit_hipp_mooc_most_central_10_SP_PC"
+  },
+  "run": {
+    "tstop": 100.0,
+    "dt": 0.025,
+    "random_seed": 264118
+  },
+  "conditions": {
+    "v_init": -65,
+    "randomize_gaba_rise_time": true
+  },
+  "target_simulator": "NEURON",
+  "network": "circuit_config.json",
+  "node_sets_file": "node_sets.json",
+  "node_set": "most_central_10_SP_PC",
+  "output": {
+    "output_dir": "output_sonata",
+    "spikes_file": "out.h5",
+    "spikes_sort_order": "by_time"
+  },
+  "inputs": {
+    "Pulse":{
+      "module": "pulse",
+      "amp_start": 10.0,
+      "width": 2.0,
+      "frequency": 80,
+      "delay": 10.0,
+      "duration": 40.0,
+      "input_type": "current_clamp",
+      "node_set": "most_central_10_SP_PC"
+    },
+    "RelativeLinear": {
+      "module": "relative_linear",
+      "input_type": "current_clamp",
+      "node_set": "most_central_10_SP_PC",
+      "percent_start": 200,
+      "duration": 50.0,
+      "delay": 50.0
+    }
+  },
+  "connection_overrides": [
+    {
+      "name": "All-All",
+      "source": "Mosaic",
+      "target": "Mosaic",
+      "weight": 1.0,
+      "spont_minis": 0.01
+    },
+    {
+      "name": "SC-All",
+      "source": "HipProjections",
+      "target": "Mosaic",
+      "weight": 1.0,
+      "spont_minis": 0.2,
+      "synapse_configure": "%s.tau_r_NMDA = 3.9 %s.tau_d_NMDA = 148.5"
+    },
+    {
+      "name": "AMPA_NMDA",
+      "source": "Excitatory",
+      "target": "Mosaic",
+      "synapse_configure": "%s.NMDA_ratio = 1.22 %s.tau_r_NMDA = 3.9 %s.tau_d_NMDA = 148.5"
+    },
+    {
+      "name": "MGGate",
+      "source": "Excitatory",
+      "target": "Mosaic",
+      "synapse_configure": "%s.mg = 1.0"
+    }
+  ],
+  "reports": {
+    "soma": {
+      "cells": "most_central_10_SP_PC",
+      "variable_name": "v",
+      "type": "compartment",
+      "dt": 0.1,
+      "sections": "soma",
+      "file_name": "soma",
+      "compartments": "center",
+      "start_time": 0,
+      "end_time": 100.0
+    }
+  }
+}

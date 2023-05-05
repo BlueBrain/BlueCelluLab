@@ -1,6 +1,5 @@
 """Unit tests for serialized_sections module."""
 from pathlib import Path
-import warnings
 
 import pytest
 
@@ -11,6 +10,7 @@ from bglibpy.cell.serialized_sections import SerializedSections
 script_dir = Path(__file__).parent.parent
 
 
+@pytest.mark.v5
 def test_serialized_sections():
     """Test the SerializedSections class."""
     cell = Cell(

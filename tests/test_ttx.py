@@ -12,6 +12,7 @@ import bglibpy
 script_dir = os.path.dirname(__file__)
 
 
+@pytest.mark.v5
 def test_allNaChannels():
     """TTX: Testing ttx enabling"""
 

@@ -3,7 +3,8 @@
 from pytest import approx, mark
 
 from bglibpy.cell import SonataProxy
-from bglibpy.circuit import CircuitAccess
+from bglibpy.circuit import BluepyCircuitAccess
+from bglibpy.circuit.node_id import CellId
 
 
 test_relative_ornstein_path = (
@@ -14,9 +15,9 @@ test_relative_ornstein_path = (
 class TestSonataProxy:
 
     def setup(self):
-        circuit_access = CircuitAccess(test_relative_ornstein_path)
-        gid = 1
-        self.sonata_proxy = SonataProxy(gid, circuit_access)
+        circuit_access = BluepyCircuitAccess(test_relative_ornstein_path)
+        cell_id = CellId("", 1)
+        self.sonata_proxy = SonataProxy(cell_id, circuit_access)
 
     @mark.v6
     def test_get_input_resistance(self):

@@ -82,12 +82,12 @@ def import_mod_lib(neuron):
 
 
 def import_neurodamus(neuron):
-    """Import neurodamus"""
-    neuron.h.load_file("stdrun.hoc")
-    neuron.h.load_file("Cell.hoc")
-    neuron.h.load_file("TDistFunc.hoc")
-    neuron.h.load_file("TStim.hoc")
-    neuron.h.load_file("RNGSettings.hoc")
+    """Import neurodamus."""
+    neuron.h.load_file("stdrun.hoc")  # nrn
+    neuron.h.load_file("Cell.hoc")  # ND
+    neuron.h.load_file("TDistFunc.hoc")  # ND, test dependency
+    neuron.h.load_file("TStim.hoc")  # ND
+    neuron.h.load_file("RNGSettings.hoc")  # ND
 
     neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
 

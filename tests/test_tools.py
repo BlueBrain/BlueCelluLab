@@ -10,6 +10,7 @@ import os
 
 import numpy as np
 from pytest import approx
+import pytest
 
 import bglibpy
 from bglibpy.tools import NumpyEncoder, Singleton
@@ -18,6 +19,7 @@ from tests.helpers.circuit import blueconfig_append_path
 script_dir = os.path.dirname(__file__)
 
 
+@pytest.mark.v5
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
     SS_voltage = bglibpy.calculate_SS_voltage_subprocess(
@@ -48,6 +50,7 @@ class TestTools:
             blueconfig_path, conf_pre_path
         )
 
+    @pytest.mark.v5
     def test_holding_current(self):
         """Tools: Test holding_current"""
 

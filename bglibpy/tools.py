@@ -192,14 +192,15 @@ def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
 
 def holding_current(
         v_hold,
-        gid=None,
+        cell_id: None | int | tuple[str, int] = None,
         circuit_path=None,
         enable_ttx=False):
     """Calculate the holding current necessary for a given holding voltage."""
-    if gid is not None and circuit_path is not None:
+    if cell_id is not None and circuit_path is not None:
+        cell_id = bglibpy.circuit.node_id.create_cell_id(cell_id)
         ssim = bglibpy.SSim(circuit_path)
 
-        cell_kwargs = ssim.fetch_cell_kwargs(gid)
+        cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
 
     pool = multiprocessing.Pool(processes=1)
     i_hold, v_control = pool.apply(

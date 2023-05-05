@@ -1,42 +1,51 @@
 """Module that handles the global NEURON parameters."""
 
 import bglibpy
-from bglibpy import lazy_printv
+from bglibpy.circuit.config.sections import Conditions, MechanismConditions
+from bglibpy.exceptions import error_context
 
 
-def set_global_condition_parameters(condition_parameters: dict) -> None:
+def set_global_condition_parameters(condition_parameters: Conditions) -> None:
     """Sets the global condition parameters in NEURON objects."""
-    if "cao_CR_GluSynapse" in condition_parameters:
-        cao_cr_glusynapse = condition_parameters["cao_CR_GluSynapse"]
-        bglibpy.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
+    if condition_parameters.extracellular_calcium is not None:
+        cao_cr_glusynapse = condition_parameters.extracellular_calcium
+        with error_context("mechanism/s for cao_CR_GluSynapse need to be compiled"):
+            bglibpy.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
 
-    if "SYNAPSES__init_depleted" in condition_parameters:
-        init_depleted = condition_parameters["SYNAPSES__init_depleted"]
-        bglibpy.neuron.h.init_depleted_GluSynapse = init_depleted
-        bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS = init_depleted
-        bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS = init_depleted
-    if "SYNAPSES__minis_single_vesicle" in condition_parameters:
-        minis_single_vesicle = int(
-            condition_parameters["SYNAPSES__minis_single_vesicle"])
-        set_minis_single_vesicle_values(minis_single_vesicle)
+    mechanism_conditions = condition_parameters.mech_conditions
+    if mechanism_conditions is not None:
+        set_minis_single_vesicle_values(mechanism_conditions)
+        set_init_depleted_values(mechanism_conditions)
 
 
-def set_minis_single_vesicle_values(minis_single_vesicle: int) -> None:
+def set_init_depleted_values(mech_conditions: MechanismConditions) -> None:
+    """Set the init_depleted values in NEURON."""
+    with error_context("mechanism/s for init_depleted need to be compiled"):
+        if mech_conditions.glusynapse and mech_conditions.glusynapse.init_depleted is not None:
+            bglibpy.neuron.h.init_depleted_GluSynapse = mech_conditions.glusynapse.init_depleted
+        if mech_conditions.ampanmda and mech_conditions.ampanmda.init_depleted is not None:
+            bglibpy.neuron.h.init_depleted_ProbAMPANMDA_EMS = mech_conditions.ampanmda.init_depleted
+        if mech_conditions.gabaab and mech_conditions.gabaab.init_depleted is not None:
+            bglibpy.neuron.h.init_depleted_ProbGABAAB_EMS = mech_conditions.gabaab.init_depleted
+
+
+def set_minis_single_vesicle_values(mech_conditions: MechanismConditions) -> None:
     """Set the minis_single_vesicle values in NEURON."""
-    lazy_printv(
-        f"Setting synapses minis_single_vesicle to {minis_single_vesicle}",
-        50)
-    bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
-        minis_single_vesicle
-    )
-    bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
-        minis_single_vesicle
-    )
-    bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
-        minis_single_vesicle
-    )
+    with error_context("mechanism/s for minis_single_vesicle need to be compiled"):
+        if mech_conditions.ampanmda and mech_conditions.ampanmda.minis_single_vesicle is not None:
+            bglibpy.neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS = (
+                mech_conditions.ampanmda.minis_single_vesicle
+            )
+        if mech_conditions.gabaab and mech_conditions.gabaab.minis_single_vesicle is not None:
+            bglibpy.neuron.h.minis_single_vesicle_ProbGABAAB_EMS = (
+                mech_conditions.gabaab.minis_single_vesicle
+            )
+        if mech_conditions.glusynapse and mech_conditions.glusynapse.minis_single_vesicle is not None:
+            bglibpy.neuron.h.minis_single_vesicle_GluSynapse = (
+                mech_conditions.glusynapse.minis_single_vesicle
+            )
 
 
 def set_tstop_value(tstop: float) -> None:
-    """Set the tstop value required my Tstim noise stimuli."""
+    """Set the tstop value required by Tstim noise stimuli."""
     bglibpy.neuron.h.tstop = tstop

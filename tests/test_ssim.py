@@ -4,8 +4,9 @@
 
 import os
 
-import numpy as np
 from bluepy_configfile.configfile import BlueConfig
+import numpy as np
+import pytest
 
 import bglibpy
 from tests.helpers.circuit import blueconfig_append_path
@@ -84,6 +85,7 @@ class TestSonataNodeInput:
         assert ssim.circuit_access.node_properties_available
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_forwardskip:
     """Class to test SSim with two cell circuit"""
 
@@ -128,6 +130,7 @@ class TestSSimBaseClass_twocell_forwardskip:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_empty:
 
     """Class to test SSim with two cell circuit"""
@@ -173,6 +176,7 @@ class TestSSimBaseClass_twocell_empty:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_replay:
 
     """Class to test SSim with two cell circuit"""
@@ -244,6 +248,7 @@ class TestSSimBaseClass_twocell_replay:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_all_realconn:
 
     """Class to test SSim with two cell circuit"""
@@ -289,6 +294,7 @@ class TestSSimBaseClass_twocell_all_realconn:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_all:
 
     """Class to test SSim with two cell circuit"""
@@ -333,7 +339,6 @@ class TestSSimBaseClass_twocell_all:
 
     def test_pre_gids(self):
         """SSim: Test pre_gids() of the cells for a two cell circuit"""
-
         pre_gids = self.ssim_bglibpy.cells[self.gid].pre_gids()
 
         assert len(pre_gids) == 1
@@ -358,6 +363,7 @@ def rms(trace1, trace2):
     return rms
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_all_intersect:
 
     """Class to test SSim with two cell circuit"""
@@ -401,6 +407,7 @@ class TestSSimBaseClass_twocell_all_intersect:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_all_presynspiketrains:
 
     """Class to test SSim with two cell circuit"""
@@ -445,6 +452,7 @@ class TestSSimBaseClass_twocell_all_presynspiketrains:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_all_mvr:
 
     """Class to test SSim with two cell circuit"""
@@ -461,7 +469,7 @@ class TestSSimBaseClass_twocell_all_mvr:
         )
         self.ssim_bglib_all = bglibpy.SSim(modified_conf)
         self.voltage_bglib_all = self.ssim_bglib_all.get_mainsim_voltage_trace(
-            gid=self.gid)
+            cell_id=self.gid)
 
         conf_pre_path_mvr = os.path.join(
             script_dir, "examples", "sim_twocell_all_mvr")
@@ -477,7 +485,7 @@ class TestSSimBaseClass_twocell_all_mvr:
             add_replay=True)
         self.ssim_bglibpy_mvr.run()
         self.voltage_bglib_mvr = \
-            self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(gid=self.gid)
+            self.ssim_bglibpy_mvr.get_mainsim_voltage_trace(cell_id=self.gid)
 
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
@@ -531,6 +539,7 @@ class TestSSimBaseClass_twocell_all_mvr:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_minis_replay:
 
     """Class to test SSim with two cell circuit"""
@@ -603,6 +612,7 @@ class TestSSimBaseClass_twocell_minis_replay:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_noisestim:
 
     """Class to test SSim with two cell circuit"""
@@ -675,6 +685,7 @@ class TestSSimBaseClass_twocell_noisestim:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_pulsestim:
 
     """Class to test SSim with two cell circuit"""
@@ -748,6 +759,7 @@ class TestSSimBaseClass_twocell_pulsestim:
         assert bglibpy.tools.check_empty_topology()
 
 
+@pytest.mark.v5
 class TestSSimBaseClass_syns:
 
     """Class to test the syns / hsynapses property of Cell"""

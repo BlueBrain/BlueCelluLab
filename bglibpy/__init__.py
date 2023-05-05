@@ -16,11 +16,9 @@ del get_versions
 # pylint: disable=W0401, W0611
 
 from .importer import *  # NOQA
-from .exceptions import *  # NOQA
 from .tools import *  # NOQA
 from .cell import Cell  # NOQA
 from .connection import Connection  # NOQA
-from .synapse import Synapse  # NOQA
 from .plotwindow import PlotWindow  # NOQA
 from .dendrogram import Dendrogram  # NOQA
 from .psection import PSection  # NOQA

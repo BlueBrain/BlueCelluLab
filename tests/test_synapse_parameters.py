@@ -6,10 +6,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from bluepy.enums import Synapse as BLPSynapse
 
 import bglibpy
-from bglibpy.circuit import CircuitAccess
+from bglibpy.circuit import SynapseProperty
 from tests.helpers.circuit import blueconfig_append_path
 
 tests_dir = Path(__file__).resolve().parent
@@ -18,56 +17,6 @@ proj1_path = "/gpfs/bbp.cscs.ch/project/proj1/"
 proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
 proj64_path = "/gpfs/bbp.cscs.ch/project/proj64/"
 proj83_path = "/gpfs/bbp.cscs.ch/project/proj83/"
-
-
-def test_check_nrrp_value():
-    """Unit test for check nrrp value."""
-    synapses = pd.DataFrame(data={BLPSynapse.NRRP: [15.0, 16.0]})
-
-    bglibpy.synapse.check_nrrp_value(synapses)
-
-    synapses[BLPSynapse.NRRP].loc[0] = 15.1
-    with pytest.raises(ValueError):
-        bglibpy.synapse.check_nrrp_value(synapses)
-
-    synapses[BLPSynapse.NRRP].loc[0] = -1
-
-    with pytest.raises(ValueError):
-        bglibpy.synapse.check_nrrp_value(synapses)
-
-
-def test_get_synapses_by_connectomes():
-    """Test get_synapses_by_connectomes function."""
-    conf_pre_path = tests_dir / "examples" / "sim_twocell_all"
-    modified_conf = blueconfig_append_path(
-        conf_pre_path / "BlueConfig", conf_pre_path
-    )
-    circuit_access = CircuitAccess(modified_conf)
-
-    connectomes_dict = circuit_access.get_connectomes_dict(None)
-    all_properties = [
-        BLPSynapse.PRE_GID,
-        BLPSynapse.AXONAL_DELAY,
-        BLPSynapse.POST_SECTION_ID,
-        BLPSynapse.POST_SEGMENT_ID,
-        BLPSynapse.POST_SEGMENT_OFFSET,
-        BLPSynapse.G_SYNX,
-        BLPSynapse.U_SYN,
-        BLPSynapse.D_SYN,
-        BLPSynapse.F_SYN,
-        BLPSynapse.DTC,
-        BLPSynapse.TYPE,
-        BLPSynapse.NRRP,
-        BLPSynapse.U_HILL_COEFFICIENT,
-        BLPSynapse.CONDUCTANCE_RATIO]
-
-    gid = 1
-    synapses = bglibpy.synapse.get_synapses_by_connectomes(
-        connectomes_dict, all_properties, gid)
-
-    proj_id, syn_idx = '', 0
-    assert synapses.index[0] == (proj_id, syn_idx)
-    assert synapses.shape == (5, 11)
 
 
 def test_syn_dict_example_sims():
@@ -182,7 +131,7 @@ def test_syn_dict_proj83_sim1():
     a_syn_idx = ('', 313)
 
     syn_params_gt = np.array(
-        [2.52158100e+06, 7.25000000e-01, 1.29000000e+02, -1.00000000e+00,
+        [2.52158100e+06, 7.25000000e-01, 1.29000000e+02, 9.00000000e+00,
          4.69802350e-01, 7.61569560e-01, 4.97424483e-01, 6.66551819e+02,
          1.65781898e+01, 1.79162169e+00, 1.14000000e+02, 1.00000000e+00,
          2.78999996e+00, 6.99999988e-01, 0, 0])
@@ -207,7 +156,7 @@ def test_syn_dict_proj55_sim1():
     a_syn_idx = ('', 234)
 
     syn_params_gt = np.array(
-        [32088.0, 4.075, 626.0, -1.0, 0.5044383406639099,
+        [32088.0, 4.075, 626.0, 79.0, 0.5044383406639099,
          0.5477614402770996, 0.39246755838394165, 408.77203369140625, 0.0,
          6.245694637298584, 4.0, 1.0, 0, 0], dtype=float)
 
@@ -231,10 +180,10 @@ def test_syn_dict_proj55_sim1_with_projections():
     )
 
     synapse_index = ([
-        BLPSynapse.PRE_GID, BLPSynapse.AXONAL_DELAY,
-        BLPSynapse.POST_SECTION_ID, BLPSynapse.POST_SEGMENT_ID,
-        BLPSynapse.POST_SEGMENT_OFFSET, BLPSynapse.G_SYNX, BLPSynapse.U_SYN,
-        BLPSynapse.D_SYN, BLPSynapse.F_SYN, BLPSynapse.DTC, BLPSynapse.TYPE,
+        SynapseProperty.PRE_GID, SynapseProperty.AXONAL_DELAY,
+        SynapseProperty.POST_SECTION_ID, SynapseProperty.POST_SEGMENT_ID,
+        SynapseProperty.POST_SEGMENT_OFFSET, SynapseProperty.G_SYNX, SynapseProperty.U_SYN,
+        SynapseProperty.D_SYN, SynapseProperty.F_SYN, SynapseProperty.DTC, SynapseProperty.TYPE,
         'source_popid', 'target_popid'])
 
     assert len(syn_descriptions) == 843
