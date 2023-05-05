@@ -1,6 +1,7 @@
 """Module that interacts with the simulation config."""
 
 from __future__ import annotations
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Protocol
 
@@ -8,7 +9,6 @@ from bluepy_configfile.configfile import BlueConfig
 from bluepy.utils import open_utf8
 from bluepysnap import Simulation as SnapSimulation
 from bluepysnap.circuit_validation import validate as validate_circuit
-from cachetools import LRUCache, cachedmethod
 
 from bglibpy.circuit.config.sections import Conditions, ConnectionOverrides
 from bglibpy.stimuli import Stimulus
@@ -117,11 +117,6 @@ class BluepySimulationConfig:
         else:
             self.impl = config
 
-        self._caches: dict = {
-            "condition_parameters": LRUCache(maxsize=1),
-            "connection_entries": LRUCache(maxsize=1)
-        }
-
     def get_all_projection_names(self) -> list[str]:
         unique_names = {proj.name for proj in self.impl.typed_sections('Projection')}
         return list(unique_names)
@@ -141,7 +136,7 @@ class BluepySimulationConfig:
                 result.append(stimulus)
         return result
 
-    @cachedmethod(lambda self: self._caches["condition_parameters"])
+    @lru_cache(maxsize=1)
     def condition_parameters(self) -> Conditions:
         """Returns parameters of global condition block of the blueconfig."""
         try:
@@ -150,7 +145,7 @@ class BluepySimulationConfig:
             return Conditions.init_empty()
         return Conditions.from_blueconfig(condition_entries)
 
-    @cachedmethod(lambda self: self._caches["connection_entries"])
+    @lru_cache(maxsize=1)
     def connection_entries(self) -> list[ConnectionOverrides]:
         result = []
         for conn_entry in self.impl.typed_sections('Connection'):
@@ -301,9 +296,6 @@ class SonataSimulationConfig:
         circuit_config_path = self.impl.config["network"]
         validate_circuit(circuit_config_path, skip_slow=False, only_errors=True)
 
-        self._caches: dict = {"condition_parameters": LRUCache(maxsize=1),
-                              "connection_entries": LRUCache(maxsize=1)}
-
     def get_all_projection_names(self) -> list[str]:
         unique_names = {
             n
@@ -323,13 +315,13 @@ class SonataSimulationConfig:
                 result.append(stimulus)
         return result
 
-    @cachedmethod(lambda self: self._caches["condition_parameters"])
+    @lru_cache(maxsize=1)
     def condition_parameters(self) -> Conditions:
         """Returns parameters of global condition block of sonataconfig."""
         condition_object = self.impl.conditions
         return Conditions.from_sonata(condition_object)
 
-    @cachedmethod(lambda self: self._caches["connection_entries"])
+    @lru_cache(maxsize=1)
     def connection_entries(self) -> list[ConnectionOverrides]:
         result: list[ConnectionOverrides] = []
         if "connection_overrides" not in self.impl.config:

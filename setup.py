@@ -23,7 +23,6 @@ setuptools.setup(
                       "dev/+simple/bluepy/"],
     install_requires=[
         "bluepy[bbp]>=2.5.0",
-        "cachetools",
         "numpy>=1.8.0",
         "matplotlib>=3.0.0",
         "bluepy-configfile>=0.1.18",

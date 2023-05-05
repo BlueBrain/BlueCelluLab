@@ -1,6 +1,7 @@
 """Layer to abstract the circuit access functionality from the rest of BGLibPy."""
 
 from __future__ import annotations
+from functools import lru_cache
 import hashlib
 import os
 from pathlib import Path
@@ -15,7 +16,6 @@ from bluepysnap.bbp import Cell as SnapCell
 from bluepysnap.circuit_ids import CircuitNodeId, CircuitEdgeIds
 from bluepysnap.exceptions import BluepySnapError
 from bluepysnap import Circuit as SnapCircuit
-from cachetools import LRUCache, cachedmethod
 import pandas as pd
 from pydantic import Extra
 from pydantic.dataclasses import dataclass
@@ -120,13 +120,6 @@ class BluepyCircuitAccess:
         self._bluepy_circuit = self._bluepy_sim.circuit
         self.config = BluepySimulationConfig(
             self._bluepy_sim.config)
-
-        self._caches: dict = {
-            "target_has_gid": LRUCache(maxsize=1000),
-            "is_valid_group": LRUCache(maxsize=1000),
-            "get_target_cell_ids": LRUCache(maxsize=16),
-            "fetch_cell_info": LRUCache(maxsize=100),
-        }
 
     @property
     def available_cell_properties(self) -> set:
@@ -318,23 +311,23 @@ class BluepyCircuitAccess:
         """Check if target is a cell."""
         return target == f"a{cell_id.id}"
 
-    @cachedmethod(lambda self: self._caches["is_valid_group"])
+    @lru_cache(maxsize=1000)
     def is_valid_group(self, group: str) -> bool:
         """Check if target is a group of cells."""
         return group in self._bluepy_circuit.cells.targets
 
-    @cachedmethod(lambda self: self._caches["get_target_cell_ids"])
+    @lru_cache(maxsize=16)
     def get_target_cell_ids(self, target: str) -> set[CellId]:
         """Return GIDs in target as a set."""
         ids = self._bluepy_circuit.cells.ids(target)
         return {CellId("", id) for id in ids}
 
-    @cachedmethod(lambda self: self._caches["target_has_gid"])
+    @lru_cache(maxsize=1000)
     def _target_has_gid(self, target: str, cell_id: CellId) -> bool:
         """Checks if target has the gid."""
         return cell_id in self.get_target_cell_ids(target)
 
-    @cachedmethod(lambda self: self._caches["fetch_cell_info"])
+    @lru_cache(maxsize=100)
     def fetch_cell_info(self, cell_id: CellId) -> pd.Series:
         """Fetch bluepy cell info of a gid"""
         gid = cell_id.id
@@ -433,12 +426,6 @@ class SonataCircuitAccess:
             self.config = SonataSimulationConfig(simulation_config)
         circuit_config = self.config.impl.config["network"]
         self._circuit = SnapCircuit(circuit_config)
-
-        self._caches: dict = {
-            "is_valid_group": LRUCache(maxsize=1000),
-            "get_target_cell_ids": LRUCache(maxsize=16),
-            "fetch_cell_info": LRUCache(maxsize=100),
-        }
 
     @property
     def available_cell_properties(self) -> set:
@@ -556,16 +543,16 @@ class SonataCircuitAccess:
     def target_contains_cell(self, target: str, cell_id: CellId) -> bool:
         return cell_id in self.get_target_cell_ids(target)
 
-    @cachedmethod(lambda self: self._caches["is_valid_group"])
+    @lru_cache(maxsize=1000)
     def is_valid_group(self, group: str) -> bool:
         return group in self._circuit.node_sets
 
-    @cachedmethod(lambda self: self._caches["get_target_cell_ids"])
+    @lru_cache(maxsize=16)
     def get_target_cell_ids(self, target: str) -> set[CellId]:
         ids = self._circuit.nodes.ids(target)
         return {CellId(x.population, x.id) for x in ids}
 
-    @cachedmethod(lambda self: self._caches["fetch_cell_info"])
+    @lru_cache(maxsize=100)
     def fetch_cell_info(self, cell_id: CellId) -> pd.Series:
         return self._circuit.nodes[cell_id.population_name].get(cell_id.id)
 
