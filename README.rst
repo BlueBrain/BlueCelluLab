@@ -13,7 +13,7 @@ Documentation
 -------------
 
 Check the latest documentation for API usage, tutorial, FAQ, installation and dependencies.
-https://bbpteam.epfl.ch/documentation/projects/BGLibPy/latest/index.html
+https://bbp.epfl.ch/documentation/projects/bglibpy/latest/index.html
 
 
 Testing
