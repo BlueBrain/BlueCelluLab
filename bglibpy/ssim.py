@@ -216,7 +216,7 @@ class SSim:
 
         # if pre_spike_trains take int as key then convert to CellId
         if pre_spike_trains is not None:
-            if isinstance(list(pre_spike_trains.keys())[0], int):
+            if not isinstance(next(iter(pre_spike_trains.keys())), tuple):
                 pre_spike_trains = {
                     create_cell_id(gid): pre_spike_trains[gid]  # type: ignore
                     for gid in pre_spike_trains
