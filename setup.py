@@ -28,7 +28,7 @@ setuptools.setup(
         "bluepy-configfile>=0.1.18",
         "pandas>=1.0.0",
         "bluepysnap>=1.0.0,<2.0.0",
-        "libsonata>=0.1.19,<1.0.0",
+        "libsonata>=0.1.20,<1.0.0",
         "pydantic>=1.10.2"
         ],
     keywords=[
