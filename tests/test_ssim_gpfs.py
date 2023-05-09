@@ -287,23 +287,23 @@ class TestSSimBaseClass_thalamus:
 
         gids = [35089, 37922, 38466, 40190, 42227]
 
+        ssim = bglibpy.ssim.SSim(
+            test_thalamus_path,
+            record_dt=self.record_dt)
+
+        ssim.instantiate_gids(
+            gids,
+            add_synapses=True,
+            add_minis=True,
+            add_stimuli=True,
+            add_noise_stimuli=True,
+            add_hyperpolarizing_stimuli=True,
+            add_replay=True,
+            add_projections=True,
+        )
+        ssim.run(self.t_stop)
+
         for gid in gids:
-            ssim = bglibpy.ssim.SSim(
-                test_thalamus_path,
-                record_dt=self.record_dt)
-
-            ssim.instantiate_gids(
-                [gid],
-                add_synapses=True,
-                add_minis=True,
-                add_stimuli=True,
-                add_noise_stimuli=True,
-                add_hyperpolarizing_stimuli=True,
-                add_replay=True,
-                add_projections=True,
-            )
-            ssim.run(self.t_stop)
-
             voltage_bglibpy = ssim.get_voltage_trace(gid)[1:]
 
             voltage_bglib = ssim.get_mainsim_voltage_trace(
