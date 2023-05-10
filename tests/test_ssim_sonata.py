@@ -11,11 +11,11 @@ from bglibpy import SSim
 parent_dir = Path(__file__).resolve().parent
 
 
-INPUTS_TO_TEST = ["noinput", "hypamp"]
+INPUTS_TO_TEST = ["noinput", "hypamp", "ornstein"]
 
 
 @pytest.mark.v6
-@pytest.mark.parametrize("input_type", INPUTS_TO_TEST)
+@pytest.mark.parametrize("input_type", ["noinput", "hypamp"])
 def test_sim_quick_scx_sonata(input_type):
     """Test against sim results of quick_scx_sonata."""
     # Path to the SONATA simulation
@@ -50,7 +50,9 @@ def test_sim_quick_scx_sonata(input_type):
 @pytest.mark.v6
 @pytest.mark.parametrize("input_type", INPUTS_TO_TEST)
 def test_sim_quick_scx_sonata_multicircuit(input_type):
-    """Sonata config multicircuit test."""
+    """Sonata config multicircuit test.
+       Applies the stimulus defined in INPUTS_TO_TEST one by one.
+    """
     sonata_sim_path = (
         parent_dir
         / "examples"

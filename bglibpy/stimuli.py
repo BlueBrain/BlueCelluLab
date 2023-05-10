@@ -11,7 +11,7 @@ from pydantic.dataclasses import dataclass
 # create an enum for StimulusMode with Current and Conductance values
 class ClampMode(Enum):
     """Current clamp or conductance (dynamic) clamp."""
-    CURRENT = "current"
+    CURRENT = "current_clamp"
     CONDUCTANCE = "conductance"
 
 
@@ -84,6 +84,13 @@ class Stimulus:
     @classmethod
     def from_blueconfig(cls, stimulus_entry: dict) -> Optional[Stimulus]:
         pattern = Pattern.from_blueconfig(stimulus_entry["Pattern"])
+        mode_str = stimulus_entry.get("Mode", "Current").lower()
+        if mode_str == "current":
+            mode = ClampMode.CURRENT
+        elif mode_str == "conductance":
+            mode = ClampMode.CONDUCTANCE
+        else:
+            raise ValueError(f"Unknown clamp mode {mode_str}")
         if pattern == Pattern.NOISE:
             return Noise(
                 pattern=pattern,
@@ -134,7 +141,7 @@ class Stimulus:
                 amp_mean=stimulus_entry["AmpMean"],
                 amp_var=stimulus_entry["AmpVar"],
                 seed=stimulus_entry.get("Seed", None),
-                mode=stimulus_entry.get("Mode", "current").lower(),
+                mode=mode,
                 reversal=stimulus_entry.get("Reversal", 0.0)
             )
         elif pattern == Pattern.RELATIVE_SHOT_NOISE:
@@ -150,7 +157,7 @@ class Stimulus:
                 sd_percent=stimulus_entry["SDPercent"],
                 amp_cv=stimulus_entry["AmpCV"],
                 seed=stimulus_entry.get("Seed", None),
-                mode=stimulus_entry.get("Mode", "current").lower(),
+                mode=mode,
                 reversal=stimulus_entry.get("Reversal", 0.0)
             )
         elif pattern == Pattern.ORNSTEIN_UHLENBECK:
@@ -164,7 +171,7 @@ class Stimulus:
                 sigma=stimulus_entry["Sigma"],
                 mean=stimulus_entry["Mean"],
                 seed=stimulus_entry.get("Seed", None),
-                mode=stimulus_entry.get("Mode", "current").lower(),
+                mode=mode,
                 reversal=stimulus_entry.get("Reversal", 0.0)
             )
         elif pattern == Pattern.RELATIVE_ORNSTEIN_UHLENBECK:
@@ -178,7 +185,7 @@ class Stimulus:
                 mean_percent=stimulus_entry["MeanPercent"],
                 sd_percent=stimulus_entry["SDPercent"],
                 seed=stimulus_entry.get("Seed", None),
-                mode=stimulus_entry.get("Mode", "current").lower(),
+                mode=mode,
                 reversal=stimulus_entry.get("Reversal", 0.0)
             )
         else:
@@ -237,7 +244,7 @@ class Stimulus:
                 amp_mean=stimulus_entry["amp_mean"],
                 amp_var=stimulus_entry["amp_var"],
                 seed=stimulus_entry.get("random_seed", None),
-                mode=stimulus_entry.get("mode", "current").lower(),
+                mode=ClampMode(stimulus_entry.get("input_type", "current_clamp").lower()),
                 reversal=stimulus_entry.get("reversal", 0.0)
             )
         elif pattern == Pattern.RELATIVE_SHOT_NOISE:
@@ -253,7 +260,7 @@ class Stimulus:
                 sd_percent=stimulus_entry["sd_percent"],
                 amp_cv=stimulus_entry["amp_cv"],
                 seed=stimulus_entry.get("random_seed", None),
-                mode=stimulus_entry.get("mode", "current").lower(),
+                mode=ClampMode(stimulus_entry.get("input_type", "current_clamp").lower()),
                 reversal=stimulus_entry.get("reversal", 0.0)
             )
         elif pattern == Pattern.ORNSTEIN_UHLENBECK:
@@ -267,7 +274,7 @@ class Stimulus:
                 sigma=stimulus_entry["sigma"],
                 mean=stimulus_entry["mean"],
                 seed=stimulus_entry.get("random_seed", None),
-                mode=stimulus_entry.get("mode", "current").lower(),
+                mode=ClampMode(stimulus_entry.get("input_type", "current_clamp").lower()),
                 reversal=stimulus_entry.get("reversal", 0.0)
             )
         elif pattern == Pattern.RELATIVE_ORNSTEIN_UHLENBECK:
@@ -281,7 +288,7 @@ class Stimulus:
                 mean_percent=stimulus_entry["mean_percent"],
                 sd_percent=stimulus_entry["sd_percent"],
                 seed=stimulus_entry.get("random_seed", None),
-                mode=stimulus_entry.get("mode", "current").lower(),
+                mode=ClampMode(stimulus_entry.get("input_type", "current_clamp").lower()),
                 reversal=stimulus_entry.get("reversal", 0.0)
             )
         else:

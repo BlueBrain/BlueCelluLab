@@ -90,11 +90,6 @@ test_relative_shotnoise_conductance_path = os.path.join(
     "BlueConfig"
 )
 
-test_ornstein_path = os.path.join(
-    proj_path(83), "home/tuncel/bglibpy-tests/ornstein_uhlenbeck",
-    "BlueConfig"
-)
-
 test_relative_ornstein_path = os.path.join(
     proj_path(83), "home/tuncel/bglibpy-tests/relative_ornstein_uhlenbeck/",
     "BlueConfig"
@@ -680,19 +675,3 @@ def test_relative_ornstein_uhlenbeck():
         rms_errors.append(rms_error < 0.025)
 
     assert all(rms_errors)
-
-
-@pytest.mark.v6
-def test_ornstein_uhlenbeck():
-    """Test injection of Ornstein-Uhlenbeck noise."""
-    ssim = bglibpy.SSim(test_ornstein_path, record_dt=0.025)
-    gid = 2886525  # from the 'small' target
-    ssim.instantiate_gids([gid], add_synapses=False, add_stimuli=True, add_replay=False)
-    tstop = 500
-    ssim.run(tstop)
-
-    voltage_bglibpy = ssim.get_voltage_trace(gid)
-    voltage_bglib = ssim.get_mainsim_voltage_trace(gid)[:len(voltage_bglibpy)]
-    voltage_diff = voltage_bglibpy - voltage_bglib
-    rms_error = np.sqrt(np.mean(voltage_diff ** 2))
-    assert rms_error < 0.025

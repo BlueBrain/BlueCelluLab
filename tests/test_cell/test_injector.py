@@ -271,7 +271,7 @@ class TestInjector:
         segx = 0.5
         stimulus = OrnsteinUhlenbeck(
             pattern="ornstein_uhlenbeck", target="single-cell", delay=0, duration=2,
-            tau=2.8, sigma=0.0042, mean=0.029, mode="current", dt=0.25, seed=1
+            tau=2.8, sigma=0.0042, mean=0.029, mode="current_clamp", dt=0.25, seed=1
         )
         time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
                                                               stim_count=1)
