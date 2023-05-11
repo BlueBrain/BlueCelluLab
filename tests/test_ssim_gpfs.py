@@ -7,11 +7,11 @@ import os
 
 import numpy as np
 import pytest
-from pytest import approx
 
 import bglibpy
 from bglibpy.circuit import SynapseProperty
 from bglibpy.circuit.node_id import create_cell_id
+from bglibpy.circuit.circuit_access import get_synapse_connection_parameters
 
 script_dir = os.path.dirname(__file__)
 
@@ -507,7 +507,8 @@ class TestSSimBaseClass_full:
 
             pre_gid = create_cell_id(pre_gid)
             post_gid = create_cell_id(post_gid)
-            evaluated_params = self.ssim._evaluate_connection_parameters(
+            evaluated_params = get_synapse_connection_parameters(
+                self.ssim.circuit_access,
                 pre_gid,
                 post_gid)
             assert params == evaluated_params

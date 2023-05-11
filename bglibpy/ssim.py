@@ -23,7 +23,12 @@ from bglibpy import lazy_printv
 from bglibpy.cell import CellDict
 from bglibpy.cell.sonata_proxy import SonataProxy
 from bglibpy.circuit import CellId, SimulationValidator, SynapseProperty
-from bglibpy.circuit.circuit_access import CircuitAccess, BluepyCircuitAccess, SonataCircuitAccess
+from bglibpy.circuit.circuit_access import (
+    CircuitAccess,
+    BluepyCircuitAccess,
+    SonataCircuitAccess,
+    get_synapse_connection_parameters
+)
 from bglibpy.circuit.config import SimulationConfig
 from bglibpy.circuit.format import determine_circuit_format, CircuitFormat
 from bglibpy.circuit.node_id import create_cell_id, create_cell_ids
@@ -529,9 +534,10 @@ class SSim:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description"""
         pre_cell_id = CellId(cell_id.population_name, int(syn_description[SynapseProperty.PRE_GID]))
-        syn_connection_parameters = self._evaluate_connection_parameters(
-            pre_cell_id=pre_cell_id,
-            post_cell_id=cell_id)
+        syn_connection_parameters = get_synapse_connection_parameters(
+            circuit_access=self.circuit_access,
+            pre_cell=pre_cell_id,
+            post_cell=cell_id)
         if syn_connection_parameters["add_synapse"]:
             condition_parameters = self.circuit_access.config.condition_parameters()
 
@@ -551,37 +557,6 @@ class SSim:
                     syn_connection_parameters,
                     popids=popids,
                     mini_frequencies=mini_frequencies)
-
-    def _evaluate_connection_parameters(self, pre_cell_id: CellId, post_cell_id: CellId) -> dict:
-        """ Apply connection blocks in order for pre_gid, post_gid to determine
-            a final connection override for this pair (pre_gid, post_gid)."""
-        parameters: defaultdict[str, Any] = defaultdict(list)
-        parameters['add_synapse'] = True
-
-        for entry in self.circuit_access.config.connection_entries():
-            src_matches = self.circuit_access.target_contains_cell(entry.source, pre_cell_id)
-            dest_matches = self.circuit_access.target_contains_cell(entry.target, post_cell_id)
-
-            if src_matches and dest_matches:
-                # whatever specified in this block, is applied to gid
-                apply_parameters = True
-
-                if entry.delay is not None:
-                    parameters['DelayWeights'].append((entry.delay, entry.weight))
-                    apply_parameters = False
-
-                if apply_parameters:
-                    if entry.weight is not None:
-                        parameters['Weight'] = entry.weight
-                    if entry.spont_minis is not None:
-                        parameters['SpontMinis'] = entry.spont_minis
-                    if entry.synapse_configure is not None:
-                        # collect list of applicable configure blocks to be
-                        # applied with a "hoc exec" statement
-                        parameters['SynapseConfigure'].append(entry.synapse_configure)
-                    if entry.mod_override is not None:
-                        parameters['ModOverride'] = entry.mod_override
-        return parameters
 
     def initialize_synapses(self):
         """ Resets the state of all synapses of all cells to initial values """

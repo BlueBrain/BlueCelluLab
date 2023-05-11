@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from bglibpy.circuit import BluepyCircuitAccess, CellId, SonataCircuitAccess
-from bglibpy.circuit.circuit_access import EmodelProperties
+from bglibpy.circuit.circuit_access import EmodelProperties, get_synapse_connection_parameters
 from bglibpy.circuit import SynapseProperty
 from bglibpy.exceptions import BGLibPyError
 from tests.helpers.circuit import blueconfig_append_path
@@ -32,6 +32,22 @@ hipp_circuit_with_projections = (
 def test_non_existing_circuit_config():
     with pytest.raises(FileNotFoundError):
         BluepyCircuitAccess(str(parent_dir / "examples" / "non_existing_circuit_config"))
+
+
+def test_get_synapse_connection_parameters():
+    """Test that the synapse connection parameters are correctly created."""
+    circuit_access = SonataCircuitAccess(hipp_circuit_with_projections)
+    # both cells are Excitatory
+    pre_cell_id = CellId("hippocampus_neurons", 1)
+    post_cell_id = CellId("hippocampus_neurons", 2)
+    connection_params = get_synapse_connection_parameters(
+        circuit_access, pre_cell_id, post_cell_id)
+    assert connection_params["add_synapse"] is True
+    assert connection_params["Weight"] == 1.0
+    assert connection_params["SpontMinis"] == 0.01
+    syn_configure = connection_params["SynapseConfigure"]
+    assert syn_configure[0] == "%s.NMDA_ratio = 1.22 %s.tau_r_NMDA = 3.9 %s.tau_d_NMDA = 148.5"
+    assert syn_configure[1] == "%s.mg = 1.0"
 
 
 class TestCircuitAccess:

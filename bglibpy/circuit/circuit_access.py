@@ -1,11 +1,12 @@
 """Layer to abstract the circuit access functionality from the rest of BGLibPy."""
 
 from __future__ import annotations
+from collections import defaultdict
 from functools import lru_cache
 import hashlib
 import os
 from pathlib import Path
-from typing import Optional, Protocol
+from typing import Any, Optional, Protocol
 import warnings
 
 from bluepy_configfile.configfile import BlueConfig
@@ -37,6 +38,39 @@ class EmodelProperties:
     threshold_current: float
     holding_current: float
     ais_scaler: Optional[float] = None
+
+
+def get_synapse_connection_parameters(
+        circuit_access: CircuitAccess, pre_cell: CellId, post_cell: CellId) -> dict:
+    """ Apply connection blocks in order for pre_gid, post_gid to determine
+        a final connection override for this pair (pre_gid, post_gid)."""
+    parameters: defaultdict[str, Any] = defaultdict(list)
+    parameters['add_synapse'] = True
+
+    for entry in circuit_access.config.connection_entries():
+        src_matches = circuit_access.target_contains_cell(entry.source, pre_cell)
+        dest_matches = circuit_access.target_contains_cell(entry.target, post_cell)
+
+        if src_matches and dest_matches:
+            # whatever specified in this block, is applied to gid
+            apply_parameters = True
+
+            if entry.delay is not None:
+                parameters['DelayWeights'].append((entry.delay, entry.weight))
+                apply_parameters = False
+
+            if apply_parameters:
+                if entry.weight is not None:
+                    parameters['Weight'] = entry.weight
+                if entry.spont_minis is not None:
+                    parameters['SpontMinis'] = entry.spont_minis
+                if entry.synapse_configure is not None:
+                    # collect list of applicable configure blocks to be
+                    # applied with a "hoc exec" statement
+                    parameters['SynapseConfigure'].append(entry.synapse_configure)
+                if entry.mod_override is not None:
+                    parameters['ModOverride'] = entry.mod_override
+    return parameters
 
 
 class CircuitAccess(Protocol):
