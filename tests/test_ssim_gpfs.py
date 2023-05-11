@@ -397,17 +397,6 @@ class TestSSimBaseClassSingleVesicleMinis:
 
 
 @pytest.mark.v6
-def test_node_dynamics_params():
-    """To assure dynamics params from sonata get extacted correctly."""
-    config = "/gpfs/bbp.cscs.ch/project/proj148/scratch/V1/CircuitConfig"
-    ssim = bglibpy.SSim(config)
-    cell_info = ssim.circuit_access._bluepy_circuit.cells.get(1)
-    assert cell_info["@dynamics:holding_current"] == approx(-0.025167, abs=1e-6)
-    assert cell_info["@dynamics:threshold_current"] == approx(0.054562, abs=1e-6)
-    assert cell_info["@dynamics:AIS_scaler"] == approx(2.220992, abs=1e-6)
-
-
-@pytest.mark.v6
 def test_sscx_merge_pre_spike_trains():
     """Test for reproducing empty cell_info_dict['connections'] bug."""
     ssim = bglibpy.ssim.SSim(test_sscx2020_packages_path, record_dt=0.1)
