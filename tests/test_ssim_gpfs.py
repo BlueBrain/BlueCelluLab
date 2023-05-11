@@ -29,13 +29,6 @@ renccv2_bc_1_path = os.path.join(
     "simulations/ReNCCv2/k_ca_scan_dense/K5p0/Ca1p25_synreport/",
     "BlueConfig")
 
-# v6_test_bc_3_path = os.path.join(proj64_path,
-#                                 "home/king/sim/Basic",
-#                                 "BlueConfig")
-v6_test_bc_4_path = os.path.join(proj_path(64),
-                                 "home/king/sim/Basic",
-                                 "BlueConfig")
-
 test_thalamus_path = os.path.join(proj_path(55),
                                   "tuncel/simulations/release",
                                   "2020-08-06-v2",
@@ -184,73 +177,6 @@ class TestSSimBaseClass_full_realconn:
                 (voltage_bglibpy - voltage_bglib) ** 2))
 
         assert rms_error < 2.0
-
-
-'''
-@attr('gpfs', 'v6', 'debugtest')
-class TestSSimBaseClass_v6_mvr_run:
-
-    """Class to test SSim with full mvr circuit"""
-
-    def setup(self):
-        """Setup"""
-        self.ssim = None
-
-    def teardown(self):
-        """Teardown"""
-        pass
-
-    def test_run(self):
-        """SSim: Check if a full replay of a simulation """ \
-            """gives the same output trace for O1v6a"""
-        gids = [29561, 127275, 105081, 41625]
-        for i, gid in enumerate(gids):
-            self.ssim = bglibpy.ssim.SSim(v6_test_bc_4_path, record_dt=0.1)
-
-            self.ssim.instantiate_gids(
-                [gid],
-                add_synapses=True,
-                add_minis=True,
-                add_replay=True,
-                add_stimuli=True)
-
-            # Point check of one synapse
-            # Manual examination of nrn.h5 showed it has to have Nrrp == 3
-            if gid == 29561:
-                one_synapse = self.ssim.cells[gid].synapses[150]
-                assert(hasattr(one_synapse, 'Nrrp'))
-                assert one_synapse.syn_description[SynapseProperty.NRRP] == 3
-
-            self.ssim.run(500)
-
-            time_bglibpy = self.ssim.get_time_trace()
-            voltage_bglibpy = self.ssim.get_voltage_trace(gid)
-            assert len(time_bglibpy) == 5000
-            assert len(voltage_bglibpy) == 5000
-
-            voltage_bglib = self.ssim.get_mainsim_voltage_trace(
-                gid)[:len(voltage_bglibpy)]
-
-            """
-            time_bglib = self.ssim.get_mainsim_time_trace()[
-                :len(voltage_bglibpy)]
-
-            import matplotlib
-            matplotlib.use('Agg')
-            import matplotlib.pyplot as plt
-            plt.plot(time_bglibpy, voltage_bglibpy, 'o', label='bglibpy')
-            plt.plot(time_bglib, voltage_bglib, label='neurodamus')
-            plt.legend()
-            plt.savefig('O1v6a_%d.png' % i)
-            """
-            rms_error = np.sqrt(
-                np.mean(
-                    (voltage_bglibpy - voltage_bglib) ** 2))
-
-            assert rms_error < 10.0
-
-            del self.ssim
-'''
 
 
 @pytest.mark.thal
