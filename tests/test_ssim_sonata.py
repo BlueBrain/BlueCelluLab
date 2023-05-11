@@ -101,3 +101,22 @@ def test_ssim_intersect_pre_gids_multipopulation():
     sim2.instantiate_gids(cell_ids, add_synapses=True, intersect_pre_gids=[("NodeB", 0)])
     assert len([x.synapses for x in sim2.cells.values()][0]) == 2
     assert len([x.synapses for x in sim2.cells.values()][1]) == 0
+
+
+@pytest.mark.v6
+def test_merge_pre_spike_trains_edge_case():
+    """Test to make sure connections get initialised.
+   for fixing empty cell_info_dict['connections'] bug."""
+    sonata_sim_path = (
+        parent_dir
+        / "examples"
+        / "sim_quick_scx_sonata_multicircuit"
+        / f"simulation_config_noinput.json"
+    )
+    cell_id = ("NodeA", 0)
+    ssim = SSim(sonata_sim_path)
+    ssim.instantiate_gids(cell_id, add_minis=True, add_replay=True,
+                          add_stimuli=False, add_synapses=True,
+                          intersect_pre_gids=None)
+    cell_info_dict = ssim.cells[cell_id].info_dict
+    assert cell_info_dict["connections"] != {}
