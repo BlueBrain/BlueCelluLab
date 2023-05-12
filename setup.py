@@ -15,8 +15,7 @@ setuptools.setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=setuptools.find_packages(exclude=('examples', )),
-    author="Werner Van Geit",
-    author_email="werner.vangeit@epfl.ch",
+    author="Blue Brain Project, EPFL",
     description="The Pythonic Blue Brain simulator access",
     license="BBP-internal-confidential",
     dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
