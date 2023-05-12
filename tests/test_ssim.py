@@ -131,6 +131,29 @@ class TestSSimBaseClass_twocell_forwardskip:
 
 
 @pytest.mark.v5
+def test_forwardskip_from_blueconfig():
+    """Test the forwardskip feature defined in blueconfig, not API."""
+    blueconfig = f"{script_dir}/examples/sim_twocell_forwardskip"
+    # make the paths absolute
+    modified_conf = blueconfig_append_path(
+        os.path.join(blueconfig, "BlueConfig"), blueconfig
+    )
+    ssim = bglibpy.ssim.SSim(modified_conf)
+    gid = 1
+    ssim.instantiate_gids([gid])
+    ssim.run()
+
+    real_voltage = ssim.cells[gid].get_soma_voltage()[
+        np.where(ssim.get_time() >= 0.0)
+    ]
+    voltage_trace = ssim.get_voltage_trace(gid)
+    assert np.array_equal(real_voltage, voltage_trace)
+    assert sum(ssim.get_time() < 0) == 10
+    assert sum(ssim.get_time_trace() < 0) == 0
+    assert len(voltage_trace) == len(ssim.get_time_trace())
+
+
+@pytest.mark.v5
 class TestSSimBaseClass_twocell_empty:
 
     """Class to test SSim with two cell circuit"""
