@@ -14,11 +14,6 @@ from tests.helpers.circuit import blueconfig_append_path
 
 
 parent_dir = Path(__file__).resolve().parent.parent
-proj55_path = "/gpfs/bbp.cscs.ch/project/proj55/"
-
-test_thalamus_path = (
-    Path(proj55_path) / "tuncel/simulations/release" / "2020-08-06-v2"
-    / "bglibpy-thal-test-with-projections" / "BlueConfig")
 
 hipp_circuit_with_projections = (
     parent_dir
@@ -339,42 +334,6 @@ def test_get_all_stimuli_entries():
     assert len(all_stimuli) == 2  # 3 -1 for spikereplay
     assert all_stimuli[0].target == "Excitatory"
     assert all_stimuli[1].duration == 20000
-
-
-@pytest.mark.thal
-def test_get_connectomes_dict_with_projections():
-    """Test the retrieval of projection and the local connectomes."""
-    circuit_access = BluepyCircuitAccess(str(test_thalamus_path))
-
-    # empty
-    assert circuit_access._get_connectomes_dict(None).keys() == {""}
-
-    # single projection
-    connectomes_dict = circuit_access._get_connectomes_dict("ML_afferents")
-    assert connectomes_dict.keys() == {"", "ML_afferents"}
-
-    # multiple projections
-    all_connectomes = circuit_access._get_connectomes_dict(["ML_afferents", "CT_afferents"])
-    assert all_connectomes.keys() == {"", "ML_afferents", "CT_afferents"}
-
-
-@pytest.mark.thal
-def test_get_all_projection_names():
-    """Test the retrieval of projection and the local connectomes."""
-    circuit_access = BluepyCircuitAccess(str(test_thalamus_path))
-
-    assert set(circuit_access.config.get_all_projection_names()) == {
-        "CT_afferents",
-        "ML_afferents",
-    }
-
-
-@pytest.mark.thal
-def test_get_population_ids():
-    """Test the retrieval of population ids."""
-    circuit_access = BluepyCircuitAccess(str(test_thalamus_path))
-    assert circuit_access.get_population_ids("ML_afferents") == (1, 0)
-    assert circuit_access.get_population_ids("CT_afferents") == (2, 0)
 
 
 def test_sonata_circuit_access_file_not_found():
