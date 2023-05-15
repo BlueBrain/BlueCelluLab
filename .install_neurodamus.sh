@@ -18,10 +18,6 @@ then
     rm -rf neocortex
     git clone -q --depth 1 --recursive git@bbpgitlab.epfl.ch:hpc/sim/models/neocortex.git
 
-    echo "Downloading thalamus channels ..."
-    rm -rf thalamus
-    git clone -q --depth 1 --recursive git@bbpgitlab.epfl.ch:hpc/sim/models/thalamus.git
-
     # Remove this line once we have a canonical v6 sim
     cp neocortex/mod/v5/Ca_HVA.mod neocortex/mod/v6
     

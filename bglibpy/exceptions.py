@@ -28,6 +28,15 @@ class MissingSonataPropertyError(BGLibPyError):
     """Raise when a property is missing from SONATA."""
 
 
+class ExtraDependencyMissingError(BGLibPyError):
+    """Raise when an extra dependency is missing."""
+
+    def __init__(self, dependency_name):
+        self.dependency_name = dependency_name
+        super().__init__(f"The extra dependency '{dependency_name}' is missing. "
+                         f"Please install it to use this feature.")
+
+
 @contextmanager
 def error_context(context_info: str):
     """Use when the attribute/lookup error needs more context information.

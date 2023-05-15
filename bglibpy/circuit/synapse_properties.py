@@ -4,7 +4,11 @@ from __future__ import annotations
 from enum import Enum
 from types import MappingProxyType
 
-from bluepy.enums import Synapse as BLPSynapse
+from bglibpy import BLUEPY_AVAILABLE
+from bglibpy.exceptions import ExtraDependencyMissingError
+
+if BLUEPY_AVAILABLE:
+    from bluepy.enums import Synapse as BLPSynapse
 
 
 class SynapseProperty(Enum):
@@ -28,6 +32,8 @@ class SynapseProperty(Enum):
         return cls(prop.value)
 
     def to_bluepy(self) -> BLPSynapse:
+        if not BLUEPY_AVAILABLE:
+            raise ExtraDependencyMissingError("bluepy")
         return BLPSynapse(self.value)
 
     @classmethod
@@ -88,6 +94,8 @@ def properties_from_bluepy(
     props: list[BLPSynapse | str],
 ) -> list[SynapseProperty | str]:
     """Convert list of bluepy Synapse properties to SynapseProperty, spare 'str's."""
+    if not BLUEPY_AVAILABLE:
+        raise ExtraDependencyMissingError("bluepy")
     return [
         SynapseProperty.from_bluepy(prop)
         if isinstance(prop, BLPSynapse)

@@ -6,19 +6,23 @@ from platform import python_version_tuple
 from typing import Optional, Protocol
 
 from bglibpy.circuit.config import SimulationConfig, SonataSimulationConfig
+from bglibpy.exceptions import ExtraDependencyMissingError
 
 if python_version_tuple() < ('3', '9'):
     from typing import Sequence
 else:
     from collections.abc import Sequence
 
-import bluepy
+from bglibpy import BLUEPY_AVAILABLE
+if BLUEPY_AVAILABLE:
+    import bluepy
+    from bglibpy.circuit.iotools import parse_outdat
+
 from bluepysnap import Simulation as SnapSimulation
 import numpy as np
 
 from bglibpy.circuit import CellId
 from bglibpy.circuit.config import BluepySimulationConfig
-from bglibpy.circuit.iotools import parse_outdat
 
 
 def _sample_array(arr: Sequence, t_step: float, sim_t_step: float) -> Sequence:
@@ -64,6 +68,8 @@ class BluepySimulationAccess:
 
     def __init__(self, sim_config: str | Path | SimulationConfig) -> None:
         """Initialize the simulation access object."""
+        if not BLUEPY_AVAILABLE:
+            raise ExtraDependencyMissingError("bluepy")
         if isinstance(sim_config, BluepySimulationConfig):
             sim_config = sim_config.impl
         elif isinstance(sim_config, Path):

@@ -9,10 +9,14 @@ from pathlib import Path
 from typing import Any, Optional, Protocol
 import warnings
 
-from bluepy_configfile.configfile import BlueConfig
-import bluepy
-from bluepy.enums import Cell
-from bluepy.impl.connectome_sonata import SonataConnectome
+from bglibpy import BLUEPY_AVAILABLE
+
+if BLUEPY_AVAILABLE:
+    from bluepy_configfile.configfile import BlueConfig
+    import bluepy
+    from bluepy.enums import Cell as BluepyCell
+    from bluepy.impl.connectome_sonata import SonataConnectome
+
 from bluepysnap.bbp import Cell as SnapCell
 from bluepysnap.circuit_ids import CircuitNodeId, CircuitEdgeIds
 from bluepysnap.exceptions import BluepySnapError
@@ -30,7 +34,7 @@ from bglibpy.circuit.synapse_properties import (
     properties_to_bluepy,
     properties_to_snap,
 )
-from bglibpy.exceptions import BGLibPyError
+from bglibpy.exceptions import BGLibPyError, ExtraDependencyMissingError
 
 
 @dataclass(config=dict(extra=Extra.forbid))
@@ -140,6 +144,8 @@ class BluepyCircuitAccess:
 
     def __init__(self, simulation_config: str | Path | BlueConfig | BluepySimulationConfig) -> None:
         """Initialize bluepy circuit object."""
+        if not BLUEPY_AVAILABLE:
+            raise ExtraDependencyMissingError("bluepy")
         if isinstance(simulation_config, Path):
             simulation_config = str(simulation_config)
         if isinstance(simulation_config, str) and not Path(simulation_config).exists():
@@ -423,7 +429,7 @@ class BluepyCircuitAccess:
         """Returns all the gids belonging to one of the input mtypes."""
         gids = set()
         for mtype in mtypes:
-            ids = self._bluepy_circuit.cells.ids({Cell.MTYPE: mtype})
+            ids = self._bluepy_circuit.cells.ids({BluepyCell.MTYPE: mtype})
             gids |= {CellId("", x) for x in ids}
 
         return gids

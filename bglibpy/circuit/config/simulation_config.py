@@ -5,8 +5,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Protocol
 
-from bluepy_configfile.configfile import BlueConfig
-from bluepy.utils import open_utf8
+from bglibpy import BLUEPY_AVAILABLE
+from bglibpy.exceptions import ExtraDependencyMissingError
+
+if BLUEPY_AVAILABLE:
+    from bluepy_configfile.configfile import BlueConfig
+    from bluepy.utils import open_utf8
 from bluepysnap import Simulation as SnapSimulation
 from bluepysnap.circuit_validation import validate as validate_circuit
 
@@ -108,6 +112,8 @@ class BluepySimulationConfig:
     """Bluepy implementation of SimulationConfig protocol."""
 
     def __init__(self, config: str | BlueConfig) -> None:
+        if not BLUEPY_AVAILABLE:
+            raise ExtraDependencyMissingError("bluepy")
         if isinstance(config, str):
             if not Path(config).exists():
                 raise FileNotFoundError(f"Config file {config} not found.")

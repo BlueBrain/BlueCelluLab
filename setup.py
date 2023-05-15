@@ -17,19 +17,18 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=('examples', )),
     author="Blue Brain Project, EPFL",
     description="The Pythonic Blue Brain simulator access",
-    license="BBP-internal-confidential",
-    dependency_links=["https://bbpteam.epfl.ch/repository/devpi/bbprelman/"
-                      "dev/+simple/bluepy/"],
+    license="Apache 2.0",
     install_requires=[
-        "bluepy[bbp]>=2.5.0",
+        "NEURON>=8.0.2",
         "numpy>=1.8.0",
         "matplotlib>=3.0.0",
-        "bluepy-configfile>=0.1.18",
         "pandas>=1.0.0",
-        "bluepysnap>=1.0.0,<2.0.0",
-        "libsonata>=0.1.20,<1.0.0",
+        "bluepysnap>=1.0.5,<2.0.0",
         "pydantic>=1.10.2"
         ],
+    extras_require={
+        "blueconfig": ["bluepy-configfile>=0.1.18", "bluepy[bbp]>=2.5.0"],
+    },
     keywords=[
         'computational neuroscience',
         'simulation',
@@ -39,12 +38,11 @@ setuptools.setup(
     url="http://bbpteam.epfl.ch/project/issues/projects/BGLPY",
     download_url="https://bbpgitlab.epfl.ch/cells/bglibpy.git",
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'License :: Proprietary',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Utilities',
     ],

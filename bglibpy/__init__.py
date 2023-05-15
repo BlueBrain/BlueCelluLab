@@ -15,6 +15,12 @@ del get_versions
 
 # pylint: disable=W0401, W0611
 
+try:
+    import bluepy
+    BLUEPY_AVAILABLE = True
+except ImportError:
+    BLUEPY_AVAILABLE = False
+
 from .importer import *  # NOQA
 from .tools import *  # NOQA
 from .cell import Cell  # NOQA
