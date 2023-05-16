@@ -97,19 +97,16 @@ class SimulationConfig(Protocol):
     def extracellular_calcium(self) -> Optional[float]:
         raise NotImplementedError
 
-    def add_section(
+    def add_connection_override(
         self,
-        section_type: str,
-        name: str,
-        contents: str,
-        span: Optional[tuple[int, int]] = None,
-        decl_comment: str = "",
+        connection_override: ConnectionOverrides
     ) -> None:
         raise NotImplementedError
 
 
 class BluepySimulationConfig:
     """Bluepy implementation of SimulationConfig protocol."""
+    _connection_overrides: list[ConnectionOverrides] = []
 
     def __init__(self, config: str | BlueConfig) -> None:
         if not BLUEPY_AVAILABLE:
@@ -152,7 +149,7 @@ class BluepySimulationConfig:
         return Conditions.from_blueconfig(condition_entries)
 
     @lru_cache(maxsize=1)
-    def connection_entries(self) -> list[ConnectionOverrides]:
+    def _connection_entries(self) -> list[ConnectionOverrides]:
         result = []
         for conn_entry in self.impl.typed_sections('Connection'):
             # SynapseID is ignored by bluepy thus not part of dict representation
@@ -161,6 +158,9 @@ class BluepySimulationConfig:
                 conn_entry_dict["SynapseID"] = int(conn_entry["SynapseID"])
             result.append(ConnectionOverrides.from_blueconfig(conn_entry_dict))
         return result
+
+    def connection_entries(self) -> list[ConnectionOverrides]:
+        return self._connection_entries() + self._connection_overrides
 
     @property
     def is_glusynapse_used(self) -> bool:
@@ -273,19 +273,16 @@ class BluepySimulationConfig:
         else:
             return None
 
-    def add_section(
+    def add_connection_override(
         self,
-        section_type: str,
-        name: str,
-        contents: str,
-        span: Optional[tuple[int, int]] = None,
-        decl_comment: str = "",
+        connection_override: ConnectionOverrides
     ) -> None:
-        self.impl.add_section(section_type, name, contents, span, decl_comment)
+        self._connection_overrides.append(connection_override)
 
 
 class SonataSimulationConfig:
     """Sonata implementation of SimulationConfig protocol."""
+    _connection_overrides: list[ConnectionOverrides] = []
 
     def __init__(self, config: str | Path | SnapSimulation) -> None:
         if isinstance(config, (str, Path)):
@@ -328,7 +325,7 @@ class SonataSimulationConfig:
         return Conditions.from_sonata(condition_object)
 
     @lru_cache(maxsize=1)
-    def connection_entries(self) -> list[ConnectionOverrides]:
+    def _connection_entries(self) -> list[ConnectionOverrides]:
         result: list[ConnectionOverrides] = []
         if "connection_overrides" not in self.impl.config:
             return result
@@ -338,6 +335,9 @@ class SonataSimulationConfig:
         for conn_entry in conn_overrides:
             result.append(ConnectionOverrides.from_sonata(conn_entry))
         return result
+
+    def connection_entries(self) -> list[ConnectionOverrides]:
+        return self._connection_entries() + self._connection_overrides
 
     @property
     def is_glusynapse_used(self) -> bool:
@@ -408,14 +408,8 @@ class SonataSimulationConfig:
     def extracellular_calcium(self) -> Optional[float]:
         return self.condition_parameters().extracellular_calcium
 
-    def add_section(
+    def add_connection_override(
         self,
-        section_type: str,
-        name: str,
-        contents: str,
-        span: Optional[tuple[int, int]] = None,
-        decl_comment: str = "",
+        connection_override: ConnectionOverrides
     ) -> None:
-        raise NotImplementedError(
-            "Adding a new section is not implemented for SONATA."
-        )
+        self._connection_overrides.append(connection_override)

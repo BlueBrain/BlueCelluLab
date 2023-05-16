@@ -111,6 +111,33 @@ def test_connection_entries():
     )
 
 
+def test_connection_override():
+    sim = SonataSimulationConfig(hipp_sim_with_projection)
+
+    entries = sim.connection_entries()
+    assert len(entries) == 4
+
+    connection_override = ConnectionOverrides(
+        source="Excitatory",
+        target="Mosaic",
+        delay=2,
+        weight=2.0,
+        spont_minis=0.1,
+        synapse_configure="%s.mg = 1.4",
+        mod_override=None
+    )
+    sim.add_connection_override(connection_override)
+
+    entries = sim.connection_entries()
+    assert len(entries) == 5
+    assert entries[-1] == connection_override
+
+    # overrides are not added multiple times
+    entries = sim.connection_entries()
+    entries = sim.connection_entries()
+    assert len(entries) == 5
+
+
 def test_get_all_projection_names():
     sim_dir = cond_params_conf_path.parent
     sim_config = cond_params_conf_path.name
@@ -181,9 +208,3 @@ def test_output_root_path():
 def test_extracellular_calcium():
     sim = SonataSimulationConfig(cond_params_conf_path)
     assert sim.extracellular_calcium is None
-
-
-def test_add_section():
-    sim = SonataSimulationConfig(cond_params_conf_path)
-    with pytest.raises(NotImplementedError):
-        sim.add_section("type", "name", "content")

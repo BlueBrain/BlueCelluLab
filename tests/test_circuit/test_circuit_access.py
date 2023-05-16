@@ -11,6 +11,7 @@ from bglibpy.circuit.circuit_access import EmodelProperties, get_synapse_connect
 from bglibpy.circuit import SynapseProperty
 from bglibpy.exceptions import BGLibPyError
 from tests.helpers.circuit import blueconfig_append_path
+from bglibpy.circuit.config.sections import ConnectionOverrides
 
 
 parent_dir = Path(__file__).resolve().parent.parent
@@ -137,6 +138,30 @@ class TestCircuitAccess:
     def test_connection_entries(self):
         assert self.circuit_access.config.connection_entries() == []
 
+    def test_connection_override(self):
+        entries = self.circuit_access.config.connection_entries()
+        assert len(entries) == 0
+
+        connection_override = ConnectionOverrides(
+            source="Excitatory",
+            target="Mosaic",
+            delay=2,
+            weight=2.0,
+            spont_minis=0.1,
+            synapse_configure="%s.mg = 1.4",
+            mod_override=None
+        )
+        self.circuit_access.config.add_connection_override(connection_override)
+
+        entries = self.circuit_access.config.connection_entries()
+        assert len(entries) == 1
+        assert entries[-1] == connection_override
+
+        # overrides are not added multiple times
+        entries = self.circuit_access.config.connection_entries()
+        entries = self.circuit_access.config.connection_entries()
+        assert len(entries) == 1
+
     def test_is_glusynapse_used(self):
         assert not self.circuit_access.config.is_glusynapse_used
 
@@ -247,29 +272,6 @@ class TestCircuitAccess:
 
     def test_v_init(self):
         assert self.circuit_access.config.v_init == -65.0
-
-    def test_add_section(self):
-        self.circuit_access.config.add_section(
-            'Connection', 'SpontMinis_Exc',
-            {
-                'MorphologyPath': 'morph_path',
-                'nrnPath': 'nrn_path',
-                'METypePath': 'me_types',
-                'TargetFile': 'target_file',
-                'MorphologyType': 'swc',
-            }
-        )
-        expected = (
-            "Connection SpontMinis_Exc\n"
-            "{\n"
-            "  MorphologyPath morph_path\n"
-            "  nrnPath nrn_path\n"
-            "  METypePath me_types\n"
-            "  TargetFile target_file\n"
-            "  MorphologyType swc\n"
-            "}\n"
-        )
-        assert str(self.circuit_access.config.impl).endswith(expected)
 
 
 def test_get_connectomes_dict():

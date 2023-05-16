@@ -32,6 +32,7 @@ List of changes
 * 644e5f5 add v6 mark to test sonata proxy [Anil Tuncel]
 * 0ecea78 fix return type annotation of get_cell_properties [Anil Tuncel]
 * 6a77ac0 update changelog to be sphinx compatible rst [Anil Tuncel]
+* Add add_connections in place of removed add_section to simulation config [Eduard Subert]
 
 
 4.9 (2022-11-02)
