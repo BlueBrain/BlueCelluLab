@@ -16,3 +16,4 @@ coverage.xml
 *_bglibpy_t=0.0.nrndat
 *.DS_STORE
 .tox-info.json
+nrnivmodl.log
