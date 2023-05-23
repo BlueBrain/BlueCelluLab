@@ -102,14 +102,9 @@ class Synapse:
             if prop in syn_description and pd.isna(syn_description[prop]):
                 syn_description.pop(prop)
 
-        syn_description[SynapseProperty.POST_SECTION_ID] = int(
-            syn_description[SynapseProperty.POST_SECTION_ID])
-        syn_description[SynapseProperty.TYPE] = int(
-            syn_description[SynapseProperty.TYPE])
-
         if SynapseProperty.NRRP in syn_description:
             try:
-                syn_description[SynapseProperty.NRRP] = int(syn_description[SynapseProperty.NRRP])
+                int(syn_description[SynapseProperty.NRRP])
             except ValueError:
                 # delete SynapseProperty.NRRP from syn_description
                 syn_description.pop(SynapseProperty.NRRP)
