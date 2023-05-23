@@ -46,13 +46,6 @@ Changelog
 
 Refer to CHANGELOG.rst.
 
-Authors and Contributors
-------------------------
-
-* Anil Tuncel
-* Werner Van Geit
-* Ben Torbien Nielsen
-* Eilif Muller
 
 Copyright
 ---------
