@@ -14,7 +14,7 @@ setuptools.setup(
     name="bglibpy",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    packages=setuptools.find_packages(exclude=('examples', )),
+    packages=setuptools.find_packages(include=['bglibpy', 'bglibpy.*']),
     author="Blue Brain Project, EPFL",
     description="The Pythonic Blue Brain simulator access",
     license="Apache 2.0",
@@ -46,4 +46,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Topic :: Utilities',
     ],
+    include_package_data=True,
 )

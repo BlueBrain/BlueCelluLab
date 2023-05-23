@@ -1,2 +1,3 @@
 include versioneer.py
 include bglibpy/_version.py
+recursive-include bglibpy/hoc *.hoc

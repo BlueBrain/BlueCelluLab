@@ -241,7 +241,7 @@ class InjectableMixin:
 
     def inject_current_clamp_signal(self, section, segx, tvec, svec):
         """Inject any signal via current clamp."""
-        cs = bglibpy.neuron.h.new_IClamp(segx, sec=section)
+        cs = bglibpy.neuron.h.IClamp(segx, sec=section)
         cs.dur = tvec[-1]
         svec.play(cs._ref_amp, tvec, 1)
 
@@ -382,7 +382,7 @@ class InjectableMixin:
 
         if section is None:
             section = self.soma
-        pulse = bglibpy.neuron.h.new_IClamp(segx, sec=section)
+        pulse = bglibpy.neuron.h.IClamp(segx, sec=section)
         self.persistent.append(pulse)
         self.persistent.append(time)
         self.persistent.append(currents)

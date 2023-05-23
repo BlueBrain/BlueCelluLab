@@ -9,6 +9,8 @@
 """
 
 import os
+import pkg_resources
+from pathlib import Path
 
 # pylint: disable=F0401
 
@@ -49,17 +51,6 @@ def import_neuron():
     return neuron
 
 
-def import_hoc_lib():
-    """Check of hoc library path is present"""
-
-    if 'HOC_LIBRARY_PATH' not in os.environ:
-        raise Exception(
-            "BGLibPy: HOC_LIBRARY_PATH not found, this is required to find "
-            "Neurodamus. Did you install neurodamus correctly ?")
-    else:
-        return os.environ['HOC_LIBRARY_PATH']
-
-
 def import_mod_lib(neuron):
     """Import mod files"""
 
@@ -84,23 +75,24 @@ def import_mod_lib(neuron):
 def import_neurodamus(neuron):
     """Import neurodamus."""
     neuron.h.load_file("stdrun.hoc")  # nrn
-    neuron.h.load_file("Cell.hoc")  # ND
-    neuron.h.load_file("TDistFunc.hoc")  # ND, test dependency
-    neuron.h.load_file("TStim.hoc")  # ND
-    neuron.h.load_file("RNGSettings.hoc")  # ND
+    hoc_files = [
+        "Cell.hoc",  # ND
+        "TDistFunc.hoc",  # ND, test dependency
+        "TStim.hoc",  # ND
+    ]
 
-    neuron.h('obfunc new_IClamp() { return new IClamp($1) }')
+    for hoc_file in hoc_files:
+        hoc_file_path = pkg_resources.resource_filename("bglibpy", f"hoc/{hoc_file}")
+        neuron.h.load_file(hoc_file_path)
 
 
-def print_header(neuron, hoc_lib_path, mod_lib_path):
+def print_header(neuron, mod_lib_path):
     """Print BGLibPy header to stdout"""
     print("Imported neuron from %s" % neuron.__file__)
-    print('Hoc library: ', hoc_lib_path)
     print('Mod libs: ', mod_lib_path)
 
 
 neuron = import_neuron()
-hoc_lib_path = import_hoc_lib()
 mod_lib_paths = import_mod_lib(neuron)
 import_neurodamus(neuron)
-# print_header(neuron, hoc_lib_path, mod_lib_paths)
+# print_header(neuron, mod_lib_paths)
