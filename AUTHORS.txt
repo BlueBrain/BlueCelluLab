@@ -14,7 +14,7 @@ Authors
 Contributors
 --------------
 
-
+* Blue Brain HPC Team
 * Alexis Arnaudon
 * Andras Ecker
 * Andrew Hale
