@@ -13,12 +13,6 @@ import bglibpy
 
 script_dir = os.path.dirname(__file__)
 
-try:
-    import greensFunctionCalculator as gfc
-    gfc_imported = True
-except ImportError:
-    gfc_imported = False
-
 
 class Params:
 
@@ -239,11 +233,7 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     analytic_expsyn_path = \
         "%s/examples/ballstick_cell/analytic_expsyn.txt" % script_dir
 
-    if gfc_imported:
-        analytic_t, analytic_v = run_analytic(params)
-        np.savetxt(analytic_expsyn_path, (analytic_t, analytic_v))
-    else:
-        analytic_t, analytic_v = np.loadtxt(analytic_expsyn_path)
+    analytic_t, analytic_v = np.loadtxt(analytic_expsyn_path)
 
     assert len(analytic_v) == 8000
     pyneuron_rms_error = np.sqrt(
