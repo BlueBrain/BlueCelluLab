@@ -1,7 +1,7 @@
 """Unit tests for SSim."""
 import numpy as np
 
-import bglibpy
+import bluecellulab
 
 
 def test_merge_pre_spike_trains():
@@ -15,18 +15,18 @@ def test_merge_pre_spike_trains():
 
     np.testing.assert_equal(
         {},
-        bglibpy.ssim.SSim.merge_pre_spike_trains(None))
+        bluecellulab.ssim.SSim.merge_pre_spike_trains(None))
     np.testing.assert_equal(
         train1,
-        bglibpy.ssim.SSim.merge_pre_spike_trains(train1))
+        bluecellulab.ssim.SSim.merge_pre_spike_trains(train1))
     np.testing.assert_equal(
         train1,
-        bglibpy.ssim.SSim.merge_pre_spike_trains(
+        bluecellulab.ssim.SSim.merge_pre_spike_trains(
             None,
             train1))
     np.testing.assert_equal(
         trains_merged,
-        bglibpy.ssim.SSim.merge_pre_spike_trains(
+        bluecellulab.ssim.SSim.merge_pre_spike_trains(
             train1,
             None,
             train2,

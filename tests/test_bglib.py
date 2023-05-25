@@ -7,7 +7,7 @@
 
 import os
 
-import bglibpy
+import bluecellulab
 
 script_dir = os.path.dirname(__file__)
 
@@ -18,10 +18,10 @@ class TestBGLibBaseClass1:
 
     def setup(self):
         """Setup"""
-        self.taper_cell = bglibpy.Cell(
+        self.taper_cell = bluecellulab.Cell(
             "%s/examples/tapertest_cells/taper_cell.hoc" % script_dir,
             "%s/examples/tapertest_cells" % script_dir)
-        self.notaper_cell = bglibpy.Cell(
+        self.notaper_cell = bluecellulab.Cell(
             "%s/examples/tapertest_cells/notaper_cell.hoc" % script_dir,
             "%s/examples/tapertest_cells" % script_dir)
 

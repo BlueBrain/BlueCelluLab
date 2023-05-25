@@ -11,7 +11,7 @@ import numpy as np
 from pytest import approx
 import pytest
 
-import bglibpy
+import bluecellulab
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -22,12 +22,12 @@ class TestCellBaseClass:
 
     def setup_method(self):
         """Setup"""
-        self.cell = bglibpy.Cell(
+        self.cell = bluecellulab.Cell(
             parent_dir / "examples/cell_example1/test_cell.hoc",
             str(parent_dir / "examples/cell_example1"))
-        self.sim = bglibpy.Simulation()
+        self.sim = bluecellulab.Simulation()
         self.sim.add_cell(self.cell)
-        assert isinstance(self.sim, bglibpy.Simulation)
+        assert isinstance(self.sim, bluecellulab.Simulation)
 
     def teardown_method(self):
         """Destructor"""
@@ -45,12 +45,12 @@ class TestCellcSTUTRandom123BaseClass:
 
     def setup_method(self):
         """Setup"""
-        self.cell = bglibpy.Cell(
+        self.cell = bluecellulab.Cell(
             parent_dir / "examples/cell_example_cstut/cSTUT_7.hoc",
             str(parent_dir / "examples/cell_example_cstut"))
-        self.sim = bglibpy.Simulation()
+        self.sim = bluecellulab.Simulation()
         self.sim.add_cell(self.cell)
-        assert isinstance(self.sim, bglibpy.Simulation)
+        assert isinstance(self.sim, bluecellulab.Simulation)
 
     def teardown_method(self):
         """Destructor"""
@@ -69,7 +69,7 @@ class TestCellcSTUTRandom123BaseClass:
         # Lowered precision because of
         # commit 81a7a398214f2f5fba199ac3672c3dc3ccb6b103
         # in nrn repo
-        # self.cell = bglibpy.Cell("%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,"%s/examples/cell_example_cstut" % script_dir)
+        # self.cell = bluecellulab.Cell("%s/examples/cell_example_cstut/cSTUT_7.hoc" % script_dir,"%s/examples/cell_example_cstut" % script_dir)
         assert np.mean(voltage_ss) == approx(-75.5400762008, abs=1e-6)
         assert np.std(voltage_ss) == approx(0.142647101877, abs=1e-6)
 
@@ -81,12 +81,12 @@ class TestCellcSTUTBaseClass:
 
     def setup_method(self):
         """Setup"""
-        self.cell = bglibpy.Cell(
+        self.cell = bluecellulab.Cell(
             parent_dir / "examples/cell_example_cstut/cSTUT_7.hoc",
             str(parent_dir / "examples/cell_example_cstut"))
-        self.sim = bglibpy.Simulation()
+        self.sim = bluecellulab.Simulation()
         self.sim.add_cell(self.cell)
-        assert isinstance(self.sim, bglibpy.Simulation)
+        assert isinstance(self.sim, bluecellulab.Simulation)
 
     def teardown_method(self):
         """Destructor"""

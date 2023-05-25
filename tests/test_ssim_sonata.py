@@ -1,12 +1,12 @@
 """Testing SSim with SONATA simulations."""
 
 from pathlib import Path
-from bglibpy.circuit.simulation_access import _sample_array
+from bluecellulab.circuit.simulation_access import _sample_array
 
 import numpy as np
 import pytest
 
-from bglibpy import SSim
+from bluecellulab import SSim
 
 parent_dir = Path(__file__).resolve().parent
 

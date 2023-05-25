@@ -1,6 +1,6 @@
 """Unit tests for the exceptions module."""
 
-from bglibpy.exceptions import error_context
+from bluecellulab.exceptions import error_context
 
 
 def test_error_context():

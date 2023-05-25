@@ -6,9 +6,9 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from bglibpy.circuit import CellId, SonataCircuitAccess
-from bglibpy.circuit.circuit_access import EmodelProperties, get_synapse_connection_parameters
-from bglibpy.circuit import SynapseProperty
+from bluecellulab.circuit import CellId, SonataCircuitAccess
+from bluecellulab.circuit.circuit_access import EmodelProperties, get_synapse_connection_parameters
+from bluecellulab.circuit import SynapseProperty
 
 
 parent_dir = Path(__file__).resolve().parent.parent
@@ -191,7 +191,7 @@ class TestSonataCircuitAccess:
     def test_node_properties_available(self):
         assert self.circuit_access.node_properties_available
 
-    @patch("bglibpy.circuit.SonataCircuitAccess.fetch_cell_info")
+    @patch("bluecellulab.circuit.SonataCircuitAccess.fetch_cell_info")
     def test_fetch_mini_frequencies_with_mock(self, mock_fetch_cell_info):
         mock_fetch_cell_info.return_value = pd.Series(
             {

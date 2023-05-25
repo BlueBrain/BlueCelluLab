@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from bglibpy.cell import Cell, CellDict
-from bglibpy.circuit.node_id import CellId
+from bluecellulab.cell import Cell, CellDict
+from bluecellulab.circuit.node_id import CellId
 
 
 parent_dir = Path(__file__).resolve().parent.parent

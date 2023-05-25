@@ -2,8 +2,8 @@
 import pandas as pd
 import pytest
 
-from bglibpy.circuit.synapse_properties import SynapseProperty
-from bglibpy.circuit.validate import check_nrrp_value
+from bluecellulab.circuit.synapse_properties import SynapseProperty
+from bluecellulab.circuit.validate import check_nrrp_value
 
 
 def test_check_nrrp_value():

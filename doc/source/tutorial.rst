@@ -2,16 +2,16 @@
 Tutorial
 ********
 
-Loading BGLibPy in Python
+Loading bluecellulab in Python
 =========================
 
-After installing BGLibPy, your PYTHONPATH environment variable should normally
-contain the directory where the bglibpy module is installed. Loading BGLibPy 
+After installing bluecellulab, your PYTHONPATH environment variable should normally
+contain the directory where the bluecellulab module is installed. Loading bluecellulab 
 in Python becomes then as easy as:
 
 .. code-block:: python
 
-        import bglibpy
+        import bluecellulab
 
 
 Instantiating and stimulating a single cell
@@ -21,7 +21,7 @@ First of all, let's create the cell using a hoc template and a morphology.
 
 .. code-block:: python
 
-        from bglibpy.cell import Cell
+        from bluecellulab.cell import Cell
 
         template_path = "/your/path/to/cAD_noscltb.hoc"
         morph_dir = "/directory/containing/morphologies"
@@ -49,7 +49,7 @@ We can choose whether we want to use the cvode variable time step integrator or 
 
 .. code-block:: python
 
-        sim = bglibpy.Simulation()
+        sim = bluecellulab.Simulation()
         sim.add_cell(cell)
         sim.run(maxtime=50, cvode=True)
 
@@ -64,13 +64,13 @@ Instantiating a single cell from a network simulation
 =====================================================
 
 First the network simulation needs to be loaded. These simulations are 
-represented by an object of the class :py:class:`~bglibpy.ssim.SSim`, 
+represented by an object of the class :py:class:`~bluecellulab.ssim.SSim`, 
 and are constructed based on a BlueConfig of the simulation.
 
 .. code-block:: python
 
-        blueconfig = "PATH_TO_BGLibPy/bglibpy/tests/examples/sim_twocell_all/BlueConfig"
-        ssim = bglibpy.SSim(blueconfig)
+        blueconfig = "PATH_TO_bluecellulab/bluecellulab/tests/examples/sim_twocell_all/BlueConfig"
+        ssim = bluecellulab.SSim(blueconfig)
 
 Next, a cell can be instantiated from this network:
 
@@ -79,14 +79,14 @@ Next, a cell can be instantiated from this network:
         gid = 1
         ssim.instantiate_gids([gid])
 
-The :py:class:`~bglibpy.cell.Cell` object of the instantiated gid can then be
+The :py:class:`~bluecellulab.cell.Cell` object of the instantiated gid can then be
 accessed with:
 
 .. code-block:: python
 
         cell = ssim.cells[gid]
 
-To simulate that cell, the function :py:meth:`~bglibpy.ssim.SSim.run` is
+To simulate that cell, the function :py:meth:`~bluecellulab.ssim.SSim.run` is
  called:
 
 .. code-block:: python
@@ -102,13 +102,13 @@ To plot the result:
         pylab.show()
 
 More details can be specified in the simulation. See the function
- :py:meth:`~bglibpy.ssim.SSim.instantiate_gids` for further information.
+ :py:meth:`~bluecellulab.ssim.SSim.instantiate_gids` for further information.
 
 To enable the synapses and spont minis in the simulation:
 
 .. code-block:: python
 
-        ssim = bglibpy.SSim(blueconfig)
+        ssim = bluecellulab.SSim(blueconfig)
         ssim.instantiate_gids(
                 [gid],
                 add_synapses=True,
@@ -127,7 +127,7 @@ To see how enabling minis and synapses affects the recorded voltage:
 Recording the spikes from a cell
 =================================
 
-Bglibpy has the functionality to record the spikes from a cell or a group of cells.
+bluecellulab has the functionality to record the spikes from a cell or a group of cells.
 
 This feature can also be combined with a network simulation.
 
@@ -135,10 +135,10 @@ Let's start with creating a `Cell`, a `Simulation` and adding the cell to the si
 
 .. code-block:: python
 
-        cell = bglibpy.Cell(
+        cell = bluecellulab.Cell(
         "%s/examples/cell_example1/test_cell.hoc" % script_dir,
         "%s/examples/cell_example1" % script_dir)
-        sim = bglibpy.Simulation()
+        sim = bluecellulab.Simulation()
         sim.add_cell(cell)
 
 Now we can add a spike detector to the cell and enable recording from soma with a threshold of -30.
@@ -173,22 +173,22 @@ It returns the spikes in a list. A sample output is as follows:
 
 Changing the verbosity
 ======================
-By default bglibpy will not print too much to stdout
-If you want to get more insight of what is going on inside bglibpy, you can
+By default bluecellulab will not print too much to stdout
+If you want to get more insight of what is going on inside bluecellulab, you can
 set the verbose level
 
 .. code-block:: python
 
-        bglibpy.set_verbose(level=100)
+        bluecellulab.set_verbose(level=100)
 
 Postsynaptic potential validation
 =================================
-BGLibPy can also be used in running pair simulations.
+bluecellulab can also be used in running pair simulations.
 Further information can be found at the documentation of
 `psp-validation <https://bbp.epfl.ch/documentation/projects/psp-validation/latest/index.html>`_.
 
 Jupyter notebook tutorial
 =========================
 An interactive scientific use-case demonstration
-of BGLibPy on the neocortex circuit is available on the
+of bluecellulab on the neocortex circuit is available on the
 `insilico-cookbook repository <https://github.com/BlueBrain/insilico-cookbook/tree/master/notebooks/Tutorials>`_.

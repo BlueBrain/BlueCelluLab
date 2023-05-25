@@ -1,7 +1,7 @@
 """Unit tests for circuit/config/sections.py."""
 
 import pytest
-from bglibpy.circuit.config.sections import string_to_bool
+from bluecellulab.circuit.config.sections import string_to_bool
 
 
 def test_string_to_bool():

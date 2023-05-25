@@ -11,8 +11,8 @@ import os
 import numpy as np
 import pytest
 
-import bglibpy
-from bglibpy.tools import NumpyEncoder, Singleton
+import bluecellulab
+from bluecellulab.tools import NumpyEncoder, Singleton
 
 script_dir = os.path.dirname(__file__)
 
@@ -20,13 +20,13 @@ script_dir = os.path.dirname(__file__)
 @pytest.mark.v5
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
-    SS_voltage = bglibpy.calculate_SS_voltage_subprocess(
+    SS_voltage = bluecellulab.calculate_SS_voltage_subprocess(
         "%s/examples/cell_example1/test_cell.hoc" % script_dir,
         "%s/examples/cell_example1" % script_dir,
         0)
     assert abs(SS_voltage - -73.9235504304) < 0.001
 
-    SS_voltage_stoch = bglibpy.calculate_SS_voltage_subprocess(
+    SS_voltage_stoch = bluecellulab.calculate_SS_voltage_subprocess(
         "%s/examples/cell_example2/test_cell.hoc" % script_dir,
         "%s/examples/cell_example2" % script_dir,
         0)

@@ -3,14 +3,14 @@ API Documentation
 
 .. autosummary::
    :nosignatures:
-   :toctree: bglibpy
+   :toctree: bluecellulab
 
-   bglibpy.cell.Cell
-   bglibpy.connection.Connection
-   bglibpy.simulation.Simulation
-   bglibpy.ssim.SSim
-   bglibpy.synapse.Synapse
-   bglibpy.synapse.synapse_params
-   bglibpy.tools
-   bglibpy.exceptions
-   bglibpy.rngsettings.RNGSettings
+   bluecellulab.cell.Cell
+   bluecellulab.connection.Connection
+   bluecellulab.simulation.Simulation
+   bluecellulab.ssim.SSim
+   bluecellulab.synapse.Synapse
+   bluecellulab.synapse.synapse_params
+   bluecellulab.tools
+   bluecellulab.exceptions
+   bluecellulab.rngsettings.RNGSettings

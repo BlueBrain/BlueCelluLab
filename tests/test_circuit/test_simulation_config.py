@@ -5,14 +5,14 @@ from pathlib import Path
 from bluepysnap import Simulation as SnapSimulation
 import pytest
 
-from bglibpy.circuit.config import SonataSimulationConfig
-from bglibpy.circuit.config.sections import (
+from bluecellulab.circuit.config import SonataSimulationConfig
+from bluecellulab.circuit.config.sections import (
     ConditionEntry,
     Conditions,
     ConnectionOverrides,
     MechanismConditions,
 )
-from bglibpy.stimuli import Noise, Hyperpolarizing
+from bluecellulab.stimuli import Noise, Hyperpolarizing
 from tests.helpers.os_utils import cwd
 
 

@@ -1,8 +1,8 @@
 """Unit tests for cell/random module."""
 from pytest import approx
 
-from bglibpy import neuron
-from bglibpy.cell.random import gamma
+from bluecellulab import neuron
+from bluecellulab.cell.random import gamma
 
 
 def test_gamma():

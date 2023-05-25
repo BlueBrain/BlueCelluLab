@@ -1,7 +1,7 @@
 """Unit tests for circuit::format.py."""
 from pathlib import Path
-from bglibpy.circuit.format import CircuitFormat, determine_circuit_format, is_valid_json_file
-from bglibpy.circuit.config.simulation_config import SonataSimulationConfig
+from bluecellulab.circuit.format import CircuitFormat, determine_circuit_format, is_valid_json_file
+from bluecellulab.circuit.config.simulation_config import SonataSimulationConfig
 
 script_dir = Path(__file__).resolve().parent.parent
 

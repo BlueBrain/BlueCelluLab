@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from bglibpy import Cell
-from bglibpy.cell.serialized_sections import SerializedSections
+from bluecellulab import Cell
+from bluecellulab.cell.serialized_sections import SerializedSections
 
 
 script_dir = Path(__file__).parent.parent

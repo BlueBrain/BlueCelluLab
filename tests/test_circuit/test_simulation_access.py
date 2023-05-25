@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from bglibpy.circuit import CellId, SonataSimulationAccess
-from bglibpy.circuit.simulation_access import _sample_array
+from bluecellulab.circuit import CellId, SonataSimulationAccess
+from bluecellulab.circuit.simulation_access import _sample_array
 
 
 parent_dir = Path(__file__).resolve().parent.parent

@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 
-import bglibpy
+import bluecellulab
 
 script_dir = os.path.dirname(__file__)
 
@@ -35,15 +35,15 @@ class Params:
         self.morphfile = \
             "%s/examples/ballstick_cell/ballstick.asc" % script_dir
 
-        cell = bglibpy.Cell(self.templatefile, self.morphfile)
+        cell = bluecellulab.Cell(self.templatefile, self.morphfile)
         self.soma_L, self.soma_D, self.soma_A = \
-            cell.soma.L, cell.soma.diam, bglibpy.neuron.h.area(
+            cell.soma.L, cell.soma.diam, bluecellulab.neuron.h.area(
                 0.5, sec=cell.soma)
         # print 'SOMA L=%f, diam=%f,surf=%f' % (self.soma_L, self.soma_D,
         # self.soma_A)
 
         self.dend0_L, self.dend0_D, self.dend0_A = cell.basal[0].L, cell.basal[
-            0].diam, bglibpy.neuron.h.area(
+            0].diam, bluecellulab.neuron.h.area(
             0.5, sec=cell.basal[0])
         self.dend0_NSEG = cell.basal[0].nseg
 
@@ -62,7 +62,7 @@ class Params:
 
 def run_pyneuron(soma_l, soma_d, params):
     """Run ballstick with PyNeuron"""
-    soma = bglibpy.neuron.h.Section()
+    soma = bluecellulab.neuron.h.Section()
     soma.L = soma_l
     soma.diam = soma_d
     soma.nseg = 1
@@ -73,7 +73,7 @@ def run_pyneuron(soma_l, soma_d, params):
     soma(0.5).e_pas = params.EL
     soma(0.5).g_pas = 1.0 / params.RM
 
-    dend = bglibpy.neuron.h.Section()
+    dend = bluecellulab.neuron.h.Section()
     dend.L = params.dend0_L
     dend.diam = params.dend0_D
     dend.nseg = params.dend0_NSEG
@@ -86,26 +86,26 @@ def run_pyneuron(soma_l, soma_d, params):
         seg.g_pas = 1.0 / params.RM
     dend.connect(soma, 0.5, 0)  # mid-soma to begin-den
 
-    syn = bglibpy.neuron.h.ExpSyn(params.SYN_LOC, sec=dend)
+    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=dend)
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
 
-    ns = bglibpy.neuron.h.NetStim()
+    ns = bluecellulab.neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
 
-    nc = bglibpy.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
-    v_vec = bglibpy.neuron.h.Vector()
-    t_vec = bglibpy.neuron.h.Vector()
+    v_vec = bluecellulab.neuron.h.Vector()
+    t_vec = bluecellulab.neuron.h.Vector()
     v_vec.record(soma(0.5)._ref_v)
-    t_vec.record(bglibpy.neuron.h._ref_t)
+    t_vec.record(bluecellulab.neuron.h._ref_t)
 
-    bglibpy.neuron.h.finitialize(params.V_INIT)
-    bglibpy.neuron.h.dt = params.DT
-    bglibpy.neuron.run(params.T_STOP)
+    bluecellulab.neuron.h.finitialize(params.V_INIT)
+    bluecellulab.neuron.h.dt = params.DT
+    bluecellulab.neuron.run(params.T_STOP)
 
     voltage = np.array(v_vec)
     time = np.array(t_vec)
@@ -120,28 +120,28 @@ def run_pyneuron(soma_l, soma_d, params):
 def run_pyneuron_with_template(params):
     """Run ballstick with PyNeuron and template"""
 
-    bglibpy.neuron.h.load_file(params.templatefile)
-    cell = bglibpy.neuron.h.ballstick_cell(0, params.morphfile)
+    bluecellulab.neuron.h.load_file(params.templatefile)
+    cell = bluecellulab.neuron.h.ballstick_cell(0, params.morphfile)
     basal = [x for x in cell.getCell().basal]
     soma = [x for x in cell.getCell().somatic][0]
-    syn = bglibpy.neuron.h.ExpSyn(params.SYN_LOC, sec=basal[0])
+    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=basal[0])
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
-    ns = bglibpy.neuron.h.NetStim()
+    ns = bluecellulab.neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
-    nc = bglibpy.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
-    v_vec = bglibpy.neuron.h.Vector()
-    t_vec = bglibpy.neuron.h.Vector()
+    v_vec = bluecellulab.neuron.h.Vector()
+    t_vec = bluecellulab.neuron.h.Vector()
     v_vec.record(soma(0.5)._ref_v)
-    t_vec.record(bglibpy.neuron.h._ref_t)
+    t_vec.record(bluecellulab.neuron.h._ref_t)
 
-    bglibpy.neuron.h.finitialize(params.V_INIT)
-    bglibpy.neuron.h.dt = params.DT
-    bglibpy.neuron.run(params.T_STOP)
+    bluecellulab.neuron.h.finitialize(params.V_INIT)
+    bluecellulab.neuron.h.dt = params.DT
+    bluecellulab.neuron.run(params.T_STOP)
 
     voltage = np.array(v_vec)
     time = np.array(t_vec)
@@ -156,24 +156,24 @@ def run_pyneuron_with_template(params):
     return time, voltage
 
 
-def run_bglibpy(params):
-    """Run ballstick with BGLibPy"""
-    cell = bglibpy.Cell(params.templatefile, params.morphfile)
-    syn = bglibpy.neuron.h.ExpSyn(params.SYN_LOC, sec=cell.basal[0])
+def run_bluecellulab(params):
+    """Run ballstick with bluecellulab"""
+    cell = bluecellulab.Cell(params.templatefile, params.morphfile)
+    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=cell.basal[0])
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
-    ns = bglibpy.neuron.h.NetStim()
+    ns = bluecellulab.neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
-    nc = bglibpy.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
-    sim = bglibpy.Simulation()
+    sim = bluecellulab.Simulation()
     sim.add_cell(cell)
     sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
-    bglibpy_t = cell.get_time()
-    bglibpy_v = cell.get_soma_voltage()
+    bluecellulab_t = cell.get_time()
+    bluecellulab_v = cell.get_soma_voltage()
 
     del sim
     del syn
@@ -181,7 +181,7 @@ def run_bglibpy(params):
     del nc
     del cell
 
-    return bglibpy_t, bglibpy_v
+    return bluecellulab_t, bluecellulab_v
 
 
 def run_analytic(params):
@@ -208,12 +208,12 @@ def run_analytic(params):
     return t_willem, v_willem
 
 
-def test_expsyn_pyneuron_vs_bglibpy(graph=False):
-    """Ballstick: Test ballstick with expsyn between pyneuron and bglibpy"""
+def test_expsyn_pyneuron_vs_bluecellulab(graph=False):
+    """Ballstick: Test ballstick with expsyn between pyneuron and bluecellulab"""
 
     """
     The real stuff, part I
-    Run the ball-and-stick model by 1. PyNEURON, 2. bglibpy, 3. analytic
+    Run the ball-and-stick model by 1. PyNEURON, 2. bluecellulab, 3. analytic
     """
 
     params = Params()  # define all the parameters
@@ -226,8 +226,8 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
     pyneuron_template_t, pyneuron_template_v = run_pyneuron_with_template(
         params)
 
-    # Run with BGLibPy
-    bglibpy_t, bglibpy_v = run_bglibpy(params)
+    # Run with bluecellulab
+    bluecellulab_t, bluecellulab_v = run_bluecellulab(params)
 
     # Run with analytic solution
     analytic_expsyn_path = \
@@ -246,18 +246,18 @@ def test_expsyn_pyneuron_vs_bglibpy(graph=False):
             (analytic_v -
              pyneuron_template_v[
                  :len(analytic_v)]) ** 2))
-    bglibpy_rms_error = np.sqrt(
+    bluecellulab_rms_error = np.sqrt(
         np.mean(
             (analytic_v -
-             bglibpy_v[
+             bluecellulab_v[
                  :len(analytic_v)]) ** 2))
     assert pyneuron_rms_error < 0.1
     assert pyneuron_template_rms_error < 0.1
-    assert bglibpy_rms_error < 0.1
+    assert bluecellulab_rms_error < 0.1
 
     if graph:
         import pylab
-        pylab.plot(bglibpy_t, bglibpy_v, 'g', label='BGLibPy')
+        pylab.plot(bluecellulab_t, bluecellulab_v, 'g', label='bluecellulab')
         pylab.plot(pyneuron_t, pyneuron_v, 'b', label='PyNeuron')
         pylab.plot(
             pyneuron_template_t,
@@ -273,20 +273,20 @@ def test_ballstick_load():
     """Ballstick: Test if dimensions of ballstick load correctly"""
     params = Params()
 
-    cell = bglibpy.Cell(params.templatefile, params.morphfile)
+    cell = bluecellulab.Cell(params.templatefile, params.morphfile)
     assert abs(cell.soma.L - 19.6) < 0.001
     assert abs(cell.soma.diam - 10.229) < 0.001
-    assert abs(bglibpy.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001
+    assert abs(bluecellulab.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001
     assert abs(cell.basal[0].L - 200.0) < 0.001
     assert abs(cell.basal[0].diam - 3.0) < 0.001
-    assert abs(bglibpy.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
+    assert abs(bluecellulab.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
 
     del cell
 
 
 def main():
     """main"""
-    test_expsyn_pyneuron_vs_bglibpy(graph=True)
+    test_expsyn_pyneuron_vs_bluecellulab(graph=True)
 
 
 if __name__ == "__main__":

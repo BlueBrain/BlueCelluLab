@@ -1,1 +1,1 @@
-recursive-include bglibpy/hoc *.hoc
+recursive-include bluecellulab/hoc *.hoc

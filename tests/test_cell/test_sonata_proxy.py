@@ -1,10 +1,10 @@
 """Unit tests for cell.sonata_proxy."""
 from pathlib import Path
 
-from bglibpy.cell import SonataProxy
-from bglibpy.circuit import SonataCircuitAccess
-from bglibpy.circuit.node_id import CellId
-from bglibpy.exceptions import MissingSonataPropertyError
+from bluecellulab.cell import SonataProxy
+from bluecellulab.circuit import SonataCircuitAccess
+from bluecellulab.circuit.node_id import CellId
+from bluecellulab.exceptions import MissingSonataPropertyError
 
 from pytest import approx, raises
 

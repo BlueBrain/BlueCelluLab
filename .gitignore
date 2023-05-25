@@ -2,7 +2,7 @@
 /x86_64
 /.tox
 *.pyc
-/bglibpy.egg-info/
+*.egg-info
 /dist
 /jekylltest
 /doc/build
@@ -13,7 +13,7 @@
 coverage.xml
 .coverage
 .coverage*
-*_bglibpy_t=0.0.nrndat
+*_t=0.0.nrndat
 *.DS_STORE
 .tox-info.json
 nrnivmodl.log

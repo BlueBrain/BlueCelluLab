@@ -13,9 +13,9 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-import bglibpy
-from bglibpy.cell.template import NeuronTemplate, shorten_and_hash_string
-from bglibpy.exceptions import BGLibPyError
+import bluecellulab
+from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
+from bluecellulab.exceptions import BluecellulabError
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -27,10 +27,10 @@ parent_dir = Path(__file__).resolve().parent.parent
 def test_longname():
     """Cell: Test loading cell with long name"""
 
-    cell = bglibpy.Cell(
+    cell = bluecellulab.Cell(
         "%s/examples/cell_example1/test_cell_longname1.hoc" % str(parent_dir),
         "%s/examples/cell_example1" % str(parent_dir))
-    assert isinstance(cell, bglibpy.Cell)
+    assert isinstance(cell, bluecellulab.Cell)
 
     del cell
 
@@ -39,19 +39,19 @@ def test_load_template():
     """Test the neuron template loading."""
     fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
     template_name = NeuronTemplate.load(fpath)
-    assert template_name == "test_cell_bglibpy"
+    assert template_name == "test_cell_bluecellulab"
 
 
-@patch("bglibpy.neuron")
-def test_load_template_with_old_neuron(mock_bglibpy_neuron):
+@patch("bluecellulab.neuron")
+def test_load_template_with_old_neuron(mock_bluecellulab_neuron):
     """Test the template loading with an old neuron version."""
-    mock_bglibpy_neuron.h.nrnversion.return_value = '2014-03-19'
+    mock_bluecellulab_neuron.h.nrnversion.return_value = '2014-03-19'
     fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
     template_name = NeuronTemplate.load(fpath)
     assert template_name == "test_cell"
-    mock_bglibpy_neuron.h.nrnversion.assert_called_once_with(4)
-    mock_bglibpy_neuron.h.load_file.assert_called_once()
-    mock_bglibpy_neuron.h.assert_not_called()
+    mock_bluecellulab_neuron.h.nrnversion.assert_called_once_with(4)
+    mock_bluecellulab_neuron.h.load_file.assert_called_once()
+    mock_bluecellulab_neuron.h.assert_not_called()
 
 
 def test_shorten_and_hash_string():
@@ -72,10 +72,10 @@ class TestCellBaseClass1:
 
     def setup(self):
         """Setup"""
-        self.cell = bglibpy.Cell(
+        self.cell = bluecellulab.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
             "%s/examples/cell_example1" % str(parent_dir))
-        assert isinstance(self.cell, bglibpy.Cell)
+        assert isinstance(self.cell, bluecellulab.Cell)
 
     def teardown(self):
         """Teardown"""
@@ -83,8 +83,8 @@ class TestCellBaseClass1:
 
     def test_fields(self):
         """Cell: Test the fields of a Cell object"""
-        assert isinstance(self.cell.soma, bglibpy.neuron.nrn.Section)
-        assert isinstance(self.cell.axonal[0], bglibpy.neuron.nrn.Section)
+        assert isinstance(self.cell.soma, bluecellulab.neuron.nrn.Section)
+        assert isinstance(self.cell.axonal[0], bluecellulab.neuron.nrn.Section)
         assert math.fabs(self.cell.threshold - 0.184062) < 0.00001
         assert math.fabs(self.cell.hypamp - -0.070557) < 0.00001
         # Lowered precision because of commit
@@ -100,7 +100,7 @@ class TestCellBaseClass1:
     def test_get_hsection(self):
         """Cell: Test cell.get_hsection"""
         assert isinstance(
-            self.cell.get_hsection(0), bglibpy.neuron.nrn.Section)
+            self.cell.get_hsection(0), bluecellulab.neuron.nrn.Section)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""
@@ -140,7 +140,7 @@ class TestCellBaseClass1:
             recording = self.cell.get_voltage_recording(section, 0.5)
             assert len(recording) == 0
             last_section = section
-        with pytest.raises(BGLibPyError):
+        with pytest.raises(BluecellulabError):
             self.cell.get_voltage_recording(last_section, 0.7)
 
     def test_euclid_section_distance(self):
@@ -162,22 +162,22 @@ class TestCellBaseClass1:
                                                   location2=location2,
                                                   projection='xyz')
 
-            x1 = bglibpy.neuron.h.x3d(0,
-                                      sec=hsection1)
-            y1 = bglibpy.neuron.h.y3d(0,
-                                      sec=hsection1)
-            z1 = bglibpy.neuron.h.z3d(0,
-                                      sec=hsection1)
-            x2 = bglibpy.neuron.h.x3d(
-                bglibpy.neuron.h.n3d(
+            x1 = bluecellulab.neuron.h.x3d(0,
+                                           sec=hsection1)
+            y1 = bluecellulab.neuron.h.y3d(0,
+                                           sec=hsection1)
+            z1 = bluecellulab.neuron.h.z3d(0,
+                                           sec=hsection1)
+            x2 = bluecellulab.neuron.h.x3d(
+                bluecellulab.neuron.h.n3d(
                     sec=hsection2) - 1,
                 sec=hsection2)
-            y2 = bglibpy.neuron.h.y3d(
-                bglibpy.neuron.h.n3d(
+            y2 = bluecellulab.neuron.h.y3d(
+                bluecellulab.neuron.h.n3d(
                     sec=hsection2) - 1,
                 sec=hsection2)
-            z2 = bglibpy.neuron.h.z3d(
-                bglibpy.neuron.h.n3d(
+            z2 = bluecellulab.neuron.h.z3d(
+                bluecellulab.neuron.h.n3d(
                     sec=hsection2) - 1,
                 sec=hsection2)
             import numpy as np
@@ -193,10 +193,10 @@ class TestCellBaseClassVClamp:
 
     def setup(self):
         """Setup"""
-        self.cell = bglibpy.Cell(
+        self.cell = bluecellulab.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
             "%s/examples/cell_example1" % str(parent_dir))
-        assert (isinstance(self.cell, bglibpy.Cell))
+        assert (isinstance(self.cell, bluecellulab.Cell))
 
     def teardown(self):
         """Teardown"""
@@ -221,7 +221,7 @@ class TestCellBaseClassVClamp:
         assert vclamp.dur3 == 0
         assert vclamp.rs == rs
 
-        sim = bglibpy.Simulation()
+        sim = bluecellulab.Simulation()
         sim.add_cell(self.cell)
         sim.run(total_time, dt=.1, cvode=False)
 
@@ -257,10 +257,10 @@ class TestCellBaseClassVClamp:
 @pytest.mark.v5
 def test_get_recorded_spikes():
     """Cell: Test get_recorded_spikes."""
-    cell = bglibpy.Cell(
+    cell = bluecellulab.Cell(
         "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
         "%s/examples/cell_example1" % str(parent_dir))
-    sim = bglibpy.Simulation()
+    sim = bluecellulab.Simulation()
     sim.add_cell(cell)
     cell.start_recording_spikes(None, "soma", -30)
     cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)

@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-import bglibpy
+import bluecellulab
 
 script_dir = os.path.dirname(__file__)
 
@@ -18,7 +18,7 @@ def test_allNaChannels():
 
     na_channelnames = ['NaTs2_t']
 
-    cell = bglibpy.Cell(
+    cell = bluecellulab.Cell(
         "%s/examples/cell_example_empty/test_cell.hoc" %
         script_dir,
         "%s/examples/cell_example_empty" %
@@ -28,7 +28,7 @@ def test_allNaChannels():
         cell.soma.insert(na_channelname)
 
         cell.add_step(0, 1000, .1)
-        sim = bglibpy.Simulation()
+        sim = bluecellulab.Simulation()
         sim.add_cell(cell)
 
         sim.run(10)
@@ -52,14 +52,14 @@ def test_allNaChannels():
 def test_allNaChannels_v6a():
     """TTX: Testing ttx enabling in v6a cell"""
 
-    cell = bglibpy.Cell(
+    cell = bluecellulab.Cell(
         "%s/examples/cell_example_empty/test_cell_v6a.hoc" %
         script_dir,
         "%s/examples/cell_example_empty" %
         script_dir)
 
     cell.add_step(0, 1000, .1)
-    sim = bglibpy.Simulation()
+    sim = bluecellulab.Simulation()
     sim.add_cell(cell)
 
     sim.run(10)

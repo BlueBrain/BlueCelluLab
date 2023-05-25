@@ -1,6 +1,6 @@
 """Unit tests for synapse_properties module."""
-from bglibpy.circuit import SynapseProperty
-from bglibpy.circuit.synapse_properties import (
+from bluecellulab.circuit import SynapseProperty
+from bluecellulab.circuit.synapse_properties import (
     properties_from_snap,
     properties_to_snap,
 )

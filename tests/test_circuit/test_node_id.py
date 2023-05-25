@@ -1,5 +1,5 @@
 """Unit tests for node_id.py"""
-from bglibpy.circuit.node_id import create_cell_id, CellId
+from bluecellulab.circuit.node_id import create_cell_id, CellId
 
 
 def test_create_cell_id():
@@ -11,7 +11,7 @@ def test_create_cell_id():
 
 def test_create_cell_ids():
     """SSim: Testing creation of CellIds."""
-    from bglibpy.circuit.node_id import create_cell_ids, CellId
+    from bluecellulab.circuit.node_id import create_cell_ids, CellId
 
     assert create_cell_ids([1, 2]) == [CellId("", 1), CellId("", 2)]
     assert create_cell_ids([("", 2), ("pop1", 2)]) == [
