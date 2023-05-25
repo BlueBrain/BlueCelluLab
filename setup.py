@@ -5,15 +5,14 @@ import sys
 
 import setuptools
 
-import versioneer
 
 if sys.version_info[:2] < (3, 7):
     raise RuntimeError("Python version >= 3.7 required.")
 
 setuptools.setup(
     name="bglibpy",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     packages=setuptools.find_packages(include=['bglibpy', 'bglibpy.*']),
     author="Blue Brain Project, EPFL",
     description="The Pythonic Blue Brain simulator access",

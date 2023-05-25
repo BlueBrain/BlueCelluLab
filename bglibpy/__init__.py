@@ -8,11 +8,6 @@ Python library for running single cell bglib templates
          Do not distribute without further notice.
 
 """
-
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
-
 # pylint: disable=W0401, W0611
 
 try:
