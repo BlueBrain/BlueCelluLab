@@ -17,3 +17,6 @@ coverage.xml
 *.DS_STORE
 .tox-info.json
 nrnivmodl.log
+.mypy_cache
+.ruff_cache
+.pytest_cache
