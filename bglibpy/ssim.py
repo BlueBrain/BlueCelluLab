@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd

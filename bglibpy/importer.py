@@ -10,9 +10,6 @@
 
 import os
 import pkg_resources
-from pathlib import Path
-
-# pylint: disable=F0401
 
 
 #####

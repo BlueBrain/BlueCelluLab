@@ -380,7 +380,7 @@ class greensFunctionCalculator:
         GIt_awaysoma = GIt_awaysoma[0:tmax / dt]
         t = t[0:tmax / dt]
 
-        import matplotlib.pyplot as pl
+        # import matplotlib.pyplot as pl
         # pl.plot(t,Gt_synsoma,'b')
         # pl.plot(t,Gt_synsyn,'r')
         # pl.plot(t,GIt_synsoma + GIt_awaysoma, 'g')

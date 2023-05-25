@@ -87,7 +87,7 @@ def test_ssim_intersect_pre_gids_multipopulation():
         parent_dir
         / "examples"
         / "sim_quick_scx_sonata_multicircuit"
-        / f"simulation_config_noinput.json"
+        / "simulation_config_noinput.json"
     )
     cell_ids = [("NodeA", 0), ("NodeA", 1)]
 
@@ -111,7 +111,7 @@ def test_merge_pre_spike_trains_edge_case():
         parent_dir
         / "examples"
         / "sim_quick_scx_sonata_multicircuit"
-        / f"simulation_config_noinput.json"
+        / "simulation_config_noinput.json"
     )
     cell_id = ("NodeA", 0)
     ssim = SSim(sonata_sim_path)

@@ -27,7 +27,6 @@ from bglibpy.stimuli import (
 from bglibpy.exceptions import BGLibPyError
 from bglibpy.cell.stimuli_generator import gen_shotnoise_signal
 from bglibpy.cell import SonataProxy
-from bglibpy.exceptions import BGLibPyError
 
 script_dir = Path(__file__).resolve().parent.parent
 

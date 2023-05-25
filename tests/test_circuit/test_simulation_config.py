@@ -12,7 +12,6 @@ from bglibpy.circuit.config.sections import (
     ConnectionOverrides,
     MechanismConditions,
 )
-from bglibpy.circuit.config.simulation_config import BluepySimulationConfig
 from bglibpy.stimuli import Noise, Hyperpolarizing
 from tests.helpers.os_utils import cwd
 

@@ -9,7 +9,6 @@ import json
 import os
 
 import numpy as np
-from pytest import approx
 import pytest
 
 import bglibpy

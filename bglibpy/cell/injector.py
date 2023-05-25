@@ -356,7 +356,7 @@ class InjectableMixin:
 
         mean = stimulus.mean_percent / 100 * rel_prop
         if mean < 0 and abs(mean) > 2 * sigma:
-            warnings.warn(f"relative ornstein uhlenbeck signal is mostly zero.")
+            warnings.warn("relative ornstein uhlenbeck signal is mostly zero.")
 
         rng = self._get_ornstein_uhlenbeck_rand(stim_count, stimulus.seed)
         tvec, svec = gen_ornstein_uhlenbeck(

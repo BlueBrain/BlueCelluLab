@@ -9,8 +9,6 @@ import pytest
 from bglibpy.circuit import CellId, SonataCircuitAccess
 from bglibpy.circuit.circuit_access import EmodelProperties, get_synapse_connection_parameters
 from bglibpy.circuit import SynapseProperty
-from bglibpy.exceptions import BGLibPyError
-from bglibpy.circuit.config.sections import ConnectionOverrides
 
 
 parent_dir = Path(__file__).resolve().parent.parent
