@@ -1,0 +1,20 @@
+Contributors
+==================
+
+* Werner Van Geit
+* Anil Tuncel
+* Mike Gevaert
+* Ben Torben Nielsen
+* Eilif Muller
+* Blue Brain HPC Team
+* Alexis Arnaudon
+* Andras Ecker
+* Andrew Hale
+* Arseny Povolotsky
+* Eduard Subert
+* Gianluca Ficarelli
+* Giuseppe Chindemi
+* Joseph Tharayil
+* Liesbeth Vanharpe
+* Pranav Rai
+* Sirio Bolanos Puchet

@@ -1,28 +1,10 @@
-Authors and Contributors
+Authors
 ========================
 
-Authors
----------------
+This software was developed at the Blue Brain Project, EPFL:
 
 * Werner Van Geit
-* Ben Torbien Nielsen
-* Eilif Muller
 * Anil Tuncel
 * Mike Gevaert
-
-
-Contributors
---------------
-
-* Blue Brain HPC Team
-* Alexis Arnaudon
-* Andras Ecker
-* Andrew Hale
-* Arseny Povolotsky
-* Eduard Subert
-* Gianluca Ficarelli
-* Giuseppe Chindemi
-* Joseph Tharayil
-* Liesbeth Vanharpe
-* Pranav Rai
-* Sirio Bolanos Puchet
+* Ben Torben Nielsen
+* Eilif Muller
