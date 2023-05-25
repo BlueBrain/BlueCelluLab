@@ -1,4 +1,0 @@
-include:
-   - project: cells/ci
-     file:
-        - /ci/pipelines/cells.bglibpy.yml
