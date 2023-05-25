@@ -4,15 +4,18 @@ import re
 
 import pandas as pd
 
+from bglibpy import BLUEPY_AVAILABLE
 from bglibpy.circuit.circuit_access import CircuitAccess
 from bglibpy.circuit.synapse_properties import SynapseProperty
-from bglibpy.exceptions import ConfigError, TargetDoesNotExist
+from bglibpy.exceptions import ConfigError, TargetDoesNotExist, ExtraDependencyMissingError
 
 
 class SimulationValidator:
     """Validates the simulation configuration, should be called before simulation."""
 
     def __init__(self, circuit_access: CircuitAccess) -> None:
+        if not BLUEPY_AVAILABLE:
+            raise ExtraDependencyMissingError("bluepy")
         self.circuit_access = circuit_access
 
     def validate(self) -> None:

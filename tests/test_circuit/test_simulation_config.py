@@ -46,8 +46,6 @@ hipp_sim_with_projection = (
 def test_non_existing_config():
     with pytest.raises(FileNotFoundError):
         SonataSimulationConfig(parent_dir / "examples" / "non_existing_config")
-    with pytest.raises(FileNotFoundError):
-        BluepySimulationConfig(str(parent_dir / "examples" / "non_existing_config"))
 
 
 def test_init_with_snap_simulation_config():

@@ -15,7 +15,7 @@ sonata_conf = (
 blueconfig = (
     script_dir
     / "examples"
-    / "circuit_twocell_example1"
+    / "legacy_circuitconfig"
     / "CircuitConfig"
 )
 
@@ -23,7 +23,6 @@ blueconfig = (
 def test_determine_circuit_format():
     """Test the determine_circuit_format function."""
     assert determine_circuit_format(SonataSimulationConfig(sonata_conf)) == CircuitFormat.SONATA
-    assert determine_circuit_format(BluepySimulationConfig(str(blueconfig))) == CircuitFormat.BLUECONFIG
     assert determine_circuit_format(sonata_conf) == CircuitFormat.SONATA
     assert determine_circuit_format(blueconfig) == CircuitFormat.BLUECONFIG
 

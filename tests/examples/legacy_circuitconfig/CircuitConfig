@@ -1,0 +1,14 @@
+Run Default
+{
+
+  MorphologyPath /dir/l5/release/2012.07.23/morphologies/h5
+  METypePath ../circuit_twocell_example1/ccells/
+  MeshPath /dir/l5/release/2012.07.23/meshes
+  CircuitPath ../circuit_twocell_example1
+  nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+  TargetFile /dir/l5/release/2012.07.23/circuit/SomatosensoryCxS1-v4.lowerCellDensity.r151/O1/merged_circuit/default_user.target
+  BioName SomatosensoryCxS1-v4.lowerCellDensity.r151
+  CentralHyperColumn 2
+
+}
+

@@ -26,9 +26,6 @@ setuptools.setup(
         "bluepysnap>=1.0.5,<2.0.0",
         "pydantic>=1.10.2"
         ],
-    extras_require={
-        "blueconfig": ["bluepy-configfile>=0.1.18", "bluepy[bbp]>=2.5.0"],
-    },
     keywords=[
         'computational neuroscience',
         'simulation',
