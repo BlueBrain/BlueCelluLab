@@ -17,10 +17,9 @@ Changelog
 
 Refer to CHANGELOG.rst.
 
-
 Copyright
 ---------
 
-Copyright (c) BBP/EPFL 2010-2021;
-All rights reserved.
-Do not distribute without further notice.
+This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0.html>`_ 
+
+For MOD files for which the original source is available on ModelDB, any specific licenses on mentioned on ModelDB, or the generic License of ModelDB apply.
