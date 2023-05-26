@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-Python library for running single cell bglib templates
-
-@remarks Copyright (c) BBP/EPFL 2012; All rights reserved.
-         Do not distribute without further notice.
-
-"""
+"""Python library for running single cell bglib templates."""
 # pylint: disable=W0401, W0611
 
 try:
