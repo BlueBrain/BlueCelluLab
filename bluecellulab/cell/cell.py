@@ -109,7 +109,6 @@ class Cell(InjectableMixin, PlottableMixin):
         self.basal = [x for x in self.cell.getCell().basal]
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
-        self.myelin = [x for x in self.cell.getCell().myelin]
         self.all = [x for x in self.cell.getCell().all]
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
@@ -163,7 +162,6 @@ class Cell(InjectableMixin, PlottableMixin):
             self.secname_to_hsection[secname] = hsection
             self.secname_to_psection[secname] = psection.PSection(hsection)
 
-        # max_isec = int(self.cell.getCell().nSecAll)
         # section are not serialized yet, do it now
         if self.serialized is None:
             self.serialized = SerializedSections(self.cell.getCell())
