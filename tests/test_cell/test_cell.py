@@ -274,10 +274,9 @@ def test_get_recorded_spikes():
 @pytest.mark.v6
 def test_add_dendrogram():
     """Cell: Test get_recorded_spikes."""
-    emodel_properties = EmodelProperties()
-    emodel_properties.threshold_current = 1.1433533430099487
-    emodel_properties.holding_current = 1.4146618843078613
-    emodel_properties.ais_scaler = 1.4561502933502197
+    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
+                                         holding_current=1.4146618843078613,
+                                         ais_scaler=1.4561502933502197)
     cell = bluecellulab.Cell(
         "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
         "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
