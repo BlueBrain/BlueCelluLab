@@ -103,7 +103,12 @@ class Dendrogram:
                 fontsize=8)
 
             color_types = [
-                ('m', 'apical'), ('k', 'soma'), ('b', 'AIS'), ('r', 'basal')]
+                ('m', 'apical'),
+                ('k', 'soma'),
+                ('b', 'AIS'),
+                ('r', 'basal'),
+                ('g', 'myelin')
+            ]
             for i, (color, section_type) in enumerate(color_types):
                 pylab.text(
                     max_x -

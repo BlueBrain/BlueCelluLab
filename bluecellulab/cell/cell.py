@@ -162,8 +162,11 @@ class Cell(InjectableMixin, PlottableMixin):
             self.secname_to_hsection[secname] = hsection
             self.secname_to_psection[secname] = psection.PSection(hsection)
 
-        max_isec = int(self.cell.getCell().nSecAll)
-        for isec in range(0, max_isec):
+        # section are not serialized yet, do it now
+        if self.serialized is None:
+            self.serialized = SerializedSections(self.cell.getCell())
+
+        for isec in self.serialized.isec2sec:
             hsection = self.get_hsection(isec)
             if hsection:
                 secname = neuron.h.secname(sec=hsection)

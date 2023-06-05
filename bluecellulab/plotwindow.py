@@ -53,8 +53,10 @@ class PlotWindow:
             # print pylab.gca()._get_lines.color_cycle
             # Sorry, don't see a way but disable this warning to access this
             # pylint: disable=W0212
-            linecolors = [x for x in itertools.islice(
-                pylab.gca()._get_lines.color_cycle, 0, 50)]
+            colors = pylab.rcParams['axes.prop_cycle'].by_key()['color']
+
+            linecolors = [x for x in itertools.islice(itertools.cycle(colors), 0, 50)]
+
             # pylint: enable=W0212
 
             self.line[var_name] = pylab.Line2D(

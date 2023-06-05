@@ -40,6 +40,8 @@ class PSection:
             self.section_type = 'somatic'
         elif 'axon' in self.name:
             self.section_type = 'axonal'
+        elif 'myelin' in self.name:
+            self.section_type = 'myelin'
         else:
             raise Exception(
                 "PSection: Section of unknown type: %s" %
@@ -64,11 +66,10 @@ class PSection:
     @property
     def hparent(self):
         """Return the hoc section of the parent"""
-        try:
-            hparent = self.href().parent
-        except SystemError:
-            hparent = None
-        return hparent
+        if self.href.has_parent():
+            return self.href.parent
+        else:
+            return None
 
     @property
     def hchildren(self):

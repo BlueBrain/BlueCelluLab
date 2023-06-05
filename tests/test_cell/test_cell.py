@@ -9,6 +9,7 @@ import random
 import warnings
 from pathlib import Path
 from unittest.mock import patch
+from bluecellulab.circuit.circuit_access import EmodelProperties
 
 import numpy as np
 import pytest
@@ -268,3 +269,25 @@ def test_get_recorded_spikes():
     spikes = cell.get_recorded_spikes("soma")
     ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
     assert np.allclose(spikes, ground_truth)
+
+
+@pytest.mark.v6
+def test_add_dendrogram():
+    """Cell: Test get_recorded_spikes."""
+    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
+                                         holding_current=1.4146618843078613,
+                                         ais_scaler=1.4561502933502197)
+    cell = bluecellulab.Cell(
+        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+        template_format="v6_ais_scaler",
+        emodel_properties=emodel_properties)
+    cell.add_plot_window(['self.soma(0.5)._ref_v'])
+    output_path = "cADpyr_L2TPC_dendrogram.png"
+    cell.add_dendrogram(save_fig_path=output_path)
+    sim = bluecellulab.Simulation()
+    sim.add_cell(cell)
+    cell.start_recording_spikes(None, "soma", -30)
+    cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+    sim.run(24, cvode=False)
+    assert Path(output_path).is_file()
