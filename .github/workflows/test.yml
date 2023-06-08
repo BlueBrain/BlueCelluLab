@@ -1,4 +1,4 @@
-name: Run tests via tox
+name: CI Testing
 
 on:
     pull_request:
