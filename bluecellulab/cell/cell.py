@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 import queue
 from typing import Any, Optional
 
@@ -44,7 +45,7 @@ NeuronType = Any
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
-    def __init__(self, template_path: str, morphology_path: str,
+    def __init__(self, template_path: str | Path, morphology_path: str,
                  gid=0, record_dt=None, template_format=None,
                  emodel_properties: Optional[EmodelProperties] = None,
                  rng_settings=None):
@@ -71,6 +72,9 @@ class Cell(InjectableMixin, PlottableMixin):
         self.persistent: list[NeuronType] = []
 
         self.morphology_path = morphology_path
+
+        if isinstance(template_path, Path):
+            template_path = str(template_path)
 
         if not os.path.exists(template_path):
             raise FileNotFoundError("Couldn't find template file [%s]"
