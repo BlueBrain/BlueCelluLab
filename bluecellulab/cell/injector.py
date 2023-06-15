@@ -171,7 +171,7 @@ class InjectableMixin:
                        segx,
                        mean, variance,
                        delay,
-                       duration, seed=None, noisestim_count=None):
+                       duration, seed=None, noisestim_count=0):
         """Inject a step current with noise on top."""
         if seed is not None:
             rand = bluecellulab.neuron.h.Random(seed)
@@ -188,7 +188,7 @@ class InjectableMixin:
             self,
             stimulus,
             noise_seed=None,
-            noisestim_count=None):
+            noisestim_count=0):
         """Add a replay noise stimulus."""
         mean = (stimulus.mean_percent * self.threshold) / 100.0
         variance = (stimulus.variance * self.threshold) / 100.0
@@ -296,7 +296,7 @@ class InjectableMixin:
             section,
             segx,
             stimulus: ShotNoise,
-            shotnoise_stim_count=None):
+            shotnoise_stim_count=0):
         """Add a replay shot noise stimulus."""
         rng = self._get_shotnoise_step_rand(shotnoise_stim_count, stimulus.seed)
         tvec, svec = gen_shotnoise_signal(stimulus.decay_time, stimulus.rise_time, stimulus.rate, stimulus.amp_mean,
