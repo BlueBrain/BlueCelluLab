@@ -19,6 +19,10 @@ def test_setting_rngmodes():
     assert bluecellulab.neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
 
+    bluecellulab.RNGSettings()
+    assert bluecellulab.neuron.h.rngMode == 1
+    assert rng_obj.mode == "Random123"
+
     try:
         rng_obj.mode = "MersenneTwister"
     except Exception as e:
