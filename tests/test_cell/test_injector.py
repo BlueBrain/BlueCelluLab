@@ -308,12 +308,12 @@ class TestInjector:
         segx = 0.5
         self.cell.inject_current_clamp_signal(soma, segx, tvec, svec)
 
-        assert len(self.cell.persistent) == 3
-        assert "IClamp" in self.cell.persistent[0].hname()
-        assert self.cell.persistent[0].dur == tvec[-1]  # check duration
+        assert len(self.cell.persistent.injections) == 3
+        assert "IClamp" in self.cell.persistent.injections[0].hname()
+        assert self.cell.persistent.injections[0].dur == tvec[-1]  # check duration
         # tvec and svec are not modified
-        assert original_tvec.eq(self.cell.persistent[1]) == 1.0
-        assert original_svec.eq(self.cell.persistent[2]) == 1.0
+        assert original_tvec.eq(self.cell.persistent.injections[1]) == 1.0
+        assert original_svec.eq(self.cell.persistent.injections[2]) == 1.0
 
     def test_inject_current_clamp_via_shotnoise_signal(self):
         """Unit test for inject_current_clamp_signal using a shotnoise_step."""
@@ -348,13 +348,13 @@ class TestInjector:
         segx = 0.5
         reversal = 1e-3
         self.cell.inject_dynamic_clamp_signal(soma, segx, tvec, svec, reversal)
-        assert len(self.cell.persistent) == 3
-        assert "SEClamp" in self.cell.persistent[0].hname()
-        assert self.cell.persistent[0].amp1 == reversal
-        assert self.cell.persistent[0].dur1 == tvec[-1]  # check duration
+        assert len(self.cell.persistent.injections) == 3
+        assert "SEClamp" in self.cell.persistent.injections[0].hname()
+        assert self.cell.persistent.injections[0].amp1 == reversal
+        assert self.cell.persistent.injections[0].dur1 == tvec[-1]  # check duration
         # tvec and svec are modified
-        assert original_tvec.eq(self.cell.persistent[1]) != 1.0
-        assert original_svec.eq(self.cell.persistent[2]) != 1.0
+        assert original_tvec.eq(self.cell.persistent.injections[1]) != 1.0
+        assert original_svec.eq(self.cell.persistent.injections[2]) != 1.0
 
     def test_add_replay_relative_shotnoise(self):
         """Unit test for add_replay_relative_shotnoise."""
