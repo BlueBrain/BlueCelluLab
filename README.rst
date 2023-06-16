@@ -1,5 +1,5 @@
-Bluecellulab
-=======
+BlueCelluLab
+============
 
 +----------------+------------+
 | Latest Release | |pypi|     |
@@ -18,22 +18,57 @@ Bluecellulab
 
 BlueCelluLab is designed to do simulation and experiment on a single cell or a group of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally.
 
+Citation
+========
 
-Testing
--------
+When you use this BlueCelluLab software for your research, we ask you to cite the following publication (this includes poster presentations):
 
-To run the tests in a python environment, use the following command::
+.. code-block:: 
 
-    tox
+    @article {TBD Zenodo}
 
+Support
+=======
 
-Changelog
----------
+We are providing support on `Gitter <https://gitter.im/BlueBrain/BlueCelluLab>`_. We suggest you create tickets on the `Github issue tracker <https://github.com/BlueBrain/BlueCelluLab/issues>`_ in case you encounter problems while using the software or if you have some suggestions.
 
-Refer to CHANGELOG.rst.
+Main dependencies
+=================
+
+* `Python 3.8+ <https://www.python.org/downloads/release/python-380/>`_
+* `Neuron 7.4+ <http://neuron.yale.edu/>`_ (compiled with Python support)
+
+Installation
+============
+
+BlueCelluLab can be pip installed with the following command:
+
+.. code-block:: python
+
+    pip install bluecellulab
+
+Quick Start
+===========
+
+TBD, a fairly simple code block that generates a figure or so
+
+Tutorial
+========
+
+A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `tutorial page <Tutorial.rst>`_.
+
+API Documentation
+=================
+
+The API documentation can be found on `ReadTheDocs <https://bluecellulab.readthedocs.io>`_.
+
+Funding & Acknowledgements
+==========================
+
+The development and maintenance of this code is supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government's ETH Board of the Swiss Federal Institutes of Technology.
 
 Copyright
----------
+=========
 
 This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0.html>`_ 
 
