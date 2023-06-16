@@ -38,7 +38,7 @@ from bluecellulab.stimuli import (
 
 class InjectableMixin:
     """Mixin responsible of injections to the cell.
-       Important Usage Note: Adds the instantiated NEURON objects to
+       Important Usage Note: Adds the instantiated Neuron objects to
         self.persistent to explicitly destroy them when their lifetime ends.
     """
 
@@ -58,7 +58,7 @@ class InjectableMixin:
                     stimulus.amp_start,
                     stimulus.frequency,
                     stimulus.width)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
         return tstim
 
     def add_step(self, start_time, stop_time, level, section=None, segx=0.5):
@@ -69,7 +69,7 @@ class InjectableMixin:
         tstim = bluecellulab.neuron.h.TStim(segx, sec=section)
         duration = stop_time - start_time
         tstim.pulse(start_time, duration, level)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
         return tstim
 
     def add_ramp(self, start_time, stop_time, start_level, stop_level,
@@ -89,7 +89,7 @@ class InjectableMixin:
             0.0,
             0.0)
 
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
         return tstim
 
     def add_voltage_clamp(
@@ -127,7 +127,7 @@ class InjectableMixin:
         if current_record_dt is None:
             current_record_dt = self.record_dt
         vclamp = bluecellulab.neuron.h.SEClamp(segx, sec=section)
-        self.persistent.injections.append(vclamp)
+        self.persistent.append(vclamp)
 
         vclamp.amp1 = level
         vclamp.dur1 = stop_time
@@ -164,7 +164,7 @@ class InjectableMixin:
                 self.rng_settings.stimulus_seed + 500,
                 self.gid + 300)
 
-        self.persistent.injections.append(rng)
+        self.persistent.append(rng)
         return rng
 
     def add_noise_step(self, section,
@@ -180,8 +180,8 @@ class InjectableMixin:
 
         tstim = bluecellulab.neuron.h.TStim(segx, rand, sec=section)
         tstim.noise(delay, duration, mean, variance)
-        self.persistent.injections.append(rand)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(rand)
+        self.persistent.append(tstim)
         return tstim
 
     def add_replay_noise(
@@ -209,7 +209,7 @@ class InjectableMixin:
         tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)
         amp = self.hypamp
         tstim.pulse(stimulus.delay, stimulus.duration, amp)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
         return tstim
 
     def add_replay_relativelinear(self, stimulus):
@@ -217,7 +217,7 @@ class InjectableMixin:
         tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)
         amp = stimulus.percent_start / 100.0 * self.threshold
         tstim.pulse(stimulus.delay, stimulus.duration, amp)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
 
         return tstim
 
@@ -234,15 +234,11 @@ class InjectableMixin:
         else:
             raise BluecellulabError("Shot noise stimulus requires Random123")
 
-        self.persistent.injections.append(rng)
+        self.persistent.append(rng)
         return rng
 
     def _get_shotnoise_step_rand(self, shotnoise_stim_count, seed=None):
         """Return rng for shot noise step stimulus"""
-        if self.rng_settings is None:
-            raise BluecellulabError(
-                "Shotnoise requires the rng_settings attribute of the Cell to be set."
-            )
         if self.rng_settings.mode == "Random123":
             seed1 = shotnoise_stim_count + 2997
             seed2 = self.rng_settings.stimulus_seed + 19216
@@ -254,7 +250,7 @@ class InjectableMixin:
         else:
             raise BluecellulabError("Shot noise stimulus requires Random123")
 
-        self.persistent.injections.append(rng)
+        self.persistent.append(rng)
         return rng
 
     def inject_current_clamp_signal(self, section, segx, tvec, svec):
@@ -263,9 +259,9 @@ class InjectableMixin:
         cs.dur = tvec[-1]
         svec.play(cs._ref_amp, tvec, 1)
 
-        self.persistent.injections.append(cs)
-        self.persistent.injections.append(tvec)
-        self.persistent.injections.append(svec)
+        self.persistent.append(cs)
+        self.persistent.append(tvec)
+        self.persistent.append(svec)
         return tvec, svec
 
     def inject_dynamic_clamp_signal(self, section, segx, tvec, svec, reversal):
@@ -286,9 +282,9 @@ class InjectableMixin:
             [1 / x if x > 1E-9 and x < 1E9 else 1E9 for x in svec])
         svec.play(clamp._ref_rs, tvec, 1)
 
-        self.persistent.injections.append(clamp)
-        self.persistent.injections.append(tvec)
-        self.persistent.injections.append(svec)
+        self.persistent.append(clamp)
+        self.persistent.append(tvec)
+        self.persistent.append(svec)
         return tvec, svec
 
     def add_replay_shotnoise(
@@ -401,9 +397,9 @@ class InjectableMixin:
         if section is None:
             section = self.soma
         pulse = bluecellulab.neuron.h.IClamp(segx, sec=section)
-        self.persistent.injections.append(pulse)
-        self.persistent.injections.append(time)
-        self.persistent.injections.append(currents)
+        self.persistent.append(pulse)
+        self.persistent.append(time)
+        self.persistent.append(currents)
         setattr(pulse, 'del', start_time)
         pulse.dur = stop_time - start_time
         currents.play(pulse._ref_amp, time)
@@ -439,10 +435,5 @@ class InjectableMixin:
             section = self.soma
         tstim = bluecellulab.neuron.h.TStim(segx, sec=section)
         tstim.sin(amp, start_time, duration, frequency)
-        self.persistent.injections.append(tstim)
+        self.persistent.append(tstim)
         return tstim
-
-    def clear_injector(self):
-        """Delete the NEURON state comes with injector."""
-        for neuron_obj in self.persistent.injections:
-            del neuron_obj  # call del explicitly

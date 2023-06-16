@@ -42,13 +42,6 @@ from bluecellulab.synapse import SynapseFactory, Synapse
 NeuronType = Any
 
 
-class CellPersistent:
-    """Stores the persistent NEURON objects to be deleted explicitly."""
-    def __init__(self):
-        self.injections: list[NeuronType] = []
-        self.general: list[NeuronType] = []
-
-
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
@@ -76,7 +69,7 @@ class Cell(InjectableMixin, PlottableMixin):
         super().__init__()
         # Persistent objects, like clamps, that exist as long
         # as the object exists
-        self.persistent = CellPersistent()
+        self.persistent: list[NeuronType] = []
 
         self.morphology_path = morphology_path
 
@@ -733,10 +726,10 @@ class Cell(InjectableMixin, PlottableMixin):
                     seed2 + 350)
             else:
                 exprng = bluecellulab.neuron.h.Random()
-                self.persistent.general.append(exprng)
+                self.persistent.append(exprng)
 
                 uniformrng = bluecellulab.neuron.h.Random()
-                self.persistent.general.append(uniformrng)
+                self.persistent.append(uniformrng)
 
                 if self.rng_settings.mode == 'Compatibility':
                     exp_seed1 = sid * 100000 + 200
@@ -770,8 +763,8 @@ class Cell(InjectableMixin, PlottableMixin):
             tbins_vec.x[0] = 0.0
             rate_vec = bluecellulab.neuron.h.Vector(1)
             rate_vec.x[0] = spont_minis_rate
-            self.persistent.general.append(tbins_vec)
-            self.persistent.general.append(rate_vec)
+            self.persistent.append(tbins_vec)
+            self.persistent.append(rate_vec)
             self.ips[syn_id].setTbins(tbins_vec)
             self.ips[syn_id].setRate(rate_vec)
 
@@ -987,9 +980,7 @@ class Cell(InjectableMixin, PlottableMixin):
                 del recording
 
         if hasattr(self, 'persistent'):
-            for persistent_object in self.persistent.injections:
-                del persistent_object
-            for persistent_object in self.persistent.general:
+            for persistent_object in self.persistent:
                 del persistent_object
 
     @property
