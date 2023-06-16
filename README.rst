@@ -55,7 +55,7 @@ TBD, a fairly simple code block that generates a figure or so
 Tutorial
 ========
 
-A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `tutorial page <Tutorial.rst>`_.
+A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `examples page <examples/README.rst>`_.
 
 API Documentation
 =================
