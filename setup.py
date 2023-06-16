@@ -21,10 +21,7 @@ if sys.version_info[:2] < (3, 7):
 
 setuptools.setup(
     name="bluecellulab",
-    use_scm_version={
-        'version_scheme': 'python-simplified-semver',
-        'local_scheme': 'no-local-version'
-    },
+    use_scm_version=True,
     setup_requires=['setuptools_scm'],
     packages=setuptools.find_packages(include=['bluecellulab', 'bluecellulab.*']),
     author="Blue Brain Project, EPFL",
