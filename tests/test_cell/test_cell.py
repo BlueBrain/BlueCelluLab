@@ -287,7 +287,6 @@ def test_add_dendrogram():
     cell.add_dendrogram(save_fig_path=output_path)
     sim = bluecellulab.Simulation()
     sim.add_cell(cell)
-    cell.start_recording_spikes(None, "soma", -30)
     cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
     sim.run(24, cvode=False)
     assert Path(output_path).is_file()

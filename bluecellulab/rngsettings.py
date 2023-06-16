@@ -49,7 +49,10 @@ class RNGSettings(metaclass=Singleton):
 
         self._mode = ""
         if mode is None:
-            self.mode = circuit_access.config.rng_mode if circuit_access else "Compatibility"
+            if circuit_access is not None:
+                self.mode = circuit_access.config.rng_mode if circuit_access else "Compatibility"
+            else:
+                self.mode = "Random123"
         else:
             self.mode = mode
 
