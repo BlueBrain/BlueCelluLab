@@ -57,8 +57,8 @@ def error_context(context_info: str):
     Useful for NEURON/HOC attribute/lookup errors.
     E.g. 'AttributeError: 'hoc.HocObject' object has no attribute' or
     LookupError: 'X' is not a defined hoc variable name messages are
-      often not very helpful. Extra context information can be added
-        to the error message.
+    often not very helpful. Extra context information can be added
+    to the error message.
     """
     try:
         yield

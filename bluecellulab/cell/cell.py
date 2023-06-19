@@ -593,20 +593,18 @@ class Cell(InjectableMixin, PlottableMixin):
 
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, location, threshold: float = -30.0):
+    def create_netcon_spikedetector(self, target, location:str , threshold: float = -30.0):
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
         connects to target
+
         Args:
             target: target point process
-            location (str): the spike detection location
-            threshold (float): spike detection threshold
+            location: the spike detection location
+            threshold: spike detection threshold
 
-        Returns
-        -------
-
-        NetCon : Neuron netcon object
+        Returns: Neuron netcon object
         """
         if location == "soma":
             sec = self.cell.getCell().soma[0]
