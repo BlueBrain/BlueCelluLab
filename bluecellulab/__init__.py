@@ -1,4 +1,4 @@
-"""Python library for running single cell bglib templates."""
+"""Package for performing single cell or network simulations and experiments."""
 # pylint: disable=W0401, W0611
 
 try:
