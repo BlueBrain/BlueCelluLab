@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Input/output operations from circuits and simulations."""
 
 from __future__ import annotations
@@ -25,8 +24,8 @@ from bluecellulab.circuit.node_id import CellId
 
 
 def parse_outdat(path: str | Path) -> dict[CellId, np.ndarray]:
-    """Parse the replay spiketrains in a out.dat formatted file
-       pointed to by path"""
+    """Parse the replay spiketrains in a out.dat formatted file pointed to by
+    path."""
     spikes = bluepy.impl.spike_report.SpikeReport.load(path).get()
     # convert Series to DataFrame with 2 columns for `groupby` operation
     spike_df = spikes.to_frame().reset_index()

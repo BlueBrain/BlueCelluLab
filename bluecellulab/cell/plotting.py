@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Plotting functions for the cell module."""
 
 from __future__ import annotations
@@ -84,8 +83,8 @@ class PlottableMixin:
             self.fih_plots = bluecellulab.neuron.h.FInitializeHandler(1, self.plot_callback)
 
     def weights_callback(self):
-        """Callback function that updates the delayed weights,
-        when a certain delay has been reached"""
+        """Callback function that updates the delayed weights, when a certain
+        delay has been reached."""
         while not self.delayed_weights.empty() and \
                 abs(self.delayed_weights.queue[0][0] - bluecellulab.neuron.h.t) < \
                 bluecellulab.neuron.h.dt:

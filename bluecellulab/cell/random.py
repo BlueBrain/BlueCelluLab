@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Contains probability distributions."""
 
 from math import log, sqrt
@@ -24,9 +23,9 @@ NEURON_RNG = Any
 
 # Gamma-distributed sample generator (not available in NEURON)
 def gamma(rng: NEURON_RNG, a: float, b: float, N: int = 1) -> neuron.h.Vector:
-    """
-    Sample N variates from a gamma distribution with parameters shape = a, scale = b
-    using the NEURON random number generator rng.
+    """Sample N variates from a gamma distribution with parameters shape = a,
+    scale = b using the NEURON random number generator rng.
+
     Uses the algorithm by Marsaglia and Tsang 2001.
     """
     if a < 1:

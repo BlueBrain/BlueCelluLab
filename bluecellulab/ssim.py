@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Ssim class of bluecellulab that loads a circuit simulation to do cell simulations."""
+"""Ssim class of bluecellulab that loads a circuit simulation to do cell
+simulations."""
 
 # pylint: disable=C0103, R0914, R0912, F0401, R0101
 
@@ -137,7 +137,7 @@ class SSim:
         add_shotnoise_stimuli=False,
         add_ornstein_uhlenbeck_stimuli=False,
     ):
-        """ Instantiate a list of cells
+        """Instantiate a list of cells.
 
         Parameters
         ----------
@@ -295,7 +295,7 @@ class SSim:
                      add_shotnoise_stimuli=False,
                      add_ornstein_uhlenbeck_stimuli=False
                      ):
-        """Instantiate all the stimuli"""
+        """Instantiate all the stimuli."""
         stimuli_entries = self.circuit_access.config.get_all_stimuli_entries()
         # Also add the injections / stimulations as in the cortical model
         # check in which StimulusInjects the gid is a target
@@ -406,7 +406,10 @@ class SSim:
 
     @staticmethod
     def _intersect_pre_gids_cell_ids_multipopulation(syn_descriptions, pre_cell_ids: list[CellId]) -> pd.DataFrame:
-        """Return the synapse descriptions with pre_cell_ids intersecte. Supports multipopulations."""
+        """Return the synapse descriptions with pre_cell_ids intersecte.
+
+        Supports multipopulations.
+        """
         filtered_rows = syn_descriptions.apply(
             lambda row: any(
                 cell.population_name == row["source_population_name"] and row[SynapseProperty.PRE_GID] == cell.id
@@ -437,7 +440,7 @@ class SSim:
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts) -> dict[CellId, np.ndarray]:
-        """Merge presynaptic spike train dicts"""
+        """Merge presynaptic spike train dicts."""
         filtered_dicts = [d for d in train_dicts if d not in [None, {}, [], ()]]
 
         all_keys = set().union(*[d.keys() for d in filtered_dicts])
@@ -454,7 +457,7 @@ class SSim:
             source=None,
             dest=None,
             user_pre_spike_trains: None | dict[CellId, Iterable] = None):
-        """Instantiate the (replay and real) connections in the network"""
+        """Instantiate the (replay and real) connections in the network."""
         if add_replay:
             pre_spike_trains = self.simulation_access.get_spikes()
         else:
@@ -538,7 +541,7 @@ class SSim:
     def _instantiate_synapse(self, cell_id: CellId, syn_id, syn_description,
                              add_minis=False, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
-        syn_description"""
+        syn_description."""
         pre_cell_id = CellId(cell_id.population_name, int(syn_description[SynapseProperty.PRE_GID]))
         syn_connection_parameters = get_synapse_connection_parameters(
             circuit_access=self.circuit_access,
@@ -565,14 +568,14 @@ class SSim:
                     mini_frequencies=mini_frequencies)
 
     def initialize_synapses(self):
-        """ Resets the state of all synapses of all cells to initial values """
+        """Resets the state of all synapses of all cells to initial values."""
         for cell in self.cells.values():
             cell.initialize_synapses()
 
     def run(self, t_stop=None, v_init=None, celsius=None, dt=None,
             forward_skip=True, forward_skip_value=None,
             cvode=False, show_progress=False):
-        """Simulate the SSim
+        """Simulate the SSim.
 
         Parameters
         ----------
@@ -652,7 +655,7 @@ class SSim:
         return self.simulation_access.get_soma_voltage(cell_id, t_start, t_stop, t_step)
 
     def get_mainsim_time_trace(self) -> np.ndarray:
-        """Get the time trace from the main simulation"""
+        """Get the time trace from the main simulation."""
         return self.simulation_access.get_soma_time_trace()
 
     def get_time(self) -> np.ndarray:
@@ -688,11 +691,14 @@ class SSim:
                 del self.cells[cell_id]
 
     def __del__(self):
-        """Destructor. Deletes all allocated NEURON objects."""
+        """Destructor.
+
+        Deletes all allocated NEURON objects.
+        """
         self.delete()
 
     def fetch_cell_kwargs(self, cell_id: CellId) -> dict:
-        """Get the kwargs to instantiate a Cell object"""
+        """Get the kwargs to instantiate a Cell object."""
         emodel_properties = self.circuit_access.get_emodel_properties(cell_id)
         cell_kwargs = {
             'template_path': self.circuit_access.emodel_path(cell_id),
@@ -700,7 +706,6 @@ class SSim:
             'gid': cell_id.id,
             'record_dt': self.record_dt,
             'rng_settings': self.rng_settings,
-
             'template_format': self.circuit_access.get_template_format(),
             'emodel_properties': emodel_properties,
         }
@@ -708,7 +713,7 @@ class SSim:
         return cell_kwargs
 
     def create_cell_from_circuit(self, cell_id: CellId) -> bluecellulab.Cell:
-        """Create a Cell object from the circuit"""
+        """Create a Cell object from the circuit."""
         cell_kwargs = self.fetch_cell_kwargs(cell_id)
         return bluecellulab.Cell(template_path=cell_kwargs['template_path'],
                                  morphology_path=cell_kwargs['morphology_path'],

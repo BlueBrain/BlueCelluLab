@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cell class."""
 
 from __future__ import annotations
@@ -49,7 +48,7 @@ class Cell(InjectableMixin, PlottableMixin):
                  gid=0, record_dt=None, template_format=None,
                  emodel_properties: Optional[EmodelProperties] = None,
                  rng_settings=None):
-        """ Constructor.
+        """Constructor.
 
         Parameters
         ----------
@@ -157,9 +156,8 @@ class Cell(InjectableMixin, PlottableMixin):
     def init_psections(self):
         """Initialize the psections list.
 
-        This list contains the Python representation of the psections
-        of this morphology.
-
+        This list contains the Python representation of the psections of
+        this morphology.
         """
         for hsection in self.all:
             secname = neuron.h.secname(sec=hsection)
@@ -199,7 +197,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
         integer: section id
                  section id of the section with name secname
-
         """
         return self.secname_to_psection[secname].section_id
 
@@ -241,7 +238,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
         psection: PSection
                   PSection object of the specified section id or name
-
         """
         if section_id is not None:
             return self.psections[section_id]
@@ -263,7 +259,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
         hsection : nrnSection
                    The requested hoc section
-
         """
 
         # section are not serialized yet, do it now
@@ -312,7 +307,7 @@ class Cell(InjectableMixin, PlottableMixin):
             self._default_disable_ttx()
 
     def _default_enable_ttx(self):
-        """Default enable_ttx implementation"""
+        """Default enable_ttx implementation."""
 
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
@@ -320,7 +315,7 @@ class Cell(InjectableMixin, PlottableMixin):
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
     def _default_disable_ttx(self):
-        """Default disable_ttx implementation"""
+        """Default disable_ttx implementation."""
 
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
@@ -338,7 +333,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
         area : float
                Total surface area of the cell
-
         """
         # pylint: disable=C0103
         area = 0
@@ -368,7 +362,6 @@ class Cell(InjectableMixin, PlottableMixin):
         x : float
             The x coordinate on section with secid, where the synapse
             can be placed
-
         """
         if syn_offset < 0.0:
             syn_offset = 0.0
@@ -415,7 +408,6 @@ class Cell(InjectableMixin, PlottableMixin):
                    Variable to be recorded
         dt : float
              Recording time step
-
         """
 
         recording = neuron.h.Vector()
@@ -432,7 +424,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     @staticmethod
     def get_precise_record_dt(dt):
-        """Get a more precise record_dt to make time points faill on dts"""
+        """Get a more precise record_dt to make time points faill on dts."""
         return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
     def add_recordings(self, var_names, dt=None):
@@ -444,7 +436,6 @@ class Cell(InjectableMixin, PlottableMixin):
                     Variables to be recorded
         dt : float
              Recording time step
-
         """
 
         for var_name in var_names:
@@ -511,8 +502,8 @@ class Cell(InjectableMixin, PlottableMixin):
                            popids=(0, 0), extracellular_calcium=None):
         """Add synapse based on the syn_description to the cell.
 
-        This operation can fail.  Returns True on success, otherwise False.
-
+        This operation can fail.  Returns True on success, otherwise
+        False.
         """
         if condition_parameters is None:
             condition_parameters = Conditions.init_empty()
@@ -616,7 +607,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
 
         NetCon : Neuron netcon object
-
         """
         if location == "soma":
             sec = self.cell.getCell().soma[0]
@@ -632,7 +622,7 @@ class Cell(InjectableMixin, PlottableMixin):
         return netcon
 
     def start_recording_spikes(self, target, location: str, threshold: float = -30):
-        """Start recording spikes in the current cell
+        """Start recording spikes in the current cell.
 
         Args:
             target: target point process
@@ -645,7 +635,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.recordings[f"spike_detector_{location}_{threshold}"] = spike_vec
 
     def get_recorded_spikes(self, location: str, threshold: float = -30) -> list[float]:
-        """Get recorded spikes in the current cell
+        """Get recorded spikes in the current cell.
 
         Args:
             location: the spike detection location
@@ -811,7 +801,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
 
         list of sections at the specified distance from the soma
-
         """
         return [x for x in self.cell.getCell().locateBAPSite(seclist_name,
                                                              distance)]
@@ -823,7 +812,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
 
         list of sections : child sections of the specified parent section
-
         """
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
         children = []
@@ -839,7 +827,6 @@ class Cell(InjectableMixin, PlottableMixin):
         -------
 
         section : parent section of the specified child section
-
         """
         return neuron.h.SectionRef(sec=childsection).parent
 
@@ -890,8 +877,8 @@ class Cell(InjectableMixin, PlottableMixin):
             location1=None,
             location2=None,
             projection=None):
-        """Calculate euclidian distance between positions on two sections
-           Uses bluecellulab.cell.section_distance.EuclideanSectionDistance
+        """Calculate euclidian distance between positions on two sections Uses
+        bluecellulab.cell.section_distance.EuclideanSectionDistance.
 
         Parameters
         ----------
@@ -951,7 +938,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     @property
     def info_dict(self):
-        """Return a dictionary with all the information of this cell"""
+        """Return a dictionary with all the information of this cell."""
 
         cell_info = {}
 
@@ -985,8 +972,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
     @property
     def hsynapses(self):
-        """Contains a dictionary of all the hoc synapses
-        in the cell with as key the gid"""
+        """Contains a dictionary of all the hoc synapses in the cell with as
+        key the gid."""
         return {gid: synapse.hsynapse for (gid, synapse) in self.synapses.items()}
 
     def __del__(self):

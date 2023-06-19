@@ -30,7 +30,10 @@ class ClampMode(Enum):
 
 
 class Pattern(Enum):
-    """Enum that defaults to SONATA values. Has blueconfig overload."""
+    """Enum that defaults to SONATA values.
+
+    Has blueconfig overload.
+    """
     NOISE = "noise"
     HYPERPOLARIZING = "hyperpolarizing"
     PULSE = "pulse"

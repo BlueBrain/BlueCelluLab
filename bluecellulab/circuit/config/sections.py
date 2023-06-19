@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Classes to represent config sections."""
 
 from __future__ import annotations
@@ -115,7 +114,8 @@ class Conditions:
 
     @classmethod
     def init_empty(cls) -> Conditions:
-        """Create an empty conditions object to be used when no condition is specified."""
+        """Create an empty conditions object to be used when no condition is
+        specified."""
         return cls(
             mech_conditions=None,
             celsius=None,

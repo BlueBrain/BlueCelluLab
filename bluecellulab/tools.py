@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Static tools for BluecellulabError."""
 
 
@@ -41,12 +40,12 @@ ENV_VERBOSE_LEVEL: Optional[str] = None
 def set_verbose(level: int = 1) -> None:
     """Set the verbose level of BluecellulabError.
 
-       Parameters
-       ----------
-       level :
-               Verbose level, the higher the more verbosity.
-               Level 0 means 'completely quiet', except if some very serious
-               errors or warnings are encountered.
+    Parameters
+    ----------
+    level :
+            Verbose level, the higher the more verbosity.
+            Level 0 means 'completely quiet', except if some very serious
+            errors or warnings are encountered.
     """
     bluecellulab.VERBOSE_LEVEL = level
 
@@ -70,7 +69,7 @@ class deprecated:
 
     def __call__(self, func):
         def rep_func(*args, **kwargs):
-            """Replacement function"""
+            """Replacement function."""
             warnings.warn(
                 "Call to deprecated function {%s}. Use {%s} instead." % (
                     func.__name__, self.new_function),
@@ -89,15 +88,15 @@ class deprecated:
 def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
     """Lazily print the message to stdout depending on the verbose level.
 
-       Parameters
-       ----------
-       message : string
-                 Message to print
-       verbose_level: int
-                      Message will only be printed if the verbose level is
-                      higher or equal to this number
-        kwargs: Any
-                rest of the arguments to be used in formatting
+    Parameters
+    ----------
+    message : string
+              Message to print
+    verbose_level: int
+                   Message will only be printed if the verbose level is
+                   higher or equal to this number
+     kwargs: Any
+             rest of the arguments to be used in formatting
     """
     if verbose_level <= bluecellulab.VERBOSE_LEVEL:
         print(message.format(**kwargs))
@@ -106,22 +105,21 @@ def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
 def printv_err(message: str, verbose_level: int) -> None:
     """Print the message to stderr depending on the verbose level.
 
-       Parameters
-       ----------
-       message : string
-                 Message to print
-       verbose_level: int
-                      Message will only be printed if the verbose level is
-                      higher or equal to this number
+    Parameters
+    ----------
+    message : string
+              Message to print
+    verbose_level: int
+                   Message will only be printed if the verbose level is
+                   higher or equal to this number
     """
     if verbose_level <= bluecellulab.VERBOSE_LEVEL:
         print(message, file=sys.stderr)
 
 
 def load_nrnmechanisms(libnrnmech_path: str) -> None:
-    """
-    Load another shared library with NEURON mechanisms.
-    (Created by nrnivmodl)
+    """Load another shared library with NEURON mechanisms. (Created by
+    nrnivmodl)
 
     Parameters
     ----------
@@ -156,12 +154,11 @@ def calculate_SS_voltage(template_name, morphology_name, step_level):
 def calculate_SS_voltage_subprocess(template_name, morphology_name,
                                     step_level, check_for_spiking=False,
                                     spike_threshold=-20.0):
-    """Subprocess wrapper of calculate_SS_voltage
+    """Subprocess wrapper of calculate_SS_voltage.
 
-    if check_for_spiking is True,
-    this function will return None if the cell spikes from from 100ms to the
-    end of the simulation indicating no steady state was reached.
-
+    if check_for_spiking is True, this function will return None if the
+    cell spikes from from 100ms to the end of the simulation indicating
+    no steady state was reached.
     """
     cell = bluecellulab.Cell(template_name, morphology_name)
     cell.add_ramp(500, 5000, step_level, step_level)
@@ -237,7 +234,7 @@ def template_accepts_cvode(template_name):
 
 def search_hyp_current(template_name, morphology_name, target_voltage,
                        min_current, max_current):
-    """Search current necessary to bring cell to -85 mV"""
+    """Search current necessary to bring cell to -85 mV."""
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
         template_name, morphology_name, med_current)
@@ -253,14 +250,14 @@ def search_hyp_current(template_name, morphology_name, target_voltage,
 
 
 def detect_hyp_current(template_name, morphology_name, target_voltage):
-    """Search current necessary to bring cell to -85 mV"""
+    """Search current necessary to bring cell to -85 mV."""
     return search_hyp_current(template_name, morphology_name, target_voltage,
                               -1.0, 0.0)
 
 
 def detect_spike_step(template_name, morphology_name, hyp_level, inj_start,
                       inj_stop, step_level):
-    """Detect if there is a spike at a certain step level"""
+    """Detect if there is a spike at a certain step level."""
     pool = multiprocessing.Pool(processes=1)
     spike_detected = pool.apply(
         detect_spike_step_subprocess,
@@ -272,7 +269,7 @@ def detect_spike_step(template_name, morphology_name, hyp_level, inj_start,
 
 def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
                                  inj_start, inj_stop, step_level):
-    """Detect if there is a spike at a certain step level"""
+    """Detect if there is a spike at a certain step level."""
     cell = bluecellulab.Cell(template_name, morphology_name)
     cell.add_ramp(0, 5000, hyp_level, hyp_level)
     cell.add_ramp(inj_start, inj_stop, step_level, step_level)
@@ -351,7 +348,7 @@ def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
 def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
                                            start_time=None, stop_time=None,
                                            ignore_timerange=False):
-    """Subprocess wrapper of calculate_SS_voltage"""
+    """Subprocess wrapper of calculate_SS_voltage."""
     process_name = multiprocessing.current_process().name
     ssim = bluecellulab.SSim(blueconfig)
     if ignore_timerange:
@@ -383,17 +380,16 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
 
 
 class NoDaemonProcess(multiprocessing.Process):
-
-    """Class that represents a non-daemon process"""
+    """Class that represents a non-daemon process."""
 
     # pylint: disable=R0201
 
     def _get_daemon(self):
-        """Get daemon flag"""
+        """Get daemon flag."""
         return False
 
     def _set_daemon(self, value):
-        """Set daemon flag"""
+        """Set daemon flag."""
         pass
     daemon = property(_get_daemon, _set_daemon)  # type:ignore
 
@@ -404,8 +400,7 @@ class NoDaemonProcess(multiprocessing.Process):
 
 
 class NestedPool(multiprocessing.pool.Pool):
-
-    """Class that represents a MultiProcessing nested pool"""
+    """Class that represents a MultiProcessing nested pool."""
     Process = NoDaemonProcess
 
 # pylint: disable=R0913
@@ -486,7 +481,6 @@ class search_hyp_function:
 
 
 class search_hyp_function_gid:
-
     """Function object, return a tuple (gid, results)"""
 
     def __init__(self, blueconfig, **kwargs):
@@ -503,11 +497,10 @@ class search_hyp_function_gid:
 
 
 def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
-    """
-    Search, using bisection, for the current necessary to bring a cell to
-    target_voltage in a network replay for a list of gids.
-    This function will use multiprocessing to parallelize the task,
-    running one gid per available core.
+    """Search, using bisection, for the current necessary to bring a cell to
+    target_voltage in a network replay for a list of gids. This function will
+    use multiprocessing to parallelize the task, running one gid per available
+    core.
 
     Parameters
     ----------
@@ -561,17 +554,17 @@ def search_hyp_current_replay_gidlist(blueconfig, gid_list, **kwargs):
 
 def search_hyp_current_replay_imap(blueconfig, gid_list, timeout=600,
                                    cpu_count=None, **kwargs):
-    """
-    Same functionality as search_hyp_current_gidlist(), except that this
+    """Same functionality as search_hyp_current_gidlist(), except that this
     function returns an unordered generator.
-    Loop over this generator will return the unordered results one by one.
-    The results returned will be of the form
-    (gid, (current_step, (time, voltage)))
-    When there are results that take more that 'timeout' time to retrieve,
-    these results will be (None, None). The user should stop iterating the
-    generating after receiving this (None, None) result. In this case also
-    probably a broke pipe error from some of the parallel process will be
-    shown on the stdout, these can be ignored.
+
+    Loop over this generator will return the unordered results one by
+    one. The results returned will be of the form (gid, (current_step,
+    (time, voltage))) When there are results that take more that
+    'timeout' time to retrieve, these results will be (None, None). The
+    user should stop iterating the generating after receiving this
+    (None, None) result. In this case also probably a broke pipe error
+    from some of the parallel process will be shown on the stdout, these
+    can be ignored.
     """
     if cpu_count is None:
         pool = NestedPool(multiprocessing.cpu_count())
@@ -627,7 +620,7 @@ def check_empty_topology() -> bool:
 class Singleton(type):
     """Singleton metaclass implementation.
 
-        Source: https://stackoverflow.com/a/6798042/1935611
+    Source: https://stackoverflow.com/a/6798042/1935611
     """
     _instances: dict[Any, Any] = {}
 

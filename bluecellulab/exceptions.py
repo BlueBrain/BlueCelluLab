@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Custom exceptions used within the package."""
 
 
@@ -31,7 +30,7 @@ class UndefinedRNGException(BluecellulabError):
 
 
 class ConfigError(BluecellulabError):
-    """Error due to invalid settings in BlueConfig"""
+    """Error due to invalid settings in BlueConfig."""
 
 
 class NeuronEvalError(BluecellulabError):
@@ -54,6 +53,7 @@ class ExtraDependencyMissingError(BluecellulabError):
 @contextmanager
 def error_context(context_info: str):
     """Use when the attribute/lookup error needs more context information.
+
     Useful for NEURON/HOC attribute/lookup errors.
     E.g. 'AttributeError: 'hoc.HocObject' object has no attribute' or
     LookupError: 'X' is not a defined hoc variable name messages are

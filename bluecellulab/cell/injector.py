@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Contains injection functionality for the cell."""
 
 import math
@@ -38,12 +37,14 @@ from bluecellulab.stimuli import (
 
 class InjectableMixin:
     """Mixin responsible of injections to the cell.
-       Important Usage Note: Adds the instantiated Neuron objects to
-        self.persistent to explicitly destroy them when their lifetime ends.
+
+    Important Usage Note: Adds the instantiated Neuron objects to
+     self.persistent to explicitly destroy them when their lifetime ends.
     """
 
     def relativity_proportion(self, stim_mode: ClampMode) -> float:
-        """Relativity proportion used in Relative stimuli e.g. relative shotnoise."""
+        """Relativity proportion used in Relative stimuli e.g. relative
+        shotnoise."""
         if stim_mode == ClampMode.CONDUCTANCE:
             input_resistance = self.sonata_proxy.get_input_resistance().iloc[0]  # type: ignore
             return 1.0 / input_resistance
@@ -95,7 +96,7 @@ class InjectableMixin:
     def add_voltage_clamp(
             self, stop_time, level, rs=None, section=None, segx=0.5,
             current_record_name=None, current_record_dt=None):
-        """Add a voltage clamp
+        """Add a voltage clamp.
 
         Parameters
         ----------
@@ -119,7 +120,6 @@ class InjectableMixin:
         -------
 
         SEClamp (NEURON) object of the created vc
-
         """
 
         if section is None:
@@ -147,7 +147,7 @@ class InjectableMixin:
         return vclamp
 
     def _get_noise_step_rand(self, noisestim_count):
-        """Return rng for noise step stimulus"""
+        """Return rng for noise step stimulus."""
         if self.rng_settings.mode == "Compatibility":
             rng = bluecellulab.neuron.h.Random(self.gid + noisestim_count)
         elif self.rng_settings.mode == "UpdatedMCell":
@@ -238,7 +238,7 @@ class InjectableMixin:
         return rng
 
     def _get_shotnoise_step_rand(self, shotnoise_stim_count, seed=None):
-        """Return rng for shot noise step stimulus"""
+        """Return rng for shot noise step stimulus."""
         if self.rng_settings.mode == "Random123":
             seed1 = shotnoise_stim_count + 2997
             seed2 = self.rng_settings.stimulus_seed + 19216
@@ -336,7 +336,8 @@ class InjectableMixin:
     def add_ornstein_uhlenbeck(
         self, section, segx, stimulus: OrnsteinUhlenbeck, stim_count=0
     ):
-        """Add an Ornstein-Uhlenbeck process, injected as current or conductance."""
+        """Add an Ornstein-Uhlenbeck process, injected as current or
+        conductance."""
         rng = self._get_ornstein_uhlenbeck_rand(stim_count, stimulus.seed)
         tvec, svec = gen_ornstein_uhlenbeck(
             stimulus.tau,
@@ -359,8 +360,9 @@ class InjectableMixin:
     def add_relative_ornstein_uhlenbeck(
         self, section, segx, stimulus: RelativeOrnsteinUhlenbeck, stim_count=0
     ):
-        """Add an Ornstein-Uhlenbeck process, injected as current or conductance,
-        relative to cell threshold current or inverse input resistance."""
+        """Add an Ornstein-Uhlenbeck process, injected as current or
+        conductance, relative to cell threshold current or inverse input
+        resistance."""
         stim_mode = stimulus.mode
         rel_prop = self.relativity_proportion(stim_mode)
 
@@ -420,7 +422,6 @@ class InjectableMixin:
         -------
 
         (numpy array, numpy array) : time and current data
-
         """
         t_content = np.arange(start_time, stop_time, dt)
         i_content = [amplitude * math.sin(freq * (x - start_time) * (

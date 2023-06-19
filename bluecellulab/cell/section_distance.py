@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Distance computing functionality between Neuron sections."""
 
 import numpy as np
@@ -20,7 +19,7 @@ import bluecellulab
 
 
 class EuclideanSectionDistance:
-    """Calculate euclidian distance between positions on two sections
+    """Calculate euclidian distance between positions on two sections.
 
     Parameters
     ----------

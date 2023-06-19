@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """RNG settings of bluecellulab."""
 
 from typing import Optional
@@ -23,8 +22,7 @@ from bluecellulab.exceptions import UndefinedRNGException
 
 
 class RNGSettings(metaclass=Singleton):
-
-    """ Class that represents RNG settings in bluecellulab"""
+    """Class that represents RNG settings in bluecellulab."""
 
     def __init__(
             self,
@@ -32,8 +30,7 @@ class RNGSettings(metaclass=Singleton):
             circuit_access: Optional[CircuitAccess] = None,
             base_seed=None,
             base_noise_seed=None):
-        """
-        Constructor
+        """Constructor.
 
         Parameters
         ----------

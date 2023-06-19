@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Generates stimuli to be injected into cells."""
 
 import math
@@ -23,8 +22,7 @@ from bluecellulab.cell.random import gamma
 
 def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
                          duration, dt=0.25, rng=None):
-    """
-    Adds a Poisson shot noise signal with gamma-distributed amplitudes and
+    """Adds a Poisson shot noise signal with gamma-distributed amplitudes and
     bi-exponential impulse response.
 
     tau_D: bi-exponential decay time [ms]
@@ -129,9 +127,8 @@ def get_relative_shotnoise_params(mean, var, tau_D, tau_R, cv_square):
 
 
 def gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt=0.25, rng=None):
-    """
-    Adds an Ornstein-Uhlenbeck process with given correlation time,
-    standard deviation and mean value.
+    """Adds an Ornstein-Uhlenbeck process with given correlation time, standard
+    deviation and mean value.
 
     tau: correlation time [ms], white noise if zero
     sigma: standard deviation [uS]

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Class that represents a synapse in bluecellulab."""
 
 from __future__ import annotations
@@ -27,14 +26,12 @@ NeuronType = Any
 
 
 class Synapse:
-
-    """ Class that represents a synapse in bluecellulab """
+    """Class that represents a synapse in bluecellulab."""
 
     def __init__(
             self, cell, location: float, syn_id, syn_description, base_seed, popids=(0, 0),
             extracellular_calcium=None):
-        """
-        Constructor
+        """Constructor.
 
         Parameters
         ----------
@@ -200,9 +197,8 @@ class Synapse:
 
     @property
     def info_dict(self):
-        """
-        Convert the synapse info to a dict from which it can be reconstructed
-        """
+        """Convert the synapse info to a dict from which it can be
+        reconstructed."""
         synapse_dict = {}
 
         synapse_dict['synapse_id'] = self.syn_id
@@ -244,8 +240,8 @@ class GluSynapse(Synapse):
     def use_glusynapse_helper(self) -> None:
         """Python implementation of the GluSynapse helper.
 
-        This helper object will encapsulate the hoc actions
-         needed to create our plastic excitatory synapse.
+        This helper object will encapsulate the hoc actions  needed to
+        create our plastic excitatory synapse.
         """
         self.mech_name = 'GluSynapse'
 
@@ -393,8 +389,8 @@ class AmpanmdaSynapse(Synapse):
     def use_ampanmda_helper(self) -> None:
         """Python implementation of the AMPANMDA helper.
 
-        This helper object will encapsulate the hoc actions
-         needed to create our typical excitatory synapse.
+        This helper object will encapsulate the hoc actions  needed to
+        create our typical excitatory synapse.
         """
         self.mech_name = 'ProbAMPANMDA_EMS'
 

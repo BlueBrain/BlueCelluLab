@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Class that represents a connection between two cells in bluecellulab."""
 
 import bluecellulab
@@ -19,8 +18,7 @@ from bluecellulab.circuit import SynapseProperty
 
 
 class Connection:
-
-    """ Class that represents a connection between two cells in bluecellulab """
+    """Class that represents a connection between two cells in bluecellulab."""
 
     def __init__(
             self,
@@ -102,7 +100,7 @@ class Connection:
         return connection_dict
 
     def delete(self):
-        """Delete the connection"""
+        """Delete the connection."""
         for persistent_object in self.persistent:
             del persistent_object
 

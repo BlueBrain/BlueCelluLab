@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Represents a python version of NEURON Section (for drawing)."""
 
 import bluecellulab
@@ -19,8 +18,7 @@ from bluecellulab import neuron
 
 
 class PSection:
-
-    """Class that represents a cell section"""
+    """Class that represents a cell section."""
 
     def __init__(self, hsection, isec=None):
         self.L = hsection.L
@@ -65,7 +63,7 @@ class PSection:
 
     @property
     def hparent(self):
-        """Return the hoc section of the parent"""
+        """Return the hoc section of the parent."""
         if self.href.has_parent():
             return self.href.parent
         else:
@@ -73,16 +71,16 @@ class PSection:
 
     @property
     def hchildren(self):
-        """Return a list with the hoc sections of the children"""
+        """Return a list with the hoc sections of the children."""
         return [self.href.child[index] for index in
                 range(0, int(self.href.nchild()))]
 
     def add_pchild(self, pchild):
-        """Add a python represent of a child section"""
+        """Add a python represent of a child section."""
         self.pchildren.append(pchild)
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
-        """Setup draw of psection"""
+        """Setup draw of psection."""
         y_accum = 0
         for psegment in self.psegments:
             psegment.setupDraw(figure,
@@ -93,12 +91,12 @@ class PSection:
             y_accum += psegment.L
 
     def redraw(self):
-        """Redraw psection"""
+        """Redraw psection."""
         for psegment in self.psegments:
             psegment.redraw()
 
     def getSectionVarBounds(self, variable):
-        """Get bounds a variable in a section"""
+        """Get bounds a variable in a section."""
         varmin = None
         varmax = None
         for psegment in self.psegments:
@@ -109,7 +107,7 @@ class PSection:
         return [varmin, varmax]
 
     def getTreeVarBounds(self, variable):
-        """Get the bounds of a variable in a dendritic subtree"""
+        """Get the bounds of a variable in a dendritic subtree."""
         varbounds = self.getSectionVarBounds(variable)
         for child in self.pchildren:
             child_varbounds = child.getTreeVarBounds(variable)
@@ -124,14 +122,14 @@ class PSection:
         return varbounds
 
     def getAllPDescendants(self):
-        """Return all the psection that are descendants of this psection"""
+        """Return all the psection that are descendants of this psection."""
         pdescendants = [x for x in self.pchildren]
         for child in self.pchildren:
             pdescendants += child.getAllPDescendants()
         return pdescendants
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
-        """Draw a dendritic tree"""
+        """Draw a dendritic tree."""
         import pylab
 
         # Draw myself
@@ -155,7 +153,7 @@ class PSection:
             new_x = new_x + child.treeWidth()
 
     def treeWidth(self):
-        """Width of a dendritic tree"""
+        """Width of a dendritic tree."""
         if self.isLeaf:
             treeWidth = self.maxsegdiam + self.xSpacing
         else:
@@ -166,11 +164,11 @@ class PSection:
         return max(self.diam + self.xSpacing, treeWidth)
 
     def treeHeight(self):
-        """Height of dendritic tree"""
+        """Height of dendritic tree."""
         return self.L + self.ySpacing + \
             (max([child.treeHeight() for child in self.pchildren])
              if self.pchildren else 0)
 
     def getHChildren(self):
-        """All hoc children of a section"""
+        """All hoc children of a section."""
         return self.hchildren
