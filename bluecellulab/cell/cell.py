@@ -593,7 +593,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, location:str , threshold: float = -30.0):
+    def create_netcon_spikedetector(self, target, location: str, threshold: float = -30.0):
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
