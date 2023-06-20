@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Synapse Properties."""
 
 from __future__ import annotations
@@ -85,7 +84,8 @@ synproperty_to_snap = MappingProxyType({
 def properties_from_snap(
     props: list[str],
 ) -> list[SynapseProperty | str]:
-    """Convert list of SNAP Synapse properties to SynapseProperty, spare 'str's."""
+    """Convert list of SNAP Synapse properties to SynapseProperty, spare
+    'str's."""
     return [
         SynapseProperty.from_snap(prop)
         if prop in snap_to_synproperty
@@ -107,7 +107,8 @@ def properties_to_snap(props: list[SynapseProperty | str]) -> list[str]:
 def properties_from_bluepy(
     props: list[BLPSynapse | str],
 ) -> list[SynapseProperty | str]:
-    """Convert list of bluepy Synapse properties to SynapseProperty, spare 'str's."""
+    """Convert list of bluepy Synapse properties to SynapseProperty, spare
+    'str's."""
     if not BLUEPY_AVAILABLE:
         raise ExtraDependencyMissingError("bluepy")
     return [
@@ -119,7 +120,8 @@ def properties_from_bluepy(
 
 
 def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse | str]:
-    """Convert a list of SynapseProperty to bluepy Synapse properties, spare 'str's."""
+    """Convert a list of SynapseProperty to bluepy Synapse properties, spare
+    'str's."""
     return [
         prop.to_bluepy()
         if isinstance(prop, SynapseProperty)

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Simulation class of bluecellulab."""
 
 # pylint: disable=R0913
@@ -26,8 +25,7 @@ from bluecellulab.importer import neuron
 
 
 class Simulation:
-
-    """Class that represents a neuron simulation"""
+    """Class that represents a neuron simulation."""
 
     def __init__(self, parallel_context=None) -> None:
         self.cells: list[bluecellulab.Cell] = []
@@ -38,7 +36,7 @@ class Simulation:
         self.pc = parallel_context
 
     def add_cell(self, new_cell: bluecellulab.Cell) -> None:
-        """Add a cell to a simulation"""
+        """Add a cell to a simulation."""
         self.cells.append(new_cell)
 
     def init_progress_callback(self):
@@ -50,7 +48,7 @@ class Simulation:
         self.progress_closed = False
 
     def progress_callback(self):
-        """Callback function for the progress bar"""
+        """Callback function for the progress bar."""
         if self.progress > 0:
             sys.stdout.write("\x1b[3F")
 
@@ -78,7 +76,7 @@ class Simulation:
     def init_callbacks(self):
         """Initialize the callback of all the registered simulation objects.
 
-           (e.g. for window plotting)
+        (e.g. for window plotting)
         """
         for cell in self.cells:
             cell.init_callbacks()

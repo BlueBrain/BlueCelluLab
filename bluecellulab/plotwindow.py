@@ -11,15 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Class that represents a plot window in bluecellulab."""
 
 import itertools
 
 
 class PlotWindow:
-
-    """Class the represents a plotting window"""
+    """Class the represents a plotting window."""
 
     def __init__(self, var_list, cell, xlim, ylim, title):
         import pylab
@@ -72,7 +70,7 @@ class PlotWindow:
         self.drawCount = 10
 
     def redraw(self):
-        """Redraw the plot window"""
+        """Redraw the plot window."""
         if not self.drawCount:
             time = self.cell.get_time()
             for var_name in self.var_list:

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Layer to abstract the circuit access functionality from the rest of bluecellulab."""
+"""Layer to abstract the circuit access functionality from the rest of
+bluecellulab."""
 
 from __future__ import annotations
 from collections import defaultdict
@@ -60,8 +60,8 @@ class EmodelProperties:
 
 def get_synapse_connection_parameters(
         circuit_access: CircuitAccess, pre_cell: CellId, post_cell: CellId) -> dict:
-    """ Apply connection blocks in order for pre_gid, post_gid to determine
-        a final connection override for this pair (pre_gid, post_gid)."""
+    """Apply connection blocks in order for pre_gid, post_gid to determine a
+    final connection override for this pair (pre_gid, post_gid)."""
     parameters: defaultdict[str, Any] = defaultdict(list)
     parameters['add_synapse'] = True
 
@@ -251,7 +251,8 @@ class BluepyCircuitAccess:
         return source_popid, target_popid
 
     def _get_connectomes_dict(self, projections: Optional[list[str] | str]) -> dict:
-        """Get the connectomes dictionary indexed by projections or connectome ids."""
+        """Get the connectomes dictionary indexed by projections or connectome
+        ids."""
         if isinstance(projections, str):
             projections = [projections]
 
@@ -383,7 +384,7 @@ class BluepyCircuitAccess:
 
     @lru_cache(maxsize=100)
     def fetch_cell_info(self, cell_id: CellId) -> pd.Series:
-        """Fetch bluepy cell info of a gid"""
+        """Fetch bluepy cell info of a gid."""
         gid = cell_id.id
         if gid in self._bluepy_circuit.cells.ids():
             return self._bluepy_circuit.cells.get(gid)
@@ -533,7 +534,10 @@ class SonataCircuitAccess:
     def extract_synapses(
         self, cell_id: CellId, properties: list, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
-        """Extract the synapses. If projections is None, all the synapses are extracted."""
+        """Extract the synapses.
+
+        If projections is None, all the synapses are extracted.
+        """
         snap_node_id = CircuitNodeId(cell_id.population_name, cell_id.id)
         edges = self._circuit.edges
         # select edges that are in the projections, if there are projections

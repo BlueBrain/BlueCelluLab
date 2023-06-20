@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Functionality for validation the simulation configuration."""
 
 import re
@@ -25,7 +24,8 @@ from bluecellulab.exceptions import ConfigError, TargetDoesNotExist, ExtraDepend
 
 
 class SimulationValidator:
-    """Validates the simulation configuration, should be called before simulation."""
+    """Validates the simulation configuration, should be called before
+    simulation."""
 
     def __init__(self, circuit_access: CircuitAccess) -> None:
         if not BLUEPY_AVAILABLE:
@@ -38,7 +38,7 @@ class SimulationValidator:
         self.check_spike_location()
 
     def check_connection_entries(self):
-        """Check all connection entries at once"""
+        """Check all connection entries at once."""
         gid_pttrn = re.compile("^a[0-9]+")
         for entry in self.circuit_access.config.connection_entries():
             for target in (entry.source, entry.target):

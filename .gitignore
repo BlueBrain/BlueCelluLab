@@ -6,6 +6,8 @@
 /dist
 /jekylltest
 /doc/build
+/docs/build
+/docs/source/_autosummary
 .debug
 .profiling
 .vscode

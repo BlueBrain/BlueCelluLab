@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Main importer of bluecellulab."""
 
 import os
@@ -19,7 +18,7 @@ import pkg_resources
 
 
 def _nrn_disable_banner():
-    """Disable NEURON banner"""
+    """Disable NEURON banner."""
 
     import importlib.util
     import ctypes
@@ -41,7 +40,7 @@ def _nrn_disable_banner():
 
 
 def import_neuron():
-    """Import NEURON simulator"""
+    """Import NEURON simulator."""
     _nrn_disable_banner()
 
     import neuron
@@ -50,7 +49,7 @@ def import_neuron():
 
 
 def import_mod_lib(neuron):
-    """Import mod files"""
+    """Import mod files."""
 
     mod_lib_list = None
     if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
@@ -85,7 +84,7 @@ def import_neurodamus(neuron):
 
 
 def print_header(neuron, mod_lib_path):
-    """Print bluecellulab header to stdout"""
+    """Print bluecellulab header to stdout."""
     print("Imported neuron from %s" % neuron.__file__)
     print('Mod libs: ', mod_lib_path)
 

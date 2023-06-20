@@ -3,7 +3,7 @@ Tutorial
 ********
 
 Loading bluecellulab in Python
-=========================
+==============================
 
 After installing bluecellulab, your PYTHONPATH environment variable should normally
 contain the directory where the bluecellulab module is installed. Loading bluecellulab 

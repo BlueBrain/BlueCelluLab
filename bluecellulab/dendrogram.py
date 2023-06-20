@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Class that represents a dendrogram window."""
 
 import numpy as np
@@ -20,8 +19,7 @@ import numpy as np
 
 
 class Dendrogram:
-
-    """Class that represent a dendrogram plot"""
+    """Class that represent a dendrogram plot."""
 
     def __init__(
             self,
@@ -143,7 +141,7 @@ class Dendrogram:
             pylab.show()
 
     def redraw(self):
-        """Redraw the dendrogram"""
+        """Redraw the dendrogram."""
         if self.active:
             if not self.drawCount:
                 for psection in self.psections:

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Identifier for the circuit nodes.
 
-"""Identifier for the circuit nodes. Account for multi-population and the single."""
+Account for multi-population and the single.
+"""
 
 from __future__ import annotations
 from typing import NamedTuple

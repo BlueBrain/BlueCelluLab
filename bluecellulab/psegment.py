@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Represent a NEURON Segment in Python (for drawing)."""
 
 import bluecellulab
@@ -21,8 +20,7 @@ type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b', 'my
 
 
 class PSegment:
-
-    """A python representation of a segment"""
+    """A python representation of a segment."""
 
     def __init__(self, hsegment, parentsection):
         # import matplotlib as plt
@@ -44,7 +42,7 @@ class PSegment:
         self.varbounds = None
 
     def setupDraw(self, figure, x, y, variable=None, varbounds=None):
-        """Set up the drawing of a segment"""
+        """Set up the drawing of a segment."""
         import matplotlib as plt
 
         self.figure = figure
@@ -60,7 +58,7 @@ class PSegment:
         self.ax.add_patch(self.patch)
 
     def redraw(self):
-        """Redraw a segment"""
+        """Redraw a segment."""
         if self.plotvariable:
             plotvariable_value = self.getVariableValue(self.plotvariable)
             if plotvariable_value is not None:
@@ -73,7 +71,7 @@ class PSegment:
             self.ax.draw_artist(self.patch)
 
     def getVariableValue(self, variable):
-        """Get a variable value in a segment"""
+        """Get a variable value in a segment."""
         if variable == "v" or \
                 bluecellulab.neuron.h.execute1("{%s.%s(%f)}" %
                                                (bluecellulab.neuron.h.secname(
