@@ -20,6 +20,7 @@ morph_path = (
     parent_dir / "examples" / "hippocampus_opt_cell_template" / "morphology" / "cell.asc"
 )
 
+
 def test_get_cell_with_bluepyopt_template():
     """Unit test for the get_cell method with bluepyopt_template."""
     template = NeuronTemplate(hoc_path, morph_path)
