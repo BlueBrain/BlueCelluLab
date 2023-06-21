@@ -45,7 +45,7 @@ class Cell(InjectableMixin, PlottableMixin):
     """Represents a BGLib Cell object."""
 
     def __init__(self, template_path: str | Path, morphology_path: str,
-                 gid=0, record_dt=None, template_format=None,
+                 gid=0, record_dt=None, template_format="v5",
                  emodel_properties: Optional[EmodelProperties] = None,
                  rng_settings=None):
         """Constructor.
