@@ -18,6 +18,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import os
+from pathlib import Path
 import re
 import string
 from typing import Optional
@@ -34,9 +35,16 @@ class NeuronTemplate:
     used_template_names: set[str] = set()
 
     def __init__(
-        self, template_filepath: str, morph_filepath: str
+        self, template_filepath: str | Path, morph_filepath: str | Path
     ) -> None:
         """Load the hoc template and init object."""
+        if isinstance(template_filepath, Path):
+            template_filepath = str(template_filepath)
+        if isinstance(morph_filepath, Path):
+            morph_filepath = str(morph_filepath)
+
+        if not os.path.exists(template_filepath):
+            raise FileNotFoundError(f"Couldn't find template file: {template_filepath}")
         self.template_name = self.load(template_filepath)
         self.morph_filepath = morph_filepath
 
