@@ -45,11 +45,14 @@ class NeuronTemplate:
 
         if not os.path.exists(template_filepath):
             raise FileNotFoundError(f"Couldn't find template file: {template_filepath}")
+        if not os.path.exists(morph_filepath):
+            raise FileNotFoundError(f"Couldn't find morphology file: {morph_filepath}")
+
         self.template_name = self.load(template_filepath)
         self.morph_filepath = morph_filepath
 
     def get_cell(
-        self, template_format: str, gid: int, emodel_properties: Optional[EmodelProperties]
+        self, template_format: str, gid: Optional[int], emodel_properties: Optional[EmodelProperties]
     ) -> neuron.hoc.HocObject:
         """Returns the hoc object matching the template format."""
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
@@ -81,6 +84,8 @@ class NeuronTemplate:
             cell = getattr(neuron.h, self.template_name)(
                 gid, morph_dir, morph_fname, emodel_properties.ais_scaler
             )
+        elif template_format == "bluepyopt":
+            cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)
         else:
             cell = getattr(neuron.h, self.template_name)(gid, self.morph_filepath)
 
