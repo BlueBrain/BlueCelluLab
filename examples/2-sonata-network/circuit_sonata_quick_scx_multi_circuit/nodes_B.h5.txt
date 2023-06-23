@@ -1,0 +1,217 @@
+HDF5 "./results/usecase3/nodes_B.h5" {
+GROUP "/" {
+   GROUP "nodes" {
+      GROUP "NodeB" {
+         GROUP "0" {
+            GROUP "dynamics_params" {
+               DATASET "AIS_scaler" {
+                  DATATYPE  H5T_IEEE_F32LE
+                  DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+                  DATA {
+                     1.83794, 1.0961
+                  }
+               }
+               DATASET "holding_current" {
+                  DATATYPE  H5T_IEEE_F32LE
+                  DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+                  DATA {
+                     1.82099, 1.0971
+                  }
+               }
+               DATASET "threshold_current" {
+                  DATATYPE  H5T_IEEE_F32LE
+                  DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+                  DATA {
+                     1.19658, 1.36873
+                  }
+               }
+            }
+            DATASET "etype" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "dSTUT", "dSTUT"
+               }
+            }
+            DATASET "hemisphere" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "right", "right"
+               }
+            }
+            DATASET "layer" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "LC", "LC"
+               }
+            }
+            DATASET "minis" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  65.633, 13.8183
+               }
+            }
+            DATASET "model_template" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "hoc:bAC_IN", "hoc:cNAD_noscltb"
+               }
+            }
+            DATASET "model_type" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "biophysical", "biophysical"
+               }
+            }
+            DATASET "morph_class" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "INT", "PYR"
+               }
+            }
+            DATASET "morphology" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "dend-jy180406_B_idC_axon-jy171019_B_10x_resta_idB_-_Scale_x1.000_y0.950_z1.000_-_Clone_1",
+                  "dend-jy180406_C_idB_axon-04752-04764-X11537-Y13753_final_-_Clone_3"
+               }
+            }
+            DATASET "mtype" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "L4_PC", "L5_PC"
+               }
+            }
+            DATASET "orientation_w" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  -0.582246, -0.677381
+               }
+            }
+            DATASET "orientation_x" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  0.306217, -0.493417
+               }
+            }
+            DATASET "orientation_y" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  -0.0673785, -0.511149
+               }
+            }
+            DATASET "orientation_z" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  -0.682061, -0.77925
+               }
+            }
+            DATASET "region" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "RB", "RA"
+               }
+            }
+            DATASET "synapse_class" {
+               DATATYPE  H5T_STRING {
+                  STRSIZE H5T_VARIABLE;
+                  STRPAD H5T_STR_NULLTERM;
+                  CSET H5T_CSET_UTF8;
+                  CTYPE H5T_C_S1;
+               }
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  "EXC", "EXC"
+               }
+            }
+            DATASET "x" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  -369.143, -272.578
+               }
+            }
+            DATASET "y" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  140.394, -122.797
+               }
+            }
+            DATASET "z" {
+               DATATYPE  H5T_IEEE_F32LE
+               DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+               DATA {
+                  976.748, -795.91
+               }
+            }
+         }
+         DATASET "node_type_id" {
+            DATATYPE  H5T_STD_I64LE
+            DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+            DATA {
+               -1, -1
+            }
+         }
+      }
+   }
+}
+}
