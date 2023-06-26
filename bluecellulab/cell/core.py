@@ -667,7 +667,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         synapse = self.synapses[syn_id]
 
-        # SpontMinis in BlueConfig takes precedence of values in nodes file
+        # SpontMinis in sim config takes precedence of values in nodes file
         if 'SpontMinis' in connection_parameters:
             spont_minis_rate = connection_parameters['SpontMinis']
         else:

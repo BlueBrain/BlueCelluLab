@@ -51,33 +51,37 @@ from bluecellulab.simulation import (
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
-    def __init__(self, simulation_config: str | Path | SimulationConfig, dt=0.025, record_dt=None,
-                 base_seed=None, base_noise_seed=None, rng_mode=None, print_cellstate=False):
+    def __init__(
+        self,
+        simulation_config: str | Path | SimulationConfig,
+        dt: float = 0.025,
+        record_dt: Optional[float] = None,
+        base_seed: Optional[int] = None,
+        base_noise_seed: Optional[int] = None,
+        rng_mode: Optional[str] = None,
+        print_cellstate: bool = False,
+    ):
         """
 
         Parameters
         ----------
         simulation_config : Absolute filename of the simulation config file.
-        dt : float
-             Timestep of the simulation
-        record_dt : float
-                    Sampling interval of the recordings
-        base_seed : int
-                    Base seed used for this simulation. Setting this
+        dt : Timestep of the simulation
+        record_dt : Sampling interval of the recordings
+        base_seed : Base seed used for this simulation. Setting this
                     will override the value set in the simulation config.
                     Has to positive integer.
                     When this is not set, and no seed is set in the
                     simulation config, the seed will be 0.
-        base_noise_seed : int
+        base_noise_seed :
                     Base seed used for the noise stimuli in the simulation.
                     Not setting this will result in the default Neurodamus
                     behavior (i.e. seed=0)
                     Has to positive integer.
-        rng_mode : str
-                    String with rng mode, if not specified mode is taken from
-                    BlueConfig. Possible values are Compatibility, Random123
+        rng_mode : String with rng mode, if not specified mode is taken from
+                    simulation config. Possible values are Compatibility, Random123
                     and UpdatedMCell.
-        print_cellstate: bool
+        print_cellstate:
                     Flag to use NEURON prcellstate for simulation GIDs
         """
         self.dt = dt
@@ -122,20 +126,20 @@ class SSim:
     def instantiate_gids(
         self,
         cells: int | tuple[str, int] | list[int] | list[tuple[str, int]],
-        add_replay=False,
-        add_stimuli=False,
-        add_synapses=False,
-        add_minis=False,
-        add_noise_stimuli=False,
-        add_hyperpolarizing_stimuli=False,
-        add_relativelinear_stimuli=False,
-        add_pulse_stimuli=False,
+        add_replay: bool = False,
+        add_stimuli: bool = False,
+        add_synapses: bool = False,
+        add_minis: bool = False,
+        add_noise_stimuli: bool = False,
+        add_hyperpolarizing_stimuli: bool = False,
+        add_relativelinear_stimuli: bool = False,
+        add_pulse_stimuli: bool = False,
         add_projections: bool | list[str] = False,
-        intersect_pre_gids=None,
-        interconnect_cells=True,
+        intersect_pre_gids: Optional[list] = None,
+        interconnect_cells: bool = True,
         pre_spike_trains: None | dict[tuple[str, int], Iterable] | dict[int, Iterable] = None,
-        add_shotnoise_stimuli=False,
-        add_ornstein_uhlenbeck_stimuli=False,
+        add_shotnoise_stimuli: bool = False,
+        add_ornstein_uhlenbeck_stimuli: bool = False,
     ):
         """Instantiate a list of cells.
 
@@ -143,75 +147,67 @@ class SSim:
         ----------
         cells :
                List of cell ids. When a single element, it will be converted to a list
-        add_replay : Boolean
-                     Add presynaptic spiketrains from the large simulation
+        add_replay : Add presynaptic spiketrains from the large simulation
                      If pre_spike_trains is combined with this option the
                      spiketrains will be merged
-        add_stimuli : Boolean
-                      Add the same stimuli as in the large simulation
-        add_synapses : Boolean
+        add_stimuli : Add the same stimuli as in the large simulation
+        add_synapses :
                        Add the touch-detected synapses, as described by the
                        circuit to the cell
                        (This option only influence the 'creation' of synapses,
                        it doesn't add any connections)
                        Default value is False
-        add_minis : Boolean
-                    Add synaptic minis to the synapses
+        add_minis : Add synaptic minis to the synapses
                     (this requires add_synapses=True)
                     Default value is False
-        add_noise_stimuli : Boolean
+        add_noise_stimuli :
                             Process the 'noise' stimuli blocks of the
-                            BlueConfig,
+                            simulation config,
                             Setting add_stimuli=True,
                             will automatically set this option to True.
-        add_hyperpolarizing_stimuli : Boolean
-                                      Process the 'hyperpolarizing' stimuli
-                                      blocks of the BlueConfig.
+        add_hyperpolarizing_stimuli : Process the 'hyperpolarizing' stimuli
+                                      blocks of the simulation config.
                                       Setting add_stimuli=True,
                                       will automatically set this option to
                                       True.
-        add_relativelinear_stimuli : Boolean
-                                     Process the 'relativelinear' stimuli
-                                     blocks of the BlueConfig.
+        add_relativelinear_stimuli : Process the 'relativelinear' stimuli
+                                     blocks of the simulation config.
                                      Setting add_stimuli=True,
                                      will automatically set this option to
                                      True.
-        add_pulse_stimuli : Boolean
-                            Process the 'pulse' stimuli
-                            blocks of the BlueConfig.
+        add_pulse_stimuli : Process the 'pulse' stimuli
+                            blocks of the simulation config.
                             Setting add_stimuli=True,
                             will automatically set this option to
                             True.
         add_projections:
                          If True, adds all of the projection blocks of the
-                         BlueConfig. If False, no projections are added.
+                         simulation config. If False, no projections are added.
                          If list, adds only the projections in the list.
         intersect_pre_gids : list of gids
                              Only add synapses to the cells if their
                              presynaptic gid is in this list
-        interconnect_cells : Boolean
-                             When multiple gids are instantiated,
+        interconnect_cells : When multiple gids are instantiated,
                              interconnect the cells with real (non-replay)
                              synapses. When this option is combined with
                              add_replay, replay spiketrains will only be added
                              for those presynaptic cells that are not in the
                              network that's instantiated.
                              This option requires add_synapses=True
-        pre_spike_trains : dict
-                           A dictionary with keys the presynaptic gids, and
+        pre_spike_trains : A dictionary with keys the presynaptic gids, and
                            values the list of spike timings of the
                            presynaptic cells with the given gids.
                            If this option is used in combination with
                            add_replay=True, the spike trains for the same
                            gids will be automatically merged
-        add_shotnoise_stimuli : Boolean
+        add_shotnoise_stimuli :
                             Process the 'shotnoise' stimuli blocks of the
-                            BlueConfig,
+                            simulation config,
                             Setting add_stimuli=True,
                             will automatically set this option to True.
-        add_ornstein_uhlenbeck_stimuli: Boolean
+        add_ornstein_uhlenbeck_stimuli :
                             Process the 'ornstein_uhlenbeck' stimuli blocks
-                            of the BlueConfig,
+                            of the simulation config,
                             Setting add_stimuli=True,
                             will automatically set this option to True.
         """
@@ -572,36 +568,37 @@ class SSim:
         for cell in self.cells.values():
             cell.initialize_synapses()
 
-    def run(self, t_stop=None, v_init=None, celsius=None, dt=None,
-            forward_skip=True, forward_skip_value=None,
-            cvode=False, show_progress=False):
+    def run(
+        self,
+        t_stop: Optional[int] = None,
+        v_init: Optional[float] = None,
+        celsius: Optional[float] = None,
+        dt: Optional[float] = None,
+        forward_skip: bool = True,
+        forward_skip_value: Optional[float] = None,
+        cvode: bool = False,
+        show_progress: bool = False,
+    ):
         """Simulate the SSim.
 
         Parameters
         ----------
-        t_stop : int
-                 This function will run the simulation until t_stop
-        v_init : float
-                 Voltage initial value when the simulation starts
-        celsius : float
-                  Temperature at which the simulation runs
-        dt : float
-             Timestep (delta-t) for the simulation
-        forward_skip : boolean
-                       Enable/disable ForwardSkip (default=True, when
+        t_stop : This function will run the simulation until t_stop
+        v_init : Voltage initial value when the simulation starts
+        celsius : Temperature at which the simulation runs
+        dt : Timestep (delta-t) for the simulation
+        forward_skip : Enable/disable ForwardSkip (default=True, when
                        forward_skip_value is None, forward skip will only be
-                       enabled if BlueConfig has a ForwardSkip value)
-        forward_skip_value : float
-                       Overwrite the ForwardSkip value in the BlueConfig. If
-                       this is set to None, the value in the BlueConfig is
+                       enabled if the simulation config has a ForwardSkip value)
+        forward_skip_value :
+                       Overwrite the ForwardSkip value in the simulation config. If
+                       this is set to None, the value in the simulation config is
                        used.
-        cvode : boolean
-                Force the simulation to run in variable timestep. Not possible
+        cvode : Force the simulation to run in variable timestep. Not possible
                 when there are stochastic channels in the neuron model. When
                 enabled results from a large network simulation will not be
                 exactly reproduced.
-        show_progress: boolean
-                       Show a progress bar during simulations. When
+        show_progress: Show a progress bar during simulations. When
                        enabled results from a large network simulation
                        will not be exactly reproduced.
         """

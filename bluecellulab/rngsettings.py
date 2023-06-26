@@ -26,22 +26,18 @@ class RNGSettings(metaclass=Singleton):
 
     def __init__(
             self,
-            mode=None,
+            mode: Optional[str] = None,
             circuit_access: Optional[CircuitAccess] = None,
-            base_seed=None,
-            base_noise_seed=None):
+            base_seed: Optional[float] = None,
+            base_noise_seed: Optional[float] = None):
         """Constructor.
 
         Parameters
         ----------
-        mode : str
-                   String with rng mode, if not specified mode is taken from
-                   BlueConfig
+        mode : rng mode, if not specified mode is taken from circuit_access
         circuit: circuit access object, if present seeds are read from simulation
-        base_seed: float
-                   base seed for entire sim, overrides blueconfig value
-        base_noise_seed: float
-                         base seed for the noise stimuli
+        base_seed: base seed for entire sim, overrides config value
+        base_noise_seed: base seed for the noise stimuli
         """
 
         self._mode = ""
