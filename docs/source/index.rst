@@ -16,4 +16,3 @@ BlueCelluLab is designed to do simulation and experiment on a single cell or a g
    Home <self>
    api.rst
    changelog
-   tutorial
