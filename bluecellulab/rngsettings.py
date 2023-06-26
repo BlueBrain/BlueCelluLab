@@ -28,8 +28,8 @@ class RNGSettings(metaclass=Singleton):
             self,
             mode: Optional[str] = None,
             circuit_access: Optional[CircuitAccess] = None,
-            base_seed: Optional[float] = None,
-            base_noise_seed: Optional[float] = None):
+            base_seed: Optional[int] = None,
+            base_noise_seed: Optional[int] = None):
         """Constructor.
 
         Parameters
