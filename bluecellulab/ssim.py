@@ -570,7 +570,7 @@ class SSim:
 
     def run(
         self,
-        t_stop: Optional[int] = None,
+        t_stop: Optional[float] = None,
         v_init: Optional[float] = None,
         celsius: Optional[float] = None,
         dt: Optional[float] = None,
