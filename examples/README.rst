@@ -13,3 +13,5 @@ BlueCelluLab's usage examples
      - Description
    * - `singlecell.ipynb <1-singlecell/singlecell.ipynb>`_
      - Demonstration of single cell simulation capabilities
+   * - `sonata-network.ipynb <2-sonata-network/sonata-network.ipynb>`_
+     - Simulating a group of cells from a multi polulation SONATA circuit
