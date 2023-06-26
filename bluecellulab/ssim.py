@@ -603,7 +603,11 @@ class SSim:
                        will not be exactly reproduced.
         """
         if t_stop is None:
-            t_stop = self.circuit_access.config.duration
+            duration = self.circuit_access.config.duration
+            if duration is None:  # type narrowing
+                t_stop = 0.0
+            else:
+                t_stop = duration
         if dt is None:
             dt = self.circuit_access.config.dt
         if forward_skip_value is None:
