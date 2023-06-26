@@ -497,7 +497,7 @@ E.g. If pop_ids is needed, don't pass the bc object, pass pop_ids only.
   * merged ssim changes on sonata branch
   * get_sonata_mecombo_emodels indentation fix after merge
 - Added thalamus tests to jenkins plan * change the thalamus test path
-  to the recently run ND simulation below. /gpfs/bbp.cscs.ch/project/pro
+  to the recently run ND simulation below. /INTERNAL_PATH/pro
   j55/tuncel/simulations/release/2020-08-06-v2/bglibpy-thal-test-with-
   projections. [Anil Tuncel]
 - Use nosepipe to isolate tests. [Werner Van Geit]
