@@ -1,0 +1,8 @@
+{
+    "Mosaic_A": {
+      "population": "NodeA" 
+    },
+    "Mosaic_B": {
+      "population": "NodeB"
+    }
+  }
