@@ -1,0 +1,205 @@
+{load_file("Cell.hoc")}
+{load_file("TDistFunc.hoc")}
+begintemplate CCell
+public init, printInfo, delete_axon,  getCell, init_biophys, insertChannel
+public gid, CellRef, getThreshold, geom_nseg, gmechdistribute, biophys
+objref this, CellRef, gmechdistribute
+
+proc init() { local ind localobj strMorphName, strTmp, sf
+    strMorphName  = new String("test_cell.asc")
+    strTmp        = new String()
+    sf            = new StringFunctions()
+    if(numarg() == 2){
+        sscanf($s2, "%s", strTmp.s)
+        ind      = sf.substr(strTmp.s, ".asc")
+        if((ind>0) && (ind == (sf.len(strTmp.s)-4))){
+            CellRef = new Cell($1, $s2)     
+        }else{
+            sprint(strMorphName.s, "%s/%s", $s2, strMorphName.s)
+            CellRef = new Cell($1, strMorphName.s)     
+        }
+    }   
+    gmechdistribute = new TDistFunc()
+    CellRef.setCCell(this)
+    gid = CellRef.gid    
+    geom_nseg()   //This function is called to have count of actual axon sections 
+    delete_axon()
+    insertChannel()
+    init_biophys()      
+    biophys()
+}
+
+func getThreshold() { return 0.0 }
+
+proc geom_nseg() {
+    CellRef.geom_nseg_fixed(40)  
+    CellRef.geom_nsec() //To count all sections
+}
+
+obfunc getCell(){
+    return CellRef
+}
+
+proc delete_axon(){
+    CellRef.delete_axon()
+}
+
+proc init_biophys() {
+    forsec CellRef.all { cm = 1.0 }
+    forsec CellRef.all { Ra = 100.0 }
+     
+    CellRef.soma[0] distance()
+}
+
+proc insertChannel() {
+
+}
+
+proc biophys() {
+    CellRef.insertChannel("basal","StochKv")
+    CellRef.insertChannel("apical","StochKv")
+    CellRef.insertChannel("somatic","StochKv")
+
+    { CellRef.soma[0] distance() }
+    gmechdistribute.distribute(CellRef.basal,"gkbar_StochKv","( 0.000000 * %g  + 1.000000 ) * 0.567935",1)
+    gmechdistribute.distribute(CellRef.apical,"gkbar_StochKv","( 0.000000 * %g  + 1.000000 ) * 0.567935",1)
+    gmechdistribute.distribute(CellRef.somatic,"gkbar_StochKv","( 0.000000 * %g  + 1.000000 ) * 0.367950",1)
+
+    CellRef.insertChannel("all","pas")
+    CellRef.insertChannel("somatic","NaTs2_t")
+    CellRef.insertChannel("basal","NaTs2_t")
+    CellRef.insertChannel("apical","NaTs2_t")
+    CellRef.insertChannel("axonal","NaTa_t")
+    CellRef.insertChannel("somatic","CaDynamics_E2")
+    CellRef.insertChannel("axonal","CaDynamics_E2")
+    CellRef.insertChannel("somatic","Nap_Et2")
+    CellRef.insertChannel("basal","Nap_Et2")
+    CellRef.insertChannel("apical","Nap_Et2")
+    CellRef.insertChannel("axonal","Nap_Et2")
+    CellRef.insertChannel("somatic","K_Tst")
+    CellRef.insertChannel("axonal","K_Tst")
+    CellRef.insertChannel("basal","K_Tst")
+    CellRef.insertChannel("apical","K_Tst")
+    CellRef.insertChannel("somatic","K_Pst")
+    CellRef.insertChannel("basal","K_Pst")
+    CellRef.insertChannel("apical","K_Pst")
+    CellRef.insertChannel("axonal","K_Pst")
+    CellRef.insertChannel("somatic","SKv3_1")
+    CellRef.insertChannel("axonal","SKv3_1")
+    CellRef.insertChannel("basal","SKv3_1")
+    CellRef.insertChannel("apical","SKv3_1")
+    CellRef.insertChannel("somatic","Ca")
+    CellRef.insertChannel("axonal","Ca")
+    CellRef.insertChannel("somatic","Ca_LVAst")
+    CellRef.insertChannel("axonal","Ca_LVAst")
+    CellRef.insertChannel("somatic","SK_E2")
+    CellRef.insertChannel("axonal","SK_E2")
+    CellRef.insertChannel("basal","Ih")
+    CellRef.insertChannel("apical","Ih")
+    CellRef.insertChannel("basal","Im")
+    CellRef.insertChannel("apical","Im")
+    CellRef.insertChannel("somatic","Im")
+    CellRef.insertChannel("axonal","Im")
+
+    { CellRef.soma[0] distance() }
+    { forsec CellRef.all { e_pas = -75.300257 } }
+    { forsec CellRef.somatic { ek = -85 } }
+    { forsec CellRef.somatic { ena = 50 } }
+    { forsec CellRef.axonal { ek = -85 } }
+    { forsec CellRef.axonal { ena = 50 } }
+    { forsec CellRef.basal { ek = -85 } }
+    { forsec CellRef.apical { ek = -85 } }
+    { forsec CellRef.basal { ena = 50 } }
+    { forsec CellRef.apical { ena = 50 } }
+    gmechdistribute.distribute(CellRef.axonal,"gNaTa_tbar_NaTa_t","( 0.000000 * %g  + 1.000000 ) * 3.959764",1)
+    gmechdistribute.distribute(CellRef.axonal,"gNap_Et2bar_Nap_Et2","( 0.000000 * %g  + 1.000000 ) * 0.000000",1)
+    gmechdistribute.distribute(CellRef.basal,"gNap_Et2bar_Nap_Et2","( 0.000000 * %g  + 1.000000 ) * 0.000001",1)
+    gmechdistribute.distribute(CellRef.apical,"gNap_Et2bar_Nap_Et2","( 0.000000 * %g  + 1.000000 ) * 0.000001",1)
+    gmechdistribute.distribute(CellRef.axonal,"gK_Pstbar_K_Pst","( 0.000000 * %g  + 1.000000 ) * 0.004729",1)
+    gmechdistribute.distribute(CellRef.axonal,"gK_Tstbar_K_Tst","( 0.000000 * %g  + 1.000000 ) * 0.098908",1)
+    gmechdistribute.distribute(CellRef.axonal,"gSK_E2bar_SK_E2","( 0.000000 * %g  + 1.000000 ) * 0.003442",1)
+    gmechdistribute.distribute(CellRef.axonal,"gSKv3_1bar_SKv3_1","( 0.000000 * %g  + 1.000000 ) * 0.317363",1)
+    gmechdistribute.distribute(CellRef.axonal,"gCabar_Ca","( 0.000000 * %g  + 1.000000 ) * 0.000003",1)
+    gmechdistribute.distribute(CellRef.axonal,"gCa_LVAstbar_Ca_LVAst","( 0.000000 * %g  + 1.000000 ) * 0.000015",1)
+    gmechdistribute.distribute(CellRef.axonal,"gamma_CaDynamics_E2","( 0.000000 * %g  + 1.000000 ) * 0.010353",1)
+    gmechdistribute.distribute(CellRef.axonal,"decay_CaDynamics_E2","( 0.000000 * %g  + 1.000000 ) * 64.277990",1)
+    gmechdistribute.distribute(CellRef.axonal,"g_pas","( 0.0 * %g  + 1.0 ) * 0.000094",1)
+    gmechdistribute.distribute(CellRef.axonal,"e_pas","( 0.0 * %g  + 1.0 ) * -60.216510",1)
+    gmechdistribute.distribute(CellRef.somatic,"gNaTs2_tbar_NaTs2_t","( 0.000000 * %g  + 1.000000 ) * 0.197999",1)
+    gmechdistribute.distribute(CellRef.somatic,"gNap_Et2bar_Nap_Et2","( 0.000000 * %g  + 1.000000 ) * 0.000001",1)
+    gmechdistribute.distribute(CellRef.somatic,"gSKv3_1bar_SKv3_1","( 0.000000 * %g  + 1.000000 ) * 0.297559",1)
+    gmechdistribute.distribute(CellRef.somatic,"gK_Pstbar_K_Pst","( 0.000000 * %g  + 1.000000 ) * 0.156376",1)
+    gmechdistribute.distribute(CellRef.somatic,"gK_Tstbar_K_Tst","( 0.000000 * %g  + 1.000000 ) * 0.092965",1)
+    gmechdistribute.distribute(CellRef.basal,"gK_Tstbar_K_Tst","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.009500",1)
+    gmechdistribute.distribute(CellRef.apical,"gK_Tstbar_K_Tst","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.009500",1)
+    gmechdistribute.distribute(CellRef.basal,"gNaTs2_tbar_NaTs2_t","( 0.000000 * %g  + 1.000000 ) * 0.000010",1)
+    gmechdistribute.distribute(CellRef.apical,"gNaTs2_tbar_NaTs2_t","( 0.000000 * %g  + 1.000000 ) * 0.000010",1)
+    gmechdistribute.distribute(CellRef.somatic,"gSK_E2bar_SK_E2","( 0.000000 * %g  + 1.000000 ) * 0.019726",1)
+    gmechdistribute.distribute(CellRef.somatic,"gCabar_Ca","( 0.000000 * %g  + 1.000000 ) * 0.000032",1)
+    gmechdistribute.distribute(CellRef.somatic,"gCa_LVAstbar_Ca_LVAst","( 0.000000 * %g  + 1.000000 ) * 0.001067",1)
+    gmechdistribute.distribute(CellRef.somatic,"gamma_CaDynamics_E2","( 0.000000 * %g  + 1.000000 ) * 0.000511",1)
+    gmechdistribute.distribute(CellRef.somatic,"decay_CaDynamics_E2","( 0.000000 * %g  + 1.000000 ) * 731.707637",1)
+    gmechdistribute.distribute(CellRef.somatic,"g_pas","( 0.0 * %g  + 1.0 ) * 0.000091",1)
+    gmechdistribute.distribute(CellRef.somatic,"e_pas","( 0.0 * %g  + 1.0 ) * -62.442793",1)
+    gmechdistribute.distribute(CellRef.basal,"gSKv3_1bar_SKv3_1","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.004399",1)
+    gmechdistribute.distribute(CellRef.apical,"gSKv3_1bar_SKv3_1","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.004399",1)
+    gmechdistribute.distribute(CellRef.basal,"gImbar_Im","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.000008",1)
+    gmechdistribute.distribute(CellRef.apical,"gImbar_Im","(1.000000 + 0.000000*exp((%g - 0.000000) * 0.000000)) * 0.000008",1)
+    gmechdistribute.distribute(CellRef.axonal,"gImbar_Im","( 0.000000 * %g  + 1.000000 ) * 0.000999",1)
+    gmechdistribute.distribute(CellRef.somatic,"gImbar_Im","( 0.000000 * %g  + 1.000000 ) * 0.000008",1)
+    gmechdistribute.distribute(CellRef.basal,"gIhbar_Ih","(-0.869600 + 2.087000*exp((%g - 0.000000) * 0.003000)) * 0.000052",1)
+    gmechdistribute.distribute(CellRef.apical,"gIhbar_Ih","(-0.869600 + 2.087000*exp((%g - 0.000000) * 0.003000)) * 0.000052",1)
+    gmechdistribute.distribute(CellRef.basal,"g_pas","( 0.0 * %g  + 1.0 ) * 0.000001",1)
+    gmechdistribute.distribute(CellRef.apical,"g_pas","( 0.0 * %g  + 1.0 ) * 0.000001",1)
+    gmechdistribute.distribute(CellRef.basal,"e_pas","( 0.0 * %g  + 1.0 ) * -79.315740",1)
+    gmechdistribute.distribute(CellRef.apical,"e_pas","( 0.0 * %g  + 1.0 ) * -79.315740",1)
+
+
+}
+
+public re_init_rng
+objref rngList, rng
+proc re_init_rng() {local channelID
+    objref rng
+    rngList = new List()
+    channelID = 0
+
+    forsec CellRef.somatic {
+        for (x, 0) {
+            rng = new Random()
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )
+            channelID = channelID + 1
+            rng.uniform(0,1)
+            setdata_StochKv(x)
+            setRNG_StochKv(rng)
+            rngList.append(rng)
+        }
+    }
+
+    forsec CellRef.basal {
+        for (x, 0) {
+            rng = new Random()
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )
+            channelID = channelID + 1
+            rng.uniform(0,1)
+            setdata_StochKv(x)
+            setRNG_StochKv(rng)
+            rngList.append(rng)
+        }
+    }
+
+    forsec CellRef.apical {
+        for (x, 0) {
+            rng = new Random()
+            rng.MCellRan4( channelID*10000+100, CellRef.gid*10000+250+1 )
+            channelID = channelID + 1
+            rng.uniform(0,1)
+            setdata_StochKv(x)
+            setRNG_StochKv(rng)
+            rngList.append(rng)
+        }
+    }
+}
+
+
+endtemplate CCell

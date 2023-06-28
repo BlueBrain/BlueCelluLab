@@ -1,0 +1,48 @@
+/**
+ * @file RNGSetting.hoc
+ * @brief To help with transitioning RNG behavior, this will contain setting/flags.
+ * @author king
+ * @date 2017-03-08
+ * @remark Copyright 2005-2023 Blue Brain Project / EPFL
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * 
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+{load_file("fileUtils.hoc")}
+
+rngMode = 0  // corresponds to COMPATIBILITY defined below
+ionchannelSeed = 0
+synapseSeed = 0
+stimulusSeed = 0
+minisSeed = 0
+globalSeed = 0
+
+begintemplate RNGSettings
+
+public init, interpret, getRNGMode, getIonChannelSeed, getSynapseSeed, getStimulusSeed, getMinisSeed, getGlobalSeed
+public COMPATIBILITY, RANDOM123, UPMCELLRAN4
+
+external rngMode, ionchannelSeed, synapseSeed, stimulusSeed, minisSeed, globalSeed, terminate
+
+proc init() {
+    // consts for random number handling
+    COMPATIBILITY = 0
+    RANDOM123 = 1
+    UPMCELLRAN4 = 2
+}
+
+func getRNGMode() {
+    return rngMode
+}
+
+endtemplate RNGSettings

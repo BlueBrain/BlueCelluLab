@@ -1,0 +1,10 @@
+Authors
+========================
+
+This software was developed at the Blue Brain Project, EPFL:
+
+* Werner Van Geit
+* Anil Tuncel
+* Mike Gevaert
+* Ben Torben Nielsen
+* Eilif Muller

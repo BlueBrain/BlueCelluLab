@@ -1,0 +1,43 @@
+{
+  "manifest": {
+    "$CIRCUIT_DIR": "usecase3",
+    "$OUTPUT_DIR": "."
+  },
+  "run": {
+    "tstop": 50.0,
+    "dt": 0.025,
+    "random_seed": 1
+  },
+  "conditions": {
+    "v_init": -65
+  },
+  "target_simulator": "NEURON",
+  "network": "circuit_sonata.json",
+  "node_set": "Mosaic_A",
+  "output": {
+    "output_dir": "$OUTPUT_DIR/output_sonata_hypamp",
+    "spikes_file": "out.h5",
+    "spikes_sort_order": "by_time"
+  },
+  "inputs": {
+    "hypamp_mosaic": {
+      "module": "hyperpolarizing",
+      "input_type": "current_clamp",
+      "delay": 0.0,
+      "duration": 4000.0,
+      "node_set": "Mosaic_A"
+    }
+  },
+  "reports": {
+    "soma": {
+      "cells": "Mosaic_A",
+      "variable_name": "v",
+      "type": "compartment",
+      "dt": 1.0,
+      "start_time": 0.0,
+      "end_time": 20.0,
+      "sections": "soma",
+      "compartments": "center"
+    } 
+  }
+}

@@ -1,0 +1,62 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * 
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+{nrnpython( "import shutil, os.path" )}
+
+// The function defined below in nrnpython is:
+// import os
+// def check_output_directory(output_dir):
+//         if os.path.exists(output_dir):
+//                 if not os.path.isdir(output_dir):
+//                         print(f"{output_dir} does not name a directory.")
+//                         return -1
+//                 else:
+//                         return 0
+//         else:
+//                 try:
+//                         os.makedirs(output_dir)
+//                 except Exception as e:
+//                         print(f"Failed to create OutputRoot directory {output_dir} with {e}")
+//                         return -1
+//                 print(f"Directory {output_dir} does not exist.  Creating...")
+//                 return 0
+//
+// Checks if output_dir exists and is a directory. If it's not a direcory
+// return -1. If it doesn't exist create it.
+//
+nrnpython("import os\ndef check_output_directory(output_dir):\n\tif os.path.exists(output_dir):\n\t\tif not os.path.isdir(output_dir):\n\t\t\tprint(f\"{output_dir} does not name a directory.\")\n\t\t\treturn -1\n\t\telse:\n\t\t\treturn 0\n\telse:\n\t\ttry:\n\t\t\tos.makedirs(output_dir)\n\t\texcept Exception as e:\n\t\t\tprint(f\"Failed to create OutputRoot directory {output_dir} with {e}\")\n\t\t\treturn -1\n\t\tprint(f\"Directory {output_dir} does not exist.  Creating...\")\n\t\treturn 0")
+
+// Use helper functions from python os.path
+objref _py, ospath, shutil
+_py = new PythonObject()
+ospath = _py.os.path
+shutil = _py.shutil
+
+///Utility function to nicely show error in rank 0 and call execerror to abort MPI
+proc terminate() { localobj outstr, pc
+    pc = new ParallelContext()
+    outstr = new String()
+    sprint(outstr.s, "[ ABORT ] %s", $s1)
+    if( numarg() >= 2 ) {
+        sprint(outstr.s, "%s: %s", outstr.s, $s2)
+    }
+    pc.barrier()
+    if( pc.id() == 0 ) {
+        execerror( outstr.s )
+    } else {
+        execerror()
+    }
+
+}

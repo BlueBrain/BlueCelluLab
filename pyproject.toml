@@ -1,0 +1,22 @@
+[tool.pytest.ini_options]
+markers = [
+    "v5: tests on the neocortex circuit version 5.",
+    "v6: tests on the neocortex circuit version 6.",
+    "thal: tests on the thalamus circuit.",
+    "unit: unit tests.",
+    "debugtest: test for debugging purposes."
+]
+
+[tool.mypy]
+exclude = "doc"
+plugins = ["pydantic.mypy"]
+
+[tool.coverage.run]
+concurrency = ["multiprocessing"]
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError"
+]

@@ -1,0 +1,31 @@
+{
+    "node_sets_file": "./node_sets.json",
+    "version": 2,
+    "networks": {
+        "nodes": [
+            {
+                "nodes_file": "nodes_A.h5",
+                "populations": {
+                    "NodeA": {
+                        "type": "biophysical",
+                        "morphologies_dir": "./components/morphologies/swc",
+                        "biophysical_neuron_models_dir": "./components/hoc",
+                        "alternate_morphologies": {
+                            "neurolucida-asc": "./components/morphologies/asc"
+                        }
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "edges_file": "local_edges_A.h5",
+                "populations": {
+                    "NodeA__NodeA__chemical": {
+                        "type": "chemical"
+                    }
+                }
+            }
+        ]
+    }
+}

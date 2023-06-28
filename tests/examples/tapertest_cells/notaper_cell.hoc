@@ -1,0 +1,64 @@
+//test
+
+{load_file("Cell.hoc")}
+{load_file("TDistFunc.hoc")}
+begintemplate notaper_cell
+public init, printInfo, delete_axon,  getCell, init_biophys, insertChannel
+public gid, CellRef, getThreshold, geom_nseg, gmechdistribute, biophys
+objref this, CellRef, gmechdistribute
+
+proc init() { local ind localobj strMorphName, strTmp, sf
+    strMorphName  = new String("test_cell.asc")
+    strTmp        = new String()
+    sf            = new StringFunctions()
+    if(numarg() == 2){
+        sscanf($s2, "%s", strTmp.s)
+        ind      = sf.substr(strTmp.s, ".asc")
+        if((ind>0) && (ind == (sf.len(strTmp.s)-4))){
+            CellRef = new Cell($1, $s2)
+        }else{
+            sprint(strMorphName.s, "%s/%s", $s2, strMorphName.s)
+            CellRef = new Cell($1, strMorphName.s)
+        }
+    }
+    gmechdistribute = new TDistFunc()
+    CellRef.setCCell(this)
+    gid = CellRef.gid
+    geom_nseg()   //This function is called to have count of actual axon sections
+    CellRef.delete_axon()
+    insertChannel()
+    init_biophys()
+    biophys()
+}
+
+func getThreshold() { return 0.184062 }
+
+proc geom_nseg() {
+    CellRef.geom_nseg_fixed(40)
+    CellRef.geom_nsec() //To count all sections
+}
+
+obfunc getCell(){
+    return CellRef
+}
+
+//proc delete_axon(){
+//    CellRef.delete_axon()
+//}
+
+proc init_biophys() {
+    CellRef.soma[0] distance()
+}
+
+proc insertChannel() {
+
+}
+
+proc biophys() {
+}
+
+public getHypAmp
+
+func getHypAmp(){return (-0.070557) }
+
+endtemplate notaper_cell
