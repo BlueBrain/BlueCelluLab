@@ -946,7 +946,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Delete the cell."""
         self.delete_plottable()
         if hasattr(self, 'cell') and self.cell is not None:
-            if self.cell.getCell() is not None:
+            if self.cell.getCell() is not None and hasattr(self.cell.getCell(), 'clear'):
                 self.cell.getCell().clear()
 
             self.connections = None
