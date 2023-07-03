@@ -50,7 +50,24 @@ BlueCelluLab can be pip installed with the following command:
 Quick Start
 ===========
 
-TBD, a fairly simple code block that generates a figure or so
+The following example shows how to create a cell, add a stimulus and run a simulation:
+
+.. code-block:: python
+
+    from bluecellulab.cell import create_ball_stick
+    from bluecellulab import Simulation
+
+    cell = create_ball_stick()
+    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=1.5)
+    sim = Simulation()
+    sim.add_cell(cell)
+
+    sim.run(200, cvode=False)
+    time, voltage = cell.get_time(), cell.get_soma_voltage()
+    # plotting time and voltage ...
+
+.. image:: docs/images/voltage-readme.png
+   :alt: Voltage plot
 
 Tutorial
 ========

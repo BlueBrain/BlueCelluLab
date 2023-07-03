@@ -3,3 +3,4 @@
 from .core import Cell
 from .cell_dict import CellDict
 from .sonata_proxy import SonataProxy
+from .ballstick import create_ball_stick

@@ -10,7 +10,7 @@ except ImportError:
 
 from .importer import *  # NOQA
 from .tools import *  # NOQA
-from .cell import Cell  # NOQA
+from .cell import Cell, create_ball_stick  # NOQA
 from .connection import Connection  # NOQA
 from .plotwindow import PlotWindow  # NOQA
 from .dendrogram import Dendrogram  # NOQA

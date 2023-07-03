@@ -10,6 +10,7 @@ import os
 import numpy as np
 
 import bluecellulab
+from bluecellulab import create_ball_stick
 
 script_dir = os.path.dirname(__file__)
 
@@ -257,14 +258,16 @@ def test_expsyn_pyneuron_vs_bluecellulab(graph=False):
 
     if graph:
         import pylab
-        pylab.plot(bluecellulab_t, bluecellulab_v, 'g', label='bluecellulab')
-        pylab.plot(pyneuron_t, pyneuron_v, 'b', label='PyNeuron')
+        pylab.plot(bluecellulab_t, bluecellulab_v, 'g', label='bluecellulab', alpha=0.5)
+        pylab.plot(pyneuron_t, pyneuron_v, 'b', label='PyNeuron', linestyle='--')
         pylab.plot(
             pyneuron_template_t,
             pyneuron_template_v,
             'r',
-            label='PyNeuron with template')
-        pylab.plot(analytic_t, analytic_v, 'o-', label='Analytic')
+            label='PyNeuron with template',
+            linestyle='-.',
+            alpha=0.5)
+        pylab.plot(analytic_t, analytic_v, '-', label='Analytic', linestyle=":", alpha=0.5)
         pylab.legend(loc=0)
         pylab.show()
 
@@ -282,6 +285,14 @@ def test_ballstick_load():
     assert abs(bluecellulab.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
 
     del cell
+
+
+def test_create_ballstick():
+    """Unit test for cell/ballstick."""
+    cell = create_ball_stick()
+    assert isinstance(cell, bluecellulab.Cell)
+    assert cell.cell.gid == 0
+    assert cell.cell.getHypAmp() == -0.070557
 
 
 def main():
