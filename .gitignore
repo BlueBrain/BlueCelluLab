@@ -3,6 +3,7 @@
 /.tox
 *.pyc
 *.egg-info
+.eggs
 /dist
 /jekylltest
 /doc/build

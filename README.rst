@@ -51,17 +51,17 @@ Quick Start
 ===========
 
 .. code-block:: python
-    cell = Cell(hoc_file, morph_file, template_format="v6_ais_scaler", emodel_properties=emodel_properties)
-    cell.add_ramp(start_time=10.0, stop_time=30.0, start_level=0.5, stop_level=4.0)
+
+    from bluecellulab.cell import create_ball_stick
+    from bluecellulab import Simulation
+
+    cell = create_ball_stick()
+    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=1.5)
     sim = Simulation()
     sim.add_cell(cell)
-    cell.add_ais_recording(dt=cell.record_dt)
-    sim.run(45, cvode=False)
 
-
-
-.. image:: docs/images/soma-ais.png
-   :alt: Soma and AIS
+    sim.run(200, cvode=False)
+    time, voltage = cell.get_time(), cell.get_soma_voltage()
 
 
 Tutorial
