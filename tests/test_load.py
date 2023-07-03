@@ -24,10 +24,10 @@ def test_verbose_env():
 
     bluecellulab.set_verbose_from_env()
 
-    assert bluecellulab.ENV_ == "10"
-    assert bluecellulab. == 10
+    assert bluecellulab.ENV_VERBOSE_LEVEL == "10"
+    assert bluecellulab.VERBOSE_LEVEL == 10
 
-    del os.environ['BLUECELLULAB_']
+    del os.environ['VERBOSE_LEVEL']
 
     bluecellulab.set_verbose_from_env()
     assert bluecellulab.ENV_VERBOSE_LEVEL is None

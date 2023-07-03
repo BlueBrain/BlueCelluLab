@@ -189,7 +189,7 @@ class Synapse:
             return (K_half_fourth + 16) / 16 * y_fourth / (K_half_fourth + y_fourth)
 
         u_scale_factor = constrained_hill(u_hill_coefficient, extracellular_calcium)
-        Logger.critical(
+        logger.critical(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %
             (u_hill_coefficient, extracellular_calcium, u_scale_factor))
