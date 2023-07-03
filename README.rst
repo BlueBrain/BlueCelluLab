@@ -50,7 +50,19 @@ BlueCelluLab can be pip installed with the following command:
 Quick Start
 ===========
 
-TBD, a fairly simple code block that generates a figure or so
+.. code-block:: python
+    cell = Cell(hoc_file, morph_file, template_format="v6_ais_scaler", emodel_properties=emodel_properties)
+    cell.add_ramp(start_time=10.0, stop_time=30.0, start_level=0.5, stop_level=4.0)
+    sim = Simulation()
+    sim.add_cell(cell)
+    cell.add_ais_recording(dt=cell.record_dt)
+    sim.run(45, cvode=False)
+
+
+
+.. image:: docs/images/soma-ais.png
+   :alt: Soma and AIS
+
 
 Tutorial
 ========
