@@ -21,11 +21,11 @@ from collections.abc import Iterable
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional
+import logging
 
 import numpy as np
 import pandas as pd
 import bluecellulab
-from bluecellulab import lazy_printv
 from bluecellulab.cell import CellDict
 from bluecellulab.cell.sonata_proxy import SonataProxy
 from bluecellulab.circuit import CellId, SimulationValidator, SynapseProperty
@@ -47,6 +47,7 @@ from bluecellulab.simulation import (
     set_tstop_value
 )
 
+logger = logging.getLogger(__name__)
 
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
@@ -343,7 +344,7 @@ class SSim:
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
                                      "not supported" % stimulus.pattern)
-                lazy_printv(f"Added {stimulus} to cell_id {cell_id}", 50)
+                logger.critical(f"Added {stimulus} to cell_id {cell_id}")
 
             if stimulus.pattern == Pattern.NOISE:
                 noisestim_count += 1
@@ -381,18 +382,16 @@ class SSim:
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
         if syn_descriptions.empty:
-            lazy_printv(
-                "Warning: No presynaptic cells found for gid {gid}, "
-                "no synapses added", 2, gid=cell_id)
+            logger.warning(f"Warning: No presynaptic cells found for gid {cell_id}, no synapses added")
+
         else:
             for idx, syn_description in syn_descriptions.iterrows():
                 popids = syn_description["source_popid"], syn_description["target_popid"]
                 self._instantiate_synapse(cell_id, idx, syn_description,
                                           add_minis=add_minis, popids=popids)
-            lazy_printv("Added {s_desc_len} synapses for gid {gid}",
-                        2, s_desc_len=len(syn_descriptions), gid=cell_id)
+            logger.info(f"Added {syn_descriptions} synapses for gid {cell_id}")
             if add_minis:
-                lazy_printv(f"Added minis for {cell_id=}", 2)
+                logger.info(f"Added minis for {cell_id=}")
 
     @staticmethod
     def _intersect_pre_gids(syn_descriptions, pre_gids: list[CellId]) -> pd.DataFrame:
@@ -495,8 +494,7 @@ class SSim:
                         parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    lazy_printv(f"Added real connection between {pre_gid} and \
-                            {post_gid}, {syn_id}", 5)
+                    logger.info(f"Added real connection between {pre_gid} and {post_gid}, {syn_id}")
                 else:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)  # type: ignore
                     connection = bluecellulab.Connection(
@@ -506,9 +504,7 @@ class SSim:
                         stim_dt=self.dt,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    lazy_printv(
-                        f"Added replay connection from {pre_gid} to "
-                        f"{post_gid}, {syn_id}", 5)
+                    logger.info(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
@@ -518,7 +514,8 @@ class SSim:
                             weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
-                lazy_printv(f"Added synaptic connections for target {post_gid}", 2)
+                logger.info(f"Added synaptic connections for target {post_gid}")
+                
 
     def _add_cells(self, cell_ids: list[CellId]) -> None:
         """Instantiate cells from a gid list."""
@@ -551,10 +548,7 @@ class SSim:
                 popids=popids, extracellular_calcium=self.circuit_access.config.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.circuit_access.fetch_mini_frequencies(cell_id)
-                lazy_printv('Adding minis for synapse {sid}: syn_description={s_desc}, '
-                            'connection={conn_params}, frequency={freq}',
-                            50, sid=syn_id, s_desc=syn_description,
-                            conn_params=syn_connection_parameters, freq=mini_frequencies)
+                logger.critical(f"Adding minis for synapse {syn_id}: syn_description={syn_description}, connection={syn_connection_parameters}, frequency={mini_frequencies}")
 
                 self.cells[cell_id].add_replay_minis(
                     syn_id,
@@ -622,9 +616,9 @@ class SSim:
             sim.add_cell(self.cells[cell_id])
 
         if show_progress:
-            lazy_printv("Warning: show_progress enabled, this will very likely"
-                        "break the exact reproducibility of large network"
-                        "simulations", 2)
+            logger.warning("Warning: show_progress enabled, this will very likely"
+                           "break the exact reproducibility of large network"
+                           "simulations")
 
         sim.run(
             t_stop,

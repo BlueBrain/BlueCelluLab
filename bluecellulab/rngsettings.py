@@ -13,13 +13,16 @@
 # limitations under the License.
 """RNG settings of bluecellulab."""
 
+import logging
+
 from typing import Optional
 
 import bluecellulab
-from bluecellulab import Singleton, lazy_printv
+from bluecellulab import Singleton
 from bluecellulab.circuit.circuit_access import CircuitAccess
 from bluecellulab.exceptions import UndefinedRNGException
 
+logger = logging.getLogger(__name__)
 
 class RNGSettings(metaclass=Singleton):
     """Class that represents RNG settings in bluecellulab."""
@@ -49,7 +52,7 @@ class RNGSettings(metaclass=Singleton):
         else:
             self.mode = mode
 
-        lazy_printv("Setting rng mode to: {mode}", 50, mode=self._mode)
+        logger.critical("Setting rng mode to: %s", self._mode)
 
         if base_seed is None:
             self.base_seed = circuit_access.config.base_seed if circuit_access else 0

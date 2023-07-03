@@ -22,6 +22,9 @@ import os
 from pathlib import Path
 from typing import Any, Optional, Protocol
 import warnings
+import logging
+
+logger = logging.getLogger(__name__)
 
 from bluecellulab import BLUEPY_AVAILABLE
 
@@ -39,7 +42,7 @@ import pandas as pd
 from pydantic import Extra
 from pydantic.dataclasses import dataclass
 
-from bluecellulab import lazy_printv, circuit, neuron
+from bluecellulab import circuit, neuron
 from bluecellulab.circuit import CellId, SynapseProperty
 from bluecellulab.circuit.config import BluepySimulationConfig, SimulationConfig, SonataSimulationConfig
 from bluecellulab.circuit.synapse_properties import (
@@ -284,10 +287,10 @@ class BluepyCircuitAccess:
                                   SynapseProperty.NRRP]:
                 if test_property.to_bluepy() not in connectome.available_properties:
                     connectome_properties.remove(test_property)
-                    lazy_printv(f'WARNING: {test_property} not found, disabling', 50)
+                    logger.critical(f'WARNING: {test_property} not found, disabling')
 
             if isinstance(connectome._impl, SonataConnectome):
-                lazy_printv('Using sonata style synapse file, not nrn.h5', 50)
+                logger.critical('Using sonata style synapse file, not nrn.h5')
                 # load 'afferent_section_pos' instead of '_POST_DISTANCE'
                 if 'afferent_section_pos' in connectome.available_properties:
                     connectome_properties[
@@ -311,8 +314,7 @@ class BluepyCircuitAccess:
                 [(proj_name, x) for x in synapses.index],
                 names=["proj_id", "synapse_id"])
 
-            lazy_printv('Retrieving a total of {n_syn} synapses for set {syn_set}',
-                        5, n_syn=synapses.shape[0], syn_set=proj_name)
+            logger.info(f'Retrieving a total of {synapses.shape[0]} synapses for set {proj_name}')
 
             all_synapses.append(synapses)
 
@@ -340,10 +342,10 @@ class BluepyCircuitAccess:
         )
 
         if result.empty:
-            lazy_printv('No synapses found', 5)
+            logger.info('No synapses found')
         else:
-            lazy_printv('Found a total of {n_syn_sets} synapse sets',
-                        5, n_syn_sets=len(result))
+            n_syn_sets=len(result)
+            logger.info(f'Found a total of {n_syn_sets} synapse sets')
 
         return result
 
