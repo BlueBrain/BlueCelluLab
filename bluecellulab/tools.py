@@ -26,33 +26,38 @@ import os
 import sys
 from typing import Any, Optional
 import warnings
+import logging
 
 import numpy as np
 
 import bluecellulab
 from bluecellulab import neuron
 
+logger = logging.getLogger(__name__)
 
 VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL: Optional[str] = None
 
-
-def set_verbose(level: int = 1) -> None:
+def set_verbose(level: int = 20) -> None:
     """Set the verbose level of BluecellulabError.
 
     Parameters
     ----------
     level :
             Verbose level, the higher the more verbosity.
-            Level 0 means 'completely quiet', except if some very serious
-            errors or warnings are encountered.
+            # NOTSET (0): A special level that disables filtering; allows all messages to be processed.
+            # DEBUG (10): Detailed information for debugging.
+            # INFO (20): General information about application progress.
+            # WARNING (30): Potential issues that don't disrupt the application.
+            # ERROR (40): Serious issues that may prevent normal operation.
+            # CRITICAL (50): Critical errors leading to application failure.
     """
     bluecellulab.VERBOSE_LEVEL = level
-
+    logger.setLevel(level)
 
 def set_verbose_from_env() -> None:
     """Get verbose level from environment."""
-    bluecellulab.ENV_VERBOSE_LEVEL = os.environ.get('BLUECELLULAB_VERBOSE_LEVEL')
+    bluecellulab.ENV_VERBOSE_LEVEL = os.environ.get('VERBOSE_LEVEL', 'INFO')
 
     if bluecellulab.ENV_VERBOSE_LEVEL is not None:
         set_verbose(int(bluecellulab.ENV_VERBOSE_LEVEL))
@@ -83,38 +88,6 @@ class deprecated:
                 .. deprecated:: .1\n" % self.new_function
         rep_func.__dict__.update(func.__dict__)
         return rep_func
-
-
-def lazy_printv(message: str, verbose_level: int, **kwargs: Any) -> None:
-    """Lazily print the message to stdout depending on the verbose level.
-
-    Parameters
-    ----------
-    message : string
-              Message to print
-    verbose_level: int
-                   Message will only be printed if the verbose level is
-                   higher or equal to this number
-     kwargs: Any
-             rest of the arguments to be used in formatting
-    """
-    if verbose_level <= bluecellulab.VERBOSE_LEVEL:
-        print(message.format(**kwargs))
-
-
-def printv_err(message: str, verbose_level: int) -> None:
-    """Print the message to stderr depending on the verbose level.
-
-    Parameters
-    ----------
-    message : string
-              Message to print
-    verbose_level: int
-                   Message will only be printed if the verbose level is
-                   higher or equal to this number
-    """
-    if verbose_level <= bluecellulab.VERBOSE_LEVEL:
-        print(message, file=sys.stderr)
 
 
 def load_nrnmechanisms(libnrnmech_path: str) -> None:
@@ -238,7 +211,7 @@ def search_hyp_current(template_name, morphology_name, target_voltage,
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
         template_name, morphology_name, med_current)
-    lazy_printv("Detected voltage: %f" % new_target_voltage, 1)
+    logger.info("Detected voltage: %f" % new_target_voltage)
     if abs(new_target_voltage - target_voltage) < .5:
         return med_current
     elif new_target_voltage > target_voltage:
@@ -297,12 +270,12 @@ def search_threshold_current(template_name, morphology_name, hyp_level,
                              inj_start, inj_stop, min_current, max_current):
     """Search current necessary to reach threshold."""
     med_current = min_current + abs(min_current - max_current) / 2
-    lazy_printv("Med current %d" % med_current, 1)
+    logger.info("Med current %d" % med_current)
 
     spike_detected = detect_spike_step(
         template_name, morphology_name, hyp_level, inj_start, inj_stop,
         med_current)
-    lazy_printv("Spike threshold detection at: %f nA" % med_current, 1)
+    logger.info("Spike threshold detection at: %f nA" % med_current)
 
     if abs(max_current - min_current) < .01:
         return max_current
@@ -370,9 +343,10 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     voltage = ssim.get_voltage_trace(gid)
     SS_voltage = np.mean(voltage[np.where(
         (time < tstop) & (time > tstart))])
-    lazy_printv("%s: Calculated SS voltage for gid %d "
+    logger.info("%s: Calculated SS voltage for gid %d "
                 "with step level %f nA: %s mV" %
-                (process_name, gid, step_level, SS_voltage), 1)
+                (process_name, gid, step_level, SS_voltage))
+    
 
     # print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
 
@@ -420,8 +394,8 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
     if nestlevel > max_nestlevel:
         return (float('nan'), (None, None))
     elif nestlevel == 1:
-        lazy_printv("%s: Searching for current to bring gid %d to %f mV" %
-                    (process_name, gid, target_voltage), 1)
+        logger.info("%s: Searching for current to bring gid %d to %f mV" %
+                    (process_name, gid, target_voltage))
     med_current = min_current + abs(min_current - max_current) / 2
     (new_target_voltage, (time, voltage)) = \
         calculate_SS_voltage_replay(blueconfig, gid, med_current,

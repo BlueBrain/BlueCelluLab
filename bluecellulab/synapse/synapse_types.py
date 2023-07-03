@@ -16,13 +16,15 @@
 from __future__ import annotations
 from typing import Any, Optional
 import pandas as pd
+import logging
 
 import bluecellulab
 from bluecellulab.circuit import SynapseProperty
-from bluecellulab.tools import lazy_printv
 
 
 NeuronType = Any
+
+logger = logging.getLogger(__name__)
 
 
 class Synapse:
@@ -187,11 +189,10 @@ class Synapse:
             return (K_half_fourth + 16) / 16 * y_fourth / (K_half_fourth + y_fourth)
 
         u_scale_factor = constrained_hill(u_hill_coefficient, extracellular_calcium)
-        lazy_printv(
+        Logger.critical(
             "Scaling synapse Use with u_hill_coeffient %f, "
             "extra_cellular_calcium %f with a factor of %f" %
-            (u_hill_coefficient, extracellular_calcium, u_scale_factor),
-            50)
+            (u_hill_coefficient, extracellular_calcium, u_scale_factor))
 
         return u_scale_factor
 
