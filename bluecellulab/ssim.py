@@ -382,7 +382,7 @@ class SSim:
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
         if syn_descriptions.empty:
-            logger.warning(f"Warning: No presynaptic cells found for gid {cell_id}, no synapses added")
+            logger.warning(f"No presynaptic cells found for gid {cell_id}, no synapses added")
 
         else:
             for idx, syn_description in syn_descriptions.iterrows():
@@ -616,7 +616,7 @@ class SSim:
             sim.add_cell(self.cells[cell_id])
 
         if show_progress:
-            logger.warning("Warning: show_progress enabled, this will very likely"
+            logger.warning("show_progress enabled, this will very likely"
                            "break the exact reproducibility of large network"
                            "simulations")
 

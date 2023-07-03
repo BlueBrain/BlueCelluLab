@@ -15,7 +15,6 @@
 
 import math
 import warnings
-
 import logging
 
 import numpy as np

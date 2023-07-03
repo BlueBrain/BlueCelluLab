@@ -45,12 +45,12 @@ def set_verbose(level: int = 20) -> None:
     ----------
     level :
             Verbose level, the higher the more verbosity.
-            # NOTSET (0): A special level that disables filtering; allows all messages to be processed.
-            # DEBUG (10): Detailed information for debugging.
-            # INFO (20): General information about application progress.
-            # WARNING (30): Potential issues that don't disrupt the application.
-            # ERROR (40): Serious issues that may prevent normal operation.
-            # CRITICAL (50): Critical errors leading to application failure.
+            # NOTSET (0): allows all messages to be processed.
+            # DEBUG (10)
+            # INFO (20)
+            # WARNING (30)
+            # ERROR (40)
+            # CRITICAL (50)
     """
     bluecellulab.VERBOSE_LEVEL = level
     logger.setLevel(level)
