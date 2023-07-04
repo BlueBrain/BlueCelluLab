@@ -45,7 +45,7 @@ setuptools.setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
-        'License :: Proprietary',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering',
         'Programming Language :: Python :: 3',
