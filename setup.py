@@ -19,6 +19,10 @@ import setuptools
 if sys.version_info[:2] < (3, 7):
     raise RuntimeError("Python version >= 3.7 required.")
 
+# Read the README.rst file
+with open("README.rst", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setuptools.setup(
     name="bluecellulab",
     use_scm_version=True,
@@ -26,6 +30,8 @@ setuptools.setup(
     packages=setuptools.find_packages(include=['bluecellulab', 'bluecellulab.*']),
     author="Blue Brain Project, EPFL",
     description="The Pythonic Blue Brain simulator access",
+    long_description=long_description,
+    long_description_content_type="text/x-rst",
     license="Apache2.0",
     install_requires=[
         "NEURON>=8.0.2,<9.0.0",
@@ -34,7 +40,7 @@ setuptools.setup(
         "pandas>=1.0.0,<2.0.0",
         "bluepysnap>=1.0.5,<2.0.0",
         "pydantic>=1.10.2,<2.0.0",
-        ],
+    ],
     keywords=[
         'computational neuroscience',
         'simulation',
