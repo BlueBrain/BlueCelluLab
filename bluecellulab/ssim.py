@@ -345,7 +345,7 @@ class SSim:
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
                                      "not supported" % stimulus.pattern)
-                logger.critical(f"Added {stimulus} to cell_id {cell_id}")
+                logger.info(f"Added {stimulus} to cell_id {cell_id}")
 
             if stimulus.pattern == Pattern.NOISE:
                 noisestim_count += 1
@@ -495,7 +495,7 @@ class SSim:
                         parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    logger.info(f"Added real connection between {pre_gid} and {post_gid}, {syn_id}")
+                    logger.debug(f"Added real connection between {pre_gid} and {post_gid}, {syn_id}")
                 else:
                     pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)  # type: ignore
                     connection = bluecellulab.Connection(
@@ -505,7 +505,7 @@ class SSim:
                         stim_dt=self.dt,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    logger.info(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
+                    logger.debug(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
@@ -515,7 +515,7 @@ class SSim:
                             weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
-                logger.info(f"Added synaptic connections for target {post_gid}")
+                logger.debug(f"Added synaptic connections for target {post_gid}")
 
     def _add_cells(self, cell_ids: list[CellId]) -> None:
         """Instantiate cells from a gid list."""
@@ -548,7 +548,7 @@ class SSim:
                 popids=popids, extracellular_calcium=self.circuit_access.config.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.circuit_access.fetch_mini_frequencies(cell_id)
-                logger.critical(f"Adding minis for synapse {syn_id}: syn_description={syn_description}, connection={syn_connection_parameters}, frequency={mini_frequencies}")
+                logger.info(f"Adding minis for synapse {syn_id}: syn_description={syn_description}, connection={syn_connection_parameters}, frequency={mini_frequencies}")
 
                 self.cells[cell_id].add_replay_minis(
                     syn_id,

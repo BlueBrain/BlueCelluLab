@@ -290,7 +290,7 @@ class BluepyCircuitAccess:
                     logger.critical(f'WARNING: {test_property} not found, disabling')
 
             if isinstance(connectome._impl, SonataConnectome):
-                logger.critical('Using sonata style synapse file, not nrn.h5')
+                logger.info('Using sonata style synapse file, not nrn.h5')
                 # load 'afferent_section_pos' instead of '_POST_DISTANCE'
                 if 'afferent_section_pos' in connectome.available_properties:
                     connectome_properties[
@@ -342,10 +342,10 @@ class BluepyCircuitAccess:
         )
 
         if result.empty:
-            logger.info('No synapses found')
+            logger.warning('No synapses found')
         else:
             n_syn_sets = len(result)
-            logger.info(f'Found a total of {n_syn_sets} synapse sets')
+            logger.debug(f'Found a total of {n_syn_sets} synapse sets')
 
         return result
 
