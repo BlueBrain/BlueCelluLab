@@ -342,7 +342,7 @@ class BluepyCircuitAccess:
         )
 
         if result.empty:
-            logger.info('No synapses found')
+            logger.warning('No synapses found')
         else:
             n_syn_sets = len(result)
             logger.debug(f'Found a total of {n_syn_sets} synapse sets')
