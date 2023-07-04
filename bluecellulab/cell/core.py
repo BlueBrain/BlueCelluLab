@@ -854,7 +854,7 @@ class Cell(InjectableMixin, PlottableMixin):
                     secnumber = int(self.cell.getCell().nSecAxonalOrig +
                                     self.cell.getCell().nSecSoma +
                                     self.cell.getCell().nSecBasal + apicnumber)
-                    logger.info((apicnumber, apicnumber))
+                    logger.info((apicnumber, secnumber))
                 else:
                     raise Exception(
                         "somaticbranches: No apic or \

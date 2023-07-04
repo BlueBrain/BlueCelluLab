@@ -118,7 +118,7 @@ class NeuronTemplate:
         good_neuron_versiondate = datetime.date(2014, 3, 20)
 
         if neuron_versiondate >= good_neuron_versiondate:
-            logger.warning("This Neuron version supports renaming " "templates, enabling...")
+            logger.info("This Neuron version supports renaming templates, enabling...")
             # add bluecellulab to the template name, so that we don't interfere with
             # templates load outside of bluecellulab
             template_name = "%s_bluecellulab" % template_name

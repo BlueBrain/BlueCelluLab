@@ -59,7 +59,7 @@ def set_verbose(level: int = 20) -> None:
 
 def set_verbose_from_env() -> None:
     """Get verbose level from environment."""
-    bluecellulab.ENV_VERBOSE_LEVEL = os.environ.get('VERBOSE_LEVEL', 'INFO')
+    bluecellulab.ENV_VERBOSE_LEVEL = os.environ.get('BLUECELLULAB_VERBOSE_LEVEL')
 
     if bluecellulab.ENV_VERBOSE_LEVEL is not None:
         set_verbose(int(bluecellulab.ENV_VERBOSE_LEVEL))
