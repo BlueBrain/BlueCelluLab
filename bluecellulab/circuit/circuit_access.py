@@ -24,8 +24,6 @@ from typing import Any, Optional, Protocol
 import warnings
 import logging
 
-logger = logging.getLogger(__name__)
-
 from bluecellulab import BLUEPY_AVAILABLE
 
 if BLUEPY_AVAILABLE:
@@ -52,6 +50,8 @@ from bluecellulab.circuit.synapse_properties import (
     properties_to_snap,
 )
 from bluecellulab.exceptions import BluecellulabError, ExtraDependencyMissingError
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(config=dict(extra=Extra.forbid))
@@ -344,7 +344,7 @@ class BluepyCircuitAccess:
         if result.empty:
             logger.info('No synapses found')
         else:
-            n_syn_sets=len(result)
+            n_syn_sets = len(result)
             logger.info(f'Found a total of {n_syn_sets} synapse sets')
 
         return result

@@ -22,6 +22,7 @@ from bluecellulab.cell.random import gamma
 
 logger = logging.getLogger(__name__)
 
+
 def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
                          duration, dt=0.25, rng=None):
     """Adds a Poisson shot noise signal with gamma-distributed amplitudes and

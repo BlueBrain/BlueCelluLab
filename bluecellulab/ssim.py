@@ -49,6 +49,7 @@ from bluecellulab.simulation import (
 
 logger = logging.getLogger(__name__)
 
+
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
@@ -515,7 +516,6 @@ class SSim:
 
             if len(self.cells[post_gid].connections) > 0:
                 logger.info(f"Added synaptic connections for target {post_gid}")
-                
 
     def _add_cells(self, cell_ids: list[CellId]) -> None:
         """Instantiate cells from a gid list."""
