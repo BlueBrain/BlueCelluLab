@@ -238,6 +238,6 @@ def get_neuron_compliant_template_name(name):
         template_name = shorten_and_hash_string(
             template_name, keep_length=40, hash_length=9
         )
-        logger.critical("Converted template name %s to %s to make it "
+        logger.info("Converted template name %s to %s to make it "
                         "NEURON compliant" % (name, template_name))
     return template_name
