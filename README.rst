@@ -14,6 +14,8 @@ BlueCelluLab
 +----------------+------------+
 | Gitter         | |gitter|   |
 +----------------+------------+
+| Citation       | |zenodo|   |
++----------------+------------+
 
 
 BlueCelluLab is designed to do simulation and experiment on a single cell or a group of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally.
@@ -115,3 +117,6 @@ For MOD files for which the original source is available on ModelDB, any specifi
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
                  :target: https://gitter.im/BlueBrain/BlueCelluLab
                  :alt: Join the chat at https://gitter.im/BlueBrain/BlueCelluLab
+
+.. |zenodo| image:: https://zenodo.org/badge/640805129.svg
+                 :target: https://zenodo.org/badge/latestdoi/640805129
