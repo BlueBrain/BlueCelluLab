@@ -66,7 +66,7 @@ The following example shows how to create a cell, add a stimulus and run a simul
     time, voltage = cell.get_time(), cell.get_soma_voltage()
     # plotting time and voltage ...
 
-.. image:: docs/images/voltage-readme.png
+.. image:: https://raw.githubusercontent.com/BlueBrain/BlueCelluLab/main/docs/images/voltage-readme.png
    :alt: Voltage plot
 
 Tutorial
