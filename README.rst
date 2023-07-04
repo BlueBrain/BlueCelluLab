@@ -62,7 +62,10 @@ Quick Start
 
     sim.run(200, cvode=False)
     time, voltage = cell.get_time(), cell.get_soma_voltage()
+    # plotting time and voltage ...
 
+.. image:: docs/images/voltage-readme.png
+   :alt: Voltage plot
 
 Tutorial
 ========
