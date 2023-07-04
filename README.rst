@@ -50,6 +50,8 @@ BlueCelluLab can be pip installed with the following command:
 Quick Start
 ===========
 
+The following example shows how to create a cell, add a stimulus and run a simulation:
+
 .. code-block:: python
 
     from bluecellulab.cell import create_ball_stick
