@@ -345,7 +345,7 @@ class SSim:
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
                                      "not supported" % stimulus.pattern)
-                logger.critical(f"Added {stimulus} to cell_id {cell_id}")
+                logger.info(f"Added {stimulus} to cell_id {cell_id}")
 
             if stimulus.pattern == Pattern.NOISE:
                 noisestim_count += 1
