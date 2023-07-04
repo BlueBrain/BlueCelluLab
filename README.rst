@@ -58,7 +58,7 @@ The following example shows how to create a cell, add a stimulus and run a simul
     from bluecellulab import Simulation
 
     cell = create_ball_stick()
-    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=1.5)
+    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=0.1)
     sim = Simulation()
     sim.add_cell(cell)
 
