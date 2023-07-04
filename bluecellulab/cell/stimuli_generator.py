@@ -142,7 +142,7 @@ def gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt=0.25, rng=None):
     """
 
     if rng is None:
-        logger.critical("Using a default RNG for Ornstein-Uhlenbeck process")
+        logger.info("Using a default RNG for Ornstein-Uhlenbeck process")
         rng = bluecellulab.neuron.h.Random()  # Creates a default RNG
 
     tvec = bluecellulab.neuron.h.Vector()
