@@ -548,7 +548,7 @@ class SSim:
                 popids=popids, extracellular_calcium=self.circuit_access.config.extracellular_calcium)
             if add_minis:
                 mini_frequencies = self.circuit_access.fetch_mini_frequencies(cell_id)
-                logger.critical(f"Adding minis for synapse {syn_id}: syn_description={syn_description}, connection={syn_connection_parameters}, frequency={mini_frequencies}")
+                logger.info(f"Adding minis for synapse {syn_id}: syn_description={syn_description}, connection={syn_connection_parameters}, frequency={mini_frequencies}")
 
                 self.cells[cell_id].add_replay_minis(
                     syn_id,
