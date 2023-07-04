@@ -27,7 +27,15 @@ When you use this BlueCelluLab software for your research, we ask you to cite th
 
 .. code-block:: 
 
-    @article {TBD Zenodo}
+    @software{bluecellulab_zenodo,
+      author       = {Van Geit, Werner and Tuncel, Anil and Gevaert, Mike and Torben-Nielsen, Benjamin and Muller, Eilif},
+      title        = {BlueCelluLab},
+      month        = jul,
+      year         = 2023,
+      publisher    = {Zenodo},
+      doi          = {10.5281/zenodo.8113483},
+      url          = {https://doi.org/10.5281/zenodo.8113483}
+    }
 
 Support
 =======
