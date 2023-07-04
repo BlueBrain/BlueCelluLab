@@ -147,7 +147,8 @@ class NeuronTemplate:
 
             bluecellulab.neuron.h(template_content)
         else:
-            logger.warning("This Neuron version doesn't support renaming templates, disabling...")
+            logger.warning("This Neuron version doesn't support renaming "
+                           "templates, disabling...")
             bluecellulab.neuron.h.load_file(template_filename)
 
         return template_name
