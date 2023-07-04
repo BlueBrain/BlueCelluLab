@@ -25,7 +25,10 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="bluecellulab",
-    use_scm_version=True,
+    use_scm_version={
+        'version_scheme': 'python-simplified-semver',
+        'local_scheme': 'no-local-version'
+    },
     setup_requires=['setuptools_scm'],
     packages=setuptools.find_packages(include=['bluecellulab', 'bluecellulab.*']),
     author="Blue Brain Project, EPFL",
