@@ -18,7 +18,7 @@ def test_moduleload():
 def test_verbose_env():
     """bluecellulab: Test env verbose level var"""
     import os
-    os.environ['BLUECELLULAB_VERBOSE_LEVEL'] = 10
+    os.environ['BLUECELLULAB_VERBOSE_LEVEL'] = "10"
 
     import bluecellulab  # NOQA
 
