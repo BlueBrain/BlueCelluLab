@@ -24,6 +24,7 @@ from bluecellulab.exceptions import UndefinedRNGException
 
 logger = logging.getLogger(__name__)
 
+
 class RNGSettings(metaclass=Singleton):
     """Class that represents RNG settings in bluecellulab."""
 

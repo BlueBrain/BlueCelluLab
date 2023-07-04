@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL: Optional[str] = None
 
+
 def set_verbose(level: int = 20) -> None:
     """Set the verbose level of BluecellulabError.
 
@@ -54,6 +55,7 @@ def set_verbose(level: int = 20) -> None:
     """
     bluecellulab.VERBOSE_LEVEL = level
     logger.setLevel(level)
+
 
 def set_verbose_from_env() -> None:
     """Get verbose level from environment."""
@@ -346,8 +348,6 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
     logger.info("%s: Calculated SS voltage for gid %d "
                 "with step level %f nA: %s mV" %
                 (process_name, gid, step_level, SS_voltage))
-    
-
     # print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
 
     return (SS_voltage, (time, voltage))

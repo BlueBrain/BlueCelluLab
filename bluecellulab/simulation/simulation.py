@@ -25,6 +25,7 @@ from bluecellulab.importer import neuron
 
 logger = logging.getLogger(__name__)
 
+
 class Simulation:
     """Class that represents a neuron simulation."""
 
@@ -122,8 +123,8 @@ class Simulation:
         else:
             if cvode_old_status:
                 logger.warning("cvode was activated outside of Simulation, "
-                    "temporarily disabling it in run() because cvode=False "
-                    "was set")
+                               "temporarily disabling it in run() because cvode=False "
+                               "was set")
             neuron.h.cvode_active(0)
 
         neuron.h.v_init = v_init
@@ -165,8 +166,7 @@ class Simulation:
             neuron.h.continuerun(neuron.h.tstop)
         except Exception as exception:
             logger.error("The neuron was eaten by the Python !\n"
-                                 "Reason: % s: % s" % (
-                                     exception.__class__.__name__, exception))
+                         "Reason: % s: % s" % (exception.__class__.__name__, exception))
         finally:
             if cvode_old_status:
                 logger.warning(
