@@ -515,7 +515,7 @@ class SSim:
                             weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
-               logger.debug(f"Added synaptic connections for target {post_gid}")
+                logger.debug(f"Added synaptic connections for target {post_gid}")
 
     def _add_cells(self, cell_ids: list[CellId]) -> None:
         """Instantiate cells from a gid list."""

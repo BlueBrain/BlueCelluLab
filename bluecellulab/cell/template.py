@@ -148,7 +148,7 @@ class NeuronTemplate:
             bluecellulab.neuron.h(template_content)
         else:
             logger.info("This Neuron version doesn't support renaming "
-                           "templates, disabling...")
+                        "templates, disabling...")
             bluecellulab.neuron.h.load_file(template_filename)
 
         return template_name
@@ -239,5 +239,5 @@ def get_neuron_compliant_template_name(name):
             template_name, keep_length=40, hash_length=9
         )
         logger.info("Converted template name %s to %s to make it "
-                        "NEURON compliant" % (name, template_name))
+                    "NEURON compliant" % (name, template_name))
     return template_name
