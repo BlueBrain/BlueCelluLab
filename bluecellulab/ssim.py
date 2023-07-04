@@ -505,7 +505,7 @@ class SSim:
                         stim_dt=self.dt,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
-                    logger.info(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
+                    logger.debug(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
 
                 if connection is not None:
                     self.cells[post_gid].connections[syn_id] = connection
