@@ -47,7 +47,7 @@ from bluecellulab.simulation import (
     set_tstop_value
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class SSim:

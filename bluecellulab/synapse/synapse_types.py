@@ -24,7 +24,7 @@ from bluecellulab.circuit import SynapseProperty
 
 NeuronType = Any
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class Synapse:

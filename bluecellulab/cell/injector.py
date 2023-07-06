@@ -35,7 +35,7 @@ from bluecellulab.stimuli import (
     RelativeShotNoise,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class InjectableMixin:

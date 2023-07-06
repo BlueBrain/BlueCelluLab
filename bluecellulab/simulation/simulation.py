@@ -23,7 +23,7 @@ import bluecellulab
 import contextlib
 from bluecellulab.importer import neuron
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class Simulation:
@@ -165,6 +165,8 @@ class Simulation:
         try:
             neuron.h.continuerun(neuron.h.tstop)
         except Exception as exception:
+            stream_handler = logging.StreamHandler(sys.stderr)
+            logger.addHandler(stream_handler)
             logger.error("The neuron was eaten by the Python !\n"
                          "Reason: % s: % s" % (exception.__class__.__name__, exception))
         finally:

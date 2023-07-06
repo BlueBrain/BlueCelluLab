@@ -20,7 +20,7 @@ import logging
 import bluecellulab
 from bluecellulab.cell.random import gamma
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,

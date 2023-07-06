@@ -22,7 +22,7 @@ from bluecellulab import Singleton
 from bluecellulab.circuit.circuit_access import CircuitAccess
 from bluecellulab.exceptions import UndefinedRNGException
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class RNGSettings(metaclass=Singleton):

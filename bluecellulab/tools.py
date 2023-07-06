@@ -33,19 +33,21 @@ import numpy as np
 import bluecellulab
 from bluecellulab import neuron
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL: Optional[str] = None
+LOGGER_NAME = 'bluecellulab'
 
 
-def set_verbose(level: int = 20) -> None:
+def set_verbose(level: int = 30) -> None:
     """Set the verbose level of BluecellulabError.
 
     Parameters
     ----------
     level :
-            Verbose level, the higher the more verbosity.
+            Verbose level, the higher the less verbosity. 
+            i.e. If set to WARNING, only events of this level and higher will be tracked.
             # NOTSET (0): allows all messages to be processed.
             # DEBUG (10)
             # INFO (20)
@@ -54,7 +56,7 @@ def set_verbose(level: int = 20) -> None:
             # CRITICAL (50)
     """
     bluecellulab.VERBOSE_LEVEL = level
-    logger.setLevel(level)
+    logging.getLogger(LOGGER_NAME).setLevel(level)
 
 
 def set_verbose_from_env() -> None:

@@ -38,7 +38,7 @@ from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.synapse import SynapseFactory, Synapse
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 NeuronType = Any
 

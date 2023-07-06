@@ -30,7 +30,7 @@ from bluecellulab.exceptions import BluecellulabError
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
 
 
 class NeuronTemplate:
