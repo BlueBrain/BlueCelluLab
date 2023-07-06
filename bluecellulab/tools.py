@@ -46,7 +46,7 @@ def set_verbose(level: int = 30) -> None:
     Parameters
     ----------
     level :
-            Verbose level, the higher the less verbosity. 
+            Verbose level, the higher the less verbosity.
             i.e. If set to WARNING, only events of this level and higher will be tracked.
             # NOTSET (0): allows all messages to be processed.
             # DEBUG (10)
