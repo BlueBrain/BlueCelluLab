@@ -1,5 +1,16 @@
 Changelog
-=========
+==========
+
+1.1.1
+-----------
+
+* Deploy docs to readthedocs
+* Use the same docs requirements in both tox and readthedocs
+
+
+Previous changelog (before open sourcing)
+===========================================
+
 
 4.10 (2023-03-23)
 -----------------
