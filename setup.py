@@ -40,7 +40,7 @@ setuptools.setup(
         "NEURON>=8.0.2,<9.0.0",
         "numpy>=1.8.0,<2.0.0",
         "matplotlib>=3.0.0,<4.0.0",
-        "pandas>=1.0.0,<2.0.0",
+        "pandas>=1.0.0,<3.0.0",
         "bluepysnap>=1.0.5,<2.0.0",
         "pydantic>=1.10.2,<2.0.0",
     ],
