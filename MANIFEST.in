@@ -1,1 +1,2 @@
 recursive-include bluecellulab/hoc *.hoc
+recursive-include bluecellulab/cell/ballstick *.asc *.hoc

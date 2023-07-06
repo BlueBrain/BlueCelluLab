@@ -1,0 +1,32 @@
+{
+  "title" : "BlueCelluLab",
+  "license": "Apache-2.0",
+  "upload_type": "software",
+  "description": "BlueCelluLab is designed to do simulation and experiment on a single cell or a group of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally.",
+  "creators": [
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Van Geit, Werner",
+      "orcid": "0000-0002-2915-720X"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Tuncel, Anil",
+      "orcid": "0000-0003-0317-2556"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Gevaert, Mike"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Torben-Nielsen, Benjamin",
+      "orcid": "0000-0003-4203-9942"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Muller, Eilif",
+      "orcid": "0000-0003-4309-8266"
+    }
+  ]
+}

@@ -14,6 +14,8 @@ BlueCelluLab
 +----------------+------------+
 | Gitter         | |gitter|   |
 +----------------+------------+
+| Citation       | |zenodo|   |
++----------------+------------+
 
 
 BlueCelluLab is designed to do simulation and experiment on a single cell or a group of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally.
@@ -25,7 +27,15 @@ When you use this BlueCelluLab software for your research, we ask you to cite th
 
 .. code-block:: 
 
-    @article {TBD Zenodo}
+    @software{bluecellulab_zenodo,
+      author       = {Van Geit, Werner and Tuncel, Anil and Gevaert, Mike and Torben-Nielsen, Benjamin and Muller, Eilif},
+      title        = {BlueCelluLab},
+      month        = jul,
+      year         = 2023,
+      publisher    = {Zenodo},
+      doi          = {10.5281/zenodo.8113483},
+      url          = {https://doi.org/10.5281/zenodo.8113483}
+    }
 
 Support
 =======
@@ -50,7 +60,24 @@ BlueCelluLab can be pip installed with the following command:
 Quick Start
 ===========
 
-TBD, a fairly simple code block that generates a figure or so
+The following example shows how to create a cell, add a stimulus and run a simulation:
+
+.. code-block:: python
+
+    from bluecellulab.cell import create_ball_stick
+    from bluecellulab import Simulation
+
+    cell = create_ball_stick()
+    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=0.1)
+    sim = Simulation()
+    sim.add_cell(cell)
+
+    sim.run(200, cvode=False)
+    time, voltage = cell.get_time(), cell.get_soma_voltage()
+    # plotting time and voltage ...
+
+.. image:: https://raw.githubusercontent.com/BlueBrain/BlueCelluLab/main/docs/images/voltage-readme.png
+   :alt: Voltage plot
 
 Tutorial
 ========
@@ -98,3 +125,6 @@ For MOD files for which the original source is available on ModelDB, any specifi
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
                  :target: https://gitter.im/BlueBrain/BlueCelluLab
                  :alt: Join the chat at https://gitter.im/BlueBrain/BlueCelluLab
+
+.. |zenodo| image:: https://zenodo.org/badge/640805129.svg
+                 :target: https://zenodo.org/badge/latestdoi/640805129
