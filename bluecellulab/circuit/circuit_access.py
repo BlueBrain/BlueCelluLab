@@ -52,7 +52,7 @@ from bluecellulab.circuit.synapse_properties import (
 )
 from bluecellulab.exceptions import BluecellulabError, ExtraDependencyMissingError
 
-logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass(config=dict(extra=Extra.forbid))

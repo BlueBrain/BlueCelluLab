@@ -23,7 +23,7 @@ import numpy as np
 
 from bluecellulab.circuit.node_id import CellId
 
-logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 def parse_outdat(path: str | Path) -> dict[CellId, np.ndarray]:

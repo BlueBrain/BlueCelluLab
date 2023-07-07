@@ -23,7 +23,7 @@ import bluecellulab
 import contextlib
 from bluecellulab.importer import neuron
 
-logger = logging.getLogger(bluecellulab.LOGGER_NAME + '.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 class Simulation:
