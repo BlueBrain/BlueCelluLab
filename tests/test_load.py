@@ -8,6 +8,7 @@
 import pytest
 import logging
 
+
 @pytest.mark.unit
 def test_moduleload():
     """bluecellulab: Test the loading of the bluecellulab module"""
@@ -38,6 +39,7 @@ def test_verbose_env():
     assert bluecellulab.VERBOSE_LEVEL == 0
     assert logging.getLogger('bluecellulab').getEffectiveLevel() == 0
 
+
 @pytest.mark.unit
 def test_logger():
     """Test logging"""
@@ -46,7 +48,7 @@ def test_logger():
 
     parent_logger = logging.getLogger('bluecellulab')
     parent_logger.setLevel(logging.DEBUG)
-    child_logger = logging.getLogger('bluecellulab.'+ __name__)
+    child_logger = logging.getLogger('bluecellulab.' + __name__)
 
     # Verify the hierarchy and level inheritance
     assert child_logger.getEffectiveLevel() == parent_logger.getEffectiveLevel()
