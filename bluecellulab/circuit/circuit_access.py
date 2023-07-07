@@ -25,7 +25,6 @@ import warnings
 import logging
 
 from bluecellulab import BLUEPY_AVAILABLE
-import bluecellulab
 
 if BLUEPY_AVAILABLE:
     from bluepy_configfile.configfile import BlueConfig
