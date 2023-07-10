@@ -231,7 +231,7 @@ class InjectableMixin:
             seed2 = self.rng_settings.stimulus_seed + 291204  # stimulus type
             seed3 = self.gid + 123 if seed is None else seed  # GID
             logger.debug("Using ornstein_uhlenbeck process seeds %d %d %d" %
-                        (seed1, seed2, seed3))
+                         (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
@@ -247,7 +247,7 @@ class InjectableMixin:
             seed2 = self.rng_settings.stimulus_seed + 19216
             seed3 = self.gid + 123 if seed is None else seed
             logger.debug("Using shot noise seeds %d %d %d" %
-                        (seed1, seed2, seed3))
+                         (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
