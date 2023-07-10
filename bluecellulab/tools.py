@@ -47,7 +47,7 @@ def set_verbose(level: int = 30) -> None:
     level :
             Verbose level, the higher the less verbosity.
             i.e. If set to WARNING, only events of this level and higher will be tracked.
-            # NOTSET (0): allows all messages to be processed.
+            # NOTSET (0): inherit the log level from its parent logger or the root logger
             # DEBUG (10)
             # INFO (20)
             # WARNING (30)

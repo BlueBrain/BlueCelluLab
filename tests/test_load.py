@@ -37,7 +37,8 @@ def test_verbose_env():
 
     bluecellulab.set_verbose(0)
     assert bluecellulab.VERBOSE_LEVEL == 0
-    assert logging.getLogger('bluecellulab').getEffectiveLevel() == 0
+    # Since 0 is equivalent to NOTSET, it will inherit the log level from its parent logger or the root logger.
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.getLogger('bluecellulab').parent.getEffectiveLevel()
 
 
 @pytest.mark.unit
