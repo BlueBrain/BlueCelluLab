@@ -166,10 +166,10 @@ class Simulation:
             neuron.h.continuerun(neuron.h.tstop)
         except Exception as exception:
             stream_handler = logging.StreamHandler(sys.stderr)
-            handler = logger.addHandler(stream_handler)
+            logger.addHandler(stream_handler)
             logger.error("The neuron was eaten by the Python !\n"
                          "Reason: % s: % s" % (exception.__class__.__name__, exception))
-            logger.removeHandler(handler)
+            logger.removeHandler(stream_handler)
         finally:
             if cvode_old_status:
                 logger.warning(
