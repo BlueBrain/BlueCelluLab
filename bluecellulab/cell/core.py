@@ -531,7 +531,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.synapses[synapse_id] = synapse
 
-        logger.info('Added synapse to cell {gid}: {s_info_dict}', 50, gid=self.gid,
+        logger.debug('Added synapse to cell {gid}: {s_info_dict}', gid=self.gid,
                     s_info_dict=json.dumps(synapse.info_dict, cls=tools.NumpyEncoder))
 
         return True

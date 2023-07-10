@@ -39,23 +39,28 @@ VERBOSE_LEVEL = 0
 ENV_VERBOSE_LEVEL: Optional[str] = None
 
 
-def set_verbose(level: int = 30) -> None:
+def set_verbose(level: int = 1) -> None:
     """Set the verbose level of BluecellulabError.
 
     Parameters
     ----------
     level :
-            Verbose level, the higher the less verbosity.
-            i.e. If set to WARNING, only events of this level and higher will be tracked.
-            # NOTSET (0): inherit the log level from its parent logger or the root logger
-            # DEBUG (10)
-            # INFO (20)
-            # WARNING (30)
-            # ERROR (40)
-            # CRITICAL (50)
+            Verbose level, the higher the more verbosity.
+            Level 0 means 'completely quiet', except if some very serious
+            errors or warnings are encountered.
     """
     bluecellulab.VERBOSE_LEVEL = level
-    logging.getLogger('bluecellulab').setLevel(level)
+
+    if level <= 0:
+        logging.getLogger('bluecellulab').setLevel(logging.CRITICAL)
+    elif level == 1:
+        logging.getLogger('bluecellulab').setLevel(logging.ERROR)
+    elif level == 2:
+        logging.getLogger('bluecellulab').setLevel(logging.WARNING)
+    elif level > 2 and level <= 5:
+        logging.getLogger('bluecellulab').setLevel(logging.INFO)
+    else:
+        logging.getLogger('bluecellulab').setLevel(logging.DEBUG)
 
 
 def set_verbose_from_env() -> None:

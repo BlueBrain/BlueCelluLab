@@ -53,7 +53,7 @@ class RNGSettings(metaclass=Singleton):
         else:
             self.mode = mode
 
-        logger.warning("Setting rng mode to: %s", self._mode)
+        logger.debug("Setting rng mode to: %s", self._mode)
 
         if base_seed is None:
             self.base_seed = circuit_access.config.base_seed if circuit_access else 0

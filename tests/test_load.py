@@ -34,12 +34,23 @@ def test_verbose_env():
     bluecellulab.set_verbose_from_env()
     assert bluecellulab.ENV_VERBOSE_LEVEL is None
     assert bluecellulab.VERBOSE_LEVEL == 10
-    assert logging.getLogger('bluecellulab').getEffectiveLevel() == 10
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.DEBUG
 
     bluecellulab.set_verbose(0)
     assert bluecellulab.VERBOSE_LEVEL == 0
-    # Since 0 is equivalent to NOTSET, it will inherit the log level from its parent logger or the root logger.
-    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.getLogger('bluecellulab').parent.getEffectiveLevel()
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.CRITICAL
+
+    bluecellulab.set_verbose(1)
+    assert bluecellulab.VERBOSE_LEVEL == 1
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.ERROR
+
+    bluecellulab.set_verbose(2)
+    assert bluecellulab.VERBOSE_LEVEL == 2
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.WARNING
+
+    bluecellulab.set_verbose(5)
+    assert bluecellulab.VERBOSE_LEVEL == 5
+    assert logging.getLogger('bluecellulab').getEffectiveLevel() == logging.INFO
 
 
 @pytest.mark.unit
@@ -59,8 +70,16 @@ def test_logger():
     logger = logging.getLogger('test_logger')
     logger.setLevel(logging.CRITICAL)
     stream = io.StringIO()
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(stream)
     logger.addHandler(handler)
     logger.warning('This is a warning')
     log_output = stream.getvalue()
     assert log_output == ''
+
+    # Verify that a warning logger entry is displayed when the logger level is set to warning
+    logger.setLevel(logging.WARNING)
+    logger.warning('This is a warning')
+    log_output = stream.getvalue()
+    assert log_output == 'This is a warning\n'
+
+    logger.removeHandler(handler)
