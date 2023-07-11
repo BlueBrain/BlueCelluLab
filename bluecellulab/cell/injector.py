@@ -15,11 +15,12 @@
 
 import math
 import warnings
+import logging
 
 import numpy as np
 
 import bluecellulab
-from bluecellulab import lazy_printv, tools
+from bluecellulab import tools
 from bluecellulab.cell.stimuli_generator import (
     gen_ornstein_uhlenbeck,
     gen_shotnoise_signal,
@@ -33,6 +34,8 @@ from bluecellulab.stimuli import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class InjectableMixin:
@@ -227,8 +230,8 @@ class InjectableMixin:
             seed1 = stim_count + 2997  # stimulus block
             seed2 = self.rng_settings.stimulus_seed + 291204  # stimulus type
             seed3 = self.gid + 123 if seed is None else seed  # GID
-            lazy_printv("Using ornstein_uhlenbeck process seeds %d %d %d" %
-                        (seed1, seed2, seed3), 50)
+            logger.debug("Using ornstein_uhlenbeck process seeds %d %d %d" %
+                         (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
@@ -243,8 +246,8 @@ class InjectableMixin:
             seed1 = shotnoise_stim_count + 2997
             seed2 = self.rng_settings.stimulus_seed + 19216
             seed3 = self.gid + 123 if seed is None else seed
-            lazy_printv("Using shot noise seeds %d %d %d" %
-                        (seed1, seed2, seed3), 50)
+            logger.debug("Using shot noise seeds %d %d %d" %
+                         (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:

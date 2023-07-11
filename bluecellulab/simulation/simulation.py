@@ -17,11 +17,13 @@
 
 import sys
 from typing import Optional
+import logging
 
 import bluecellulab
 import contextlib
-from bluecellulab import lazy_printv, printv_err
 from bluecellulab.importer import neuron
+
+logger = logging.getLogger(__name__)
 
 
 class Simulation:
@@ -120,10 +122,9 @@ class Simulation:
                 neuron.h.cvode.maxstep(cvode_maxstep)
         else:
             if cvode_old_status:
-                lazy_printv(
-                    "WARNING: cvode was activated outside of Simulation, "
-                    "temporarily disabling it in run() because cvode=False "
-                    "was set", 2)
+                logger.warning("cvode was activated outside of Simulation, "
+                               "temporarily disabling it in run() because cvode=False "
+                               "was set")
             neuron.h.cvode_active(0)
 
         neuron.h.v_init = v_init
@@ -140,7 +141,7 @@ class Simulation:
         # initialized heavily influence the random number generator
         # e.g. finitialize() + step() != run()
 
-        lazy_printv('Running a simulation until {t} ms ...', 1, t=maxtime)
+        logger.info(f'Running a simulation until {maxtime} ms ...')
 
         self.init_callbacks()
 
@@ -164,18 +165,20 @@ class Simulation:
         try:
             neuron.h.continuerun(neuron.h.tstop)
         except Exception as exception:
-            printv_err("The neuron was eaten by the Python !\n"
-                       "Reason: % s: % s" % (
-                           exception.__class__.__name__, exception), 1)
+            stream_handler = logging.StreamHandler(sys.stderr)
+            logger.addHandler(stream_handler)
+            logger.error("The neuron was eaten by the Python !\n"
+                         "Reason: % s: % s" % (exception.__class__.__name__, exception))
+            logger.removeHandler(stream_handler)
         finally:
             if cvode_old_status:
-                lazy_printv(
-                    "WARNING: cvode was activated outside of Simulation, "
+                logger.warning(
+                    "cvode was activated outside of Simulation, "
                     "this might make it impossible to load templates with "
-                    "stochastic channels", 2)
+                    "stochastic channels")
             neuron.h.cvode_active(cvode_old_status)
 
-        lazy_printv('Finished simulation.', 1)
+        logger.info("Finished simulation.")
 
     # pylint: enable=C0103,R0912
 

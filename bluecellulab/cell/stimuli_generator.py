@@ -15,9 +15,12 @@
 
 import math
 
+import logging
+
 import bluecellulab
-from bluecellulab import lazy_printv
 from bluecellulab.cell.random import gamma
+
+logger = logging.getLogger(__name__)
 
 
 def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
@@ -35,7 +38,7 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
     rng: random number generator object
     """
     if rng is None:
-        lazy_printv("Using a default RNG for shot noise generation", 50)
+        logger.info("Using a default RNG for shot noise generation")
         rng = bluecellulab.neuron.h.Random()  # Creates a default RNG
 
     tvec = bluecellulab.neuron.h.Vector()
@@ -139,7 +142,7 @@ def gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt=0.25, rng=None):
     """
 
     if rng is None:
-        lazy_printv("Using a default RNG for Ornstein-Uhlenbeck process", 50)
+        logger.info("Using a default RNG for Ornstein-Uhlenbeck process")
         rng = bluecellulab.neuron.h.Random()  # Creates a default RNG
 
     tvec = bluecellulab.neuron.h.Vector()

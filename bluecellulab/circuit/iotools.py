@@ -15,12 +15,14 @@
 
 from __future__ import annotations
 from pathlib import Path
+import logging
 
 import bluepy
 import numpy as np
 
-from bluecellulab import lazy_printv
 from bluecellulab.circuit.node_id import CellId
+
+logger = logging.getLogger(__name__)
 
 
 def parse_outdat(path: str | Path) -> dict[CellId, np.ndarray]:
@@ -30,8 +32,8 @@ def parse_outdat(path: str | Path) -> dict[CellId, np.ndarray]:
     # convert Series to DataFrame with 2 columns for `groupby` operation
     spike_df = spikes.to_frame().reset_index()
     if (spike_df["t"] < 0).any():
-        lazy_printv('WARNING: SSim: Found negative spike times in out.dat ! '
-                    'Clipping them to 0', 2)
+        logger.warning('SSim: Found negative spike times in out.dat ! '
+                       'Clipping them to 0')
         spike_df["t"].clip(lower=0., inplace=True)
 
     outdat = spike_df.groupby("gid")["t"].apply(np.array)
