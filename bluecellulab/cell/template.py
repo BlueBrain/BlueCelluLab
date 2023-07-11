@@ -24,9 +24,13 @@ import string
 from typing import Optional
 
 import bluecellulab
-from bluecellulab import lazy_printv, neuron
+from bluecellulab import neuron
 from bluecellulab.circuit import EmodelProperties
 from bluecellulab.exceptions import BluecellulabError
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class NeuronTemplate:
@@ -114,9 +118,7 @@ class NeuronTemplate:
         good_neuron_versiondate = datetime.date(2014, 3, 20)
 
         if neuron_versiondate >= good_neuron_versiondate:
-            lazy_printv(
-                "This Neuron version supports renaming " "templates, enabling...", 5
-            )
+            logger.info("This Neuron version supports renaming templates, enabling...")
             # add bluecellulab to the template name, so that we don't interfere with
             # templates load outside of bluecellulab
             template_name = "%s_bluecellulab" % template_name
@@ -145,11 +147,8 @@ class NeuronTemplate:
 
             bluecellulab.neuron.h(template_content)
         else:
-            lazy_printv(
-                "This Neuron version doesn't support renaming "
-                "templates, disabling...",
-                5,
-            )
+            logger.info("This Neuron version doesn't support renaming "
+                        "templates, disabling...")
             bluecellulab.neuron.h.load_file(template_filename)
 
         return template_name
@@ -239,9 +238,6 @@ def get_neuron_compliant_template_name(name):
         template_name = shorten_and_hash_string(
             template_name, keep_length=40, hash_length=9
         )
-        lazy_printv(
-            "Converted template name %s to %s to make it "
-            "NEURON compliant" % (name, template_name),
-            50,
-        )
+        logger.debug("Converted template name %s to %s to make it "
+                     "NEURON compliant" % (name, template_name))
     return template_name
