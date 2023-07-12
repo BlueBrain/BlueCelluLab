@@ -4,6 +4,9 @@ include:
 
 
 tests:
+  stage: test
+  tags:
+    - bb5_map
   before_script:
   - !reference [.define-functions]
   - !reference [.bb5, clean-env]
@@ -14,6 +17,7 @@ tests:
   - !reference [.setup-venv]
   - !reference [.gitlab-access]
   script:
-  - git clone https://bbpgitlab.epfl.ch/cells/bluecellulab-bb5-tests.git
+  - pip install .  # Install the package itself
+  - git clone git@bbpgitlab.epfl.ch:cells/bluecellulab-bb5-tests.git
   - cd bluecellulab-bb5-tests
   - make
