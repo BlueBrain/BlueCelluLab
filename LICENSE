@@ -2,6 +2,7 @@ BlueCellulab is licensed under the Apache License, unless noted otherwise,
 e.g., for external dependencies such as MOD or morphology files.
 For MOD files for which the original source is available on ModelDB, 
 any specific licenses on mentioned on ModelDB, or the generic License of ModelDB apply.
+The licenses of the morphology files used in this repository are available on: https://zenodo.org/record/5909613
 
 
                                  Apache License
