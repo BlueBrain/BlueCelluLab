@@ -5,7 +5,13 @@ include:
 
 tests:
   before_script:
+  - !reference [.define-functions]
+  - !reference [.bb5, clean-env]
+  - !reference [.bb5, load-python-39]
   - !reference [.bb5, load-python-310]
+  - !reference [.bb5, load-extra-modules]
+  - !reference [.run-pre-build-command]
+  - !reference [.setup-venv]
   - !reference [.gitlab-access]
   script:
   - git clone https://bbpgitlab.epfl.ch/cells/bluecellulab-bb5-tests.git
