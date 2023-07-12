@@ -1,0 +1,13 @@
+include:
+   - project: cells/ci
+     file: /ci/lib/common.yml
+
+
+tests:
+  before_script:
+  - !reference [.bb5, load-python-310]
+  - !reference [.gitlab-access]
+  script:
+  - git clone https://bbpgitlab.epfl.ch/cells/bluecellulab-bb5-tests.git
+  - cd bluecellulab-bb5-tests
+  - make
