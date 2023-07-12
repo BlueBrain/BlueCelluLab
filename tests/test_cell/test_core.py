@@ -144,6 +144,19 @@ class TestCellBaseClass1:
         with pytest.raises(BluecellulabError):
             self.cell.get_voltage_recording(last_section, 0.7)
 
+    def test_get_allsections_voltagerecordings(self):
+        """Cell: Test cell.get_allsections_voltagerecordings."""
+        self.cell.recordings.clear()
+
+        with pytest.raises(BluecellulabError):
+            recordings = self.cell.get_allsections_voltagerecordings()
+
+        self.cell.add_allsections_voltagerecordings()
+        recordings = self.cell.get_allsections_voltagerecordings()
+        assert len(recordings) == len(self.cell.recordings)
+        for recording in recordings:
+            assert any(recording in s for s in self.cell.recordings)
+
     def test_euclid_section_distance(self):
         """Cell: Test cell.euclid_section_distance"""
 
