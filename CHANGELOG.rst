@@ -1,6 +1,13 @@
 Changelog
 ==========
 
+1.2.0
+-----------
+
+* use logging module instead of prints
+* allow pandas2.0.* in requirements
+* add readthedocs
+
 1.1.1
 -----------
 
