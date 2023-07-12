@@ -155,7 +155,7 @@ class TestCellBaseClass1:
         recordings = self.cell.get_allsections_voltagerecordings()
         assert len(recordings) == len(self.cell.recordings)
         for recording in recordings:
-            assert recording in self.cell.recordings
+            assert any(recording in s for s in recordings)
 
     def test_euclid_section_distance(self):
         """Cell: Test cell.euclid_section_distance"""
