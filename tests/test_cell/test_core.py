@@ -146,8 +146,10 @@ class TestCellBaseClass1:
 
     def test_get_allsections_voltagerecordings(self):
         """Cell: Test cell.get_allsections_voltagerecordings."""
-        recordings = self.cell.get_allsections_voltagerecordings()
-        assert len(recordings) == 0
+        self.cell.recordings.clear()
+
+        with pytest.raises(BluecellulabError):
+            recordings = self.cell.get_allsections_voltagerecordings()
 
         self.cell.add_allsections_voltagerecordings()
         recordings = self.cell.get_allsections_voltagerecordings()

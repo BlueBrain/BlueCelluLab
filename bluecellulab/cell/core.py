@@ -482,7 +482,7 @@ class Cell(InjectableMixin, PlottableMixin):
         all_sections = self.cell.getCell().all
         for section in all_sections:
             recording = self.get_voltage_recording(section, segx=0.5)
-            all_section_voltages[section.name()] = recording
+            all_section_voltages[f"neuron.h.{section.name()}({0.5})._ref_v"] = recording
         return all_section_voltages
 
     def get_recording(self, var_name: str) -> np.ndarray:
