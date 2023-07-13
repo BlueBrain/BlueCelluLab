@@ -46,7 +46,7 @@ Main dependencies
 =================
 
 * `Python 3.8+ <https://www.python.org/downloads/release/python-380/>`_
-* `Neuron 7.4+ <http://neuron.yale.edu/>`_ (compiled with Python support)
+* `Neuron 8.0.2+ <https://pypi.org/project/NEURON/>`_
 
 Installation
 ============
