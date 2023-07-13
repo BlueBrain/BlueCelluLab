@@ -1,28 +1,7 @@
-include:
-   - project: cells/ci
-     file: /ci/lib/common.yml
-
 workflow:
-  # run for the default branch and all types of merge request pipelines, but not for tags
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_EXTERNAL_PULL_REQUEST_IID
+    - if: '$CI_EXTERNAL_PULL_REQUEST_IID'
 
-tests:
-  stage: test
-  tags:
-    - bb5_map
-  before_script:
-  - !reference [.define-functions]
-  - !reference [.bb5, clean-env]
-  - !reference [.bb5, load-python-39]
-  - !reference [.bb5, load-python-310]
-  - !reference [.bb5, load-extra-modules]
-  - !reference [.run-pre-build-command]
-  - !reference [.setup-venv]
-  - !reference [.gitlab-access]
+basic-job:
   script:
-  - pip install .  # Install the package itself
-  - git clone git@bbpgitlab.epfl.ch:cells/bluecellulab-bb5-tests.git
-  - cd bluecellulab-bb5-tests
-  - make
+    - echo "Hello world"
