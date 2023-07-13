@@ -1,3 +1,4 @@
 basic-job:
   script:
     - echo "Hello world"
+    - echo $CI_EXTERNAL_PULL_REQUEST_IID
