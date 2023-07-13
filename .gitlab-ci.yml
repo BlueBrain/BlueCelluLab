@@ -1,7 +1,3 @@
-workflow:
-  rules:
-    - if: '$CI_EXTERNAL_PULL_REQUEST_IID'
-
 basic-job:
   script:
     - echo "Hello world"
