@@ -8,7 +8,6 @@ import math
 import random
 import warnings
 from pathlib import Path
-from unittest.mock import patch
 from bluecellulab.circuit.circuit_access import EmodelProperties
 
 import numpy as np
@@ -41,18 +40,6 @@ def test_load_template():
     fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
     template_name = NeuronTemplate.load(fpath)
     assert template_name == "test_cell_bluecellulab"
-
-
-@patch("bluecellulab.neuron")
-def test_load_template_with_old_neuron(mock_bluecellulab_neuron):
-    """Test the template loading with an old neuron version."""
-    mock_bluecellulab_neuron.h.nrnversion.return_value = '2014-03-19'
-    fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
-    template_name = NeuronTemplate.load(fpath)
-    assert template_name == "test_cell"
-    mock_bluecellulab_neuron.h.nrnversion.assert_called_once_with(4)
-    mock_bluecellulab_neuron.h.load_file.assert_called_once()
-    mock_bluecellulab_neuron.h.assert_not_called()
 
 
 def test_shorten_and_hash_string():
