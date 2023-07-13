@@ -2,6 +2,11 @@ include:
    - project: cells/ci
      file: /ci/lib/common.yml
 
+workflow:
+  # run for the default branch and all types of merge request pipelines, but not for tags
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_EXTERNAL_PULL_REQUEST_IID
 
 tests:
   stage: test
