@@ -15,7 +15,6 @@
 
 from __future__ import annotations
 
-import datetime
 import hashlib
 import os
 from pathlib import Path
@@ -111,45 +110,34 @@ class NeuronTemplate:
         match = re.search(r"begintemplate\s*(\S*)", template_content)
         template_name = match.group(1)  # type:ignore
 
-        neuron_versiondate_string = bluecellulab.neuron.h.nrnversion(4)
-        neuron_versiondate = datetime.datetime.strptime(
-            neuron_versiondate_string, "%Y-%m-%d"
-        ).date()
-        good_neuron_versiondate = datetime.date(2014, 3, 20)
+        logger.info("This Neuron version supports renaming templates, enabling...")
+        # add bluecellulab to the template name, so that we don't interfere with
+        # templates load outside of bluecellulab
+        template_name = "%s_bluecellulab" % template_name
+        template_name = get_neuron_compliant_template_name(template_name)
+        if template_name in cls.used_template_names:
+            new_template_name = template_name
+            while new_template_name in cls.used_template_names:
+                new_template_name = "%s_x" % new_template_name
+                new_template_name = get_neuron_compliant_template_name(
+                    new_template_name
+                )
 
-        if neuron_versiondate >= good_neuron_versiondate:
-            logger.info("This Neuron version supports renaming templates, enabling...")
-            # add bluecellulab to the template name, so that we don't interfere with
-            # templates load outside of bluecellulab
-            template_name = "%s_bluecellulab" % template_name
-            template_name = get_neuron_compliant_template_name(template_name)
-            if template_name in cls.used_template_names:
-                new_template_name = template_name
-                while new_template_name in cls.used_template_names:
-                    new_template_name = "%s_x" % new_template_name
-                    new_template_name = get_neuron_compliant_template_name(
-                        new_template_name
-                    )
+            template_name = new_template_name
 
-                template_name = new_template_name
+        cls.used_template_names.add(template_name)
+        template_content = re.sub(
+            r"begintemplate\s*(\S*)",
+            "begintemplate %s" % template_name,
+            template_content,
+        )
+        template_content = re.sub(
+            r"endtemplate\s*(\S*)",
+            "endtemplate %s" % template_name,
+            template_content,
+        )
 
-            cls.used_template_names.add(template_name)
-            template_content = re.sub(
-                r"begintemplate\s*(\S*)",
-                "begintemplate %s" % template_name,
-                template_content,
-            )
-            template_content = re.sub(
-                r"endtemplate\s*(\S*)",
-                "endtemplate %s" % template_name,
-                template_content,
-            )
-
-            bluecellulab.neuron.h(template_content)
-        else:
-            logger.info("This Neuron version doesn't support renaming "
-                        "templates, disabling...")
-            bluecellulab.neuron.h.load_file(template_filename)
+        bluecellulab.neuron.h(template_content)
 
         return template_name
 
