@@ -1,6 +1,12 @@
 Changelog
 ==========
 
+1.2.6
+---------
+
+* simplify template loading:remove neuron_release_year<2014 checks
+* make first page of docs the README #48
+
 1.2.0
 -----------
 
