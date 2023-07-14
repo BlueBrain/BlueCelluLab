@@ -25,20 +25,20 @@ def test_sample_array():
     arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     t_step = 0.1
     sim_t_step = 0.1
-    assert np.array_equal(_sample_array(arr, t_step, sim_t_step), arr)
+    assert np.array_equal(_sample_array(arr, t_step / sim_t_step), arr)
     t_step = 0.2
     sim_t_step = 0.1
-    assert np.array_equal(_sample_array(arr, t_step, sim_t_step), [1, 3, 5, 7, 9])
+    assert np.array_equal(_sample_array(arr, t_step / sim_t_step), [1, 3, 5, 7, 9])
     t_step = 0.3
     sim_t_step = 0.1
-    assert np.array_equal(_sample_array(arr, t_step, sim_t_step), [1, 4, 7, 10])
+    assert np.array_equal(_sample_array(arr, t_step / sim_t_step), [1, 4, 7, 10])
     t_step = 0.4
     sim_t_step = 0.1
-    assert np.array_equal(_sample_array(arr, t_step, sim_t_step), [1, 5, 9])
+    assert np.array_equal(_sample_array(arr, t_step / sim_t_step), [1, 5, 9])
     t_step = 0.1
     sim_t_step = 0.2
     with pytest.raises(ValueError):
-        _sample_array(arr, t_step, sim_t_step)
+        _sample_array(arr, t_step / sim_t_step)
 
 
 class TestSonataSimulationAccess:

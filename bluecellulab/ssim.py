@@ -38,7 +38,7 @@ from bluecellulab.circuit.circuit_access import (
 from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
-from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess
+from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
 from bluecellulab.stimuli import Pattern
 import bluecellulab.stimuli as stimuli
 from bluecellulab.exceptions import BluecellulabError
@@ -649,9 +649,19 @@ class SSim:
         cell_id = create_cell_id(cell_id)
         return self.simulation_access.get_soma_voltage(cell_id, t_start, t_stop, t_step)
 
-    def get_mainsim_time_trace(self) -> np.ndarray:
-        """Get the time trace from the main simulation."""
-        return self.simulation_access.get_soma_time_trace()
+    def get_mainsim_time_trace(self, t_step=None
+    ) -> np.ndarray:
+        """Get the time trace from the main simulation.
+
+        Parameters
+        -----------
+        t_step: time step (should be a multiple of report time step T;
+        equals T by default)
+
+        Returns:
+            One dimentional np.ndarray to represent the times.
+        """
+        return self.simulation_access.get_soma_time_trace(t_step)
 
     def get_time(self) -> np.ndarray:
         """Get the time vector for the recordings, contains negative times.
@@ -661,17 +671,55 @@ class SSim:
         first_key = next(iter(self.cells))
         return self.cells[first_key].get_time()
 
-    def get_time_trace(self) -> np.ndarray:
-        """Get the time vector for the recordings, negative times removed."""
-        time = self.get_time()
-        return time[np.where(time >= 0.0)]
+    def get_time_trace(self, t_step=None
+    ) -> np.ndarray:
+        """Get the time vector for the recordings, negative times removed.
 
-    def get_voltage_trace(self, cell_id: int | tuple[str, int]) -> np.ndarray:
-        """Get the voltage vector for the cell_id, negative times removed."""
+        Parameters
+        -----------
+        t_step: time step (should be a multiple of report time step T;
+        equals T by default)
+
+        Returns:
+            One dimentional np.ndarray to represent the times.
+        """
+        time = self.get_time()
+
+        if t_step is not None:
+            ratio = t_step / self.dt
+            time = _sample_array(time, ratio)
+        return time
+
+    def get_voltage_trace(self, cell_id: int | tuple[str, int], t_start=None, t_stop=None, t_step=None
+    ) -> np.ndarray:
+        """Get the voltage vector for the cell_id, negative times removed.
+
+        Parameters
+        -----------
+        cell_id: cell id of interest.
+        t_start, t_stop: time range of interest,
+        report time range is used by default.
+        t_step: time step (should be a multiple of report time step T;
+        equals T by default)
+
+        Returns:
+            One dimentional np.ndarray to represent the voltages.
+        """
         cell_id = create_cell_id(cell_id)
         time = self.get_time()
         voltage = self.cells[cell_id].get_soma_voltage()
-        return voltage[np.where(time >= 0.0)]
+
+        if t_start is None or t_start < 0:
+            t_start = 0
+        if t_stop is None:
+            t_stop = np.inf
+
+        voltage = voltage[np.where((time >= t_start) & (time <= t_stop))]
+
+        if t_step is not None:
+            ratio = t_step / self.dt
+            voltage = _sample_array(voltage, ratio)
+        return voltage
 
     def delete(self):
         """Delete ssim and all of its attributes.

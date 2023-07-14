@@ -38,23 +38,22 @@ from bluecellulab.circuit import CellId
 from bluecellulab.circuit.config import BluepySimulationConfig
 
 
-def _sample_array(arr: Sequence, t_step: float, sim_t_step: float) -> Sequence:
+def _sample_array(arr: Sequence, ratio: float) -> Sequence:
     """Sample an array at a given time step.
 
     Args:
         arr: Array to sample.
-        t_step: User specified time step to sample at.
-        sim_t_step: Time step used in the main simulation.
+        ratio: The ratio between the time step used for sampling and the time step used in the simulation
+                (the time step should be a multiple of the simulation time step)
 
     Returns:
         Array sampled at the given time step.
     """
-    ratio = t_step / sim_t_step
-    if t_step == sim_t_step:
+    if ratio == 1:
         return arr
     elif not np.isclose(ratio, round(ratio)):
         raise ValueError(
-            f"Time step {t_step} is not a multiple of the simulation time step {sim_t_step}.")
+            f"The ratio is not close to a whole number. The time step should be a multiple of the simulation time step.")
     return arr[::round(ratio)]
 
 
@@ -105,7 +104,8 @@ class BluepySimulationAccess:
             .to_numpy()
         )
         if t_step is not None:
-            arr = _sample_array(arr, t_step, self._config._soma_report_dt)
+            ratio = t_step / self._config._soma_report_dt
+            arr = _sample_array(arr, ratio)
         return arr
 
     def get_soma_time_trace(self, t_step: Optional[float] = None) -> np.ndarray:
@@ -113,7 +113,8 @@ class BluepySimulationAccess:
         report = self.impl.report('soma')
         arr = report.get_gid(report.gids[0]).index.to_numpy()
         if t_step is not None:
-            arr = _sample_array(arr, t_step, self._config._soma_report_dt)
+            ratio = t_step / self._config._soma_report_dt
+            arr = _sample_array(arr, ratio)
         return arr
 
     def get_spikes(self) -> dict[CellId, np.ndarray]:
@@ -140,14 +141,16 @@ class SonataSimulationAccess:
         report = self.impl.reports["soma"].filter(cell_id.id, t_start, t_end)
         arr = report.report[cell_id.population_name][cell_id.id].values
         if t_step is not None:
-            arr = _sample_array(arr, t_step, self.impl.dt)
+            ratio = t_step / self.impl.dt
+            arr = _sample_array(arr, ratio)
         return arr
 
     def get_soma_time_trace(self, t_step: Optional[float] = None) -> np.ndarray:
         report = self.impl.reports["soma"]
         arr = report.filter().report.index.values
         if t_step is not None:
-            arr = _sample_array(arr, t_step, self.impl.dt)
+            ratio = t_step / self.impl.dt
+            arr = _sample_array(arr, ratio)
         return arr
 
     def get_spikes(self) -> dict[CellId, np.ndarray]:
