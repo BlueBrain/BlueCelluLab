@@ -649,8 +649,7 @@ class SSim:
         cell_id = create_cell_id(cell_id)
         return self.simulation_access.get_soma_voltage(cell_id, t_start, t_stop, t_step)
 
-    def get_mainsim_time_trace(self, t_step=None
-    ) -> np.ndarray:
+    def get_mainsim_time_trace(self, t_step=None) -> np.ndarray:
         """Get the time trace from the main simulation.
 
         Parameters
@@ -671,8 +670,7 @@ class SSim:
         first_key = next(iter(self.cells))
         return self.cells[first_key].get_time()
 
-    def get_time_trace(self, t_step=None
-    ) -> np.ndarray:
+    def get_time_trace(self, t_step=None) -> np.ndarray:
         """Get the time vector for the recordings, negative times removed.
 
         Parameters
@@ -690,7 +688,8 @@ class SSim:
             time = _sample_array(time, ratio)
         return time
 
-    def get_voltage_trace(self, cell_id: int | tuple[str, int], t_start=None, t_stop=None, t_step=None
+    def get_voltage_trace(
+            self, cell_id: int | tuple[str, int], t_start=None, t_stop=None, t_step=None
     ) -> np.ndarray:
         """Get the voltage vector for the cell_id, negative times removed.
 
