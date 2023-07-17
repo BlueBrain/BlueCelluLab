@@ -15,11 +15,15 @@
 
 from __future__ import annotations
 from pathlib import Path
-from platform import python_version_tuple
 from typing import Optional, Protocol
 
 from bluecellulab.circuit.config import SimulationConfig, SonataSimulationConfig
 from bluecellulab.exceptions import ExtraDependencyMissingError
+
+if python_version_tuple() < ('3', '9'):
+    from typing import Sequence
+else:
+    from collections.abc import Sequence
 
 from bluecellulab import BLUEPY_AVAILABLE
 if BLUEPY_AVAILABLE:
