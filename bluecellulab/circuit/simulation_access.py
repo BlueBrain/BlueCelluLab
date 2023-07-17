@@ -21,11 +21,6 @@ from typing import Optional, Protocol
 from bluecellulab.circuit.config import SimulationConfig, SonataSimulationConfig
 from bluecellulab.exceptions import ExtraDependencyMissingError
 
-if python_version_tuple() < ('3', '9'):
-    from typing import Sequence
-else:
-    from collections.abc import Sequence
-
 from bluecellulab import BLUEPY_AVAILABLE
 if BLUEPY_AVAILABLE:
     import bluepy
@@ -38,7 +33,7 @@ from bluecellulab.circuit import CellId
 from bluecellulab.circuit.config import BluepySimulationConfig
 
 
-def _sample_array(arr: Sequence, ratio: float) -> Sequence:
+def _sample_array(arr: np.ndarray, ratio: float) -> np.ndarray:
     """Sample an array at a given time step.
 
     Args:
