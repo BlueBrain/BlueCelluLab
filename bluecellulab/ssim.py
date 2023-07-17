@@ -682,6 +682,7 @@ class SSim:
             One dimentional np.ndarray to represent the times.
         """
         time = self.get_time()
+        time = time[np.where(time >= 0.0)]
 
         if t_step is not None:
             ratio = t_step / self.dt
