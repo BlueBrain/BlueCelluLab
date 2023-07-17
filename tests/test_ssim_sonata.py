@@ -1,7 +1,6 @@
 """Testing SSim with SONATA simulations."""
 
 from pathlib import Path
-from bluecellulab.circuit.simulation_access import _sample_array
 
 import numpy as np
 import pytest
@@ -34,11 +33,8 @@ def test_sim_quick_scx_sonata(input_type):
     sim.run(t_stop)
 
     # Get the voltage trace
-    time = sim.get_time_trace()
-    voltage = sim.get_voltage_trace(cell_id)
-    # Sampling
-    voltage = _sample_array(voltage, 1.0, 0.025)
-    time = _sample_array(time, 1.0, 0.025)
+    time = sim.get_time_trace(1)
+    voltage = sim.get_voltage_trace(cell_id, 0, t_stop, 1)
     voltage = voltage[:len(voltage) - 1]  # remove last point, mainsim produces 1 less
     time = time[:len(time) - 1]  # remove last point, mainsim produces 1 less
     mainsim_voltage = sim.get_mainsim_voltage_trace(cell_id)
@@ -69,11 +65,8 @@ def test_sim_quick_scx_sonata_multicircuit(input_type):
     t_stop = 20.0
     sim.run(t_stop)
     for cell_id in cell_ids:
-        voltage = sim.get_voltage_trace(cell_id)
-        # Sampling
-        voltage = _sample_array(voltage, 1.0, 0.025)
-        # remove the last one
-        voltage = voltage[:len(voltage) - 1]
+        voltage = sim.get_voltage_trace(cell_id, 0, t_stop, 1)
+        voltage = voltage[:len(voltage) - 1]  # remove last point, mainsim produces 1 less
         mainsim_voltage = sim.get_mainsim_voltage_trace(cell_id)
         voltage_diff = voltage - mainsim_voltage
         rms_error = np.sqrt(np.mean(voltage_diff ** 2))
