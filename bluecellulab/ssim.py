@@ -583,15 +583,15 @@ class SSim:
 
         Parameters
         ----------
-        t_stop : 
+        t_stop :
             This function will run the simulation until t_stop
-        v_init : 
+        v_init :
             Voltage initial value when the simulation starts
-        celsius : 
+        celsius :
             Temperature at which the simulation runs
-        dt : 
+        dt :
             Timestep (delta-t) for the simulation
-        forward_skip : 
+        forward_skip :
                        [compatibility/non-sonata] Enable/disable ForwardSkip, when
                        forward_skip_value is None, forward skip will only be
                        enabled if the simulation config has a ForwardSkip value)
@@ -599,12 +599,12 @@ class SSim:
                        [compatibility/non-sonata] Overwrite the ForwardSkip value
                        in the simulation config. If this is set to None, the value
                        in the simulation config is used.
-        cvode : 
+        cvode :
                 Force the simulation to run in variable timestep. Not possible
                 when there are stochastic channels in the neuron model. When
                 enabled results from a large network simulation will not be
                 exactly reproduced.
-        show_progress: 
+        show_progress:
                        Show a progress bar during simulations. When
                        enabled results from a large network simulation
                        will not be exactly reproduced.
