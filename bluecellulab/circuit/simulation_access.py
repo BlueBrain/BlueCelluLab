@@ -52,8 +52,8 @@ def _sample_array(arr: Sequence, ratio: float) -> Sequence:
     if ratio == 1:
         return arr
     elif not np.isclose(ratio, round(ratio)):
-        raise ValueError(
-            f"The ratio is not close to a whole number. The time step should be a multiple of the simulation time step.")
+        raise ValueError("The ratio is not close to a whole number. "
+                         "The time step should be a multiple of the simulation time step.")
     return arr[::round(ratio)]
 
 

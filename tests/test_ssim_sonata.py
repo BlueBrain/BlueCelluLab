@@ -1,7 +1,6 @@
 """Testing SSim with SONATA simulations."""
 
 from pathlib import Path
-from bluecellulab.circuit.simulation_access import _sample_array
 
 import numpy as np
 import pytest
