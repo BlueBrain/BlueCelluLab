@@ -535,19 +535,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
         return True
 
-    def add_replay_delayed_weight(self, sid, delay, weight):
-        """Add a synaptic weight for sid that will be set with a time delay.
-
-        Parameters
-        ----------
-        sid : int
-              synapse id
-        delay : float
-                synaptic delay
-        weight : float
-                 synaptic weight
-        """
-
+    def add_replay_delayed_weight(self, sid: int, delay: float, weight: float) -> None:
+        """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 
     def pre_gids(self):
