@@ -25,7 +25,6 @@ if BLUEPY_AVAILABLE:
     from bluepy_configfile.configfile import BlueConfig
     from bluepy.utils import open_utf8
 from bluepysnap import Simulation as SnapSimulation
-from bluepysnap.circuit_validation import validate as validate_circuit
 
 from bluecellulab.circuit.config.sections import Conditions, ConnectionOverrides
 from bluecellulab.stimuli import Stimulus
@@ -307,10 +306,6 @@ class SonataSimulationConfig:
             self.impl = config
         else:
             raise TypeError("Invalid config type.")
-
-        # run snap's circuit validation to early detect errors
-        circuit_config_path = self.impl.config["network"]
-        validate_circuit(circuit_config_path, skip_slow=False, only_errors=True)
 
     def get_all_projection_names(self) -> list[str]:
         unique_names = {
