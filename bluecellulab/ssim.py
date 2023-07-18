@@ -483,9 +483,14 @@ class SSim:
                         parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
+
                     logger.debug(f"Added real connection between {pre_gid} and {post_gid}, {syn_id}")
-                else:
-                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)  # type: ignore
+                else:  # replay connection
+                    try:
+                        pre_spiketrain = pre_spike_trains[pre_gid]
+                    except KeyError:
+                        pre_spiketrain = None
+
                     connection = bluecellulab.Connection(
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=pre_spiketrain,
