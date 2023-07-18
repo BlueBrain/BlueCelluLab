@@ -466,7 +466,6 @@ class SSim:
 
                 real_synapse_connection = pre_gid in self.cells and interconnect_cells
 
-                connection = None
                 if real_synapse_connection:
                     if (
                             user_pre_spike_trains is not None
@@ -496,12 +495,11 @@ class SSim:
                         spike_location=self.spike_location)
                     logger.debug(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
 
-                if connection is not None:
-                    self.cells[post_gid].connections[syn_id] = connection
-                    for delay, weight_scale in delay_weights:
-                        self.cells[post_gid].add_replay_delayed_weight(
-                            syn_id, delay,
-                            weight_scale * connection.weight)
+                self.cells[post_gid].connections[syn_id] = connection
+                for delay, weight_scale in delay_weights:
+                    self.cells[post_gid].add_replay_delayed_weight(
+                        syn_id, delay,
+                        weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
                 logger.debug(f"Added synaptic connections for target {post_gid}")
