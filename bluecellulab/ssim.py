@@ -462,7 +462,8 @@ class SSim:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 delay_weights = synapse.delay_weights
-                pre_gid = CellId(post_gid.population_name, int(syn_description[SynapseProperty.PRE_GID]))
+                source_population = syn_description["source_population_name"]
+                pre_gid = CellId(source_population, int(syn_description[SynapseProperty.PRE_GID]))
 
                 real_synapse_connection = pre_gid in self.cells and interconnect_cells
 
