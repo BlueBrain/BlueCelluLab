@@ -450,8 +450,6 @@ class SSim:
             self,
             add_replay=None,
             interconnect_cells=None,
-            source=None,
-            dest=None,
             user_pre_spike_trains: None | dict[CellId, Iterable] = None):
         """Instantiate the (replay and real) connections in the network."""
         if add_replay:
@@ -464,16 +462,12 @@ class SSim:
             user_pre_spike_trains)
 
         for post_gid in self.cells:
-            if dest and post_gid not in dest:
-                continue
             for syn_id in self.cells[post_gid].synapses:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 delay_weights = synapse.delay_weights
                 pre_gid = CellId(post_gid.population_name, int(syn_description[SynapseProperty.PRE_GID]))
 
-                if source and pre_gid not in source:
-                    continue
                 real_synapse_connection = pre_gid in self.cells \
                     and interconnect_cells
 
