@@ -13,6 +13,10 @@
 # limitations under the License.
 """Class that represents a connection between two cells in bluecellulab."""
 
+from typing import Optional
+
+import numpy as np
+
 import bluecellulab
 from bluecellulab.circuit import SynapseProperty
 
@@ -23,11 +27,11 @@ class Connection:
     def __init__(
             self,
             post_synapse,
-            pre_spiketrain=None,
+            pre_spiketrain: Optional[np.ndarray] = None,
             pre_cell=None,
             stim_dt=None,
             parallel_context=None,
-            spike_threshold=-30,
+            spike_threshold: float = -30.0,
             spike_location="soma"):
         self.persistent = []
         self.delay = post_synapse.syn_description[SynapseProperty.AXONAL_DELAY]

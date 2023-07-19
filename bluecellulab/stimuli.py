@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 import warnings
 
@@ -246,8 +247,14 @@ class Stimulus:
                 percent_start=stimulus_entry["percent_start"],
             )
         elif pattern == Pattern.SYNAPSE_REPLAY:
-            warnings.warn("Ignoring syanpse replay stimulus as it is not supported")
-            return None
+            return SynapseReplay(
+                pattern=pattern,
+                target=stimulus_entry["node_set"],
+                delay=stimulus_entry["delay"],
+                duration=stimulus_entry["duration"],
+                spike_file=stimulus_entry["spike_file"],
+                source=stimulus_entry["source"],
+            )
         elif pattern == Pattern.SHOT_NOISE:
             return ShotNoise(
                 pattern=pattern,
@@ -333,6 +340,18 @@ class Pulse(Stimulus):
 @dataclass(frozen=True, config=dict(extra=Extra.forbid))
 class RelativeLinear(Stimulus):
     percent_start: float
+
+
+@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+class SynapseReplay(Stimulus):
+    spike_file: str
+    source: str
+
+    @validator("spike_file")
+    def spike_file_exists(cls, v):
+        if not Path(v).exists():
+            raise ValueError(f"spike_file {v} does not exist")
+        return v
 
 
 @dataclass(frozen=True, config=dict(extra=Extra.forbid))

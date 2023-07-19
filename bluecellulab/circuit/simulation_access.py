@@ -174,7 +174,11 @@ def get_synapse_replay_spikes(f_name: str) -> dict:
     """Read the .dat file containing the spike replays."""
     data = np.genfromtxt(f_name, skip_header=1)
     spikes = pd.DataFrame(data=data, columns=["t", "node_id"]).astype({"node_id": int})
+    # subtract 1 from all node_ids to make them 0-based
+    # source: https://sonata-extension.readthedocs.io/
+    # en/latest/blueconfig-projection-example.html#dat-spike-files
+    spikes["node_id"] -= 1
     if (spikes["t"] < 0).any():
-        logger.warn("Found negative spike times... Clipping them to 0")
+        logger.warning("Found negative spike times... Clipping them to 0")
         spikes["t"].clip(lower=0., inplace=True)
     return spikes.groupby("node_id")["t"].apply(np.array).to_dict()

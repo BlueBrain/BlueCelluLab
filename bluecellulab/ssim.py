@@ -251,6 +251,18 @@ class SSim:
             projections = add_projections
 
         self._add_cells(cell_ids)
+        if add_synapses:
+            self._add_synapses(
+                pre_gids=pre_gids,
+                add_minis=add_minis,
+                projections=projections)
+        if add_replay or interconnect_cells or pre_spike_trains:
+            if add_replay and not add_synapses:
+                raise Exception("SSim: add_replay option can not be used if "
+                                "add_synapses is False")
+            self._add_connections(add_replay=add_replay,
+                                  interconnect_cells=interconnect_cells,
+                                  user_pre_spike_trains=pre_spike_trains)  # type: ignore
         if add_stimuli:
             add_noise_stimuli = True
             add_hyperpolarizing_stimuli = True
@@ -273,18 +285,6 @@ class SSim:
                 add_shotnoise_stimuli=add_shotnoise_stimuli,
                 add_ornstein_uhlenbeck_stimuli=add_ornstein_uhlenbeck_stimuli
             )
-        if add_synapses:
-            self._add_synapses(
-                pre_gids=pre_gids,
-                add_minis=add_minis,
-                projections=projections)
-        if add_replay or interconnect_cells or pre_spike_trains:
-            if add_replay and not add_synapses:
-                raise Exception("SSim: add_replay option can not be used if "
-                                "add_synapses is False")
-            self._add_connections(add_replay=add_replay,
-                                  interconnect_cells=interconnect_cells,
-                                  user_pre_spike_trains=pre_spike_trains)  # type: ignore
 
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
@@ -342,6 +342,13 @@ class SSim:
                         self.cells[cell_id].add_relative_ornstein_uhlenbeck(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
+                elif isinstance(stimulus, stimuli.SynapseReplay):  # sonata only
+                    if self.circuit_access.target_contains_cell(
+                        stimulus.target, cell_id
+                    ):
+                        self.cells[cell_id].add_synapse_replay(
+                            stimulus, self.spike_threshold, self.spike_location
+                        )
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
                                      "not supported" % stimulus.pattern)

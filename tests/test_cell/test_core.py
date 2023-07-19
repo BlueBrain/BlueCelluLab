@@ -290,3 +290,26 @@ def test_add_dendrogram():
     cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
     sim.run(24, cvode=False)
     assert Path(output_path).is_file()
+
+
+@pytest.mark.v6
+def test_add_synapse_replay():
+    """Cell: test add_synapse_replay."""
+    sonata_sim_path = (
+        parent_dir
+        / "examples"
+        / "sonata_unit_test_sims"
+        / "synapse_replay"
+        / "simulation_config.json"
+    )
+    ssim = bluecellulab.SSim(sonata_sim_path)
+    ssim.spike_threshold = -900.0
+    cell_id = ("hippocampus_neurons", 0)
+    ssim.instantiate_gids(cell_id,
+                          add_stimuli=True, add_synapses=True,
+                          interconnect_cells=False)
+    cell = ssim.cells[cell_id]
+    assert len(cell.connections) == 3
+    assert cell.connections[
+        ("hippocampus_projections__hippocampus_neurons__chemical", 0)
+    ].pre_spiketrain.tolist() == [16.0, 22.0, 48.0]

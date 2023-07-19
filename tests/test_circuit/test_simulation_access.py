@@ -82,10 +82,11 @@ class TestSonataSimulationAccess:
         np.testing.assert_almost_equal(
             spikes[cell_id], np.array([10.1, 22.65, 35.15, 47.675]))
 
+
 def test_get_synapse_replay_spikes():
     """.Test get_synapse_replay_spikes."""
     res = get_synapse_replay_spikes(
         parent_dir / "data" / "synapse_replay_file" / "spikes.dat"
     )
-    assert set(res.keys()) == {5383}
-    assert res[5383].tolist() == [1500.0, 2000.0, 2500.0]
+    assert set(res.keys()) == {5382}
+    assert res[5382].tolist() == [1500.0, 2000.0, 2500.0]
