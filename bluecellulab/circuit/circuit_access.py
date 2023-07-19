@@ -320,6 +320,9 @@ class BluepyCircuitAccess:
 
         result = pd.concat(all_synapses)
 
+        # add source_population_name as a column
+        result["source_population_name"] = ""
+
         # io/synapse_reader.py:_patch_delay_fp_inaccuracies from
         # py-neurodamus
         dt = neuron.h.dt
