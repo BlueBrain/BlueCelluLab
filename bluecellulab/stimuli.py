@@ -93,7 +93,6 @@ class Pattern(Enum):
 
 @dataclass(frozen=True, config=dict(extra=Extra.forbid))
 class Stimulus:
-    pattern: Pattern
     target: str
     delay: NonNegativeFloat
     duration: NonNegativeFloat
@@ -110,7 +109,6 @@ class Stimulus:
             raise ValueError(f"Unknown clamp mode {mode_str}")
         if pattern == Pattern.NOISE:
             return Noise(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -119,14 +117,12 @@ class Stimulus:
             )
         elif pattern == Pattern.HYPERPOLARIZING:
             return Hyperpolarizing(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
             )
         elif pattern == Pattern.PULSE:
             return Pulse(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -136,7 +132,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_LINEAR:
             return RelativeLinear(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -147,7 +142,6 @@ class Stimulus:
             return None
         elif pattern == Pattern.SHOT_NOISE:
             return ShotNoise(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -163,7 +157,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_SHOT_NOISE:
             return RelativeShotNoise(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -179,7 +172,6 @@ class Stimulus:
             )
         elif pattern == Pattern.ORNSTEIN_UHLENBECK:
             return OrnsteinUhlenbeck(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -193,7 +185,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_ORNSTEIN_UHLENBECK:
             return RelativeOrnsteinUhlenbeck(
-                pattern=pattern,
                 target=stimulus_entry["Target"],
                 delay=stimulus_entry["Delay"],
                 duration=stimulus_entry["Duration"],
@@ -213,7 +204,6 @@ class Stimulus:
         pattern = Pattern.from_sonata(stimulus_entry["module"])
         if pattern == Pattern.NOISE:
             return Noise(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -222,14 +212,12 @@ class Stimulus:
             )
         elif pattern == Pattern.HYPERPOLARIZING:
             return Hyperpolarizing(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
             )
         elif pattern == Pattern.PULSE:
             return Pulse(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -239,7 +227,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_LINEAR:
             return RelativeLinear(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -250,7 +237,6 @@ class Stimulus:
             return None
         elif pattern == Pattern.SHOT_NOISE:
             return ShotNoise(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -266,7 +252,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_SHOT_NOISE:
             return RelativeShotNoise(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -282,7 +267,6 @@ class Stimulus:
             )
         elif pattern == Pattern.ORNSTEIN_UHLENBECK:
             return OrnsteinUhlenbeck(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
@@ -296,7 +280,6 @@ class Stimulus:
             )
         elif pattern == Pattern.RELATIVE_ORNSTEIN_UHLENBECK:
             return RelativeOrnsteinUhlenbeck(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],

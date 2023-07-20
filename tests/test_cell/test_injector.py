@@ -22,7 +22,6 @@ from bluecellulab.stimuli import (
     ShotNoise,
     RelativeShotNoise,
     ClampMode,
-    Pattern,
 )
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.cell.stimuli_generator import gen_shotnoise_signal
@@ -46,7 +45,6 @@ class TestInjector:
     def test_inject_pulse(self):
         """Test the pulse train injection."""
         stimulus = Pulse(
-            pattern="pulse",
             target="single-cell",
             delay=2,
             duration=20,
@@ -60,7 +58,6 @@ class TestInjector:
 
         with raises(TypeError):
             unsupported_stimulus = Pulse(
-                pattern="pulse",
                 target="single-cell",
                 delay=2,
                 duration=20,
@@ -179,7 +176,7 @@ class TestInjector:
         rng_obj = bluecellulab.RNGSettings()
         rng_obj.mode = "Compatibility"
         stimulus = Noise(
-            pattern="noise", mean_percent=1, variance=0.1, delay=4, duration=10, target="single-cell"
+            mean_percent=1, variance=0.1, delay=4, duration=10, target="single-cell"
         )
         tstim = self.cell.add_replay_noise(stimulus, noise_seed=1)
         assert tstim.stim.as_numpy() == approx(np.array(
@@ -195,7 +192,7 @@ class TestInjector:
 
     def test_add_replay_hypamp(self):
         """Unit test for add_replay_hypamp method."""
-        stimulus = Hyperpolarizing(pattern="hyperpolarizing", target="single-cell", delay=4, duration=20)
+        stimulus = Hyperpolarizing(target="single-cell", delay=4, duration=20)
         tstim = self.cell.add_replay_hypamp(stimulus)
         hypamp = self.cell.hypamp
         assert tstim.stim.to_python() == [0.0, hypamp, hypamp, 0.0, 0.0]
@@ -204,7 +201,6 @@ class TestInjector:
     def test_add_replay_relativelinear(self):
         """Unit test for add_replay_relativelinear."""
         stimulus = RelativeLinear(
-            pattern="relative_linear",
             target="single-cell",
             delay=4, duration=20, percent_start=60)
         tstim = self.cell.add_replay_relativelinear(stimulus)
@@ -243,7 +239,7 @@ class TestInjector:
         soma = self.cell.soma
         segx = 0.5
         stimulus = ShotNoise(
-            pattern="shot_noise", target="single-cell", delay=0, duration=2,
+            target="single-cell", delay=0, duration=2,
             rise_time=0.4, decay_time=4, rate=2E3, amp_mean=40E-3, amp_var=16E-4,
             seed=3899663
         )
@@ -255,7 +251,7 @@ class TestInjector:
                                          0.0114066037, 0.0432062144, 0.0])
         with raises(ValidationError):
             invalid_stim = ShotNoise(
-                pattern="shot_noise", target="single-cell", delay=0, duration=2,
+                target="single-cell", delay=0, duration=2,
                 rise_time=4.4, decay_time=4, rate=2E3, amp_mean=40E-3, amp_var=16E-4,
                 seed=3899663
             )
@@ -269,7 +265,7 @@ class TestInjector:
         soma = self.cell.soma
         segx = 0.5
         stimulus = OrnsteinUhlenbeck(
-            pattern="ornstein_uhlenbeck", target="single-cell", delay=0, duration=2,
+            target="single-cell", delay=0, duration=2,
             tau=2.8, sigma=0.0042, mean=0.029, mode="current_clamp", dt=0.25, seed=1
         )
         time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
@@ -283,7 +279,7 @@ class TestInjector:
                                          0.027504132283051937, 0.028251366180467998, 0.0])
 
         stimulus = OrnsteinUhlenbeck(
-            pattern="ornstein_uhlenbeck", target="single-cell", delay=0, duration=2,
+            target="single-cell", delay=0, duration=2,
             tau=2.8, sigma=0.0042, mean=0.029, mode="conductance", dt=0.25, seed=1
         )
         time_vec, stim_vec = self.cell.add_ornstein_uhlenbeck(soma, segx, stimulus,
@@ -362,7 +358,7 @@ class TestInjector:
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
         stimulus = RelativeShotNoise(
-            pattern="relative_shot_noise", target="single-cell", delay=0, duration=2,
+            target="single-cell", delay=0, duration=2,
             rise_time=0.4, decay_time=4, mean_percent=70, sd_percent=40, amp_cv=0.63,
             seed=12,
         )
@@ -377,7 +373,7 @@ class TestInjector:
 
         with raises(ValidationError):
             invalid_stim = RelativeShotNoise(
-                pattern="relative_shot_noise", target="single-cell", delay=0, duration=2,
+                target="single-cell", delay=0, duration=2,
                 rise_time=4, decay_time=4, mean_percent=70, sd_percent=40, amp_cv=0.63,
                 seed=12,
             )
@@ -441,7 +437,7 @@ class TestInjectorSonata:
     def test_add_relative_ornstein_uhlenbeck_sd_error(self):
         """Unit test for add_relative_ornstein_uhlenbeck with 0 sd exception."""
         stimulus = RelativeOrnsteinUhlenbeck(
-            pattern=Pattern.RELATIVE_ORNSTEIN_UHLENBECK, target="single-cell", delay=0,
+            target="single-cell", delay=0,
             duration=2, tau=2.8, mean_percent=3.078, sd_percent=0,
             mode=ClampMode.CURRENT, dt=0.25, seed=1
         )
@@ -454,7 +450,7 @@ class TestInjectorSonata:
     def test_add_relative_ornstein_uhlenbeck(self):
         """Unit test for adding relative ornstein_uhlenbeck."""
         stimulus = RelativeOrnsteinUhlenbeck(
-            pattern=Pattern.RELATIVE_ORNSTEIN_UHLENBECK, target="single-cell", delay=0,
+            target="single-cell", delay=0,
             duration=2, tau=2.8, mean_percent=3.078, sd_percent=0.6156,
             mode=ClampMode.CURRENT, dt=0.25, seed=1
         )
