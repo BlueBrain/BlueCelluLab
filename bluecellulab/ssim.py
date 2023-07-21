@@ -409,7 +409,7 @@ class SSim:
 
     @staticmethod
     def _intersect_pre_gids_cell_ids_multipopulation(syn_descriptions, pre_cell_ids: list[CellId]) -> pd.DataFrame:
-        """Return the synapse descriptions with pre_cell_ids intersecte.
+        """Return the synapse descriptions with pre_cell_ids intersected.
 
         Supports multipopulations.
         """

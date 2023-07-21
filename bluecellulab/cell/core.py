@@ -924,13 +924,15 @@ class Cell(InjectableMixin, PlottableMixin):
     ) -> None:
         """Adds the synapse spike replay to the cell if the synapse is
         connected to that cell."""
+        if self.sonata_proxy is None:
+            raise BluecellulabError("Cell: add_synapse_replay requires a sonata proxy.")
         synapse_spikes: dict = get_synapse_replay_spikes(stimulus.spike_file)
         for synapse_id, synapse in self.synapses.items():
             source_population = synapse.syn_description["source_population_name"]
             pre_gid = CellId(
                 source_population, int(synapse.syn_description[SynapseProperty.PRE_GID])
             )
-            if pre_gid.population_name == stimulus.source:
+            if self.sonata_proxy.circuit_access.target_contains_cell(stimulus.source, pre_gid):
                 if pre_gid.id in synapse_spikes:
                     spikes_of_interest = synapse_spikes[pre_gid.id]
                     # filter spikes of interest >=stimulus.delay, <=stimulus.duration

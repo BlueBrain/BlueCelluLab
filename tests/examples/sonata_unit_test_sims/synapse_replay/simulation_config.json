@@ -19,7 +19,7 @@
   },
   "inputs": {
     "VPM_spikes": {
-      "source": "hippocampus_projections",
+      "source": "HipProjections",
       "node_set": "most_central_10_SP_PC",
       "input_type": "spikes",
       "delay": 0.0,
