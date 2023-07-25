@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from bluecellulab.circuit import CellId, SonataSimulationAccess
-from bluecellulab.circuit.simulation_access import _sample_array
+from bluecellulab.circuit.simulation_access import _sample_array, get_synapse_replay_spikes
 
 
 parent_dir = Path(__file__).resolve().parent.parent
@@ -81,3 +81,12 @@ class TestSonataSimulationAccess:
         assert len(spikes[cell_id]) == 4
         np.testing.assert_almost_equal(
             spikes[cell_id], np.array([10.1, 22.65, 35.15, 47.675]))
+
+
+def test_get_synapse_replay_spikes():
+    """.Test get_synapse_replay_spikes."""
+    res = get_synapse_replay_spikes(
+        parent_dir / "data" / "synapse_replay_file" / "spikes.dat"
+    )
+    assert set(res.keys()) == {5382}
+    assert res[5382].tolist() == [1500.0, 2000.0, 2500.0]

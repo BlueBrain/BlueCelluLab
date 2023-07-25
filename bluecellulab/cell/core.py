@@ -34,8 +34,11 @@ from bluecellulab.cell.serialized_sections import SerializedSections
 from bluecellulab.cell.template import NeuronTemplate
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
+from bluecellulab.circuit.node_id import CellId
+from bluecellulab.circuit.simulation_access import get_synapse_replay_spikes
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.neuron_interpreter import eval_neuron
+from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 
 logger = logging.getLogger(__name__)
@@ -915,6 +918,41 @@ class Cell(InjectableMixin, PlottableMixin):
     def getNumberOfSegments(self) -> int:
         """Get the number of segments in the cell."""
         return sum(section.nseg for section in self.all)
+
+    def add_synapse_replay(
+        self, stimulus: SynapseReplay, spike_threshold: float, spike_location: str
+    ) -> None:
+        """Adds the synapse spike replay to the cell if the synapse is
+        connected to that cell."""
+        if self.sonata_proxy is None:
+            raise BluecellulabError("Cell: add_synapse_replay requires a sonata proxy.")
+        synapse_spikes: dict = get_synapse_replay_spikes(stimulus.spike_file)
+        for synapse_id, synapse in self.synapses.items():
+            source_population = synapse.syn_description["source_population_name"]
+            pre_gid = CellId(
+                source_population, int(synapse.syn_description[SynapseProperty.PRE_GID])
+            )
+            if self.sonata_proxy.circuit_access.target_contains_cell(stimulus.source, pre_gid):
+                if pre_gid.id in synapse_spikes:
+                    spikes_of_interest = synapse_spikes[pre_gid.id]
+                    # filter spikes of interest >=stimulus.delay, <=stimulus.duration
+                    spikes_of_interest = spikes_of_interest[
+                        (spikes_of_interest >= stimulus.delay)
+                        & (spikes_of_interest <= stimulus.duration)
+                    ]
+                    connection = bluecellulab.Connection(
+                        synapse,
+                        pre_spiketrain=spikes_of_interest,
+                        pre_cell=None,
+                        stim_dt=self.record_dt,
+                        spike_threshold=spike_threshold,
+                        spike_location=spike_location,
+                    )
+                    logger.debug(
+                        f"Added synapse replay from {pre_gid} to {self.gid}, {synapse_id}"
+                    )
+
+                    self.connections[synapse_id] = connection
 
     @property
     def info_dict(self):

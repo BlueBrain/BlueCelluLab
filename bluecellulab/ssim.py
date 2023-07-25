@@ -251,6 +251,18 @@ class SSim:
             projections = add_projections
 
         self._add_cells(cell_ids)
+        if add_synapses:
+            self._add_synapses(
+                pre_gids=pre_gids,
+                add_minis=add_minis,
+                projections=projections)
+        if add_replay or interconnect_cells or pre_spike_trains:
+            if add_replay and not add_synapses:
+                raise Exception("SSim: add_replay option can not be used if "
+                                "add_synapses is False")
+            self._add_connections(add_replay=add_replay,
+                                  interconnect_cells=interconnect_cells,
+                                  user_pre_spike_trains=pre_spike_trains)  # type: ignore
         if add_stimuli:
             add_noise_stimuli = True
             add_hyperpolarizing_stimuli = True
@@ -273,18 +285,6 @@ class SSim:
                 add_shotnoise_stimuli=add_shotnoise_stimuli,
                 add_ornstein_uhlenbeck_stimuli=add_ornstein_uhlenbeck_stimuli
             )
-        if add_synapses:
-            self._add_synapses(
-                pre_gids=pre_gids,
-                add_minis=add_minis,
-                projections=projections)
-        if add_replay or interconnect_cells or pre_spike_trains:
-            if add_replay and not add_synapses:
-                raise Exception("SSim: add_replay option can not be used if "
-                                "add_synapses is False")
-            self._add_connections(add_replay=add_replay,
-                                  interconnect_cells=interconnect_cells,
-                                  user_pre_spike_trains=pre_spike_trains)  # type: ignore
 
     def _add_stimuli(self, add_noise_stimuli=False,
                      add_hyperpolarizing_stimuli=False,
@@ -342,6 +342,13 @@ class SSim:
                         self.cells[cell_id].add_relative_ornstein_uhlenbeck(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
+                elif isinstance(stimulus, stimuli.SynapseReplay):  # sonata only
+                    if self.circuit_access.target_contains_cell(
+                        stimulus.target, cell_id
+                    ):
+                        self.cells[cell_id].add_synapse_replay(
+                            stimulus, self.spike_threshold, self.spike_location
+                        )
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
                                      "not supported" % stimulus.pattern)
@@ -402,7 +409,7 @@ class SSim:
 
     @staticmethod
     def _intersect_pre_gids_cell_ids_multipopulation(syn_descriptions, pre_cell_ids: list[CellId]) -> pd.DataFrame:
-        """Return the synapse descriptions with pre_cell_ids intersecte.
+        """Return the synapse descriptions with pre_cell_ids intersected.
 
         Supports multipopulations.
         """
@@ -450,34 +457,23 @@ class SSim:
             self,
             add_replay=None,
             interconnect_cells=None,
-            source=None,
-            dest=None,
             user_pre_spike_trains: None | dict[CellId, Iterable] = None):
         """Instantiate the (replay and real) connections in the network."""
-        if add_replay:
-            pre_spike_trains = self.simulation_access.get_spikes()
-        else:
-            pre_spike_trains = {}
-
+        pre_spike_trains = self.simulation_access.get_spikes() if add_replay else {}
         pre_spike_trains = self.merge_pre_spike_trains(
             pre_spike_trains,
             user_pre_spike_trains)
 
         for post_gid in self.cells:
-            if dest and post_gid not in dest:
-                continue
             for syn_id in self.cells[post_gid].synapses:
                 synapse = self.cells[post_gid].synapses[syn_id]
                 syn_description = synapse.syn_description
                 delay_weights = synapse.delay_weights
-                pre_gid = CellId(post_gid.population_name, int(syn_description[SynapseProperty.PRE_GID]))
+                source_population = syn_description["source_population_name"]
+                pre_gid = CellId(source_population, int(syn_description[SynapseProperty.PRE_GID]))
 
-                if source and pre_gid not in source:
-                    continue
-                real_synapse_connection = pre_gid in self.cells \
-                    and interconnect_cells
+                real_synapse_connection = pre_gid in self.cells and interconnect_cells
 
-                connection = None
                 if real_synapse_connection:
                     if (
                             user_pre_spike_trains is not None
@@ -495,9 +491,14 @@ class SSim:
                         parallel_context=self.pc,
                         spike_threshold=self.spike_threshold,
                         spike_location=self.spike_location)
+
                     logger.debug(f"Added real connection between {pre_gid} and {post_gid}, {syn_id}")
-                else:
-                    pre_spiketrain = pre_spike_trains.setdefault(pre_gid, None)  # type: ignore
+                else:  # replay connection
+                    try:
+                        pre_spiketrain = pre_spike_trains[pre_gid]
+                    except KeyError:
+                        pre_spiketrain = None
+
                     connection = bluecellulab.Connection(
                         self.cells[post_gid].synapses[syn_id],
                         pre_spiketrain=pre_spiketrain,
@@ -507,12 +508,11 @@ class SSim:
                         spike_location=self.spike_location)
                     logger.debug(f"Added replay connection from {pre_gid} to {post_gid}, {syn_id}")
 
-                if connection is not None:
-                    self.cells[post_gid].connections[syn_id] = connection
-                    for delay, weight_scale in delay_weights:
-                        self.cells[post_gid].add_replay_delayed_weight(
-                            syn_id, delay,
-                            weight_scale * connection.weight)
+                self.cells[post_gid].connections[syn_id] = connection
+                for delay, weight_scale in delay_weights:
+                    self.cells[post_gid].add_replay_delayed_weight(
+                        syn_id, delay,
+                        weight_scale * connection.weight)
 
             if len(self.cells[post_gid].connections) > 0:
                 logger.debug(f"Added synaptic connections for target {post_gid}")

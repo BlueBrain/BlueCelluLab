@@ -1,0 +1,73 @@
+{
+  "run": {
+    "tstop": 100.0,
+    "dt": 0.025,
+    "random_seed": 264118
+  },
+  "conditions": {
+    "v_init": -65,
+    "randomize_gaba_rise_time": true
+  },
+  "target_simulator": "NEURON",
+  "network": "circuit_config.json",
+  "node_sets_file": "node_sets.json",
+  "node_set": "most_central_10_SP_PC",
+  "output": {
+    "output_dir": "output_sonata",
+    "spikes_file": "out.h5",
+    "spikes_sort_order": "by_time"
+  },
+  "inputs": {
+    "VPM_spikes": {
+      "source": "HipProjections",
+      "node_set": "most_central_10_SP_PC",
+      "input_type": "spikes",
+      "delay": 0.0,
+      "duration": 300.0,
+      "module": "synapse_replay",
+      "spike_file": "tests/examples/sonata_unit_test_sims/synapse_replay/synapse_replay.dat"
+      }
+  },
+  "connection_overrides": [
+    {
+      "name": "All-All",
+      "source": "Mosaic",
+      "target": "Mosaic",
+      "weight": 1.0,
+      "spont_minis": 0.01
+    },
+    {
+      "name": "SC-All",
+      "source": "HipProjections",
+      "target": "Mosaic",
+      "weight": 1.0,
+      "spont_minis": 0.2,
+      "synapse_configure": "%s.tau_r_NMDA = 3.9 %s.tau_d_NMDA = 148.5"
+    },
+    {
+      "name": "AMPA_NMDA",
+      "source": "Excitatory",
+      "target": "Mosaic",
+      "synapse_configure": "%s.NMDA_ratio = 1.22 %s.tau_r_NMDA = 3.9 %s.tau_d_NMDA = 148.5"
+    },
+    {
+      "name": "MGGate",
+      "source": "Excitatory",
+      "target": "Mosaic",
+      "synapse_configure": "%s.mg = 1.0"
+    }
+  ],
+  "reports": {
+    "soma": {
+      "cells": "most_central_10_SP_PC",
+      "variable_name": "v",
+      "type": "compartment",
+      "dt": 0.1,
+      "sections": "soma",
+      "file_name": "soma",
+      "compartments": "center",
+      "start_time": 0,
+      "end_time": 100.0
+    }
+  }
+}

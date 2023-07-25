@@ -1,0 +1,47 @@
+{
+  "manifest": {
+    "$NETWORK_DIR": "../../circuit_hipp_mooc_most_central_10_SP_PC",
+    "$COMPONENT_DIR": "$NETWORK_DIR/components"
+  },
+  "components": {
+    "morphologies_dir": "$COMPONENT_DIR/morphologies",
+    "biophysical_neuron_models_dir": "$COMPONENT_DIR/hoc"
+  },
+  "node_sets_file": "./node_sets.json",
+  "networks": {
+    "nodes": [
+      {
+        "nodes_file": "$NETWORK_DIR/hippocampus_projections/nodes.h5",
+        "node_types_file": null,
+        "populations": {
+          "hippocampus_projections": {
+            "type": "virtual"
+          }
+        }
+      },
+      {
+        "nodes_file": "$NETWORK_DIR/nodes/nodes.h5",
+        "node_types_file": null,
+        "populations": {
+          "hippocampus_neurons": {
+            "type": "biophysical"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "edges_file": "$NETWORK_DIR/edges/edges.h5",
+        "edge_types_file": null,
+        "populations":{
+          "hippocampus_neurons__hippocampus_neurons__chemical": {
+            "type": "chemical"
+          },
+          "hippocampus_projections__hippocampus_neurons__chemical": {
+            "type": "chemical"
+          }
+        }
+      }
+    ]
+  }
+}

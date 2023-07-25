@@ -14,8 +14,11 @@
 """Module to access the simulation results."""
 
 from __future__ import annotations
+import logging
 from pathlib import Path
 from typing import Optional, Protocol
+
+import pandas as pd
 
 from bluecellulab.circuit.config import SimulationConfig, SonataSimulationConfig
 from bluecellulab.exceptions import ExtraDependencyMissingError
@@ -30,6 +33,9 @@ import numpy as np
 
 from bluecellulab.circuit import CellId
 from bluecellulab.circuit.config import BluepySimulationConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 def _sample_array(arr: np.ndarray, ratio: float) -> np.ndarray:
@@ -162,3 +168,17 @@ class SonataSimulationAccess:
         outdat = outdat.apply(lambda x: x.index.values)
         outdat.index = [CellId(pop_name, idx) for (pop_name, idx) in outdat.index]
         return outdat.to_dict()
+
+
+def get_synapse_replay_spikes(f_name: str) -> dict:
+    """Read the .dat file containing the spike replays."""
+    data = np.genfromtxt(f_name, skip_header=1)
+    spikes = pd.DataFrame(data=data, columns=["t", "node_id"]).astype({"node_id": int})
+    # subtract 1 from all node_ids to make them 0-based
+    # source: https://sonata-extension.readthedocs.io/
+    # en/latest/blueconfig-projection-example.html#dat-spike-files
+    spikes["node_id"] -= 1
+    if (spikes["t"] < 0).any():
+        logger.warning("Found negative spike times... Clipping them to 0")
+        spikes["t"].clip(lower=0., inplace=True)
+    return spikes.groupby("node_id")["t"].apply(np.array).to_dict()
