@@ -29,6 +29,8 @@ from bluecellulab.cell.stimuli_generator import (
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.stimuli import (
     ClampMode,
+    Hyperpolarizing,
+    Noise,
     OrnsteinUhlenbeck,
     ShotNoise,
     RelativeOrnsteinUhlenbeck,
@@ -189,14 +191,14 @@ class InjectableMixin:
 
     def add_replay_noise(
             self,
-            stimulus,
+            stimulus: Noise,
             noise_seed=None,
             noisestim_count=0):
         """Add a replay noise stimulus."""
-        mean = (stimulus.mean_percent * self.threshold) / 100.0
-        variance = (stimulus.variance * self.threshold) / 100.0
+        mean = (stimulus.mean_percent * self.threshold) / 100.0  # type: ignore
+        variance = (stimulus.variance * self.threshold) / 100.0  # type: ignore
         tstim = self.add_noise_step(
-            self.soma,
+            self.soma,  # type: ignore
             0.5,
             mean,
             variance,
@@ -207,12 +209,12 @@ class InjectableMixin:
 
         return tstim
 
-    def add_replay_hypamp(self, stimulus):
+    def add_replay_hypamp(self, stimulus: Hyperpolarizing):
         """Inject hypamp for the replay."""
-        tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)
-        amp = self.hypamp
+        tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)  # type: ignore
+        amp = self.hypamp  # type: ignore
         tstim.pulse(stimulus.delay, stimulus.duration, amp)
-        self.persistent.append(tstim)
+        self.persistent.append(tstim)  # type: ignore
         return tstim
 
     def add_replay_relativelinear(self, stimulus):
