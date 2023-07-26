@@ -59,8 +59,8 @@ def test_init_with_invalid_type():
 
 def test_get_all_stimuli_entries():
     sim = SonataSimulationConfig(multi_input_conf_path)
-    noise_stim = Noise("noise", "Mosaic_A", 10.0, 20.0, 200.0, 0.001)
-    hyper_stim = Hyperpolarizing("hyperpolarizing", "Mosaic_A", 0.0, 50.0)
+    noise_stim = Noise("Mosaic_A", 10.0, 20.0, 200.0, 0.001)
+    hyper_stim = Hyperpolarizing("Mosaic_A", 0.0, 50.0)
     entries = sim.get_all_stimuli_entries()
     assert len(entries) == 2
     assert entries[0] == noise_stim

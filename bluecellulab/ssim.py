@@ -39,7 +39,7 @@ from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
-from bluecellulab.stimuli import Pattern
+from bluecellulab.stimuli import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
 import bluecellulab.stimuli as stimuli
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.simulation import (
@@ -351,17 +351,14 @@ class SSim:
                         )
                 else:
                     raise ValueError("Found stimulus with pattern %s, "
-                                     "not supported" % stimulus.pattern)
+                                     "not supported" % stimulus)
                 logger.debug(f"Added {stimulus} to cell_id {cell_id}")
 
-            if stimulus.pattern == Pattern.NOISE:
+            if isinstance(stimulus, Noise):
                 noisestim_count += 1
-            elif stimulus.pattern in [Pattern.SHOT_NOISE, Pattern.RELATIVE_SHOT_NOISE]:
+            elif isinstance(stimulus, (ShotNoise, RelativeShotNoise)):
                 shotnoise_stim_count += 1
-            elif stimulus.pattern in [
-                Pattern.ORNSTEIN_UHLENBECK,
-                Pattern.RELATIVE_ORNSTEIN_UHLENBECK,
-            ]:
+            elif isinstance(stimulus, (OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck)):
                 ornstein_uhlenbeck_stim_count += 1
 
     def _add_synapses(
