@@ -235,7 +235,6 @@ class Stimulus:
             )
         elif pattern == Pattern.SYNAPSE_REPLAY:
             return SynapseReplay(
-                pattern=pattern,
                 target=stimulus_entry["node_set"],
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],

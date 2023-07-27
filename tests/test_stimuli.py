@@ -9,7 +9,6 @@ def test_synapse_replay_validator():
     """Assures synapse replay's validator fails."""
     with pytest.raises(ValidationError):
         synapse_replay = SynapseReplay(
-            pattern=Pattern.SYNAPSE_REPLAY,
             target="target1",
             source="source1",
             delay=0,
