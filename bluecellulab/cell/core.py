@@ -38,6 +38,7 @@ from bluecellulab.circuit.node_id import CellId
 from bluecellulab.circuit.simulation_access import get_synapse_replay_spikes
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.neuron_interpreter import eval_neuron
+from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 
@@ -52,7 +53,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def __init__(self, template_path: str | Path, morphology_path: str | Path,
                  gid=0, record_dt=None, template_format="v5",
                  emodel_properties: Optional[EmodelProperties] = None,
-                 rng_settings=None):
+                 rng_settings: Optional[RNGSettings] = None):
         """Constructor.
 
         Parameters
@@ -92,7 +93,10 @@ class Cell(InjectableMixin, PlottableMixin):
         self.cell.getCell().gid = gid
         self.gid = gid
 
-        self.rng_settings = rng_settings
+        if rng_settings is None:
+            self.rng_settings = RNGSettings("Random123")  # SONATA value
+        else:
+            self.rng_settings = rng_settings
 
         self.recordings: dict[str, NeuronType] = {}
         self.synapses: dict[int, Synapse] = {}
