@@ -111,7 +111,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
         self.somatic = [x for x in self.cell.getCell().somatic]
-        self.basal = [x for x in self.cell.getCell().basal]
+        self.basal = [x for x in self.cell.getCell().basal]  # dend is same as basal
         self.apical = [x for x in self.cell.getCell().apical]
         self.axonal = [x for x in self.cell.getCell().axonal]
         self.all = [x for x in self.cell.getCell().all]
