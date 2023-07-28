@@ -24,7 +24,7 @@ class EuclideanSectionDistance:
     Parameters
     ----------
 
-    hsection1 : hoc section
+    hsection1 : hoc section such as cADpyr_L2TPC_bluecellulab[0].apic[1]
                 First section
     hsection2 : hoc section
                 Second section
@@ -32,18 +32,18 @@ class EuclideanSectionDistance:
                 range x along hsection1
     location2 : float
                 range x along hsection2
-    projection : string
+    dimensions : string
                  planes to project on, e.g. 'xy'
     """
     # pylint: disable=invalid-name
 
     def __call__(
             self,
-            hsection1=None,
-            hsection2=None,
-            location1=None,
-            location2=None,
-            projection=None,
+            hsection1,
+            hsection2,
+            location1: float = 0.5,
+            location2: float = 0.5,
+            dimensions: str = "xyz",
     ):
         """Computes and returns the distance."""
         xs_interp1, ys_interp1, zs_interp1 = self.grindaway(hsection1)
@@ -58,11 +58,11 @@ class EuclideanSectionDistance:
         z2 = zs_interp2[int(np.floor((len(zs_interp2) - 1) * location2))]
 
         distance = 0
-        if "x" in projection:
+        if "x" in dimensions:
             distance += (x1 - x2) ** 2
-        if "y" in projection:
+        if "y" in dimensions:
             distance += (y1 - y2) ** 2
-        if "z" in projection:
+        if "z" in dimensions:
             distance += (z1 - z2) ** 2
 
         distance = np.sqrt(distance)
