@@ -68,11 +68,11 @@ The following example shows how to create a cell, add a stimulus and run a simul
     from bluecellulab import Simulation
 
     cell = create_ball_stick()
-    stimulus = cell.add_step(start_time=15.0, stop_time=20.0, level=0.1)
     sim = Simulation()
     sim.add_cell(cell)
+    stimulus = cell.add_step(start_time=5.0, stop_time=20.0, level=0.5)
 
-    sim.run(200, cvode=False)
+    sim.run(25, cvode=False)
     time, voltage = cell.get_time(), cell.get_soma_voltage()
     # plotting time and voltage ...
 

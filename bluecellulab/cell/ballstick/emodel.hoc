@@ -24,8 +24,6 @@ proc init() { local ind localobj strMorphName, strTmp, sf
     CellRef.setCCell(this)
     gid = CellRef.gid
     geom_nseg()   //This function is called to have count of actual axon sections
-    delete_axon()
-    insertChannel()
     init_biophys()
     biophys()
 }
@@ -47,26 +45,16 @@ obfunc getCell(){
     return CellRef
 }
 
-proc delete_axon(){
-    //CellRef.delete_axon()
-}
 
 proc init_biophys() {
-    forsec CellRef.all { cm = 1.0 }
-    forsec CellRef.all { Ra = 100.0 }
     CellRef.soma[0] distance()
 }
 
-proc insertChannel() {
-
-}
 
 proc biophys() {
-    CellRef.insertChannel("all","pas")
-
+    CellRef.insertChannel("all","hh")
     { CellRef.soma[0] distance() }
-    { forsec CellRef.all { e_pas = -75 } }
-    { forsec CellRef.all { g_pas = 3e-5 } }
+    { forsec CellRef.all { gnabar_hh = 0.24 } }
 }
 
 public getHypAmp

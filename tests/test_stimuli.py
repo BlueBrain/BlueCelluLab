@@ -2,7 +2,7 @@
 
 from pydantic import ValidationError
 import pytest
-from bluecellulab.stimuli import Pattern, SynapseReplay
+from bluecellulab.stimuli import SynapseReplay
 
 
 def test_synapse_replay_validator():
