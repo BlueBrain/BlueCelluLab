@@ -1,6 +1,12 @@
 Changelog
 ==========
 
+1.3
+---------
+
+* added support for synapse spike replay
+* removed pattern attribute of Stimulus
+
 1.2.6
 ---------
 
