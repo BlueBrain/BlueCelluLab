@@ -15,3 +15,5 @@ BlueCelluLab's usage examples
      - Demonstration of single cell simulation capabilities
    * - `sonata-network.ipynb <2-sonata-network/sonata-network.ipynb>`_
      - Simulating a group of cells from a multi polulation SONATA circuit
+   * - `bpap.ipynb <3-bpap/bpap.ipynb>`_
+     - Simulating back propagating action potential in a dendritic tree
