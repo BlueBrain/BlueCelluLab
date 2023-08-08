@@ -123,9 +123,9 @@ def run_pyneuron_with_template(params):
 
     bluecellulab.neuron.h.load_file(params.templatefile)
     cell = bluecellulab.neuron.h.ballstick_cell(0, params.morphfile)
-    basal = [x for x in cell.getCell().basal]
-    soma = [x for x in cell.getCell().somatic][0]
-    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=basal[0])
+    basal = cell.getCell().dend[0]
+    soma = cell.getCell().soma[0]
+    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=basal)
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
     ns = bluecellulab.neuron.h.NetStim()
