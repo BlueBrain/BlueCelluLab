@@ -20,7 +20,20 @@ BlueCelluLab
 +----------------+------------+
 
 
-BlueCelluLab is designed to do simulation and experiment on a single cell or a group of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally.
+Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells. 
+Suitable use cases for BlueCelluLab include:
+
+* Scripting and statistical analysis for single cells or cell pairs.
+
+* Lightweight, detailed reporting on specific state variables after simulation.
+
+* Developing synaptic plasticity rules.
+
+* Validating dynamics of synaptic properties.
+
+* Automating in-silico whole-cell patching experiments.
+
+* Debugging, both scientifically and computationally.
 
 Citation
 ========
