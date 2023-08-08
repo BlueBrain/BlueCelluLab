@@ -5,6 +5,7 @@
 
 
 .. include:: ../../README.rst
+   :end-before: .. substitutions
 
 
 .. toctree::
@@ -14,3 +15,5 @@
    Home <self>
    api.rst
    changelog
+
+.. |banner| image:: /logo/BlueCelluLabBanner.png
