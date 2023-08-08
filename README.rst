@@ -25,7 +25,7 @@ BlueCelluLab is designed to do simulation and experiment on a single cell or a g
 Citation
 ========
 
-When you use this BlueCelluLab software for your research, we ask you to cite the following publication (this includes poster presentations):
+When you use this BlueCelluLab software for your research, we ask you to cite the following reference(this includes poster presentations):
 
 .. code-block:: 
 
