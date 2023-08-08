@@ -134,4 +134,12 @@ The licenses of the morphology files used in this repository are available on: h
 .. |zenodo| image:: https://zenodo.org/badge/640805129.svg
                  :target: https://zenodo.org/badge/latestdoi/640805129
 
+..
+    The following image is also defined in the index.rst file, as the relative path is 
+    different, depending from where it is sourced.
+    The following location is used for the github README
+    The index.rst location is used for the docs README; index.rst also defined an end-marker, 
+    to skip content after the marker 'substitutions'.
+
+.. substitutions
 .. |banner| image:: docs/source/logo/BlueCelluLabBanner.jpg
