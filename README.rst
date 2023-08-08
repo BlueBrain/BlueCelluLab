@@ -20,7 +20,7 @@ BlueCelluLab
 +----------------+------------+
 
 
-Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells. 
+The Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells. 
 Suitable use cases for BlueCelluLab include:
 
 * Scripting and statistical analysis for single cells or cell pairs.
