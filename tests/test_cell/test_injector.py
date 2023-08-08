@@ -463,3 +463,26 @@ class TestInjectorSonata:
         assert list(stim_vec) == approx(
             [0.050476, 0.048279, 0.049130, 0.050349, 0.049961, 0.054486,
              0.061342, 0.051148, 0.047710, 0.0], abs=1e-6)
+
+    @pytest.mark.v6
+    def test_add_alpha_synapse(self):
+        """Unit test for adding alpha synapse stimulus to cell."""
+        onset = 2.0
+        tau = 10.0
+        gmax = 0.0003
+        e = 0.0
+        section = self.cell.cell.getCell().dend[15]
+        syn = self.cell.add_alpha_synapse(onset, tau, gmax, e, section)
+
+        current_vector = bluecellulab.neuron.h.Vector()
+        current_vector.record(syn._ref_i)
+        sim = bluecellulab.Simulation()
+        sim.add_cell(self.cell)
+        sim.run(6.0, cvode=False, dt=1)
+        current_vector = current_vector.to_python()
+        # assert first 2 values are 0
+        assert current_vector[0] == approx(0.0)
+        assert current_vector[1] == approx(0.0)
+        # assert last 3 values less than 0
+        for j in range(-3, 0):
+            assert current_vector[j] < 0.0

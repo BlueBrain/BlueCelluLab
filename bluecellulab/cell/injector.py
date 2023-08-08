@@ -443,3 +443,21 @@ class InjectableMixin:
         tstim.sin(amp, start_time, duration, frequency)
         self.persistent.append(tstim)
         return tstim
+
+    def add_alpha_synapse(
+        self,
+        onset: float,
+        tau: float,
+        gmax: float,
+        e: float,
+        section: bluecellulab.neuron.hoc.HocObject,
+        segx=0.5,
+    ) -> bluecellulab.neuron.hoc.HocObject:
+        """Add an AlphaSynapse NEURON point process stimulus to the cell."""
+        syn = bluecellulab.neuron.h.AlphaSynapse(segx, sec=section)
+        syn.onset = onset
+        syn.tau = tau
+        syn.gmax = gmax
+        syn.e = e
+        self.persistent.append(syn)  # type: ignore
+        return syn
