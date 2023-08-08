@@ -17,3 +17,5 @@ BlueCelluLab's usage examples
      - Simulating a group of cells from a multi polulation SONATA circuit
    * - `bpap.ipynb <3-bpap/bpap.ipynb>`_
      - Simulating back propagating action potential in a dendritic tree
+   * - `epsp.ipynb <4-epsp/epsp.ipynb>`_
+     - Simulating excitatory post synaptic potential on a Hippocampal CA1 cell
