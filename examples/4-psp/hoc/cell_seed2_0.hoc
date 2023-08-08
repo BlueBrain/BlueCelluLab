@@ -1,0 +1,410 @@
+/*
+Created by BluePyOpt(1.6.56) at 2019-03-13 10:47:13.677659
+*/
+{load_file("stdrun.hoc")}
+{load_file("import3d.hoc")}
+/*
+ * Check that global parameters are the same as with the optimization
+ */
+proc check_parameter(/* name, expected_value, value */){
+  strdef error
+  if($2 != $3){
+    sprint(error, "Parameter %s has different value %f != %f", $s1, $2, $3)
+    execerror(error)
+  }
+}
+proc check_simulator() {
+  check_parameter("celsius", 34, celsius)
+  check_parameter("v_init", -80, v_init)
+}
+
+begintemplate bACnoljp
+  public init, morphology, geom_nseg_fixed, geom_nsec, gid
+  public channel_seed, channel_seed_set
+  public soma, dend, apic, axon, myelin
+  create soma[1], dend[1], apic[1], axon[1], myelin[1]
+
+  objref this, CellRef, segCounts
+
+  public all, somatic, apical, axonal, basal, myelinated, APC
+  objref all, somatic, apical, axonal, basal, myelinated, APC
+
+obfunc getCell(){
+    gid = 0
+    return this
+}
+proc init(/* args: morphology_dir, morphology_name */) {
+  all = new SectionList()
+  apical = new SectionList()
+  axonal = new SectionList()
+  basal = new SectionList()
+  somatic = new SectionList()
+  myelinated = new SectionList()
+
+  //gid in this case is only used for rng seeding
+  gid = 0
+
+  //For compatibility with BBP CCells
+  CellRef = this
+
+  forall delete_section()
+
+  if(numarg() >= 2) {
+    load_morphology($s1, $s2)
+  } else {
+    load_morphology($s1, "011017HP2.asc")
+  }
+
+  geom_nseg()
+    replace_axon()
+  insertChannel()
+  biophys()
+
+  // Initialize channel_seed_set to avoid accidents
+  channel_seed_set = 0
+  // Initialize random number generators
+  re_init_rng()
+}
+
+proc load_morphology(/* morphology_dir, morphology_name */) {localobj morph, import, sf, extension
+  strdef morph_path
+  sprint(morph_path, "%s/%s", $s1, $s2)
+
+  sf = new StringFunctions()
+  extension = new String()
+
+  sscanf(morph_path, "%s", extension.s)
+  sf.right(extension.s, sf.len(extension.s)-4)
+
+  if( strcmp(extension.s, ".asc") == 0 ) {
+    morph = new Import3d_Neurolucida3()
+  } else if( strcmp(extension.s, ".swc" ) == 0) {
+    morph = new Import3d_SWC_read()
+  } else {
+    printf("Unsupported file format: Morphology file has to end with .asc or .swc" )
+    quit()
+  }
+
+  morph.quiet = 1
+  morph.input(morph_path)
+
+  import = new Import3d_GUI(morph, 0)
+  import.instantiate(this)
+}
+
+/*
+ * Assignment of mechanism values based on distance from the soma
+ * Matches the BluePyOpt method
+ */
+proc distribute_distance(){local x localobj sl
+  strdef stmp, distfunc, mech
+
+  sl = $o1
+  mech = $s2
+  distfunc = $s3
+  this.soma[0] distance(0, 0.5)
+  sprint(distfunc, "%%s %s(%%f) = %s", mech, distfunc)
+  forsec sl for(x, 0) {
+    sprint(stmp, distfunc, secname(), x, distance(x))
+    execute(stmp)
+  }
+}
+
+proc geom_nseg() {
+  this.geom_nsec() //To count all sections
+  //TODO: geom_nseg_fixed depends on segCounts which is calculated by
+  //  geom_nsec.  Can this be collapsed?
+  this.geom_nseg_fixed(40)
+  this.geom_nsec() //To count all sections
+}
+
+proc insertChannel() {
+  forsec this.all {
+    insert pas
+    insert kdrb
+    insert na3
+  }
+  forsec this.apical {
+    insert hd
+    insert can
+    insert cal
+    insert cat
+    insert cagk
+    insert kca
+    insert cacum
+    insert kad
+  }
+  forsec this.axonal {
+    insert kmb
+    insert kap
+  }
+  forsec this.basal {
+    insert hd
+    insert can
+    insert cal
+    insert cat
+    insert cagk
+    insert kca
+    insert cacum
+    insert kad
+  }
+  forsec this.somatic {
+    insert kdb
+    insert kmb
+    insert kap
+    insert hd
+    insert can
+    insert cal
+    insert cat
+    insert cagk
+    insert kca
+    insert cacum
+  }
+  forsec this.myelinated {
+  }
+}
+
+proc biophys() {
+  
+  forsec CellRef.all {
+    cm = 1
+    ena = 50
+    ek = -90
+  }
+  
+  forsec CellRef.apical {
+    gkdrbar_kdrb = 0.045468308534377916
+    gkabar_kad = 0.0057763479175105426
+    ghdbar_hd = 2.3095907457997284e-05
+    gcalbar_cal = 1.3516947425388211e-05
+    gcanbar_can = 1.294896152875423e-05
+    gcatbar_cat = 1.0487060253500682e-05
+    gbar_kca = 9.5843519323759418e-06
+    gbar_cagk = 4.7837625321841599e-05
+    Ra = 86.269583332272973
+    g_pas = 3.5087420849635937e-06
+    e_pas = -70.133235190498795
+  }
+  
+  forsec CellRef.axonal {
+    gbar_na3 = 0.041581723492571894
+    gkdrbar_kdrb = 0.040442672077738044
+    gkabar_kap = 0.03636357092103544
+    gbar_kmb = 0.0049652812245730791
+    Ra = 98.602329727321276
+    g_pas = 3.8350266832559205e-05
+    e_pas = -76.187360333639717
+  }
+  
+  forsec CellRef.basal {
+    gkdrbar_kdrb = 0.045468308534377916
+    gkabar_kad = 0.0057763479175105426
+    ghdbar_hd = 2.3095907457997284e-05
+    gcalbar_cal = 1.3516947425388211e-05
+    gcanbar_can = 1.294896152875423e-05
+    gcatbar_cat = 1.0487060253500682e-05
+    gbar_kca = 9.5843519323759418e-06
+    gbar_cagk = 4.7837625321841599e-05
+    Ra = 86.269583332272973
+    g_pas = 3.5087420849635937e-06
+    e_pas = -70.133235190498795
+  }
+  
+  forsec CellRef.somatic {
+    gbar_na3 = 0.056889538006839588
+    gkdrbar_kdrb = 0.04661419618525469
+    gkabar_kap = 0.012851888391835752
+    gkdbar_kdb = 6.9195223990239636e-05
+    gbar_kmb = 0.0070992738666678422
+    ghdbar_hd = 0.00046939757483587679
+    gcalbar_cal = 1.6762830677929118e-05
+    gcanbar_can = 2.8914764337951697e-05
+    gcatbar_cat = 1.1941808553077386e-05
+    gbar_kca = 8.0619738480782634e-06
+    gbar_cagk = 5.7718612409262833e-05
+    Ra = 115.48334846909937
+    g_pas = 0.00010543365823401373
+    e_pas = -88.783689549263386
+  }
+  
+  forsec CellRef.myelinated {
+  }
+  
+  distribute_distance(CellRef.apical, "gbar_na3", "exp((-%.17g)/50)*0.044488437803159704")
+  distribute_distance(CellRef.basal, "gbar_na3", "exp((-%.17g)/50)*0.044488437803159704")
+}
+
+func sec_count(/* SectionList */) { local nSec
+  nSec = 0
+  forsec $o1 {
+      nSec += 1
+  }
+  return nSec
+}
+
+/*
+ * Iterate over the section and compute how many segments should be allocate to
+ * each.
+ */
+proc geom_nseg_fixed(/* chunkSize */) { local secIndex, chunkSize
+  chunkSize = $1
+  soma area(.5) // make sure diam reflects 3d points
+  secIndex = 0
+  forsec all {
+    nseg = 1 + 2*int(L/chunkSize)
+    segCounts.x[secIndex] = nseg
+    secIndex += 1
+  }
+}
+
+/*
+ * Count up the number of sections
+ */
+proc geom_nsec() { local nSec
+  nSecAll = sec_count(all)
+  nSecSoma = sec_count(somatic)
+  nSecApical = sec_count(apical)
+  nSecBasal = sec_count(basal)
+  nSecMyelinated = sec_count(myelinated)
+  nSecAxonalOrig = nSecAxonal = sec_count(axonal)
+
+  segCounts = new Vector()
+  segCounts.resize(nSecAll)
+  nSec = 0
+  forsec all {
+    segCounts.x[nSec] = nseg
+    nSec += 1
+  }
+}
+
+/*
+ * Replace the axon built from the original morphology file with a stub axon
+ */
+    
+    proc replace_axon(){local nSec, L_chunk, dist, i1, i2, count, L_target, chunkSize, L_real localobj diams, lens
+
+     L_target = 60  // length of stub axon
+     nseg0 = 5  // number of segments for each of the two axon sections
+
+     nseg_total = nseg0 * 2
+     chunkSize = L_target/nseg_total
+
+     nSec = 0
+     forsec axonal{nSec = nSec + 1}
+
+     // Try to grab info from original axon
+     if(nSec < 1){ //At least two axon sections have to be present!
+
+         execerror("Less than two axon sections are present! Add an axon to the morphology and try again!")
+
+     } else {
+
+         diams = new Vector()
+         lens = new Vector()
+
+//         access axon[0]
+//         i1 = v(0.0001) // used when serializing sections prior to sim start
+
+//         access axon[1]
+//         i2 = v(0.0001) // used when serializing sections prior to sim start
+
+         count = 0
+         forsec axonal{ // loop through all axon sections
+
+	     nseg = 1 + int(L/chunkSize/2.)*2  //nseg to get diameter
+
+         for (x) {
+             if (x > 0 && x < 1) {
+                 count = count + 1
+                 diams.resize(count)
+                 diams.x[count-1] = diam(x)
+                 lens.resize(count)
+                 lens.x[count-1] = L/nseg
+                 if( count == nseg_total ){
+                     break
+                 }
+             }
+         }
+         if( count == nseg_total ){
+             break
+	 }
+     }
+
+         // get rid of the old axon
+         forsec axonal{delete_section()}
+         execute1("create axon[2]", CellRef)
+
+         L_real = 0
+         count = 0
+
+         // new axon dependant on old diameters
+         for i=0,1{
+             access axon[i]
+             L =  L_target/2
+             nseg = nseg_total/2
+
+             for (x) {
+                 if (x > 0 && x < 1) {
+                     diam(x) = diams.x[count]
+                     L_real = L_real+lens.x[count]
+                     count = count + 1
+                 }
+             }
+
+             all.append()
+             axonal.append()
+
+             if (i == 0) {
+                 v(0.0001) = i1
+             } else {
+                 v(0.0001) = i2
+             }
+         }
+
+         nSecAxonal = 2
+         soma[0] connect axon[0](0), 1
+         axon[0] connect axon[1](0), 1
+     }
+
+ }
+
+    
+
+
+
+func hash_str() {localobj sf strdef right
+  sf = new StringFunctions()
+
+  right = $s1
+
+  n_of_c = sf.len(right)
+
+  hash = 0
+  char_int = 0
+  for i = 0, n_of_c - 1 {
+     sscanf(right, "%c", & char_int)
+     hash = (hash * 31 + char_int) % (2 ^ 31 - 1)
+     sf.right(right, 1)
+  }
+
+  return hash
+}
+
+proc re_init_rng() {localobj sf
+    strdef full_str, name
+
+    sf = new StringFunctions()
+
+    if(numarg() == 1) {
+        // We received a third seed
+        channel_seed = $1
+        channel_seed_set = 1
+    } else {
+        channel_seed_set = 0
+    }
+
+
+}
+
+
+endtemplate bACnoljp
