@@ -1,3 +1,5 @@
+|banner|
+
 BlueCelluLab
 ============
 
@@ -131,3 +133,5 @@ The licenses of the morphology files used in this repository are available on: h
 
 .. |zenodo| image:: https://zenodo.org/badge/640805129.svg
                  :target: https://zenodo.org/badge/latestdoi/640805129
+
+.. |banner| image:: docs/source/logo/BlueCelluLabBanner.jpg
