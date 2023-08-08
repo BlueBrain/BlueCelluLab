@@ -82,7 +82,7 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron_template = NeuronTemplate(template_path, morphology_path)
         self.cell = neuron_template.get_cell(template_format, gid, emodel_properties)
 
-        self.soma = [x for x in self.cell.getCell().somatic][0]
+        self.soma = self.cell.getCell().soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
