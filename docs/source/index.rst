@@ -16,4 +16,4 @@
    api.rst
    changelog
 
-.. |banner| image:: /logo/BlueCelluLabBanner.png
+.. |banner| image:: /logo/BlueCelluLabBanner.jpg
