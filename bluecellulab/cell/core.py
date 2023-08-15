@@ -80,6 +80,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         # Load the template
         neuron_template = NeuronTemplate(template_path, morphology_path)
+        self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
         self.cell = neuron_template.get_cell(template_format, gid, emodel_properties)
 
         self.soma = self.cell.getCell().soma[0]
@@ -150,6 +151,11 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron.h.pop_section()  # Undoing soma push
         # self.init_psections()
         self.sonata_proxy: Optional[SonataProxy] = None
+
+    def __repr__(self) -> str:
+        base_info = f"Cell Object: {super().__repr__()}"
+        hoc_info = f"NEURON ID: {self.template_id}"
+        return f"{base_info}.\n{hoc_info}."
 
     def connect_to_circuit(self, sonata_proxy: SonataProxy) -> None:
         """Connect this cell to a circuit via sonata proxy."""
