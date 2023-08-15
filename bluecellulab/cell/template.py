@@ -35,8 +35,6 @@ logger = logging.getLogger(__name__)
 class NeuronTemplate:
     """NeuronTemplate representation."""
 
-    used_template_names: set[str] = set()
-
     def __init__(
         self, template_filepath: str | Path, morph_filepath: str | Path
     ) -> None:
@@ -94,8 +92,7 @@ class NeuronTemplate:
 
         return cell
 
-    @classmethod
-    def load(cls, template_filename: str) -> str:
+    def load(self, template_filename: str) -> str:
         """Read a cell template. If template name already exists, rename it.
 
         Args:
@@ -115,17 +112,9 @@ class NeuronTemplate:
         # templates load outside of bluecellulab
         template_name = "%s_bluecellulab" % template_name
         template_name = get_neuron_compliant_template_name(template_name)
-        if template_name in cls.used_template_names:
-            new_template_name = template_name
-            while new_template_name in cls.used_template_names:
-                new_template_name = "%s_x" % new_template_name
-                new_template_name = get_neuron_compliant_template_name(
-                    new_template_name
-                )
+        obj_address = hex(id(self))
+        template_name = f"{template_name}_{obj_address}"
 
-            template_name = new_template_name
-
-        cls.used_template_names.add(template_name)
         template_content = re.sub(
             r"begintemplate\s*(\S*)",
             "begintemplate %s" % template_name,

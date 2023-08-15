@@ -37,9 +37,11 @@ def test_longname():
 
 def test_load_template():
     """Test the neuron template loading."""
-    fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
-    template_name = NeuronTemplate.load(fpath)
-    assert template_name == "test_cell_bluecellulab"
+    hoc_path = parent_dir / "examples/cell_example1/test_cell.hoc"
+    morph_path = parent_dir / "examples/cell_example1/test_cell.asc"
+    template = NeuronTemplate(hoc_path, morph_filepath=morph_path)
+    template_name = template.template_name
+    assert template_name == f"test_cell_bluecellulab_{hex(id(template))}"
 
 
 def test_shorten_and_hash_string():
