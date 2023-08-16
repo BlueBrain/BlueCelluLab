@@ -35,11 +35,14 @@ def test_longname():
     del cell
 
 
+@pytest.mark.v5
 def test_load_template():
     """Test the neuron template loading."""
-    fpath = parent_dir / "examples/cell_example1/test_cell.hoc"
-    template_name = NeuronTemplate.load(fpath)
-    assert template_name == "test_cell_bluecellulab"
+    hoc_path = parent_dir / "examples/cell_example1/test_cell.hoc"
+    morph_path = parent_dir / "examples/cell_example1/test_cell.asc"
+    template = NeuronTemplate(hoc_path, morph_filepath=morph_path)
+    template_name = template.template_name
+    assert template_name == f"test_cell_bluecellulab_{hex(id(template))}"
 
 
 def test_shorten_and_hash_string():
@@ -290,6 +293,25 @@ def test_add_dendrogram():
     cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
     sim.run(24, cvode=False)
     assert Path(output_path).is_file()
+
+
+@pytest.mark.v6
+def test_repr_and_str():
+    """Test the repr and str representations of a cell object."""
+    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
+                                         holding_current=1.4146618843078613,
+                                         ais_scaler=1.4561502933502197)
+    cell = bluecellulab.Cell(
+        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+        template_format="v6_ais_scaler",
+        emodel_properties=emodel_properties)
+    # >>> print(cell)
+    # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
+    # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+
+    # make sure NEURON template name is in the string representation
+    assert cell.cell.hname().split('[')[0] in str(cell)
 
 
 @pytest.mark.v6

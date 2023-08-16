@@ -25,7 +25,7 @@ def test_get_cell_with_bluepyopt_template():
     """Unit test for the get_cell method with bluepyopt_template."""
     template = NeuronTemplate(hoc_path, morph_path)
     cell = template.get_cell("bluepyopt", None, None)
-    assert cell.hname() == "bACnoljp_bluecellulab[0]"
+    assert cell.hname() == f"bACnoljp_bluecellulab_{(hex(id(template)))}[0]"
 
 
 def test_neuron_template_init():
