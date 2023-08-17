@@ -73,10 +73,7 @@ class TestSonataCircuitAccess:
         cell_id = CellId("hippocampus_neurons", 1)
         res = self.circuit_access.get_emodel_properties(cell_id)
         assert res == EmodelProperties(
-            threshold_current=0.33203125,
-            holding_current=-0.116351104071555,
-            ais_scaler=None,
-            soma_scaler=None
+            threshold_current=0.33203125, holding_current=-0.116351104071555
         )
 
     def test_get_template_format(self):

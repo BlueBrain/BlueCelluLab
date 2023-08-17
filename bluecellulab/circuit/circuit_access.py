@@ -501,11 +501,11 @@ class SonataCircuitAccess:
         if "@dynamics:AIS_scaler" in cell_properties:
             ais_scaler = cell_properties["@dynamics:AIS_scaler"]
         else:
-            ais_scaler = None
+            ais_scaler = 1.0
         if "@dynamics:soma_scaler" in cell_properties:
             soma_scaler = cell_properties["@dynamics:soma_scaler"]
         else:
-            soma_scaler = None
+            soma_scaler = 1.0
 
         return EmodelProperties(
             cell_properties["@dynamics:threshold_current"],
