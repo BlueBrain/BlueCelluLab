@@ -370,7 +370,7 @@ proc replace_axon(){ local count, i1, i2, L_target, strenght, taper_scale, termi
     for i=0,nseg_total{
         count = count + 1
         diams.resize(count)
-        diams.x[count-1] = strength * exp(-L_target * i / nseg_total / taper_scale) + terminal_diameter * scale
+        diams.x[count-1] = strength * exp(-L_target * i / nseg_total / taper_scale) + terminal_diameter * ais_scale
     }
 
     // assigning diameter to axon
