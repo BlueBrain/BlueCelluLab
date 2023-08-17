@@ -58,8 +58,8 @@ logger = logging.getLogger(__name__)
 class EmodelProperties:
     threshold_current: float
     holding_current: float
-    ais_scaler: Optional[float] = None
-    soma_scaler: Optional[float] = None
+    ais_scaler: Optional[float] = 1.0
+    soma_scaler: Optional[float] = 1.0
 
 
 def get_synapse_connection_parameters(
