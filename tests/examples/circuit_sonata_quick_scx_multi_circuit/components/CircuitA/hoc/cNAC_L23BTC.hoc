@@ -94,7 +94,7 @@ proc init(/* args: gid, morphology_dir, morphology_name, AIS_scaler */) {
 
   geom_nseg()
   indexSections()
-    replace_axon($4)
+    replace_axon($4, $5)
   insertChannel()
   biophys()
 
@@ -357,13 +357,14 @@ proc replace_axon(){ local count, i1, i2, L_target, strenght, taper_scale, termi
     strength = 9.999999999998727e-07
     taper_scale = 10.78960441477696
     terminal_diameter = 0.4534256047206839
-    scale = $1
+    ais_scale = $1
+    soma_scale= $2
     diams = new Vector()
     count = 0
     for i=0,nseg_total{
         count = count + 1
         diams.resize(count)
-        diams.x[count-1] = strength * exp(-L_target * i / nseg_total / taper_scale) + terminal_diameter * scale
+        diams.x[count-1] = strength * exp(-L_target * i / nseg_total / taper_scale) + terminal_diameter * ais_scale
     }
 
     // assigning diameter to axon
