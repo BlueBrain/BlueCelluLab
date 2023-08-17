@@ -76,15 +76,16 @@ class TestSonataCircuitAccess:
             threshold_current=0.33203125,
             holding_current=-0.116351104071555,
             ais_scaler=None,
+            soma_scaler=None
         )
 
     def test_get_template_format(self):
         res = self.circuit_access.get_template_format()
         assert res == "v6"
-        # if there was @dynamics:AIS_scaler, it would be v6_ais_scaler
+        # if there was @dynamics:AIS_scaler, it would be v6_adapted
         self.circuit_access.available_cell_properties.add("@dynamics:AIS_scaler")
         res = self.circuit_access.get_template_format()
-        assert res == "v6_ais_scaler"
+        assert res == "v6_adapted"
 
     def test_get_cell_properties(self):
         cell_id = CellId("hippocampus_neurons", 1)
