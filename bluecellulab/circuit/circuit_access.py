@@ -218,12 +218,16 @@ class BluepyCircuitAccess:
             emodel_properties.ais_scaler = float(self.get_cell_properties(
                 cell_id, properties=["@dynamics:AIS_scaler"])["@dynamics:AIS_scaler"])
 
+        if "@dynamics:soma_scaler" in self.available_cell_properties:
+            emodel_properties.ais_scaler = float(self.get_cell_properties(
+                cell_id, properties=["@dynamics:soma_scaler"])["@dynamics:soma_scaler"])
+
         return emodel_properties
 
     def get_template_format(self) -> Optional[str]:
         """Return the template format."""
         if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_ais_scaler'
+            return 'v6_adapted'
         elif self.use_mecombo_tsv or self.node_properties_available:
             return 'v6'
         else:
@@ -498,15 +502,21 @@ class SonataCircuitAccess:
             ais_scaler = cell_properties["@dynamics:AIS_scaler"]
         else:
             ais_scaler = None
+        if "@dynamics:soma_scaler" in cell_properties:
+            soma_scaler = cell_properties["@dynamics:soma_scaler"]
+        else:
+            soma_scaler = None
+
         return EmodelProperties(
             cell_properties["@dynamics:threshold_current"],
             cell_properties["@dynamics:holding_current"],
             ais_scaler,
+            soma_scaler,
         )
 
     def get_template_format(self) -> Optional[str]:
         if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_ais_scaler'
+            return 'v6_adapted'
         else:
             return 'v6'
 
