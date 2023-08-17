@@ -59,6 +59,7 @@ class EmodelProperties:
     threshold_current: float
     holding_current: float
     ais_scaler: Optional[float] = None
+    soma_scaler: Optional[float] = None
 
 
 def get_synapse_connection_parameters(
