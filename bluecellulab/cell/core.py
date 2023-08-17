@@ -126,7 +126,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.secname_to_psection: dict[str, psection.PSection] = {}
 
         self.emodel_properties = emodel_properties
-        if template_format in ['v6', 'v6_ais_scaler']:
+        if template_format in ['v6', 'v6_adapted']:
             if self.emodel_properties is None:
                 raise BluecellulabError('EmodelProperties must be provided for v6 template')
             self.hypamp: float | None = self.emodel_properties.holding_current
