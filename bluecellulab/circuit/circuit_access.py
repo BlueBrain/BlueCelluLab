@@ -58,7 +58,8 @@ logger = logging.getLogger(__name__)
 class EmodelProperties:
     threshold_current: float
     holding_current: float
-    ais_scaler: Optional[float] = None
+    ais_scaler: Optional[float] = 1.0
+    soma_scaler: Optional[float] = 1.0
 
 
 def get_synapse_connection_parameters(
@@ -217,12 +218,16 @@ class BluepyCircuitAccess:
             emodel_properties.ais_scaler = float(self.get_cell_properties(
                 cell_id, properties=["@dynamics:AIS_scaler"])["@dynamics:AIS_scaler"])
 
+        if "@dynamics:soma_scaler" in self.available_cell_properties:
+            emodel_properties.ais_scaler = float(self.get_cell_properties(
+                cell_id, properties=["@dynamics:soma_scaler"])["@dynamics:soma_scaler"])
+
         return emodel_properties
 
     def get_template_format(self) -> Optional[str]:
         """Return the template format."""
         if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_ais_scaler'
+            return 'v6_adapted'
         elif self.use_mecombo_tsv or self.node_properties_available:
             return 'v6'
         else:
@@ -496,16 +501,22 @@ class SonataCircuitAccess:
         if "@dynamics:AIS_scaler" in cell_properties:
             ais_scaler = cell_properties["@dynamics:AIS_scaler"]
         else:
-            ais_scaler = None
+            ais_scaler = 1.0
+        if "@dynamics:soma_scaler" in cell_properties:
+            soma_scaler = cell_properties["@dynamics:soma_scaler"]
+        else:
+            soma_scaler = 1.0
+
         return EmodelProperties(
             cell_properties["@dynamics:threshold_current"],
             cell_properties["@dynamics:holding_current"],
             ais_scaler,
+            soma_scaler,
         )
 
     def get_template_format(self) -> Optional[str]:
         if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_ais_scaler'
+            return 'v6_adapted'
         else:
             return 'v6'
 

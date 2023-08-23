@@ -76,14 +76,19 @@ class NeuronTemplate:
             cell = getattr(neuron.h, self.template_name)(
                 gid, morph_dir, morph_fname
             )
-        elif template_format == "v6_ais_scaler":
+        elif template_format == "v6_adapted":
             if emodel_properties is None:
                 raise BluecellulabError(
                     "EmodelProperties must be provided for template "
-                    "format v6_ais_scaler"
+                    "format v6_adapted"
                 )
+
             cell = getattr(neuron.h, self.template_name)(
-                gid, morph_dir, morph_fname, emodel_properties.ais_scaler
+                gid,
+                morph_dir,
+                morph_fname,
+                emodel_properties.ais_scaler,
+                emodel_properties.soma_scaler
             )
         elif template_format == "bluepyopt":
             cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)

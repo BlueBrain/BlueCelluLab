@@ -73,18 +73,16 @@ class TestSonataCircuitAccess:
         cell_id = CellId("hippocampus_neurons", 1)
         res = self.circuit_access.get_emodel_properties(cell_id)
         assert res == EmodelProperties(
-            threshold_current=0.33203125,
-            holding_current=-0.116351104071555,
-            ais_scaler=None,
+            threshold_current=0.33203125, holding_current=-0.116351104071555
         )
 
     def test_get_template_format(self):
         res = self.circuit_access.get_template_format()
         assert res == "v6"
-        # if there was @dynamics:AIS_scaler, it would be v6_ais_scaler
+        # if there was @dynamics:AIS_scaler, it would be v6_adapted
         self.circuit_access.available_cell_properties.add("@dynamics:AIS_scaler")
         res = self.circuit_access.get_template_format()
-        assert res == "v6_ais_scaler"
+        assert res == "v6_adapted"
 
     def test_get_cell_properties(self):
         cell_id = CellId("hippocampus_neurons", 1)
@@ -223,3 +221,18 @@ def test_morph_filepath_asc():
     circuit_access = SonataCircuitAccess(circuit_sonata_quick_scx_config)
     asc_morph = circuit_access.morph_filepath(CellId("NodeA", 1))
     assert asc_morph.endswith(".asc")
+
+
+def test_get_emodel_properties_soma_scaler():
+    """Test the retrieval of soma scaler value."""
+    circuit_sonata_quick_scx_config = (
+        parent_dir
+        / "examples"
+        / "sonata_unit_test_sims"
+        / "condition_parameters"
+        / "simulation_config.json"
+    )
+
+    circuit_access = SonataCircuitAccess(circuit_sonata_quick_scx_config)
+    assert circuit_access.get_emodel_properties(CellId("NodeA", 0)).soma_scaler == 1.0
+    assert circuit_access.get_emodel_properties(CellId("NodeA", 1)).soma_scaler == 1.002
