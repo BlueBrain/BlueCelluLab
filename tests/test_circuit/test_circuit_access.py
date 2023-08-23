@@ -221,3 +221,18 @@ def test_morph_filepath_asc():
     circuit_access = SonataCircuitAccess(circuit_sonata_quick_scx_config)
     asc_morph = circuit_access.morph_filepath(CellId("NodeA", 1))
     assert asc_morph.endswith(".asc")
+
+
+def test_get_emodel_properties_soma_scaler():
+    """Test the retrieval of soma scaler value."""
+    circuit_sonata_quick_scx_config = (
+        parent_dir
+        / "examples"
+        / "sonata_unit_test_sims"
+        / "condition_parameters"
+        / "simulation_config.json"
+    )
+
+    circuit_access = SonataCircuitAccess(circuit_sonata_quick_scx_config)
+    assert circuit_access.get_emodel_properties(CellId("NodeA", 0)).soma_scaler == 1.0
+    assert circuit_access.get_emodel_properties(CellId("NodeA", 1)).soma_scaler == 1.002
