@@ -23,6 +23,7 @@ import math
 import multiprocessing
 import multiprocessing.pool
 import os
+from pathlib import Path
 import sys
 from typing import Any, Optional
 import warnings
@@ -202,7 +203,7 @@ def holding_current(
     return i_hold, v_control
 
 
-def template_accepts_cvode(template_name):
+def template_accepts_cvode(template_name: str | Path) -> bool:
     """Return True if template_name can be run with cvode."""
     with open(template_name, "r") as template_file:
         template_content = template_file.read()
@@ -213,27 +214,40 @@ def template_accepts_cvode(template_name):
     return accepts_cvode
 
 
-def search_hyp_current(template_name, morphology_name, target_voltage,
-                       min_current, max_current):
+def search_hyp_current(
+    template_name: str | Path,
+    morphology_name: str | Path,
+    target_voltage: float,
+    min_current: float,
+    max_current: float,
+) -> float:
     """Search current necessary to bring cell to -85 mV."""
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
-        template_name, morphology_name, med_current)
+        template_name, morphology_name, med_current
+    )
     logger.info("Detected voltage: %f" % new_target_voltage)
-    if abs(new_target_voltage - target_voltage) < .5:
+    if abs(new_target_voltage - target_voltage) < 0.5:
         return med_current
     elif new_target_voltage > target_voltage:
-        return search_hyp_current(template_name, morphology_name,
-                                  target_voltage, min_current, med_current)
-    elif new_target_voltage < target_voltage:
-        return search_hyp_current(template_name, morphology_name,
-                                  target_voltage, med_current, max_current)
+        return search_hyp_current(
+            template_name, morphology_name, target_voltage, min_current, med_current
+        )
+    else:  # new_target_voltage < target_voltage:
+        return search_hyp_current(
+            template_name, morphology_name, target_voltage, med_current, max_current
+        )
 
 
-def detect_hyp_current(template_name, morphology_name, target_voltage):
-    """Search current necessary to bring cell to -85 mV."""
-    return search_hyp_current(template_name, morphology_name, target_voltage,
-                              -1.0, 0.0)
+def detect_hyp_current(
+    template_name: str | Path, morphology_name: str | Path, target_voltage: float
+) -> float:
+    """Search current necessary to bring cell to -85 mV.
+
+    Compared to using NEURON's SEClamp object, the binary search better
+    replicates what experimentalists use
+    """
+    return search_hyp_current(template_name, morphology_name, target_voltage, -1.0, 0.0)
 
 
 def detect_spike_step(template_name, morphology_name, hyp_level, inj_start,
