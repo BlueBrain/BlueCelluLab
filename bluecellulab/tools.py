@@ -333,14 +333,23 @@ def detect_spike_step(
     hyp_level: float,
     inj_start: float,
     inj_stop: float,
-    step_level: float
+    step_level: float,
 ) -> bool:
     """Detect if there is a spike at a certain step level."""
     # Here it is safe to use a pool with NEURON since it'll run one task only
     pool = multiprocessing.Pool(processes=1)
     spike_detected = pool.apply(
         detect_spike_step_subprocess,
-        [template_path, morphology_path, template_format, emodel_properties, hyp_level, inj_start, inj_stop, step_level],
+        [
+            template_path,
+            morphology_path,
+            template_format,
+            emodel_properties,
+            hyp_level,
+            inj_start,
+            inj_stop,
+            step_level,
+        ],
     )
     pool.terminate()
     return spike_detected
@@ -380,7 +389,7 @@ def detect_spike_step_subprocess(
 
 def detect_spike(voltage: np.ndarray) -> bool:
     """Detect if there is a spike in the voltage trace."""
-    return np.max(voltage) > -20
+    return bool(np.max(voltage) > -20)  # bool not np.bool_
 
 
 def search_threshold_current(template_name, morphology_name, hyp_level,

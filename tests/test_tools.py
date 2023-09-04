@@ -132,6 +132,25 @@ class TestOnSonataCell:
         mock_template_with_stochkv = script_dir / "examples/cell_example2/test_cell.hoc"
         assert template_accepts_cvode(mock_template_with_stochkv) is False
 
+    def test_detect_spike_step(self):
+        """Unit test for detect_spike_step."""
+        hyp_level = -2
+        inj_start = 100  # some start time for the current injection
+        inj_stop = 200  # some stop time for the current injection
+        step_level = 4  # some current level for the step
+
+        spike_occurred = bluecellulab.detect_spike_step(
+            template_path=self.template_name,
+            morphology_path=self.morphology_path,
+            template_format=self.template_format,
+            emodel_properties=self.emodel_properties,
+            hyp_level=hyp_level,
+            inj_start=inj_start,
+            inj_stop=inj_stop,
+            step_level=step_level,
+        )
+        assert spike_occurred is True
+
 
 @pytest.mark.v6
 class TestOnSonataCircuit:
