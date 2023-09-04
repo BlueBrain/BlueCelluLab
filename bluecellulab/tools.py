@@ -25,7 +25,7 @@ import multiprocessing.pool
 import os
 from pathlib import Path
 import sys
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 import warnings
 import logging
 
@@ -33,6 +33,8 @@ import numpy as np
 
 import bluecellulab
 from bluecellulab import neuron
+from bluecellulab.circuit.circuit_access import EmodelProperties
+from bluecellulab.exceptions import UnsteadyCellError
 
 logger = logging.getLogger(__name__)
 
@@ -111,41 +113,81 @@ def load_nrnmechanisms(libnrnmech_path: str) -> None:
     neuron.h.nrn_load_dll(libnrnmech_path)
 
 
-def calculate_inputresistance(template_name, morphology_name,
-                              current_delta=0.01):
+def calculate_input_resistance(
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    current_delta: float = 0.01,
+) -> float:
     """Calculate the input resistance at rest of the cell."""
-    rest_voltage = calculate_SS_voltage(template_name, morphology_name, 0.0)
+    rest_voltage = calculate_SS_voltage(
+        template_path, morphology_path, template_format, emodel_properties, 0.0
+    )
     step_voltage = calculate_SS_voltage(
-        template_name, morphology_name, current_delta)
+        template_path,
+        morphology_path,
+        template_format,
+        emodel_properties,
+        current_delta,
+    )
 
     voltage_delta = step_voltage - rest_voltage
 
     return voltage_delta / current_delta
 
 
-def calculate_SS_voltage(template_name, morphology_name, step_level):
-    """Calculate the steady state voltage at a certain current step."""
+def calculate_SS_voltage(
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    step_level: float,
+) -> float:
+    """Calculate the steady state voltage at a certain current step.
+
+    The use of Pool is safe here since it will just run a single task.
+    """
     pool = multiprocessing.Pool(processes=1)
     SS_voltage = pool.apply(
-        calculate_SS_voltage_subprocess, [
-            template_name, morphology_name, step_level])
+        calculate_SS_voltage_subprocess,
+        [
+            template_path,
+            morphology_path,
+            template_format,
+            emodel_properties,
+            step_level,
+        ],
+    )
     pool.terminate()
     return SS_voltage
 
 
-def calculate_SS_voltage_subprocess(template_name, morphology_name,
-                                    step_level, check_for_spiking=False,
-                                    spike_threshold=-20.0):
+def calculate_SS_voltage_subprocess(
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    step_level: float,
+    check_for_spiking=False,
+    spike_threshold=-20.0,
+) -> float:
     """Subprocess wrapper of calculate_SS_voltage.
 
-    if check_for_spiking is True, this function will return None if the
-    cell spikes from from 100ms to the end of the simulation indicating
-    no steady state was reached.
+    This code should be run in a separate process. If check_for_spiking
+    is True, this function will return None if the cell spikes from
+    100ms to the end of the simulation indicating no steady state was
+    reached.
     """
-    cell = bluecellulab.Cell(template_name, morphology_name)
+    cell = bluecellulab.Cell(
+        template_path=template_path,
+        morphology_path=morphology_path,
+        template_format=template_format,
+        emodel_properties=emodel_properties,
+    )
     cell.add_ramp(500, 5000, step_level, step_level)
     simulation = bluecellulab.Simulation()
-    simulation.run(1000, cvode=template_accepts_cvode(template_name))
+    simulation.run(1000, cvode=template_accepts_cvode(template_path))
     time = cell.get_time()
     voltage = cell.get_soma_voltage()
     SS_voltage = np.mean(voltage[np.where((time < 1000) & (time > 800))])
@@ -153,9 +195,10 @@ def calculate_SS_voltage_subprocess(template_name, morphology_name,
 
     if check_for_spiking:
         # check for voltage crossings
-        if len(np.nonzero(
-                voltage[np.where(time > 100.0)] > spike_threshold)[0]) > 0:
-            return None
+        if len(np.nonzero(voltage[np.where(time > 100.0)] > spike_threshold)[0]) > 0:
+            raise UnsteadyCellError(
+                "Cell spikes from 100ms to the end of the simulation."
+            )
 
     return SS_voltage
 
@@ -167,7 +210,7 @@ def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
     if enable_ttx:
         cell.enable_ttx()
 
-    vclamp = bluecellulab.neuron.h.SEClamp(.5, sec=cell.soma)
+    vclamp = bluecellulab.neuron.h.SEClamp(0.5, sec=cell.soma)
     vclamp.rs = 0.01
     vclamp.dur1 = 2000
     vclamp.amp1 = v_hold
@@ -184,20 +227,22 @@ def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
 
 
 def holding_current(
-        v_hold,
-        cell_id: None | int | tuple[str, int] = None,
-        circuit_path=None,
-        enable_ttx=False):
+    v_hold: float,
+    cell_id: int | tuple[str, int],
+    circuit_path: str | Path,
+    enable_ttx=False,
+) -> Tuple[float, float]:
     """Calculate the holding current necessary for a given holding voltage."""
-    if cell_id is not None and circuit_path is not None:
-        cell_id = bluecellulab.circuit.node_id.create_cell_id(cell_id)
-        ssim = bluecellulab.SSim(circuit_path)
+    cell_id = bluecellulab.circuit.node_id.create_cell_id(cell_id)
+    ssim = bluecellulab.SSim(circuit_path)
 
-        cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
+    cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
 
+    # using a pool with NEURON here is safe since it'll run one task only
     pool = multiprocessing.Pool(processes=1)
     i_hold, v_control = pool.apply(
-        holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs])
+        holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]
+    )
     pool.terminate()
 
     return i_hold, v_control
@@ -215,8 +260,10 @@ def template_accepts_cvode(template_name: str | Path) -> bool:
 
 
 def search_hyp_current(
-    template_name: str | Path,
-    morphology_name: str | Path,
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: Optional[EmodelProperties],
     target_voltage: float,
     min_current: float,
     max_current: float,
@@ -224,58 +271,106 @@ def search_hyp_current(
     """Search current necessary to bring cell to -85 mV."""
     med_current = min_current + abs(min_current - max_current) / 2
     new_target_voltage = calculate_SS_voltage(
-        template_name, morphology_name, med_current
+        template_path,
+        morphology_path,
+        template_format,
+        emodel_properties,
+        med_current,
     )
     logger.info("Detected voltage: %f" % new_target_voltage)
     if abs(new_target_voltage - target_voltage) < 0.5:
         return med_current
     elif new_target_voltage > target_voltage:
         return search_hyp_current(
-            template_name, morphology_name, target_voltage, min_current, med_current
+            template_path=template_path,
+            morphology_path=morphology_path,
+            template_format=template_format,
+            emodel_properties=emodel_properties,
+            target_voltage=target_voltage,
+            min_current=min_current,
+            max_current=med_current,
         )
     else:  # new_target_voltage < target_voltage:
         return search_hyp_current(
-            template_name, morphology_name, target_voltage, med_current, max_current
+            template_path=template_path,
+            morphology_path=morphology_path,
+            template_format=template_format,
+            emodel_properties=emodel_properties,
+            target_voltage=target_voltage,
+            min_current=med_current,
+            max_current=max_current,
         )
 
 
 def detect_hyp_current(
-    template_name: str | Path, morphology_name: str | Path, target_voltage: float
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    target_voltage: float,
 ) -> float:
     """Search current necessary to bring cell to -85 mV.
 
     Compared to using NEURON's SEClamp object, the binary search better
     replicates what experimentalists use
     """
-    return search_hyp_current(template_name, morphology_name, target_voltage, -1.0, 0.0)
+    return search_hyp_current(
+        template_path=template_path,
+        morphology_path=morphology_path,
+        template_format=template_format,
+        emodel_properties=emodel_properties,
+        target_voltage=target_voltage,
+        min_current=-1.0,
+        max_current=0.0,
+    )
 
 
-def detect_spike_step(template_name, morphology_name, hyp_level, inj_start,
-                      inj_stop, step_level):
+def detect_spike_step(
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    hyp_level: float,
+    inj_start: float,
+    inj_stop: float,
+    step_level: float
+) -> bool:
     """Detect if there is a spike at a certain step level."""
+    # Here it is safe to use a pool with NEURON since it'll run one task only
     pool = multiprocessing.Pool(processes=1)
     spike_detected = pool.apply(
         detect_spike_step_subprocess,
-        [template_name, morphology_name, hyp_level,
-         inj_start, inj_stop, step_level])
+        [template_path, morphology_path, template_format, emodel_properties, hyp_level, inj_start, inj_stop, step_level],
+    )
     pool.terminate()
     return spike_detected
 
 
-def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
-                                 inj_start, inj_stop, step_level):
+def detect_spike_step_subprocess(
+    template_path: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    hyp_level: float,
+    inj_start: float,
+    inj_stop: float,
+    step_level: float
+) -> bool:
     """Detect if there is a spike at a certain step level."""
-    cell = bluecellulab.Cell(template_name, morphology_name)
+    cell = bluecellulab.Cell(
+        template_path=template_path,
+        morphology_path=morphology_path,
+        template_format=template_format,
+        emodel_properties=emodel_properties)
     cell.add_ramp(0, 5000, hyp_level, hyp_level)
     cell.add_ramp(inj_start, inj_stop, step_level, step_level)
     simulation = bluecellulab.Simulation()
-    simulation.run(int(inj_stop), cvode=template_accepts_cvode(template_name))
+    simulation.run(int(inj_stop), cvode=template_accepts_cvode(template_path))
 
     time = cell.get_time()
     voltage = cell.get_soma_voltage()
     time_step = time[np.where((time > inj_start) & (time < inj_stop))]
-    voltage_step = voltage[np.where((
-        time_step > inj_start) & (time_step < inj_stop))]
+    voltage_step = voltage[np.where((time_step > inj_start) & (time_step < inj_stop))]
     spike_detected = detect_spike(voltage_step)
 
     cell.delete()
@@ -283,7 +378,7 @@ def detect_spike_step_subprocess(template_name, morphology_name, hyp_level,
     return spike_detected
 
 
-def detect_spike(voltage):
+def detect_spike(voltage: np.ndarray) -> bool:
     """Detect if there is a spike in the voltage trace."""
     return np.max(voltage) > -20
 

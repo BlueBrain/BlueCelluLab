@@ -29,6 +29,10 @@ class UndefinedRNGException(BluecellulabError):
     """Raise when the RNG mode to be used does not exist."""
 
 
+class UnsteadyCellError(BluecellulabError):
+    """Raise when the cell gives undesired spikes."""
+
+
 class ConfigError(BluecellulabError):
     """Error due to invalid settings in BlueConfig."""
 
