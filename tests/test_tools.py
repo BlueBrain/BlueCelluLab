@@ -145,6 +145,19 @@ class TestOnSonataCell:
         )
         assert SS_voltage == pytest.approx(-85.13127127240696)
 
+    def test_calculate_SS_voltage_subprocess_exception(self):
+        """Unit test calculate_SS_voltage_subprocess."""
+        step_level = 2
+        with pytest.raises(bluecellulab.UnsteadyCellError):
+            _ = bluecellulab.calculate_SS_voltage_subprocess(
+                template_path=self.template_name,
+                morphology_path=self.morphology_path,
+                template_format=self.template_format,
+                emodel_properties=self.emodel_properties,
+                step_level=step_level,
+                check_for_spiking=True,
+            )
+
     def test_template_accepts_cvode(self):
         """Unit test for template_accepts_cvode."""
         assert template_accepts_cvode(self.template_name) is True
