@@ -151,6 +151,25 @@ class TestOnSonataCell:
         )
         assert spike_occurred is True
 
+    def test_detect_spike_step_subprocess(self):
+        """Unit test for detect_spike_step_subprocess."""
+        hyp_level = -2
+        inj_start = 100
+        inj_stop = 200
+        step_level = 4
+
+        spike_occurred = bluecellulab.detect_spike_step_subprocess(
+            template_path=self.template_name,
+            morphology_path=self.morphology_path,
+            template_format=self.template_format,
+            emodel_properties=self.emodel_properties,
+            hyp_level=hyp_level,
+            inj_start=inj_start,
+            inj_stop=inj_stop,
+            step_level=step_level,
+        )
+        assert spike_occurred is True
+
 
 @pytest.mark.v6
 class TestOnSonataCircuit:
