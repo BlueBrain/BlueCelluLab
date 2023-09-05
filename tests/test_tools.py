@@ -162,11 +162,23 @@ class TestOnSonataCircuit:
         self.cell_id = ("NodeA", 0)
 
     def test_holding_current(self):
-        """Unit test for holding_current on SONATA circuit."""
+        """Unit test for holding_current on a SONATA circuit."""
         v_hold = -70  # arbitrary holding voltage for the test
         i_hold, v_control = bluecellulab.holding_current(
             v_hold, cell_id=self.cell_id, circuit_path=self.circuit_path
         )
 
         assert i_hold == pytest.approx(0.0020779234)
+        assert v_control == pytest.approx(v_hold)
+
+    def test_holding_current_subprocess(self):
+        """Unit test for holding_current_subprocess on a SONATA circuit."""
+        v_hold = -80
+        ssim = bluecellulab.SSim(self.circuit_path)
+        cell_id = bluecellulab.circuit.node_id.create_cell_id(self.cell_id)
+        cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
+        i_hold, v_control = bluecellulab.holding_current_subprocess(
+            v_hold, enable_ttx=True, cell_kwargs=cell_kwargs
+        )
+        assert i_hold == pytest.approx(-0.03160848349)
         assert v_control == pytest.approx(v_hold)
