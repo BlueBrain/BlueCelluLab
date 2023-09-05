@@ -389,7 +389,10 @@ def detect_spike_step_subprocess(
 
 def detect_spike(voltage: np.ndarray) -> bool:
     """Detect if there is a spike in the voltage trace."""
-    return bool(np.max(voltage) > -20)  # bool not np.bool_
+    if len(voltage) == 0:
+        return False
+    else:
+        return bool(np.max(voltage) > -20)  # bool not np.bool_
 
 
 def search_threshold_current(template_name, morphology_name, hyp_level,

@@ -74,6 +74,26 @@ def test_numpy_encoder():
     )
 
 
+def test_detect_spike():
+    """Unit test for detect_spike."""
+
+    # Case where there is a spike
+    voltage_with_spike = np.array([-80, -70, -50, -10, -60, -80])
+    assert bluecellulab.detect_spike(voltage_with_spike) is True
+
+    # Case where there is no spike
+    voltage_without_spike = np.array([-80, -70, -60, -50, -60, -80])
+    assert bluecellulab.detect_spike(voltage_without_spike) is False
+
+    # Edge case where the voltage reaches exactly -20 mV but does not surpass it
+    voltage_at_edge = np.array([-80, -70, -60, -20, -60, -80])
+    assert bluecellulab.detect_spike(voltage_at_edge) is False
+
+    # Test with an empty array
+    voltage_empty = np.array([])
+    assert bluecellulab.detect_spike(voltage_empty) is False
+
+
 @pytest.mark.v6
 class TestOnSonataCell:
     def setup_method(self):
