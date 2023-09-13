@@ -21,7 +21,6 @@ import hashlib
 import os
 from pathlib import Path
 from typing import Any, Optional, Protocol
-import warnings
 import logging
 
 from bluecellulab import BLUEPY_AVAILABLE
@@ -666,7 +665,7 @@ class SonataCircuitAccess:
         try:  # if asc defined in alternate morphology
             return str(node_population.morph.get_filepath(cell_id.id, extension="asc"))
         except BluepySnapError as e:
-            warnings.warn(str(e))
+            logger.debug(f"No asc morphology found for {cell_id}, trying swc.")
             return str(node_population.morph.get_filepath(cell_id.id))
 
     def emodel_path(self, cell_id: CellId) -> str:
