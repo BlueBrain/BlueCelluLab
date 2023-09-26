@@ -14,15 +14,15 @@
 """Contains probability distributions."""
 
 from math import log, sqrt
-from typing import Any
 
-from bluecellulab import neuron
+import neuron
 
-NEURON_RNG = Any
+
+from bluecellulab.type_aliases import NeuronRNG, NeuronVector
 
 
 # Gamma-distributed sample generator (not available in NEURON)
-def gamma(rng: NEURON_RNG, a: float, b: float, N: int = 1) -> neuron.h.Vector:
+def gamma(rng: NeuronRNG, a: float, b: float, N: int = 1) -> NeuronVector:
     """Sample N variates from a gamma distribution with parameters shape = a,
     scale = b using the NEURON random number generator rng.
 

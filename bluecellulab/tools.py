@@ -32,7 +32,6 @@ import logging
 import numpy as np
 
 import bluecellulab
-from bluecellulab import neuron
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import UnsteadyCellError
 
@@ -99,18 +98,6 @@ class deprecated:
                 .. deprecated:: .1\n" % self.new_function
         rep_func.__dict__.update(func.__dict__)
         return rep_func
-
-
-def load_nrnmechanisms(libnrnmech_path: str) -> None:
-    """Load another shared library with NEURON mechanisms. (Created by
-    nrnivmodl)
-
-    Parameters
-    ----------
-    libnrnmech_path: string
-                     Path to a NEURON mechanisms file
-    """
-    neuron.h.nrn_load_dll(libnrnmech_path)
 
 
 def calculate_input_resistance(
