@@ -19,8 +19,11 @@ from bluecellulab.exceptions import error_context
 
 
 def set_global_condition_parameters(condition_parameters: Conditions) -> None:
-    """Sets the global condition parameters in NEURON objects."""
-    if condition_parameters.extracellular_calcium is not None:
+    """Sets the global condition parameters in NEURON objects if GluSynapse is
+    available."""
+    if condition_parameters.extracellular_calcium is not None and hasattr(
+        bluecellulab.neuron.h, "cao_CR_GluSynapse"
+    ):
         cao_cr_glusynapse = condition_parameters.extracellular_calcium
         with error_context("mechanism/s for cao_CR_GluSynapse need to be compiled"):
             bluecellulab.neuron.h.cao_CR_GluSynapse = cao_cr_glusynapse
