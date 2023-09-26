@@ -14,15 +14,14 @@
 """Class that represents a synapse in bluecellulab."""
 
 from __future__ import annotations
-from typing import Any, Optional
+from typing import Optional
 import pandas as pd
 import logging
 
 import bluecellulab
 from bluecellulab.circuit import SynapseProperty
+from bluecellulab.type_aliases import HocObjectType
 
-
-NeuronType = Any
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class Synapse:
         extracellular_calcium: float
                                the extracellular calcium concentration
         """
-        self.persistent: list[NeuronType] = []
+        self.persistent: list[HocObjectType] = []
         self.synapseconfigure_cmds: list[str] = []
         self._delay_weights: list[tuple[float, float]] = []
         self._weight: Optional[float] = None
@@ -65,7 +64,7 @@ class Synapse:
         self.projection, self.sid = self.syn_id
         self.extracellular_calcium = extracellular_calcium
         self.syn_description = self.update_syn_description(syn_description)
-        self.hsynapse: Optional[NeuronType] = None
+        self.hsynapse: Optional[HocObjectType] = None
 
         self.source_popid, self.target_popid = popids
 

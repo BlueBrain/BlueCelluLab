@@ -26,6 +26,7 @@ import bluecellulab
 from bluecellulab import neuron
 from bluecellulab.circuit import EmodelProperties
 from bluecellulab.exceptions import BluecellulabError
+from bluecellulab.type_aliases import HocObjectType
 
 import logging
 
@@ -54,7 +55,7 @@ class NeuronTemplate:
 
     def get_cell(
         self, template_format: str, gid: Optional[int], emodel_properties: Optional[EmodelProperties]
-    ) -> neuron.hoc.HocObject:
+    ) -> HocObjectType:
         """Returns the hoc object matching the template format."""
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
         if template_format == "v6":

@@ -20,7 +20,7 @@ import logging
 import json
 from pathlib import Path
 import queue
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 
@@ -41,10 +41,9 @@ from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
+from bluecellulab.type_aliases import HocObjectType
 
 logger = logging.getLogger(__name__)
-
-NeuronType = Any
 
 
 class Cell(InjectableMixin, PlottableMixin):
@@ -74,7 +73,7 @@ class Cell(InjectableMixin, PlottableMixin):
         super().__init__()
         # Persistent objects, like clamps, that exist as long
         # as the object exists
-        self.persistent: list[NeuronType] = []
+        self.persistent: list[HocObjectType] = []
 
         self.morphology_path = morphology_path
 
@@ -99,12 +98,12 @@ class Cell(InjectableMixin, PlottableMixin):
         else:
             self.rng_settings = rng_settings
 
-        self.recordings: dict[str, NeuronType] = {}
+        self.recordings: dict[str, HocObjectType] = {}
         self.synapses: dict[int, Synapse] = {}
         self.connections: dict[int, bluecellulab.Connection] = {}
 
-        self.ips: dict[int, NeuronType] = {}
-        self.syn_mini_netcons: dict[int, NeuronType] = {}
+        self.ips: dict[int, HocObjectType] = {}
+        self.syn_mini_netcons: dict[int, HocObjectType] = {}
         self.serialized = None
 
         # Be careful when removing this,
@@ -122,7 +121,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.secname_to_isec: dict[str, int] = {}
-        self.secname_to_hsection: dict[str, NeuronType] = {}
+        self.secname_to_hsection: dict[str, HocObjectType] = {}
         self.secname_to_psection: dict[str, psection.PSection] = {}
 
         self.emodel_properties = emodel_properties

@@ -36,6 +36,8 @@ from bluecellulab.stimuli import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
+from bluecellulab.type_aliases import HocObjectType
+
 
 logger = logging.getLogger(__name__)
 
@@ -450,9 +452,9 @@ class InjectableMixin:
         tau: float,
         gmax: float,
         e: float,
-        section: bluecellulab.neuron.hoc.HocObject,
+        section: HocObjectType,
         segx=0.5,
-    ) -> bluecellulab.neuron.hoc.HocObject:
+    ) -> HocObjectType:
         """Add an AlphaSynapse NEURON point process stimulus to the cell."""
         syn = bluecellulab.neuron.h.AlphaSynapse(segx, sec=section)
         syn.onset = onset

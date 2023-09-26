@@ -14,62 +14,36 @@
 """Main importer of bluecellulab."""
 
 import os
+from types import ModuleType
 import pkg_resources
+import neuron
+
+from bluecellulab.exceptions import BluecellulabError
 
 
-def _nrn_disable_banner():
-    """Disable NEURON banner."""
-
-    import importlib.util
-    import ctypes
-
-    neuron_spec = importlib.util.find_spec("neuron")
-    nrnpy_path = neuron_spec.submodule_search_locations[0]
-    import glob
-    hoc_so_list = \
-        glob.glob(os.path.join(nrnpy_path, 'hoc*.so'))
-
-    if len(hoc_so_list) != 1:
-        raise Exception(
-            'hoc shared library not found in %s' %
-            nrnpy_path)
-
-    hoc_so = hoc_so_list[0]
-    nrndll = ctypes.cdll[hoc_so]
-    ctypes.c_int.in_dll(nrndll, 'nrn_nobanner_').value = 1
-
-
-def import_neuron():
-    """Import NEURON simulator."""
-    _nrn_disable_banner()
-
-    import neuron
-
-    return neuron
-
-
-def import_mod_lib(neuron):
+def import_mod_lib(neuron: ModuleType) -> str:
     """Import mod files."""
-
-    mod_lib_list = None
-    if 'BGLIBPY_MOD_LIBRARY_PATH' in os.environ:
-
+    res = ""
+    if 'BLUECELLULAB_MOD_LIBRARY_PATH' in os.environ:
         # Check if the current directory contains 'x86_64'.
-
         if os.path.isdir('x86_64'):
-            raise Exception("BGLIBPY_MOD_LIBRARY_PATH is set"
-                            " and current directory contains the x86_64 folder."
-                            " Please remove one of them.")
+            raise BluecellulabError("BLUECELLULAB_MOD_LIBRARY_PATH is set"
+                                    " and current directory contains the x86_64 folder."
+                                    " Please remove one of them.")
 
-        mod_lib_path = os.environ["BGLIBPY_MOD_LIBRARY_PATH"]
-        mod_lib_list = mod_lib_path.split(':')
-        for mod_lib in mod_lib_list:
-            neuron.h.nrn_load_dll(mod_lib)
+        mod_lib_path = os.environ["BLUECELLULAB_MOD_LIBRARY_PATH"]
+        neuron.load_mechanisms(mod_lib_path)
+        res = mod_lib_path
+    elif os.path.isdir('x86_64'):
+        # NEURON 8.* automatically load these mechamisms
+        res = os.path.abspath('x86_64')
+    else:
+        res = "No mechanisms are loaded."
 
-    return mod_lib_list
+    return res
 
 
-def import_neurodamus(neuron):
+def import_neurodamus(neuron: ModuleType) -> None:
     """Import neurodamus."""
     neuron.h.load_file("stdrun.hoc")  # nrn
     hoc_files = [
@@ -83,13 +57,12 @@ def import_neurodamus(neuron):
         neuron.h.load_file(hoc_file_path)
 
 
-def print_header(neuron, mod_lib_path):
+def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
     """Print bluecellulab header to stdout."""
-    print("Imported neuron from %s" % neuron.__file__)
-    print('Mod libs: ', mod_lib_path)
+    print("Imported NEURON from: %s" % neuron.__file__)
+    print('Mod lib: ', mod_lib_path)
 
 
-neuron = import_neuron()
 mod_lib_paths = import_mod_lib(neuron)
 import_neurodamus(neuron)
-# print_header(neuron, mod_lib_paths)
+print_header(neuron, mod_lib_paths)
