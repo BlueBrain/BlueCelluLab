@@ -554,11 +554,6 @@ class SSim:
                     popids=popids,
                     mini_frequencies=mini_frequencies)
 
-    def initialize_synapses(self):
-        """Resets the state of all synapses of all cells to initial values."""
-        for cell in self.cells.values():
-            cell.initialize_synapses()
-
     def run(
         self,
         t_stop: Optional[float] = None,

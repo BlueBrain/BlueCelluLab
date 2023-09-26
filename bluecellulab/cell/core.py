@@ -751,34 +751,6 @@ class Cell(InjectableMixin, PlottableMixin):
             self.ips[syn_id].setTbins(tbins_vec)
             self.ips[syn_id].setRate(rate_vec)
 
-    def initialize_synapses(self):
-        """Initialize the synapses."""
-        for synapse in self.synapses.values():
-            syn = synapse.hsynapse
-            syn_type = syn.hname().partition('[')[0]
-            # todo: Is there no way to call the mod file's INITIAL block?
-            # ... and do away with this brittle mess
-            assert syn_type in ['ProbAMPANMDA_EMS', 'ProbGABAAB_EMS']
-            if syn_type == 'ProbAMPANMDA_EMS':
-                # basically what's in the INITIAL block
-                syn.Rstate = 1
-                syn.tsyn_fac = bluecellulab.neuron.h.t
-                syn.u = syn.u0
-                syn.A_AMPA = 0
-                syn.B_AMPA = 0
-                syn.A_NMDA = 0
-                syn.B_NMDA = 0
-            elif syn_type == 'ProbGABAAB_EMS':
-                syn.Rstate = 1
-                syn.tsyn_fac = bluecellulab.neuron.h.t
-                syn.u = syn.u0
-                syn.A_GABAA = 0
-                syn.B_GABAA = 0
-                syn.A_GABAB = 0
-                syn.B_GABAB = 0
-            else:
-                assert False, "Problem with initialize_synapse"
-
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site.
 
