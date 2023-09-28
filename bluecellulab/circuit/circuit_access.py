@@ -41,6 +41,7 @@ from pydantic.dataclasses import dataclass
 
 from bluecellulab import circuit, neuron
 from bluecellulab.circuit import CellId, SynapseProperty
+from bluecellulab.circuit.synapse_properties import SynapseProperties
 from bluecellulab.circuit.config import BluepySimulationConfig, SimulationConfig, SonataSimulationConfig
 from bluecellulab.circuit.synapse_properties import (
     properties_from_bluepy,
@@ -120,7 +121,7 @@ class CircuitAccess(Protocol):
         raise NotImplementedError
 
     def extract_synapses(
-        self, cell_id: CellId, properties: list, projections: Optional[list[str] | str]
+        self, cell_id: CellId, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
         raise NotImplementedError
 
@@ -271,7 +272,7 @@ class BluepyCircuitAccess:
         return connectomes
 
     def extract_synapses(
-        self, cell_id: CellId, properties: list, projections: Optional[list[str] | str]
+        self, cell_id: CellId, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
         """Extract the synapses of a cell.
 
@@ -283,7 +284,9 @@ class BluepyCircuitAccess:
 
         all_synapses: list[pd.DataFrame] = []
         for proj_name, connectome in connectomes.items():
-            connectome_properties = list(properties)
+            connectome_properties: list[SynapseProperty | str] = list(
+                SynapseProperties.common
+            )
 
             # older circuit don't have these properties
             for test_property in [SynapseProperty.U_HILL_COEFFICIENT,
@@ -292,6 +295,14 @@ class BluepyCircuitAccess:
                 if test_property.to_bluepy() not in connectome.available_properties:
                     connectome_properties.remove(test_property)
                     logger.debug(f'WARNING: {test_property} not found, disabling')
+
+            # if plasticity properties are available add them
+            if all(
+                x in connectome.available_properties
+                for x in SynapseProperties.plasticity
+            ):
+                props_to_add = list(SynapseProperties.plasticity)
+                connectome_properties += props_to_add
 
             if isinstance(connectome._impl, SonataConnectome):
                 logger.debug('Using sonata style synapse file, not nrn.h5')
@@ -547,7 +558,7 @@ class SonataCircuitAccess:
         return source_popid, target_popid
 
     def extract_synapses(
-        self, cell_id: CellId, properties: list, projections: Optional[list[str] | str]
+        self, cell_id: CellId, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
         """Extract the synapses.
 
@@ -568,13 +579,23 @@ class SonataCircuitAccess:
             edge = edges[edge_name]
             afferent_edges: CircuitEdgeIds = edge.afferent_edges(snap_node_id)
             if len(afferent_edges) != 0:
-                edge_properties = list(properties)  # copy, it'll be modified
+                # first copy the common properties to modify them
+                edge_properties: list[SynapseProperty | str] = list(
+                    SynapseProperties.common
+                )
 
                 # remove optional properties if they are not present
                 for optional_property in [SynapseProperty.U_HILL_COEFFICIENT,
                                           SynapseProperty.CONDUCTANCE_RATIO]:
                     if optional_property.to_snap() not in edge.property_names:
                         edge_properties.remove(optional_property)
+
+                # if all plasticity props are present, add them
+                if all(
+                    x in edge.property_names
+                    for x in SynapseProperties.plasticity
+                ):
+                    edge_properties += list(SynapseProperties.plasticity)
 
                 snap_properties = properties_to_snap(edge_properties)
                 synapses: pd.DataFrame = edge.get(afferent_edges, snap_properties)

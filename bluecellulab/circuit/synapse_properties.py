@@ -60,7 +60,7 @@ class SynapseProperty(Enum):
 class SynapseProperties:
     """Synapse Properties to be retrived from circuit and used by the
     simulator."""
-    common_properties = (
+    common = (
         SynapseProperty.PRE_GID,
         SynapseProperty.AXONAL_DELAY,
         SynapseProperty.POST_SECTION_ID,
@@ -76,7 +76,7 @@ class SynapseProperties:
         SynapseProperty.U_HILL_COEFFICIENT,
         SynapseProperty.CONDUCTANCE_RATIO,
     )
-    plasticity_properties = (
+    plasticity = (
         "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
         "gmax_p_AMPA", "theta_d", "theta_p"
     )

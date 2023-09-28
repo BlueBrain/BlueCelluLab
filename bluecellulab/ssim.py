@@ -424,19 +424,7 @@ class SSim:
     ) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
         cell_id = create_cell_id(cell_id)
-        syn_description_builder = bluecellulab.synapse.SynDescription()
-        if self.circuit_access.config.is_glusynapse_used:
-            return syn_description_builder.glusynapse_syn_description(
-                self.circuit_access,
-                cell_id,
-                projections,
-            )
-        else:
-            return syn_description_builder.gabaab_ampanmda_syn_description(
-                self.circuit_access,
-                cell_id,
-                projections,
-            )
+        return self.circuit_access.extract_synapses(cell_id, projections=projections)
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts) -> dict[CellId, np.ndarray]:
