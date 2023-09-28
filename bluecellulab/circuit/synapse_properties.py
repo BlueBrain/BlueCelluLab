@@ -57,6 +57,31 @@ class SynapseProperty(Enum):
         return synproperty_to_snap[self]
 
 
+class SynapseProperties:
+    """Synapse Properties to be retrived from circuit and used by the
+    simulator."""
+    common_properties = (
+        SynapseProperty.PRE_GID,
+        SynapseProperty.AXONAL_DELAY,
+        SynapseProperty.POST_SECTION_ID,
+        SynapseProperty.POST_SEGMENT_ID,
+        SynapseProperty.POST_SEGMENT_OFFSET,
+        SynapseProperty.G_SYNX,
+        SynapseProperty.U_SYN,
+        SynapseProperty.D_SYN,
+        SynapseProperty.F_SYN,
+        SynapseProperty.DTC,
+        SynapseProperty.TYPE,
+        SynapseProperty.NRRP,
+        SynapseProperty.U_HILL_COEFFICIENT,
+        SynapseProperty.CONDUCTANCE_RATIO,
+    )
+    plasticity_properties = (
+        "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
+        "gmax_p_AMPA", "theta_d", "theta_p"
+    )
+
+
 snap_to_synproperty = MappingProxyType({
     "@source_node": SynapseProperty.PRE_GID,
     "delay": SynapseProperty.AXONAL_DELAY,
