@@ -15,6 +15,9 @@
 
 from enum import Enum
 
+import pandas as pd
+import bluecellulab
+
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
@@ -29,15 +32,15 @@ class SynapseFactory:
     @classmethod
     def create_synapse(
         cls,
-        cell,
-        location,
-        syn_id,
-        syn_description,
+        cell: bluecellulab.Cell,
+        location: float,
+        syn_id: tuple[str, int],
+        syn_description: pd.Series,
         condition_parameters: Conditions,
-        base_seed,
-        popids,
-        extracellular_calcium,
-        connection_modifiers,
+        base_seed: int,
+        popids: tuple[int, int],
+        extracellular_calcium: float,
+        connection_modifiers: dict,
     ) -> Synapse:
         """Returns a Synapse object."""
         is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
@@ -67,7 +70,7 @@ class SynapseFactory:
         return synapse
 
     @staticmethod
-    def apply_connection_modifiers(connection_modifiers, synapse) -> Synapse:
+    def apply_connection_modifiers(connection_modifiers: dict, synapse: Synapse) -> Synapse:
         if "DelayWeights" in connection_modifiers:
             synapse.delay_weights = connection_modifiers["DelayWeights"]
         if "Weight" in connection_modifiers:
