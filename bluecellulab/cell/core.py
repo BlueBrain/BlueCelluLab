@@ -504,8 +504,8 @@ class Cell(InjectableMixin, PlottableMixin):
         return np.array(self.recordings[var_name].to_python())
 
     def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
-                           condition_parameters=None, base_seed=None,
-                           popids=(0, 0), extracellular_calcium=None):
+                           condition_parameters=None, popids=(0, 0),
+                           extracellular_calcium=None):
         """Add synapse based on the syn_description to the cell.
 
         This operation can fail.  Returns True on success, otherwise
@@ -536,7 +536,6 @@ class Cell(InjectableMixin, PlottableMixin):
             syn_id=synapse_id,
             syn_description=syn_description,
             condition_parameters=condition_parameters,
-            base_seed=base_seed,
             popids=popids,
             extracellular_calcium=extracellular_calcium,
             connection_modifiers=connection_modifiers)
