@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Factory that separates Synapse creation from Synapse instances."""
-
+from __future__ import annotations  # PEP-563 forward reference annotations
 from enum import Enum
 
 import pandas as pd
-import bluecellulab
 
+import bluecellulab
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
