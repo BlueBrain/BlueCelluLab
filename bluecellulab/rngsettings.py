@@ -32,8 +32,7 @@ class RNGSettings(metaclass=Singleton):
             self,
             mode: Optional[str] = None,
             circuit_access: Optional[CircuitAccess] = None,
-            base_seed: Optional[int] = None,
-            base_noise_seed: Optional[int] = None):
+            base_seed: Optional[int] = None):
         """Constructor.
 
         Parameters
@@ -41,7 +40,6 @@ class RNGSettings(metaclass=Singleton):
         mode : rng mode, if not specified mode is taken from circuit_access
         circuit: circuit access object, if present seeds are read from simulation
         base_seed: base seed for entire sim, overrides config value
-        base_noise_seed: base seed for the noise stimuli
         """
 
         self._mode = ""
@@ -77,11 +75,6 @@ class RNGSettings(metaclass=Singleton):
         self.minis_seed = circuit_access.config.minis_seed if circuit_access else 0
         bluecellulab.neuron.h.minisSeed = self.minis_seed
 
-        if base_noise_seed is None:
-            self.base_noise_seed = 0
-        else:
-            self.base_noise_seed = base_noise_seed
-
     @property
     def mode(self):
         return self._mode
@@ -103,14 +96,12 @@ class RNGSettings(metaclass=Singleton):
     def __repr__(self) -> str:
         """Returns a string representation of the object."""
         return "RNGSettings(mode={mode}, base_seed={base_seed}, " \
-               "base_noise_seed={base_noise_seed}, " \
                "synapse_seed={synapse_seed}, " \
                "ionchannel_seed={ionchannel_seed}, " \
                "stimulus_seed={stimulus_seed}, " \
                "minis_seed={minis_seed})".format(
                    mode=self.mode,
                    base_seed=self.base_seed,
-                   base_noise_seed=self.base_noise_seed,
                    synapse_seed=self.synapse_seed,
                    ionchannel_seed=self.ionchannel_seed,
                    stimulus_seed=self.stimulus_seed,
