@@ -37,10 +37,10 @@ class SynapseFactory:
         syn_id: tuple[str, int],
         syn_description: pd.Series,
         condition_parameters: Conditions,
+        base_seed: int,
         popids: tuple[int, int],
         extracellular_calcium: float,
         connection_modifiers: dict,
-        base_seed: int = 0,
     ) -> Synapse:
         """Returns a Synapse object."""
         is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
