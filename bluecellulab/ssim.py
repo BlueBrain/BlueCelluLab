@@ -59,7 +59,6 @@ class SSim:
         dt: float = 0.025,
         record_dt: Optional[float] = None,
         base_seed: Optional[int] = None,
-        base_noise_seed: Optional[int] = None,
         rng_mode: Optional[str] = None,
         print_cellstate: bool = False,
     ):
@@ -75,11 +74,6 @@ class SSim:
                     Has to positive integer.
                     When this is not set, and no seed is set in the
                     simulation config, the seed will be 0.
-        base_noise_seed :
-                    Base seed used for the noise stimuli in the simulation.
-                    Not setting this will result in the default Neurodamus
-                    behavior (i.e. seed=0)
-                    Has to positive integer.
         rng_mode : String with rng mode, if not specified mode is taken from
                     simulation config. Possible values are Compatibility, Random123
                     and UpdatedMCell.
@@ -103,8 +97,7 @@ class SSim:
         self.rng_settings = bluecellulab.RNGSettings(
             rng_mode,
             self.circuit_access,
-            base_seed=base_seed,
-            base_noise_seed=base_noise_seed)
+            base_seed=base_seed)
 
         self.cells: CellDict = CellDict()
 

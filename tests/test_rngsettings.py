@@ -36,7 +36,7 @@ def test_str_repr_obj():
     """Test the str and repr methods of RNGSettings."""
     rng_obj = bluecellulab.RNGSettings(mode="UpdatedMCell")
     assert repr(rng_obj) == "RNGSettings(mode=UpdatedMCell, base_seed=0, " \
-                            "base_noise_seed=0, synapse_seed=0, " \
+                            "synapse_seed=0, " \
                             "ionchannel_seed=0, stimulus_seed=0, " \
                             "minis_seed=0)"
 
