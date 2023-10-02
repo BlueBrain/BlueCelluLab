@@ -16,6 +16,7 @@
 from __future__ import annotations
 from enum import Enum
 from types import MappingProxyType
+from typing import Any
 
 from bluecellulab import BLUEPY_AVAILABLE
 from bluecellulab.exceptions import ExtraDependencyMissingError
@@ -55,6 +56,31 @@ class SynapseProperty(Enum):
 
     def to_snap(self) -> str:
         return synproperty_to_snap[self]
+
+
+class SynapseProperties:
+    """Synapse Properties to be retrieved from circuit and used by the
+    simulator."""
+    common = (
+        SynapseProperty.PRE_GID,
+        SynapseProperty.AXONAL_DELAY,
+        SynapseProperty.POST_SECTION_ID,
+        SynapseProperty.POST_SEGMENT_ID,
+        SynapseProperty.POST_SEGMENT_OFFSET,
+        SynapseProperty.G_SYNX,
+        SynapseProperty.U_SYN,
+        SynapseProperty.D_SYN,
+        SynapseProperty.F_SYN,
+        SynapseProperty.DTC,
+        SynapseProperty.TYPE,
+        SynapseProperty.NRRP,
+        SynapseProperty.U_HILL_COEFFICIENT,
+        SynapseProperty.CONDUCTANCE_RATIO,
+    )
+    plasticity = (
+        "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
+        "gmax_p_AMPA", "theta_d", "theta_p"
+    )
 
 
 snap_to_synproperty = MappingProxyType({
@@ -128,3 +154,19 @@ def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse 
         else prop
         for prop in props
     ]
+
+
+def synapse_property_encoder(dct: dict[SynapseProperty | str, Any]) -> dict[str, Any]:
+    """Convert SynapseProperty enum keys to strings."""
+    return {key.name if isinstance(key, SynapseProperty) else key: value for key, value in dct.items()}
+
+
+def synapse_property_decoder(dct: dict) -> dict[str | SynapseProperty, Any]:
+    """For JSON decoding of dict containing SynapseProperty."""
+    transformed_dict: dict[str | SynapseProperty, Any] = {}
+    for key, value in dct.items():
+        if key in SynapseProperty._member_names_:
+            transformed_dict[SynapseProperty[key]] = value
+        else:
+            transformed_dict[key] = value
+    return transformed_dict

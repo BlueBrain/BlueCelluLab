@@ -12,33 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Factory that separates Synapse creation from Synapse instances."""
-
+from __future__ import annotations  # PEP-563 forward reference annotations
 from enum import Enum
-from typing import Optional
 
+import pandas as pd
+
+import bluecellulab
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
-from bluecellulab.circuit.synapse_properties import SynapseProperty
+from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
 
 
-SynapseType = Enum('SynapseType', 'GABAAB AMPANMDA GLUSYNAPSE')
+SynapseType = Enum("SynapseType", "GABAAB AMPANMDA GLUSYNAPSE")
 
 
 class SynapseFactory:
     """Creates different types of Synapses."""
 
     @classmethod
-    def create_synapse(cls, cell, location, syn_id, syn_description, condition_parameters: Conditions,
-                       base_seed, popids, extracellular_calcium, connection_modifiers) -> Synapse:
+    def create_synapse(
+        cls,
+        cell: bluecellulab.Cell,
+        location: float,
+        syn_id: tuple[str, int],
+        syn_description: pd.Series,
+        condition_parameters: Conditions,
+        popids: tuple[int, int],
+        extracellular_calcium: float | None,
+        connection_modifiers: dict,
+        base_seed: int | None = None,
+    ) -> Synapse:
         """Returns a Synapse object."""
-        is_inhibitory = int(syn_description[SynapseProperty.TYPE]) < 100
+        is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
+        plasticity_available: bool = all(
+            x in syn_description for x in SynapseProperties.plasticity
+        )
 
-        if "ModOverride" in connection_modifiers:
-            mod_override = connection_modifiers["ModOverride"]
-        else:
-            mod_override = None
-
-        syn_type = cls.determine_synapse_type(is_inhibitory, mod_override)
+        syn_type = cls.determine_synapse_type(is_inhibitory, plasticity_available)
 
         synapse: Synapse
         if syn_type == SynapseType.GABAAB:
@@ -60,7 +70,7 @@ class SynapseFactory:
         return synapse
 
     @staticmethod
-    def apply_connection_modifiers(connection_modifiers, synapse) -> Synapse:
+    def apply_connection_modifiers(connection_modifiers: dict, synapse: Synapse) -> Synapse:
         if "DelayWeights" in connection_modifiers:
             synapse.delay_weights = connection_modifiers["DelayWeights"]
         if "Weight" in connection_modifiers:
@@ -70,12 +80,14 @@ class SynapseFactory:
         return synapse
 
     @staticmethod
-    def determine_synapse_type(is_inhibitory: int, mod_override: Optional[str]) -> SynapseType:
+    def determine_synapse_type(
+        is_inhibitory: bool, plasticity_available: bool
+    ) -> SynapseType:
         """Returns the type of synapse to be created."""
         if is_inhibitory:
             return SynapseType.GABAAB
         else:
-            if mod_override == "GluSynapse":
+            if plasticity_available:
                 return SynapseType.GLUSYNAPSE
             else:
                 return SynapseType.AMPANMDA

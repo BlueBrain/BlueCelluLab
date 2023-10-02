@@ -143,11 +143,6 @@ def test_get_all_projection_names():
         assert sim.get_all_projection_names() == []
 
 
-def test_is_glusynapse_used():
-    sim = SonataSimulationConfig(cond_params_conf_path)
-    assert sim.is_glusynapse_used is True
-
-
 def test_seeds():
     sim = SonataSimulationConfig(cond_params_conf_path)
     assert sim.base_seed == 1

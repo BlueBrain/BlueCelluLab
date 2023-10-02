@@ -92,22 +92,7 @@ class TestSonataCircuitAccess:
     def test_extract_synapses(self):
         cell_id = CellId("hippocampus_neurons", 1)
         projections = None
-        all_properties = [
-            SynapseProperty.PRE_GID,
-            SynapseProperty.AXONAL_DELAY,
-            SynapseProperty.POST_SECTION_ID,
-            SynapseProperty.POST_SEGMENT_ID,
-            SynapseProperty.POST_SEGMENT_OFFSET,
-            SynapseProperty.G_SYNX,
-            SynapseProperty.U_SYN,
-            SynapseProperty.D_SYN,
-            SynapseProperty.F_SYN,
-            SynapseProperty.DTC,
-            SynapseProperty.TYPE,
-            SynapseProperty.NRRP,
-            SynapseProperty.U_HILL_COEFFICIENT,
-            SynapseProperty.CONDUCTANCE_RATIO]
-        res = self.circuit_access.extract_synapses(cell_id, all_properties, projections)
+        res = self.circuit_access.extract_synapses(cell_id, projections)
         assert res.shape == (1742, 15)
         assert all(res["source_popid"] == 2126)
 
@@ -119,13 +104,13 @@ class TestSonataCircuitAccess:
 
         # projection parameter
         projection = "hippocampus_projections"
-        res = self.circuit_access.extract_synapses(cell_id, all_properties, projection)
+        res = self.circuit_access.extract_synapses(cell_id, projection)
         assert res.shape == (1742, 15)
         list_of_single_projection = [projection]
-        res = self.circuit_access.extract_synapses(cell_id, all_properties, list_of_single_projection)
+        res = self.circuit_access.extract_synapses(cell_id, list_of_single_projection)
         assert res.shape == (1742, 15)
         empty_projection = []
-        res = self.circuit_access.extract_synapses(cell_id, all_properties, empty_projection)
+        res = self.circuit_access.extract_synapses(cell_id, empty_projection)
         assert res.shape == (1742, 15)
 
     def test_target_contains_cell(self):

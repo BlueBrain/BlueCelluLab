@@ -46,10 +46,6 @@ class SimulationConfig(Protocol):
         raise NotImplementedError
 
     @property
-    def is_glusynapse_used(self) -> bool:
-        raise NotImplementedError
-
-    @property
     def base_seed(self) -> int:
         raise NotImplementedError
 
@@ -173,16 +169,6 @@ class BluepySimulationConfig:
 
     def connection_entries(self) -> list[ConnectionOverrides]:
         return self._connection_entries() + self._connection_overrides
-
-    @property
-    def is_glusynapse_used(self) -> bool:
-        """Checks if glusynapse is used in the simulation config."""
-        is_glusynapse_used = any(
-            x
-            for x in self.connection_entries()
-            if x.mod_override == "GluSynapse"
-        )
-        return is_glusynapse_used
 
     @property
     def base_seed(self) -> int:
@@ -346,11 +332,6 @@ class SonataSimulationConfig:
 
     def connection_entries(self) -> list[ConnectionOverrides]:
         return self._connection_entries() + self._connection_overrides
-
-    @property
-    def is_glusynapse_used(self) -> bool:
-        """Checks if glusynapse is used in the simulation config."""
-        return "GluSynapse" in self.impl.conditions.mechanisms
 
     @property
     def base_seed(self) -> int:

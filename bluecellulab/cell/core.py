@@ -17,12 +17,12 @@ from __future__ import annotations
 
 import logging
 
-import json
 from pathlib import Path
 import queue
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 
 import bluecellulab
 from bluecellulab import neuron, psection, tools
@@ -99,8 +99,8 @@ class Cell(InjectableMixin, PlottableMixin):
             self.rng_settings = rng_settings
 
         self.recordings: dict[str, HocObjectType] = {}
-        self.synapses: dict[int, Synapse] = {}
-        self.connections: dict[int, bluecellulab.Connection] = {}
+        self.synapses: dict[tuple[str, int], Synapse] = {}
+        self.connections: dict[tuple[str, int], bluecellulab.Connection] = {}
 
         self.ips: dict[int, HocObjectType] = {}
         self.syn_mini_netcons: dict[int, HocObjectType] = {}
@@ -503,16 +503,17 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get recorded values."""
         return np.array(self.recordings[var_name].to_python())
 
-    def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
-                           condition_parameters=None, base_seed=None,
-                           popids=(0, 0), extracellular_calcium=None):
+    def add_replay_synapse(self, synapse_id: tuple[str, int],
+                           syn_description: pd.Series,
+                           connection_modifiers: dict,
+                           condition_parameters: Conditions,
+                           popids: tuple[int, int],
+                           extracellular_calcium: float | None) -> bool:
         """Add synapse based on the syn_description to the cell.
 
-        This operation can fail.  Returns True on success, otherwise
+        This operation can fail. Returns True on success, otherwise
         False.
         """
-        if condition_parameters is None:
-            condition_parameters = Conditions.init_empty()
         isec = syn_description[SynapseProperty.POST_SECTION_ID]
 
         # old circuits don't have it, it needs to be computed via synlocation_to_segx
@@ -536,19 +537,18 @@ class Cell(InjectableMixin, PlottableMixin):
             syn_id=synapse_id,
             syn_description=syn_description,
             condition_parameters=condition_parameters,
-            base_seed=base_seed,
             popids=popids,
             extracellular_calcium=extracellular_calcium,
             connection_modifiers=connection_modifiers)
 
         self.synapses[synapse_id] = synapse
 
-        logger.debug('Added synapse to cell {gid}: {s_info_dict}', gid=self.gid,
-                     s_info_dict=json.dumps(synapse.info_dict, cls=tools.NumpyEncoder))
-
+        logger.debug(f'Added synapse to cell {self.gid}')
         return True
 
-    def add_replay_delayed_weight(self, sid: int, delay: float, weight: float) -> None:
+    def add_replay_delayed_weight(
+        self, sid: tuple[str, int], delay: float, weight: float
+    ) -> None:
         """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 
