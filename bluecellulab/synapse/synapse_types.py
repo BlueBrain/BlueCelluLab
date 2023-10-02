@@ -14,7 +14,7 @@
 """Class that represents a synapse in bluecellulab."""
 
 from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional
 import pandas as pd
 import logging
 
@@ -196,10 +196,10 @@ class Synapse:
         return u_scale_factor
 
     @property
-    def info_dict(self):
+    def info_dict(self) -> dict[str, Any]:
         """Convert the synapse info to a dict from which it can be
         reconstructed."""
-        synapse_dict = {}
+        synapse_dict: dict[str, Any] = {}
 
         synapse_dict['synapse_id'] = self.syn_id
         synapse_dict['pre_cell_id'] = self.pre_gid
