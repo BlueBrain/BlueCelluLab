@@ -451,7 +451,7 @@ class SSim:
             self,
             add_replay=None,
             interconnect_cells=None,
-            user_pre_spike_trains: None | dict[CellId, Iterable] = None):
+            user_pre_spike_trains: None | dict[CellId, Iterable] = None) -> None:
         """Instantiate the (replay and real) connections in the network."""
         pre_spike_trains = self.simulation_access.get_spikes() if add_replay else {}
         pre_spike_trains = self.merge_pre_spike_trains(
@@ -461,7 +461,7 @@ class SSim:
         for post_gid in self.cells:
             for syn_id in self.cells[post_gid].synapses:
                 synapse = self.cells[post_gid].synapses[syn_id]
-                syn_description = synapse.syn_description
+                syn_description: pd.Series = synapse.syn_description
                 delay_weights = synapse.delay_weights
                 source_population = syn_description["source_population_name"]
                 pre_gid = CellId(source_population, int(syn_description[SynapseProperty.PRE_GID]))

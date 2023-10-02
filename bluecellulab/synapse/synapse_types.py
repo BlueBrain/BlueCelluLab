@@ -30,7 +30,13 @@ class Synapse:
     """Class that represents a synapse in bluecellulab."""
 
     def __init__(
-            self, cell, location: float, syn_id: tuple[str, int], syn_description, base_seed, popids: tuple[int, int],
+            self,
+            cell: bluecellulab.Cell,
+            location: float,
+            syn_id: tuple[str, int],
+            syn_description: pd.Series,
+            base_seed: int | None,
+            popids: tuple[int, int],
             extracellular_calcium: float | None = None):
         """Constructor.
 
@@ -63,7 +69,7 @@ class Synapse:
         self.syn_id = syn_id
         self.projection, self.sid = self.syn_id
         self.extracellular_calcium = extracellular_calcium
-        self.syn_description = self.update_syn_description(syn_description)
+        self.syn_description: pd.Series = self.update_syn_description(syn_description)
         self.hsynapse: Optional[HocObjectType] = None
 
         self.source_popid, self.target_popid = popids
@@ -71,6 +77,8 @@ class Synapse:
         self.pre_gid = int(self.syn_description[SynapseProperty.PRE_GID])
 
         self.post_segx = location
+        self.mech_name: str = "not-yet-defined"
+        self.randseed3: Optional[int] = None
 
         if cell.rng_settings is None:
             self.rng_setting = bluecellulab.RNGSettings(
@@ -218,9 +226,9 @@ class Synapse:
 
         # Parameters of the mod mechanism
         synapse_dict['synapse_parameters'] = {}
-        synapse_dict['synapse_parameters']['Use'] = self.hsynapse.Use
-        synapse_dict['synapse_parameters']['Dep'] = self.hsynapse.Dep
-        synapse_dict['synapse_parameters']['Fac'] = self.hsynapse.Fac
+        synapse_dict['synapse_parameters']['Use'] = self.hsynapse.Use  # type: ignore
+        synapse_dict['synapse_parameters']['Dep'] = self.hsynapse.Dep  # type: ignore
+        synapse_dict['synapse_parameters']['Fac'] = self.hsynapse.Fac  # type: ignore
 
         synapse_dict['synapse_parameters']['extracellular_calcium'] = \
             self.extracellular_calcium
