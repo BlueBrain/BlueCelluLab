@@ -17,12 +17,12 @@ from __future__ import annotations
 
 import logging
 
-import json
 from pathlib import Path
 import queue
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 
 import bluecellulab
 from bluecellulab import neuron, psection, tools
@@ -99,8 +99,8 @@ class Cell(InjectableMixin, PlottableMixin):
             self.rng_settings = rng_settings
 
         self.recordings: dict[str, HocObjectType] = {}
-        self.synapses: dict[int, Synapse] = {}
-        self.connections: dict[int, bluecellulab.Connection] = {}
+        self.synapses: dict[tuple[str, int], Synapse] = {}
+        self.connections: dict[tuple[str, int], bluecellulab.Connection] = {}
 
         self.ips: dict[int, HocObjectType] = {}
         self.syn_mini_netcons: dict[int, HocObjectType] = {}
@@ -543,12 +543,12 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.synapses[synapse_id] = synapse
 
-        logger.debug('Added synapse to cell {gid}: {s_info_dict}', gid=self.gid,
-                     s_info_dict=json.dumps(synapse.info_dict, cls=tools.NumpyEncoder))
-
+        logger.debug(f'Added synapse to cell {self.gid}')
         return True
 
-    def add_replay_delayed_weight(self, sid: int, delay: float, weight: float) -> None:
+    def add_replay_delayed_weight(
+        self, sid: tuple[str, int], delay: float, weight: float
+    ) -> None:
         """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 

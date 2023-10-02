@@ -30,7 +30,7 @@ class Synapse:
     """Class that represents a synapse in bluecellulab."""
 
     def __init__(
-            self, cell, location: float, syn_id, syn_description, base_seed, popids=(0, 0),
+            self, cell, location: float, syn_id: tuple[str, int], syn_description, base_seed, popids: tuple[int, int],
             extracellular_calcium: float | None = None):
         """Constructor.
 

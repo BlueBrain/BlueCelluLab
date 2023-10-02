@@ -373,27 +373,36 @@ class SSim:
     def _add_cell_synapses(
         self, cell_id: CellId, pre_gids=None, add_minis=False, projections=None
     ) -> None:
-        syn_descriptions = self.get_syn_descriptions(
-            cell_id, projections=projections)
+        syn_descriptions = self.get_syn_descriptions(cell_id, projections=projections)
 
         if pre_gids is not None:
             if self.circuit_format == CircuitFormat.SONATA:
                 syn_descriptions = self._intersect_pre_gids_cell_ids_multipopulation(
-                    syn_descriptions, pre_gids)
+                    syn_descriptions, pre_gids
+                )
             else:
-                syn_descriptions = self._intersect_pre_gids(
-                    syn_descriptions, pre_gids)
+                syn_descriptions = self._intersect_pre_gids(syn_descriptions, pre_gids)
 
         # Check if there are any presynaptic cells, otherwise skip adding
         # synapses
         if syn_descriptions.empty:
-            logger.warning(f"No presynaptic cells found for gid {cell_id}, no synapses added")
+            logger.warning(
+                f"No presynaptic cells found for gid {cell_id}, no synapses added"
+            )
 
         else:
             for idx, syn_description in syn_descriptions.iterrows():
-                popids = syn_description["source_popid"], syn_description["target_popid"]
-                self._instantiate_synapse(cell_id, idx, syn_description,
-                                          add_minis=add_minis, popids=popids)
+                popids = (
+                    syn_description["source_popid"],
+                    syn_description["target_popid"],
+                )
+                self._instantiate_synapse(
+                    cell_id=cell_id,
+                    syn_id=idx,  # type: ignore
+                    syn_description=syn_description,
+                    add_minis=add_minis,
+                    popids=popids
+                )
             logger.info(f"Added {syn_descriptions} synapses for gid {cell_id}")
             if add_minis:
                 logger.info(f"Added minis for {cell_id=}")
@@ -516,7 +525,7 @@ class SSim:
                     None, location=self.spike_location, threshold=self.spike_threshold)
                 self.pc.cell(cell_id.id, nc)  # register cell spike detector
 
-    def _instantiate_synapse(self, cell_id: CellId, syn_id, syn_description,
+    def _instantiate_synapse(self, cell_id: CellId, syn_id: tuple[str, int], syn_description,
                              add_minis=False, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description."""
