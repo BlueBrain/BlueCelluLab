@@ -59,7 +59,7 @@ class SynapseProperty(Enum):
 
 
 class SynapseProperties:
-    """Synapse Properties to be retrived from circuit and used by the
+    """Synapse Properties to be retrieved from circuit and used by the
     simulator."""
     common = (
         SynapseProperty.PRE_GID,
