@@ -42,22 +42,15 @@ class Synapse:
 
         Parameters
         ----------
-        cell : Cell
-               Cell that contains the synapse
-        location : float in [0, 1]
-                   Location on the section this synapse is placed
-        syn_id : (string,integer)
-              Synapse identifier, string being the projection name and
+        cell : Cell that contains the synapse
+        location : Location on the section this synapse is placed between [0.0,1.0]
+        syn_id : Synapse identifier, string being the projection name and
                int the synapse id. Empty string refers to a local connection
-        syn_description : list of floats
-                          Parameters of the synapse
-        base_seed : float
-                    Base seed of the simulation, the seeds for this synapse
+        syn_description : Parameters of the synapse
+        base_seed : Base seed of the simulation, the seeds for this synapse
                     will be derived from this
-        popids : tuple of (int, int)
-                  Source and target popids used by the random number generation
-        extracellular_calcium: float
-                               the extracellular calcium concentration
+        popids : Source and target popids used by the random number generation
+        extracellular_calcium: the extracellular calcium concentration
         """
         self.persistent: list[HocObjectType] = []
         self.synapseconfigure_cmds: list[str] = []
