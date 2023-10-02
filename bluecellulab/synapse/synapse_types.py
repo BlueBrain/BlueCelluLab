@@ -31,7 +31,7 @@ class Synapse:
 
     def __init__(
             self, cell, location: float, syn_id, syn_description, base_seed, popids=(0, 0),
-            extracellular_calcium=None):
+            extracellular_calcium: float | None = None):
         """Constructor.
 
         Parameters

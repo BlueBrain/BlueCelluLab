@@ -38,7 +38,7 @@ class SynapseFactory:
         syn_description: pd.Series,
         condition_parameters: Conditions,
         popids: tuple[int, int],
-        extracellular_calcium: float,
+        extracellular_calcium: float | None,
         connection_modifiers: dict,
         base_seed: int | None = None,
     ) -> Synapse:

@@ -503,16 +503,17 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get recorded values."""
         return np.array(self.recordings[var_name].to_python())
 
-    def add_replay_synapse(self, synapse_id, syn_description, connection_modifiers,
-                           condition_parameters=None, popids=(0, 0),
-                           extracellular_calcium=None):
+    def add_replay_synapse(self, synapse_id: tuple[str, int],
+                           syn_description: pd.Series,
+                           connection_modifiers: dict,
+                           condition_parameters: Conditions,
+                           popids: tuple[int, int],
+                           extracellular_calcium: float | None) -> bool:
         """Add synapse based on the syn_description to the cell.
 
-        This operation can fail.  Returns True on success, otherwise
+        This operation can fail. Returns True on success, otherwise
         False.
         """
-        if condition_parameters is None:
-            condition_parameters = Conditions.init_empty()
         isec = syn_description[SynapseProperty.POST_SECTION_ID]
 
         # old circuits don't have it, it needs to be computed via synlocation_to_segx
