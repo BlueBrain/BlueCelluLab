@@ -102,8 +102,8 @@ class Cell(InjectableMixin, PlottableMixin):
         self.synapses: dict[tuple[str, int], Synapse] = {}
         self.connections: dict[tuple[str, int], bluecellulab.Connection] = {}
 
-        self.ips: dict[int, HocObjectType] = {}
-        self.syn_mini_netcons: dict[int, HocObjectType] = {}
+        self.ips: dict[tuple[str, int], HocObjectType] = {}
+        self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
         self.serialized = None
 
         # Be careful when removing this,
@@ -503,7 +503,8 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get recorded values."""
         return np.array(self.recordings[var_name].to_python())
 
-    def add_replay_synapse(self, synapse_id: tuple[str, int],
+    def add_replay_synapse(self,
+                           synapse_id: tuple[str, int],
                            syn_description: pd.Series,
                            connection_modifiers: dict,
                            condition_parameters: Conditions,
@@ -638,13 +639,17 @@ class Cell(InjectableMixin, PlottableMixin):
         result = self.recordings[f"spike_detector_{location}_{threshold}"]
         return result.to_python()
 
-    def add_replay_minis(self, syn_id, syn_description, connection_parameters,
-                         base_seed=None, popids=(0, 0), mini_frequencies=None):
+    def add_replay_minis(self,
+                         synapse_id: tuple[str, int],
+                         syn_description: pd.Series,
+                         connection_modifiers: dict,
+                         base_seed: int | None,
+                         popids: tuple[int, int],
+                         mini_frequencies: tuple[float | None, float | None]) -> None:
         """Add minis from the replay."""
-
         source_popid, target_popid = popids
 
-        sid = syn_id[1]
+        sid = synapse_id[1]
 
         if base_seed is None:
             base_seed = self.rng_settings.base_seed
@@ -659,19 +664,19 @@ class Cell(InjectableMixin, PlottableMixin):
                 synlocation_to_segx(post_sec_id, post_seg_id,
                                     post_seg_distance)
         # todo: False
-        if 'Weight' in connection_parameters:
-            weight_scalar = connection_parameters['Weight']
+        if 'Weight' in connection_modifiers:
+            weight_scalar = connection_modifiers['Weight']
         else:
             weight_scalar = 1.0
 
         exc_mini_frequency, inh_mini_frequency = mini_frequencies \
             if mini_frequencies is not None else (None, None)
 
-        synapse = self.synapses[syn_id]
+        synapse = self.synapses[synapse_id]
 
         # SpontMinis in sim config takes precedence of values in nodes file
-        if 'SpontMinis' in connection_parameters:
-            spont_minis_rate = connection_parameters['SpontMinis']
+        if 'SpontMinis' in connection_modifiers:
+            spont_minis_rate = connection_modifiers['SpontMinis']
         else:
             if synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
                 spont_minis_rate = exc_mini_frequency
@@ -681,25 +686,25 @@ class Cell(InjectableMixin, PlottableMixin):
         if spont_minis_rate is not None and spont_minis_rate > 0:
             sec = self.get_hsection(post_sec_id)
             # add the *minis*: spontaneous synaptic events
-            self.ips[syn_id] = bluecellulab.neuron.h.\
+            self.ips[synapse_id] = bluecellulab.neuron.h.\
                 InhPoissonStim(location, sec=sec)
 
-            self.syn_mini_netcons[syn_id] = bluecellulab.neuron.h.\
-                NetCon(self.ips[syn_id], synapse.hsynapse, sec=sec)
-            self.syn_mini_netcons[syn_id].delay = 0.1
-            self.syn_mini_netcons[syn_id].weight[0] = weight * weight_scalar
+            self.syn_mini_netcons[synapse_id] = bluecellulab.neuron.h.\
+                NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
+            self.syn_mini_netcons[synapse_id].delay = 0.1
+            self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 synapse.hsynapse).split('[')[0]
             if hasattr(bluecellulab.neuron.h, nc_param_name):
                 nc_type_param = int(getattr(bluecellulab.neuron.h, nc_param_name))
                 # NC_SPONTMINI
-                self.syn_mini_netcons[syn_id].weight[nc_type_param] = 1
+                self.syn_mini_netcons[synapse_id].weight[nc_type_param] = 1
 
             if self.rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \
                     + self.rng_settings.minis_seed
-                self.ips[syn_id].setRNGs(
+                self.ips[synapse_id].setRNGs(
                     sid + 200,
                     self.gid + 250,
                     seed2 + 300,
@@ -739,7 +744,7 @@ class Cell(InjectableMixin, PlottableMixin):
                 uniformrng.MCellRan4(uniform_seed1, uniform_seed2)
                 uniformrng.uniform(0.0, 1.0)
 
-                self.ips[syn_id].setRNGs(exprng, uniformrng)
+                self.ips[synapse_id].setRNGs(exprng, uniformrng)
 
             tbins_vec = bluecellulab.neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
@@ -747,8 +752,8 @@ class Cell(InjectableMixin, PlottableMixin):
             rate_vec.x[0] = spont_minis_rate
             self.persistent.append(tbins_vec)
             self.persistent.append(rate_vec)
-            self.ips[syn_id].setTbins(tbins_vec)
-            self.ips[syn_id].setRate(rate_vec)
+            self.ips[synapse_id].setTbins(tbins_vec)
+            self.ips[synapse_id].setRate(rate_vec)
 
     def locate_bapsite(self, seclist_name, distance):
         """Return the location of the BAP site.

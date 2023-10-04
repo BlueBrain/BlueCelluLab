@@ -137,7 +137,7 @@ class CircuitAccess(Protocol):
     def fetch_cell_info(self, cell_id: CellId) -> pd.Series:
         raise NotImplementedError
 
-    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple:
+    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple[float | None, float | None]:
         raise NotImplementedError
 
     @property
@@ -432,7 +432,7 @@ class BluepyCircuitAccess:
 
         return emodel_name
 
-    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple:
+    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple[float | None, float | None]:
         """Get inhibitory frequency of gid."""
         cell_info = self.fetch_cell_info(cell_id)
         # mvd uses inh_mini_frequency, sonata uses inh-mini_frequency
@@ -650,7 +650,7 @@ class SonataCircuitAccess:
     def fetch_cell_info(self, cell_id: CellId) -> pd.Series:
         return self._circuit.nodes[cell_id.population_name].get(cell_id.id)
 
-    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple:
+    def fetch_mini_frequencies(self, cell_id: CellId) -> tuple[float | None, float | None]:
         cell_info = self.fetch_cell_info(cell_id)
         exc_mini_frequency = cell_info['exc-mini_frequency'] \
             if 'exc-mini_frequency' in cell_info else None

@@ -542,7 +542,9 @@ class SSim:
                     syn_description,
                     syn_connection_parameters,
                     popids=popids,
-                    mini_frequencies=mini_frequencies)
+                    mini_frequencies=mini_frequencies,
+                    base_seed=None
+                )
 
     def run(
         self,
