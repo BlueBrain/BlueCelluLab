@@ -429,7 +429,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.recordings[var_name] = recording
 
     @staticmethod
-    def get_precise_record_dt(dt):
+    def get_precise_record_dt(dt: float) -> float:
         """Get a more precise record_dt to make time points faill on dts."""
         return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
