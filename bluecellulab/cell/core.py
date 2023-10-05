@@ -325,20 +325,9 @@ class Cell(InjectableMixin, PlottableMixin):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
 
-    def area(self):
-        """Calculate the total area of the cell.
-
-        Parameters
-        ----------
-
-
-        Returns
-        -------
-        area : float
-               Total surface area of the cell
-        """
-        # pylint: disable=C0103
-        area = 0
+    def area(self) -> float:
+        """The total surface area of the cell."""
+        area = 0.0
         for section in self.all:
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
