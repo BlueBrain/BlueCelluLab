@@ -352,58 +352,6 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
         return area
 
-    def synlocation_to_segx(self, isec, ipt, syn_offset) -> float:
-        """Translate a synaptic (secid, ipt, offset) to a x coordinate.
-
-        Parameters
-        ----------
-        isec : integer
-               section id
-        ipt : float
-              ipt
-        syn_offset : float
-                     Synaptic offset
-
-        Returns
-        -------
-        x : float
-            The x coordinate on section with secid, where the synapse
-            can be placed
-        """
-        if syn_offset < 0.0:
-            syn_offset = 0.0
-
-        curr_sec = self.get_hsection(isec)
-        if curr_sec is None:
-            raise Exception(
-                "No section found at isec=%d in gid %d" %
-                (isec, self.gid))
-        length = curr_sec.L
-
-        # access section to compute the distance
-        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
-            ipt = neuron.h.n3d(sec=self.get_hsection(isec)) - 1 - ipt
-            syn_offset = -syn_offset
-
-        distance = 0.5
-        if ipt < neuron.h.n3d(sec=self.get_hsection(isec)):
-            distance = (neuron.h.arc3d(ipt, sec=self.get_hsection(isec)) +
-                        syn_offset) / length
-            if distance == 0.0:
-                distance = 0.0000001
-            if distance >= 1.0:
-                distance = 0.9999999
-
-        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
-            distance = 1 - distance
-
-        if distance < 0:
-            logger.warning(f"synlocation_to_segx found negative distance \
-                        at curr_sec({neuron.h.secname(sec=curr_sec)}) syn_offset: {syn_offset}")
-            return 0
-        else:
-            return distance
-
     # pylint: disable=C0103
     def add_recording(self, var_name, dt=None):
         """Add a recording to the cell.
@@ -509,32 +457,10 @@ class Cell(InjectableMixin, PlottableMixin):
                            connection_modifiers: dict,
                            condition_parameters: Conditions,
                            popids: tuple[int, int],
-                           extracellular_calcium: float | None) -> bool:
-        """Add synapse based on the syn_description to the cell.
-
-        This operation can fail. Returns True on success, otherwise
-        False.
-        """
-        isec = syn_description[SynapseProperty.POST_SECTION_ID]
-
-        # old circuits don't have it, it needs to be computed via synlocation_to_segx
-        if ("afferent_section_pos" in syn_description and
-                not np.isnan(syn_description["afferent_section_pos"])):
-            # position is pre computed in SONATA
-            location = syn_description["afferent_section_pos"]
-        else:
-            ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
-            syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            location = self.synlocation_to_segx(isec, ipt, syn_offset)
-
-        if location is None:
-            logger.warning("add_single_synapse: skipping a synapse at \
-                            isec %d" % (isec))
-            return False
-
+                           extracellular_calcium: float | None) -> None:
+        """Add synapse based on the syn_description to the cell."""
         synapse = SynapseFactory.create_synapse(
             cell=self,
-            location=location,
             syn_id=synapse_id,
             syn_description=syn_description,
             condition_parameters=condition_parameters,
@@ -545,7 +471,6 @@ class Cell(InjectableMixin, PlottableMixin):
         self.synapses[synapse_id] = synapse
 
         logger.debug(f'Added synapse to cell {self.gid}')
-        return True
 
     def add_replay_delayed_weight(
         self, sid: tuple[str, int], delay: float, weight: float
@@ -653,14 +578,11 @@ class Cell(InjectableMixin, PlottableMixin):
         base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
         post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
-        if "afferent_section_pos" in syn_description:
-            location = syn_description["afferent_section_pos"]  # position is pre computed in SONATA
-        else:
-            post_seg_distance = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            post_seg_id = syn_description[SynapseProperty.POST_SEGMENT_ID]
-            location = self.\
-                synlocation_to_segx(post_sec_id, post_seg_id,
-                                    post_seg_distance)
+
+        location = SynapseFactory.determine_synapse_location(
+            syn_description, self
+        )
+
         # todo: False
         if 'Weight' in connection_modifiers:
             weight_scalar = connection_modifiers['Weight']
