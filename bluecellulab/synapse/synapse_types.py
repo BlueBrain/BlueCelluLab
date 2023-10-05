@@ -14,7 +14,7 @@
 """Class that represents a synapse in bluecellulab."""
 
 from __future__ import annotations
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 import pandas as pd
 import logging
 
@@ -24,6 +24,13 @@ from bluecellulab.type_aliases import HocObjectType
 
 
 logger = logging.getLogger(__name__)
+
+
+class SynapseID(NamedTuple):
+    """Class that represents a synapse id in bluecellulab."""
+
+    projection: str
+    sid: int
 
 
 class Synapse:
@@ -56,8 +63,7 @@ class Synapse:
 
         self.cell = cell
         self.post_gid = cell.gid
-        self.syn_id = syn_id
-        self.projection, self.sid = self.syn_id
+        self.syn_id = SynapseID(*syn_id)
         self.extracellular_calcium = extracellular_calcium
         self.syn_description: pd.Series = self.update_syn_description(syn_description)
         self.hsynapse: Optional[HocObjectType] = None
@@ -131,7 +137,7 @@ class Synapse:
         """
         if self.rng_settings.mode == "Random123":
             self.randseed1 = self.cell.gid + 250
-            self.randseed2 = self.sid + 100
+            self.randseed2 = self.syn_id.sid + 100
             self.randseed3 = self.source_popid * 65536 + self.target_popid + \
                 self.rng_settings.synapse_seed + 300
             self.hsynapse.setRNG(  # type: ignore
@@ -141,11 +147,11 @@ class Synapse:
         else:
             rndd = bluecellulab.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
-                self.randseed1 = self.sid * 100000 + 100
+                self.randseed1 = self.syn_id.sid * 100000 + 100
                 self.randseed2 = self.cell.gid + \
                     250 + self.rng_settings.base_seed
             elif self.rng_settings.mode == "UpdatedMCell":
-                self.randseed1 = self.sid * 1000 + 100
+                self.randseed1 = self.syn_id.sid * 1000 + 100
                 self.randseed2 = self.source_popid * 16777216 + \
                     self.cell.gid + \
                     250 + self.rng_settings.base_seed + \
@@ -273,10 +279,10 @@ class GluSynapse(Synapse):
             self.hsynapse.Nrrp = self.syn_description[SynapseProperty.NRRP]
 
         self.randseed1 = self.cell.gid
-        self.randseed2 = 100000 + self.sid
+        self.randseed2 = 100000 + self.syn_id.sid
         self.randseed3 = self.rng_settings.synapse_seed + 200
         self.hsynapse.setRNG(self.randseed1, self.randseed2, self.randseed3)
-        self.hsynapse.synapseID = self.sid
+        self.hsynapse.synapseID = self.syn_id.sid
 
     @property
     def info_dict(self):
@@ -317,11 +323,11 @@ class GabaabSynapse(Synapse):
             rng = bluecellulab.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
-                    self.sid * 100000 + 100,
+                    self.syn_id.sid * 100000 + 100,
                     self.cell.gid + 250 + self.rng_settings.base_seed)
             elif self.rng_settings.mode == "UpdatedMCell":
                 rng.MCellRan4(
-                    self.sid * 1000 + 100,
+                    self.syn_id.sid * 1000 + 100,
                     self.source_popid *
                     16777216 +
                     self.cell.gid +
@@ -332,7 +338,7 @@ class GabaabSynapse(Synapse):
                 rng.Random123(
                     self.cell.gid +
                     250,
-                    self.sid +
+                    self.syn_id.sid +
                     100,
                     self.source_popid *
                     65536 +
@@ -360,7 +366,7 @@ class GabaabSynapse(Synapse):
 
         self._set_gabaab_ampanmda_rng()
 
-        self.hsynapse.synapseID = self.sid
+        self.hsynapse.synapseID = self.syn_id.sid
 
     @property
     def info_dict(self):
@@ -402,7 +408,7 @@ class AmpanmdaSynapse(Synapse):
             self.hsynapse.Nrrp = self.syn_description[SynapseProperty.NRRP]
 
         self._set_gabaab_ampanmda_rng()
-        self.hsynapse.synapseID = self.sid
+        self.hsynapse.synapseID = self.syn_id.sid
 
     @property
     def info_dict(self):
