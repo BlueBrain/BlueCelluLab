@@ -317,6 +317,25 @@ def test_repr_and_str():
 
 
 @pytest.mark.v6
+def test_get_section_id():
+    """Test the get_section_id method."""
+    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
+                                         holding_current=1.4146618843078613,
+                                         ais_scaler=1.4561502933502197,
+                                         soma_scaler=1.0)
+    cell = bluecellulab.Cell(
+        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+        template_format="v6_adapted",
+        emodel_properties=emodel_properties)
+    cell.init_psections()
+    assert cell.get_section_id(str(cell.soma)) == 0
+    assert cell.get_section_id(str(cell.axonal[0])) == 1
+    assert cell.get_section_id(str(cell.basal[0])) == 145
+    assert cell.get_section_id(str(cell.apical[0])) == 169
+
+
+@pytest.mark.v6
 def test_add_synapse_replay():
     """Cell: test add_synapse_replay."""
     sonata_sim_path = (

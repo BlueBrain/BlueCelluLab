@@ -106,7 +106,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.ips: dict[tuple[str, int], HocObjectType] = {}
         self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
-        self.serialized = None
+        self.serialized: SerializedSections | None = None
 
         # Be careful when removing this,
         # time recording needs this push
@@ -162,7 +162,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
-    def init_psections(self):
+    def init_psections(self) -> None:
         """Initialize the psections list.
 
         This list contains the Python representation of the psections of
@@ -199,15 +199,9 @@ class Cell(InjectableMixin, PlottableMixin):
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
-    def get_section_id(self, secname=None):
-        """Get section based on section id.
-
-        Returns
-        -------
-        integer: section id
-                 section id of the section with name secname
-        """
-        return self.secname_to_psection[secname].section_id
+    def get_section_id(self, secname: str) -> int:
+        """Returns the id of the section with name secname."""
+        return self.secname_to_psection[secname].isec
 
     def re_init_rng(self, use_random123_stochkv=None):
         """Reinitialize the random number generator for stochastic channels."""
