@@ -643,7 +643,6 @@ class Cell(InjectableMixin, PlottableMixin):
                          synapse_id: tuple[str, int],
                          syn_description: pd.Series,
                          connection_modifiers: dict,
-                         base_seed: int | None,
                          popids: tuple[int, int],
                          mini_frequencies: tuple[float | None, float | None]) -> None:
         """Add minis from the replay."""
@@ -651,8 +650,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         sid = synapse_id[1]
 
-        if base_seed is None:
-            base_seed = self.rng_settings.base_seed
+        base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
         post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
         if "afferent_section_pos" in syn_description:
