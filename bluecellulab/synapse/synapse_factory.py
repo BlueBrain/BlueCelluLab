@@ -145,9 +145,7 @@ class SynapseFactory:
 
         distance = 0.5
         if ipt < neuron.h.n3d(sec=section):
-            distance = (
-                neuron.h.arc3d(ipt, sec=section) + syn_offset
-            ) / length
+            distance = (neuron.h.arc3d(ipt, sec=section) + syn_offset) / length
             if distance == 0.0:
                 distance = 0.0000001
             if distance >= 1.0:
