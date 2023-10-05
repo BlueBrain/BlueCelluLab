@@ -14,7 +14,6 @@
 """Ssim class of bluecellulab that loads a circuit simulation to do cell
 simulations."""
 
-# pylint: disable=C0103, R0914, R0912, F0401, R0101
 
 from __future__ import annotations
 from collections.abc import Iterable
@@ -115,7 +114,6 @@ class SSim:
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
 
-    # pylint: disable=R0913
     def instantiate_gids(
         self,
         cells: int | tuple[str, int] | list[int] | list[tuple[str, int]],
@@ -437,7 +435,6 @@ class SSim:
             for k in all_keys
         }
 
-    # pylint: disable=R0913
     def _add_connections(
             self,
             add_replay=None,

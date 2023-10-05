@@ -341,7 +341,6 @@ class Cell(InjectableMixin, PlottableMixin):
         area : float
                Total surface area of the cell
         """
-        # pylint: disable=C0103
         area = 0
         for section in self.all:
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
@@ -352,7 +351,6 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
         return area
 
-    # pylint: disable=C0103
     def add_recording(self, var_name, dt=None):
         """Add a recording to the cell.
 
@@ -583,7 +581,6 @@ class Cell(InjectableMixin, PlottableMixin):
             syn_description, self
         )
 
-        # todo: False
         if 'Weight' in connection_modifiers:
             weight_scalar = connection_modifiers['Weight']
         else:

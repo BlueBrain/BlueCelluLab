@@ -3,7 +3,6 @@ Synapse test file. Uses ball-and-stick models
 Models simulated in N disticnt ways, all shoudl
 """
 
-# pylint: disable=E1101,W0201
 
 import os
 
