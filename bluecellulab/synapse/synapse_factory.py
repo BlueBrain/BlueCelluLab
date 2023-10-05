@@ -40,7 +40,6 @@ class SynapseFactory:
         popids: tuple[int, int],
         extracellular_calcium: float | None,
         connection_modifiers: dict,
-        base_seed: int | None = None,
     ) -> Synapse:
         """Returns a Synapse object."""
         is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
@@ -57,12 +56,12 @@ class SynapseFactory:
             else:
                 randomize_gaba_risetime = True
             synapse = GabaabSynapse(cell, location, syn_id, syn_description,
-                                    base_seed, popids, extracellular_calcium, randomize_gaba_risetime)
+                                    popids, extracellular_calcium, randomize_gaba_risetime)
         elif syn_type == SynapseType.AMPANMDA:
-            synapse = AmpanmdaSynapse(cell, location, syn_id, syn_description, base_seed,
+            synapse = AmpanmdaSynapse(cell, location, syn_id, syn_description,
                                       popids, extracellular_calcium)
         else:
-            synapse = GluSynapse(cell, location, syn_id, syn_description, base_seed,
+            synapse = GluSynapse(cell, location, syn_id, syn_description,
                                  popids, extracellular_calcium)
 
         synapse = cls.apply_connection_modifiers(connection_modifiers, synapse)

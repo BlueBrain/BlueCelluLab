@@ -35,7 +35,6 @@ class Synapse:
             location: float,
             syn_id: tuple[str, int],
             syn_description: pd.Series,
-            base_seed: int | None,
             popids: tuple[int, int],
             extracellular_calcium: float | None = None):
         """Constructor.
@@ -47,8 +46,6 @@ class Synapse:
         syn_id : Synapse identifier, string being the projection name and
                int the synapse id. Empty string refers to a local connection
         syn_description : Parameters of the synapse
-        base_seed : Base seed of the simulation, the seeds for this synapse
-                    will be derived from this
         popids : Source and target popids used by the random number generation
         extracellular_calcium: the extracellular calcium concentration
         """
@@ -73,15 +70,7 @@ class Synapse:
         self.mech_name: str = "not-yet-defined"
         self.randseed3: Optional[int] = None
 
-        if cell.rng_settings is None:
-            self.rng_setting = bluecellulab.RNGSettings(
-                mode='Compatibility',
-                base_seed=base_seed)
-        elif base_seed is not None:
-            raise Exception('Synapse: base_seed and RNGSettings cant '
-                            'be used together')
-        else:
-            self.rng_settings = cell.rng_settings
+        self.rng_settings = cell.rng_settings
 
     @property
     def delay_weights(self) -> list[tuple[float, float]]:
@@ -234,8 +223,8 @@ class Synapse:
 
 class GluSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium):
-        super().__init__(cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium)
+    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
         self.use_glusynapse_helper()
 
     def use_glusynapse_helper(self) -> None:
@@ -298,8 +287,8 @@ class GluSynapse(Synapse):
 
 class GabaabSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium, randomize_risetime=True):
-        super().__init__(cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium)
+    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium, randomize_risetime=True):
+        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
         self.use_gabaab_helper(randomize_risetime)
 
     def use_gabaab_helper(self, randomize_gaba_risetime: bool) -> None:
@@ -383,8 +372,8 @@ class GabaabSynapse(Synapse):
 
 class AmpanmdaSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium):
-        super().__init__(cell, location, syn_id, syn_description, base_seed, popids, extracellular_calcium)
+    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
         self.use_ampanmda_helper()
 
     def use_ampanmda_helper(self) -> None:
