@@ -30,7 +30,6 @@ def test_create_synapse():
         "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
         template_format="v6_adapted",
         emodel_properties=emodel_properties)
-    location = 0.5
     syn_id = ("a", 0)
     with open("tests/test_synapse/test-synapse-series.json") as f:
         syn_description = pd.Series(json.load(f, object_hook=synapse_property_decoder))
@@ -44,7 +43,7 @@ def test_create_synapse():
     }
 
     synapse = SynapseFactory.create_synapse(
-        cell, location, syn_id, syn_description, condition_parameters, popids, extracellular_calcium, connection_modifiers
+        cell, syn_id, syn_description, condition_parameters, popids, extracellular_calcium, connection_modifiers
     )
     assert isinstance(synapse, GluSynapse)
     assert synapse.weight == connection_modifiers["Weight"]
