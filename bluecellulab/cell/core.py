@@ -385,7 +385,7 @@ class Cell(InjectableMixin, PlottableMixin):
         if distance < 0:
             logger.warning(f"synlocation_to_segx found negative distance \
                         at curr_sec({neuron.h.secname(sec=curr_sec)}) syn_offset: {syn_offset}")
-            return 0
+            return 0.0
         else:
             return distance
 
