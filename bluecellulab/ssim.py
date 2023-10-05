@@ -25,6 +25,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+from pydantic.types import NonNegativeInt
 import bluecellulab
 from bluecellulab.cell import CellDict
 from bluecellulab.cell.sonata_proxy import SonataProxy
@@ -58,7 +59,7 @@ class SSim:
         simulation_config: str | Path | SimulationConfig,
         dt: float = 0.025,
         record_dt: Optional[float] = None,
-        base_seed: Optional[int] = None,
+        base_seed: Optional[NonNegativeInt] = None,
         rng_mode: Optional[str] = None,
         print_cellstate: bool = False,
     ):
@@ -71,9 +72,6 @@ class SSim:
         record_dt : Sampling interval of the recordings
         base_seed : Base seed used for this simulation. Setting this
                     will override the value set in the simulation config.
-                    Has to positive integer.
-                    When this is not set, and no seed is set in the
-                    simulation config, the seed will be 0.
         rng_mode : String with rng mode, if not specified mode is taken from
                     simulation config. Possible values are Compatibility, Random123
                     and UpdatedMCell.
