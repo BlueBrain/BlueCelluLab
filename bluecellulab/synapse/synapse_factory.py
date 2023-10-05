@@ -22,9 +22,11 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
+from bluecellulab.type_aliases import NeuronSection
 
 
 SynapseType = Enum("SynapseType", "GABAAB AMPANMDA GLUSYNAPSE")
@@ -110,59 +112,55 @@ class SynapseFactory:
         else:
             ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
             syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            location = cls.synlocation_to_segx(cell, isec, ipt, syn_offset)
+            section = cell.get_hsection(isec)
+            if section is None:
+                raise BluecellulabError("No section found at isec=%d in gid %d" % (isec, cell.gid))
+            location = cls.synlocation_to_segx(section, ipt, syn_offset)
 
         return location
 
     @staticmethod
-    def synlocation_to_segx(cell: bluecellulab.Cell, isec, ipt, syn_offset) -> float:
-        """Translate a synaptic (secid, ipt, offset) to a x coordinate.
+    def synlocation_to_segx(
+        section: NeuronSection, ipt: float, syn_offset: float
+    ) -> float:
+        """Translates a synaptic (secid, ipt, offset) to an x coordinate.
 
-        Parameters
-        ----------
-        isec : integer
-               section id
-        ipt : float
-              ipt
-        syn_offset : float
-                     Synaptic offset
+        Args:
+            section: Section object.
+            ipt: Post segment ID.
+            syn_offset: Synaptic offset.
 
-        Returns
-        -------
-        x : float
-            The x coordinate on section with secid, where the synapse
-            can be placed
+        Returns:
+            The x coordinate on the section, where the synapse can be placed.
         """
         if syn_offset < 0.0:
             syn_offset = 0.0
 
-        curr_sec = cell.get_hsection(isec)
-        if curr_sec is None:
-            raise Exception(
-                "No section found at isec=%d in gid %d" %
-                (isec, cell.gid))
-        length = curr_sec.L
+        length = section.L
 
         # access section to compute the distance
-        if neuron.h.section_orientation(sec=cell.get_hsection(isec)) == 1:
-            ipt = neuron.h.n3d(sec=cell.get_hsection(isec)) - 1 - ipt
+        if neuron.h.section_orientation(sec=section) == 1:
+            ipt = neuron.h.n3d(sec=section) - 1 - ipt
             syn_offset = -syn_offset
 
         distance = 0.5
-        if ipt < neuron.h.n3d(sec=cell.get_hsection(isec)):
-            distance = (neuron.h.arc3d(ipt, sec=cell.get_hsection(isec)) +
-                        syn_offset) / length
+        if ipt < neuron.h.n3d(sec=section):
+            distance = (
+                neuron.h.arc3d(ipt, sec=section) + syn_offset
+            ) / length
             if distance == 0.0:
                 distance = 0.0000001
             if distance >= 1.0:
                 distance = 0.9999999
 
-        if neuron.h.section_orientation(sec=cell.get_hsection(isec)) == 1:
+        if neuron.h.section_orientation(sec=section) == 1:
             distance = 1 - distance
 
         if distance < 0:
-            logger.warning(f"synlocation_to_segx found negative distance \
-                        at curr_sec({neuron.h.secname(sec=curr_sec)}) syn_offset: {syn_offset}")
+            logger.warning(
+                f"synlocation_to_segx found negative distance \
+                        at curr_sec({neuron.h.secname(sec=section)}) syn_offset: {syn_offset}"
+            )
             return 0.0
         else:
             return distance
