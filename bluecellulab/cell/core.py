@@ -47,28 +47,30 @@ logger = logging.getLogger(__name__)
 
 
 class Cell(InjectableMixin, PlottableMixin):
-    """Represents a BGLib Cell object."""
+    """Represents a Cell object."""
 
-    def __init__(self, template_path: str | Path, morphology_path: str | Path,
-                 gid=0, record_dt=None, template_format="v5",
+    def __init__(self,
+                 template_path: str | Path,
+                 morphology_path: str | Path,
+                 gid: int = 0,
+                 record_dt: Optional[float] = None,
+                 template_format: str = "v5",
                  emodel_properties: Optional[EmodelProperties] = None,
-                 rng_settings: Optional[RNGSettings] = None):
-        """Constructor.
+                 rng_settings: Optional[RNGSettings] = None) -> None:
+        """Initializes a Cell object.
 
-        Parameters
-        ----------
-        template_path : Full path to BGLib template to be loaded
-        morphology_path : path to morphology file
-        gid : integer
-             GID of the instantiated cell (default: 0)
-        record_dt : float
-                   Force a different timestep for the recordings
-                   (default: None)
-        template_format: str
-                         cell template format such as v6 or v6_air_scaler.
-        emodel_properties: properties such as threshold_current, holding_current
-        rng_settings: bluecellulab.RNGSettings
-                      random number generation setting object used by the Cell.
+        Args:
+            template_path: Full path to hoc template file.
+            morphology_path: Path to morphology file.
+            gid: ID of the cell, used in RNG seeds. Defaults to 0.
+            record_dt: Timestep for the recordings.
+                If not provided, a default is used. Defaults to None.
+            template_format: Cell template format such as 'v5'
+                or 'v6_air_scaler'. Defaults to "v5".
+            emodel_properties: Properties such as
+                threshold_current, holding_current. Defaults to None.
+            rng_settings: Random number generation setting
+                object used by the Cell. Defaults to None.
         """
         super().__init__()
         # Persistent objects, like clamps, that exist as long
