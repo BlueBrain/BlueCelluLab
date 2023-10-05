@@ -297,42 +297,43 @@ def test_add_dendrogram():
 
 
 @pytest.mark.v6
-def test_repr_and_str():
-    """Test the repr and str representations of a cell object."""
-    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
-                                         holding_current=1.4146618843078613,
-                                         ais_scaler=1.4561502933502197,
-                                         soma_scaler=1.0)
-    cell = bluecellulab.Cell(
-        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
-        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-        template_format="v6_adapted",
-        emodel_properties=emodel_properties)
-    # >>> print(cell)
-    # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
-    # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+class TestCellV6:
+    """Test class for testing Cell object functionalities with v6 template."""
 
-    # make sure NEURON template name is in the string representation
-    assert cell.cell.hname().split('[')[0] in str(cell)
+    def setup(self):
+        """Setup."""
+        emodel_properties = EmodelProperties(
+            threshold_current=1.1433533430099487,
+            holding_current=1.4146618843078613,
+            ais_scaler=1.4561502933502197,
+            soma_scaler=1.0
+        )
+        self.cell = bluecellulab.Cell(
+            "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+            "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+            template_format="v6_adapted",
+            emodel_properties=emodel_properties
+        )
 
+    def test_repr_and_str(self):
+        """Test the repr and str representations of a cell object."""
+        # >>> print(cell)
+        # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
+        # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+        # make sure NEURON template name is in the string representation
+        assert self.cell.cell.hname().split('[')[0] in str(self.cell)
 
-@pytest.mark.v6
-def test_get_section_id():
-    """Test the get_section_id method."""
-    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
-                                         holding_current=1.4146618843078613,
-                                         ais_scaler=1.4561502933502197,
-                                         soma_scaler=1.0)
-    cell = bluecellulab.Cell(
-        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
-        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-        template_format="v6_adapted",
-        emodel_properties=emodel_properties)
-    cell.init_psections()
-    assert cell.get_section_id(str(cell.soma)) == 0
-    assert cell.get_section_id(str(cell.axonal[0])) == 1
-    assert cell.get_section_id(str(cell.basal[0])) == 145
-    assert cell.get_section_id(str(cell.apical[0])) == 169
+    def test_get_section_id(self):
+        """Test the get_section_id method."""
+        self.cell.init_psections()
+        assert self.cell.get_section_id(str(self.cell.soma)) == 0
+        assert self.cell.get_section_id(str(self.cell.axonal[0])) == 1
+        assert self.cell.get_section_id(str(self.cell.basal[0])) == 145
+        assert self.cell.get_section_id(str(self.cell.apical[0])) == 169
+
+    def test_area(self):
+        """Test the cell's area computation."""
+        assert self.cell.area() == 5812.493415302344
 
 
 @pytest.mark.v6
