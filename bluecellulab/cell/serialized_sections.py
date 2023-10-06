@@ -16,13 +16,15 @@ index."""
 
 import warnings
 import neuron
+from bluecellulab.type_aliases import HocObjectType
+
 
 warnings.filterwarnings("once", category=UserWarning, module=__name__)
 
 
 class SerializedSections:
 
-    def __init__(self, cell):
+    def __init__(self, cell: HocObjectType) -> None:
         self.isec2sec = {}
         n = cell.nSecAll
 

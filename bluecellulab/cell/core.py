@@ -41,7 +41,7 @@ from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +104,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.ips: dict[tuple[str, int], HocObjectType] = {}
         self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
-        self.serialized = None
+        self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
         # time recording needs this push
@@ -254,34 +254,21 @@ class Cell(InjectableMixin, PlottableMixin):
             raise Exception(
                 "Cell: get_psection requires or a section_id or a secname")
 
-    def get_hsection(self, section_id):
-        """Use the serialized object to find a hoc section from a section id.
-
-        Parameters
-        ----------
-        section_id : int
-                    Section id
-
-        Returns
-        -------
-        hsection : nrnSection
-                   The requested hoc section
-        """
-
+    def get_hsection(self, section_id: int | float) -> NeuronSection:
+        """Use the serialized object to find a hoc section from a section
+        id."""
+        section_id = int(section_id)
         # section are not serialized yet, do it now
         if self.serialized is None:
             self.serialized = SerializedSections(self.cell.getCell())
 
         try:
-            sec_ref = self.serialized.isec2sec[int(section_id)]
+            sec_ref = self.serialized.isec2sec[section_id]
         except IndexError as e:
             raise IndexError(
-                "bluecellulab get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_path)) from e
-        if sec_ref is not None:
-            return self.serialized.isec2sec[int(section_id)].sec
-        else:
-            return None
+                f"bluecellulab get_hsection: section-id {section_id} not found in {self.morphology_path}"
+            ) from e
+        return sec_ref.sec
 
     def make_passive(self):
         """Make the cell passive by deactivating all the active channels."""

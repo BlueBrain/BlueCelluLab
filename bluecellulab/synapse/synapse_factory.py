@@ -113,8 +113,6 @@ class SynapseFactory:
             ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
             syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
             section = cell.get_hsection(isec)
-            if section is None:
-                raise BluecellulabError("No section found at isec=%d in gid %d" % (isec, cell.gid))
             location = cls.synlocation_to_segx(section, ipt, syn_offset)
 
         return location
