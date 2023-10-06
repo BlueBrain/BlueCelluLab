@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
