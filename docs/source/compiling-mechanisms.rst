@@ -56,7 +56,7 @@ Replace ``"YOUR/DIRECTORY/x86_64"`` with the path to your specific compiled mech
 Important Note on Path Specification
 ------------------------------------
 
-Be mindful to adhere to the stipulation that **either** the current working directory should contain the compiled mechanisms **or** the ``BLUECELLULAB_MOD_LIBRARY_PATH`` environment variable should be set—**not both**. Setting the environment variable and importing BlueCelluLab from a directory containing (e.g.) an "x86_64" folder concurrently is prohibited and may result in errors.
+Be mindful to adhere to the condition that **either** the current working directory should contain the compiled mechanisms **or** the ``BLUECELLULAB_MOD_LIBRARY_PATH`` environment variable should be set—**not both**. Setting the environment variable and importing BlueCelluLab from a directory containing (e.g.) an "x86_64" folder results in an error.
 
 In summary:
 
