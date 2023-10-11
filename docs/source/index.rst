@@ -14,6 +14,7 @@
 
    Home <self>
    api.rst
+   compiling-mechanisms.rst
    changelog
 
 .. |banner| image:: /logo/BlueCelluLabBanner.jpg
