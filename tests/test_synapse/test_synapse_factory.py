@@ -62,6 +62,16 @@ class TestSynapseFactory:
         assert res.location == 1.2
         assert res.section.L == pytest.approx(9.530376893488256)
 
+    def test_synlocation_to_segx(self):
+        ipt = 13
+        isec = 169
+        syn_offset = 1.2331762313842773
+        section = self.cell.get_hsection(isec)
+        res = SynapseFactory.synlocation_to_segx(section, ipt, syn_offset)
+        assert res == pytest.approx(0.9999999)
+        res = SynapseFactory.synlocation_to_segx(section, ipt, syn_offset=-1.0)
+        assert res == pytest.approx(0.9999999)
+
 
 def test_determine_synapse_type():
     """Unit test for determine_synapse_type."""
