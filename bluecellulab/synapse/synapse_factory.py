@@ -25,6 +25,7 @@ import bluecellulab
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
+from bluecellulab.synapse.synapse_types import SynapseHocArgs
 from bluecellulab.type_aliases import NeuronSection
 
 
@@ -54,7 +55,7 @@ class SynapseFactory:
         )
 
         syn_type = cls.determine_synapse_type(is_inhibitory, plasticity_available)
-        syn_location = cls.determine_synapse_location(syn_description, cell)
+        syn_hoc_args = cls.determine_synapse_location(syn_description, cell)
 
         synapse: Synapse
         if syn_type == SynapseType.GABAAB:
@@ -62,13 +63,13 @@ class SynapseFactory:
                 randomize_gaba_risetime = condition_parameters.randomize_gaba_rise_time
             else:
                 randomize_gaba_risetime = True
-            synapse = GabaabSynapse(cell, syn_location, syn_id, syn_description,
+            synapse = GabaabSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
                                     popids, extracellular_calcium, randomize_gaba_risetime)
         elif syn_type == SynapseType.AMPANMDA:
-            synapse = AmpanmdaSynapse(cell, syn_location, syn_id, syn_description,
+            synapse = AmpanmdaSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
                                       popids, extracellular_calcium)
         else:
-            synapse = GluSynapse(cell, syn_location, syn_id, syn_description,
+            synapse = GluSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
                                  popids, extracellular_calcium)
 
         synapse = cls.apply_connection_modifiers(connection_modifiers, synapse)
@@ -99,9 +100,10 @@ class SynapseFactory:
                 return SynapseType.AMPANMDA
 
     @classmethod
-    def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> float:
+    def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> SynapseHocArgs:
         """Returns the location of the synapse."""
         isec = syn_description[SynapseProperty.POST_SECTION_ID]
+        section = cell.get_hsection(isec)
 
         # old circuits don't have it, it needs to be computed via synlocation_to_segx
         if ("afferent_section_pos" in syn_description and
@@ -111,10 +113,9 @@ class SynapseFactory:
         else:
             ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
             syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            section = cell.get_hsection(isec)
             location = cls.synlocation_to_segx(section, ipt, syn_offset)
 
-        return location
+        return SynapseHocArgs(location, section)
 
     @staticmethod
     def synlocation_to_segx(

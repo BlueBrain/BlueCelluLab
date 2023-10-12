@@ -20,7 +20,8 @@ import logging
 
 import bluecellulab
 from bluecellulab.circuit import SynapseProperty
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.rngsettings import RNGSettings
+from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 
 logger = logging.getLogger(__name__)
@@ -33,36 +34,45 @@ class SynapseID(NamedTuple):
     sid: int
 
 
+class SynapseHocArgs(NamedTuple):
+    """Parameters required by synapse hoc constructor."""
+    location: float
+    section: NeuronSection
+
+
 class Synapse:
     """Class that represents a synapse in bluecellulab."""
 
     def __init__(
             self,
-            cell: bluecellulab.Cell,
-            location: float,
+            rng_settings: RNGSettings,
+            gid: int,
+            hoc_args: SynapseHocArgs,
             syn_id: tuple[str, int],
             syn_description: pd.Series,
             popids: tuple[int, int],
             extracellular_calcium: float | None = None):
         """Constructor.
 
-        Parameters
-        ----------
-        cell : Cell that contains the synapse
-        location : Location on the section this synapse is placed between [0.0,1.0]
-        syn_id : Synapse identifier, string being the projection name and
-               int the synapse id. Empty string refers to a local connection
-        syn_description : Parameters of the synapse
-        popids : Source and target popids used by the random number generation
-        extracellular_calcium: the extracellular calcium concentration
+        Args:
+            rng_settings: Random number generator settings.
+            gid: The post-synaptic cell gid.
+            hoc_args: The synapse location and section in hoc.
+            syn_id: A tuple containing a synapse identifier, where the string is
+                the projection name and int is the synapse id. An empty string
+                refers to a local connection.
+            syn_description: Parameters of the synapse.
+            popids: A tuple containing source and target popids used by the random
+                number generation.
+            extracellular_calcium: The extracellular calcium concentration. Optional
+                and defaults to None.
         """
         self.persistent: list[HocObjectType] = []
         self.synapseconfigure_cmds: list[str] = []
         self._delay_weights: list[tuple[float, float]] = []
         self._weight: Optional[float] = None
 
-        self.cell = cell
-        self.post_gid = cell.gid
+        self.post_gid = gid
         self.syn_id = SynapseID(*syn_id)
         self.extracellular_calcium = extracellular_calcium
         self.syn_description: pd.Series = self.update_syn_description(syn_description)
@@ -72,11 +82,11 @@ class Synapse:
 
         self.pre_gid = int(self.syn_description[SynapseProperty.PRE_GID])
 
-        self.post_segx = location
+        self.hoc_args = hoc_args
         self.mech_name: str = "not-yet-defined"
         self.randseed3: Optional[int] = None
 
-        self.rng_settings = cell.rng_settings
+        self.rng_settings = rng_settings
 
     @property
     def delay_weights(self) -> list[tuple[float, float]]:
@@ -136,7 +146,7 @@ class Synapse:
             ValueError: when rng mode is not recognised.
         """
         if self.rng_settings.mode == "Random123":
-            self.randseed1 = self.cell.gid + 250
+            self.randseed1 = self.post_gid + 250
             self.randseed2 = self.syn_id.sid + 100
             self.randseed3 = self.source_popid * 65536 + self.target_popid + \
                 self.rng_settings.synapse_seed + 300
@@ -148,12 +158,12 @@ class Synapse:
             rndd = bluecellulab.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 self.randseed1 = self.syn_id.sid * 100000 + 100
-                self.randseed2 = self.cell.gid + \
+                self.randseed2 = self.post_gid + \
                     250 + self.rng_settings.base_seed
             elif self.rng_settings.mode == "UpdatedMCell":
                 self.randseed1 = self.syn_id.sid * 1000 + 100
                 self.randseed2 = self.source_popid * 16777216 + \
-                    self.cell.gid + \
+                    self.post_gid + \
                     250 + self.rng_settings.base_seed + \
                     self.rng_settings.synapse_seed
             else:
@@ -205,7 +215,7 @@ class Synapse:
         synapse_dict['syn_description'] = {
             str(k): v for k, v in synapse_dict['syn_description'].items()}
 
-        synapse_dict['post_segx'] = self.post_segx
+        synapse_dict['post_segx'] = self.hoc_args.location
         synapse_dict['mech_name'] = self.mech_name
         synapse_dict['randseed1'] = self.randseed1
         synapse_dict['randseed2'] = self.randseed2
@@ -229,8 +239,8 @@ class Synapse:
 
 class GluSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium):
-        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_glusynapse_helper()
 
     def use_glusynapse_helper(self) -> None:
@@ -242,10 +252,8 @@ class GluSynapse(Synapse):
         self.mech_name = 'GluSynapse'
 
         self.hsynapse = bluecellulab.neuron.h.GluSynapse(
-            self.post_segx,
-            sec=self.cell.get_hsection(
-                self.syn_description[SynapseProperty.POST_SECTION_ID]
-            ),
+            self.hoc_args.location,
+            sec=self.hoc_args.section
         )
 
         self.hsynapse.Use_d = self.syn_description["Use_d_TM"] * \
@@ -278,7 +286,7 @@ class GluSynapse(Synapse):
         if self.syn_description[SynapseProperty.NRRP] >= 0:
             self.hsynapse.Nrrp = self.syn_description[SynapseProperty.NRRP]
 
-        self.randseed1 = self.cell.gid
+        self.randseed1 = self.post_gid
         self.randseed2 = 100000 + self.syn_id.sid
         self.randseed3 = self.rng_settings.synapse_seed + 200
         self.hsynapse.setRNG(self.randseed1, self.randseed2, self.randseed3)
@@ -293,8 +301,8 @@ class GluSynapse(Synapse):
 
 class GabaabSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium, randomize_risetime=True):
-        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium, randomize_risetime=True):
+        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_gabaab_helper(randomize_risetime)
 
     def use_gabaab_helper(self, randomize_gaba_risetime: bool) -> None:
@@ -313,10 +321,8 @@ class GabaabSynapse(Synapse):
         self.mech_name = 'ProbGABAAB_EMS'
 
         self.hsynapse = bluecellulab.neuron.h.ProbGABAAB_EMS(
-            self.post_segx,
-            sec=self.cell.get_hsection(
-                self.syn_description[SynapseProperty.POST_SECTION_ID]
-            )
+            self.hoc_args.location,
+            sec=self.hoc_args.section
         )
 
         if randomize_gaba_risetime is True:
@@ -324,19 +330,19 @@ class GabaabSynapse(Synapse):
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
                     self.syn_id.sid * 100000 + 100,
-                    self.cell.gid + 250 + self.rng_settings.base_seed)
+                    self.post_gid + 250 + self.rng_settings.base_seed)
             elif self.rng_settings.mode == "UpdatedMCell":
                 rng.MCellRan4(
                     self.syn_id.sid * 1000 + 100,
                     self.source_popid *
                     16777216 +
-                    self.cell.gid +
+                    self.post_gid +
                     250 +
                     self.rng_settings.base_seed +
                     self.rng_settings.synapse_seed)
             elif self.rng_settings.mode == "Random123":
                 rng.Random123(
-                    self.cell.gid +
+                    self.post_gid +
                     250,
                     self.syn_id.sid +
                     100,
@@ -378,8 +384,8 @@ class GabaabSynapse(Synapse):
 
 class AmpanmdaSynapse(Synapse):
 
-    def __init__(self, cell, location, syn_id, syn_description, popids, extracellular_calcium):
-        super().__init__(cell, location, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_ampanmda_helper()
 
     def use_ampanmda_helper(self) -> None:
@@ -391,10 +397,8 @@ class AmpanmdaSynapse(Synapse):
         self.mech_name = 'ProbAMPANMDA_EMS'
 
         self.hsynapse = bluecellulab.neuron.h.ProbAMPANMDA_EMS(
-            self.post_segx,
-            sec=self.cell.get_hsection(
-                self.syn_description[SynapseProperty.POST_SECTION_ID]
-            ),
+            self.hoc_args.location,
+            sec=self.hoc_args.section,
         )
         self.hsynapse.tau_d_AMPA = self.syn_description[SynapseProperty.DTC]
         if SynapseProperty.CONDUCTANCE_RATIO in self.syn_description:
