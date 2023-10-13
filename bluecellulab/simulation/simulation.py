@@ -13,7 +13,6 @@
 # limitations under the License.
 """Simulation class of bluecellulab."""
 
-# pylint: disable=R0913
 
 import sys
 from typing import Optional
@@ -83,7 +82,6 @@ class Simulation:
         for cell in self.cells:
             cell.init_callbacks()
 
-    # pylint: disable=C0103,R0912,R0914
     def run(
             self,
             maxtime: float,
@@ -161,7 +159,6 @@ class Simulation:
             for cell in self.cells:
                 self.pc.prcellstate(cell.gid, f"bluecellulab_t={bluecellulab.neuron.h.t}")
 
-        # pylint: disable=W0703
         try:
             neuron.h.continuerun(neuron.h.tstop)
         except Exception as exception:
@@ -179,8 +176,6 @@ class Simulation:
             neuron.h.cvode_active(cvode_old_status)
 
         logger.info("Finished simulation.")
-
-    # pylint: enable=C0103,R0912
 
     def __del__(self):
         pass

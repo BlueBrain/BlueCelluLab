@@ -15,8 +15,6 @@
 
 import numpy as np
 
-# pylint: disable=R0914,too-many-arguments
-
 
 class Dendrogram:
     """Class that represent a dendrogram plot."""

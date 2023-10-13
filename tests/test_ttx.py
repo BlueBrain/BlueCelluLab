@@ -1,8 +1,5 @@
 """Unit tests for TTX in mod files"""
 
-# pylint: disable=
-
-
 import os
 
 import pytest

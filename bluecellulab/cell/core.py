@@ -41,7 +41,7 @@ from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +104,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.ips: dict[tuple[str, int], HocObjectType] = {}
         self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
-        self.serialized = None
+        self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
         # time recording needs this push
@@ -254,34 +254,21 @@ class Cell(InjectableMixin, PlottableMixin):
             raise Exception(
                 "Cell: get_psection requires or a section_id or a secname")
 
-    def get_hsection(self, section_id):
-        """Use the serialized object to find a hoc section from a section id.
-
-        Parameters
-        ----------
-        section_id : int
-                    Section id
-
-        Returns
-        -------
-        hsection : nrnSection
-                   The requested hoc section
-        """
-
+    def get_hsection(self, section_id: int | float) -> NeuronSection:
+        """Use the serialized object to find a hoc section from a section
+        id."""
+        section_id = int(section_id)
         # section are not serialized yet, do it now
         if self.serialized is None:
             self.serialized = SerializedSections(self.cell.getCell())
 
         try:
-            sec_ref = self.serialized.isec2sec[int(section_id)]
+            sec_ref = self.serialized.isec2sec[section_id]
         except IndexError as e:
             raise IndexError(
-                "bluecellulab get_hsection: section-id %s not found in %s" %
-                (section_id, self.morphology_path)) from e
-        if sec_ref is not None:
-            return self.serialized.isec2sec[int(section_id)].sec
-        else:
-            return None
+                f"bluecellulab get_hsection: section-id {section_id} not found in {self.morphology_path}"
+            ) from e
+        return sec_ref.sec
 
     def make_passive(self):
         """Make the cell passive by deactivating all the active channels."""
@@ -341,7 +328,6 @@ class Cell(InjectableMixin, PlottableMixin):
         area : float
                Total surface area of the cell
         """
-        # pylint: disable=C0103
         area = 0
         for section in self.all:
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
@@ -352,59 +338,6 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
         return area
 
-    def synlocation_to_segx(self, isec, ipt, syn_offset) -> float:
-        """Translate a synaptic (secid, ipt, offset) to a x coordinate.
-
-        Parameters
-        ----------
-        isec : integer
-               section id
-        ipt : float
-              ipt
-        syn_offset : float
-                     Synaptic offset
-
-        Returns
-        -------
-        x : float
-            The x coordinate on section with secid, where the synapse
-            can be placed
-        """
-        if syn_offset < 0.0:
-            syn_offset = 0.0
-
-        curr_sec = self.get_hsection(isec)
-        if curr_sec is None:
-            raise Exception(
-                "No section found at isec=%d in gid %d" %
-                (isec, self.gid))
-        length = curr_sec.L
-
-        # access section to compute the distance
-        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
-            ipt = neuron.h.n3d(sec=self.get_hsection(isec)) - 1 - ipt
-            syn_offset = -syn_offset
-
-        distance = 0.5
-        if ipt < neuron.h.n3d(sec=self.get_hsection(isec)):
-            distance = (neuron.h.arc3d(ipt, sec=self.get_hsection(isec)) +
-                        syn_offset) / length
-            if distance == 0.0:
-                distance = 0.0000001
-            if distance >= 1.0:
-                distance = 0.9999999
-
-        if neuron.h.section_orientation(sec=self.get_hsection(isec)) == 1:
-            distance = 1 - distance
-
-        if distance < 0:
-            logger.warning(f"synlocation_to_segx found negative distance \
-                        at curr_sec({neuron.h.secname(sec=curr_sec)}) syn_offset: {syn_offset}")
-            return 0
-        else:
-            return distance
-
-    # pylint: disable=C0103
     def add_recording(self, var_name, dt=None):
         """Add a recording to the cell.
 
@@ -509,32 +442,10 @@ class Cell(InjectableMixin, PlottableMixin):
                            connection_modifiers: dict,
                            condition_parameters: Conditions,
                            popids: tuple[int, int],
-                           extracellular_calcium: float | None) -> bool:
-        """Add synapse based on the syn_description to the cell.
-
-        This operation can fail. Returns True on success, otherwise
-        False.
-        """
-        isec = syn_description[SynapseProperty.POST_SECTION_ID]
-
-        # old circuits don't have it, it needs to be computed via synlocation_to_segx
-        if ("afferent_section_pos" in syn_description and
-                not np.isnan(syn_description["afferent_section_pos"])):
-            # position is pre computed in SONATA
-            location = syn_description["afferent_section_pos"]
-        else:
-            ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
-            syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            location = self.synlocation_to_segx(isec, ipt, syn_offset)
-
-        if location is None:
-            logger.warning("add_single_synapse: skipping a synapse at \
-                            isec %d" % (isec))
-            return False
-
+                           extracellular_calcium: float | None) -> None:
+        """Add synapse based on the syn_description to the cell."""
         synapse = SynapseFactory.create_synapse(
             cell=self,
-            location=location,
             syn_id=synapse_id,
             syn_description=syn_description,
             condition_parameters=condition_parameters,
@@ -545,7 +456,6 @@ class Cell(InjectableMixin, PlottableMixin):
         self.synapses[synapse_id] = synapse
 
         logger.debug(f'Added synapse to cell {self.gid}')
-        return True
 
     def add_replay_delayed_weight(
         self, sid: tuple[str, int], delay: float, weight: float
@@ -643,7 +553,6 @@ class Cell(InjectableMixin, PlottableMixin):
                          synapse_id: tuple[str, int],
                          syn_description: pd.Series,
                          connection_modifiers: dict,
-                         base_seed: int | None,
                          popids: tuple[int, int],
                          mini_frequencies: tuple[float | None, float | None]) -> None:
         """Add minis from the replay."""
@@ -651,19 +560,14 @@ class Cell(InjectableMixin, PlottableMixin):
 
         sid = synapse_id[1]
 
-        if base_seed is None:
-            base_seed = self.rng_settings.base_seed
+        base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
         post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
-        if "afferent_section_pos" in syn_description:
-            location = syn_description["afferent_section_pos"]  # position is pre computed in SONATA
-        else:
-            post_seg_distance = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
-            post_seg_id = syn_description[SynapseProperty.POST_SEGMENT_ID]
-            location = self.\
-                synlocation_to_segx(post_sec_id, post_seg_id,
-                                    post_seg_distance)
-        # todo: False
+
+        location = SynapseFactory.determine_synapse_location(
+            syn_description, self
+        )
+
         if 'Weight' in connection_modifiers:
             weight_scalar = connection_modifiers['Weight']
         else:

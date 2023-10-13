@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# pylint: disable=E1101,W0201
-
 """Unit tests for tools.py"""
 
 import json
