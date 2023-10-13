@@ -14,7 +14,6 @@
 """Ssim class of bluecellulab that loads a circuit simulation to do cell
 simulations."""
 
-# pylint: disable=C0103, R0914, R0912, F0401, R0101
 
 from __future__ import annotations
 from collections.abc import Iterable
@@ -25,6 +24,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+from pydantic.types import NonNegativeInt
 import bluecellulab
 from bluecellulab.cell import CellDict
 from bluecellulab.cell.sonata_proxy import SonataProxy
@@ -58,7 +58,7 @@ class SSim:
         simulation_config: str | Path | SimulationConfig,
         dt: float = 0.025,
         record_dt: Optional[float] = None,
-        base_seed: Optional[int] = None,
+        base_seed: Optional[NonNegativeInt] = None,
         rng_mode: Optional[str] = None,
         print_cellstate: bool = False,
     ):
@@ -71,9 +71,6 @@ class SSim:
         record_dt : Sampling interval of the recordings
         base_seed : Base seed used for this simulation. Setting this
                     will override the value set in the simulation config.
-                    Has to positive integer.
-                    When this is not set, and no seed is set in the
-                    simulation config, the seed will be 0.
         rng_mode : String with rng mode, if not specified mode is taken from
                     simulation config. Possible values are Compatibility, Random123
                     and UpdatedMCell.
@@ -117,7 +114,6 @@ class SSim:
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
 
-    # pylint: disable=R0913
     def instantiate_gids(
         self,
         cells: int | tuple[str, int] | list[int] | list[tuple[str, int]],
@@ -439,7 +435,6 @@ class SSim:
             for k in all_keys
         }
 
-    # pylint: disable=R0913
     def _add_connections(
             self,
             add_replay=None,
@@ -543,7 +538,6 @@ class SSim:
                     syn_connection_parameters,
                     popids=popids,
                     mini_frequencies=mini_frequencies,
-                    base_seed=None
                 )
 
     def run(

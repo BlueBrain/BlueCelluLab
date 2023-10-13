@@ -14,8 +14,6 @@
 """Static tools for BluecellulabError."""
 
 
-# pylint: disable=R0914, R0913
-
 from __future__ import annotations
 import io
 import json
@@ -470,8 +468,6 @@ def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
 class NoDaemonProcess(multiprocessing.Process):
     """Class that represents a non-daemon process."""
 
-    # pylint: disable=R0201
-
     def _get_daemon(self):
         """Get daemon flag."""
         return False
@@ -481,7 +477,6 @@ class NoDaemonProcess(multiprocessing.Process):
         pass
     daemon = property(_get_daemon, _set_daemon)  # type:ignore
 
-# pylint: disable=W0223, R0911
 
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
@@ -490,8 +485,6 @@ class NoDaemonProcess(multiprocessing.Process):
 class NestedPool(multiprocessing.pool.Pool):
     """Class that represents a MultiProcessing nested pool."""
     Process = NoDaemonProcess
-
-# pylint: disable=R0913
 
 
 def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
@@ -553,8 +546,6 @@ def search_hyp_current_replay(blueconfig, gid, target_voltage=-80,
                                          stop_time=stop_time,
                                          max_nestlevel=max_nestlevel,
                                          return_fullrange=return_fullrange)
-
-# pylint: enable=R0913
 
 
 class search_hyp_function:

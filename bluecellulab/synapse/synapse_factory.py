@@ -14,6 +14,10 @@
 """Factory that separates Synapse creation from Synapse instances."""
 from __future__ import annotations  # PEP-563 forward reference annotations
 from enum import Enum
+import logging
+
+import neuron
+import numpy as np
 
 import pandas as pd
 
@@ -21,9 +25,13 @@ import bluecellulab
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
+from bluecellulab.synapse.synapse_types import SynapseHocArgs
+from bluecellulab.type_aliases import NeuronSection
 
 
 SynapseType = Enum("SynapseType", "GABAAB AMPANMDA GLUSYNAPSE")
+
+logger = logging.getLogger(__name__)
 
 
 class SynapseFactory:
@@ -33,14 +41,12 @@ class SynapseFactory:
     def create_synapse(
         cls,
         cell: bluecellulab.Cell,
-        location: float,
         syn_id: tuple[str, int],
         syn_description: pd.Series,
         condition_parameters: Conditions,
         popids: tuple[int, int],
         extracellular_calcium: float | None,
         connection_modifiers: dict,
-        base_seed: int | None = None,
     ) -> Synapse:
         """Returns a Synapse object."""
         is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
@@ -49,6 +55,7 @@ class SynapseFactory:
         )
 
         syn_type = cls.determine_synapse_type(is_inhibitory, plasticity_available)
+        syn_hoc_args = cls.determine_synapse_location(syn_description, cell)
 
         synapse: Synapse
         if syn_type == SynapseType.GABAAB:
@@ -56,13 +63,13 @@ class SynapseFactory:
                 randomize_gaba_risetime = condition_parameters.randomize_gaba_rise_time
             else:
                 randomize_gaba_risetime = True
-            synapse = GabaabSynapse(cell, location, syn_id, syn_description,
-                                    base_seed, popids, extracellular_calcium, randomize_gaba_risetime)
+            synapse = GabaabSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
+                                    popids, extracellular_calcium, randomize_gaba_risetime)
         elif syn_type == SynapseType.AMPANMDA:
-            synapse = AmpanmdaSynapse(cell, location, syn_id, syn_description, base_seed,
+            synapse = AmpanmdaSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
                                       popids, extracellular_calcium)
         else:
-            synapse = GluSynapse(cell, location, syn_id, syn_description, base_seed,
+            synapse = GluSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
                                  popids, extracellular_calcium)
 
         synapse = cls.apply_connection_modifiers(connection_modifiers, synapse)
@@ -91,3 +98,65 @@ class SynapseFactory:
                 return SynapseType.GLUSYNAPSE
             else:
                 return SynapseType.AMPANMDA
+
+    @classmethod
+    def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> SynapseHocArgs:
+        """Returns the location of the synapse."""
+        isec = syn_description[SynapseProperty.POST_SECTION_ID]
+        section = cell.get_hsection(isec)
+
+        # old circuits don't have it, it needs to be computed via synlocation_to_segx
+        if ("afferent_section_pos" in syn_description and
+                not np.isnan(syn_description["afferent_section_pos"])):
+            # position is pre computed in SONATA
+            location = syn_description["afferent_section_pos"]
+        else:
+            ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
+            syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
+            location = cls.synlocation_to_segx(section, ipt, syn_offset)
+
+        return SynapseHocArgs(location, section)
+
+    @staticmethod
+    def synlocation_to_segx(
+        section: NeuronSection, ipt: float, syn_offset: float
+    ) -> float:
+        """Translates a synaptic (secid, ipt, offset) to an x coordinate.
+
+        Args:
+            section: Section object.
+            ipt: Post segment ID.
+            syn_offset: Synaptic offset.
+
+        Returns:
+            The x coordinate on the section, where the synapse can be placed.
+        """
+        if syn_offset < 0.0:
+            syn_offset = 0.0
+
+        length = section.L
+
+        # access section to compute the distance
+        if neuron.h.section_orientation(sec=section) == 1:
+            ipt = neuron.h.n3d(sec=section) - 1 - ipt
+            syn_offset = -syn_offset
+
+        distance = 0.5
+        if ipt < neuron.h.n3d(sec=section):
+            distance = (neuron.h.arc3d(ipt, sec=section) + syn_offset) / length
+            if distance == 0.0:
+                distance = 0.0000001
+            if distance >= 1.0:
+                distance = 0.9999999
+
+        if neuron.h.section_orientation(sec=section) == 1:
+            distance = 1 - distance
+
+        if distance < 0:
+            logger.warning(
+                f"synlocation_to_segx found negative distance \
+                        at curr_sec({neuron.h.secname(sec=section)}) syn_offset: {syn_offset}"
+            )
+            return 0.0
+        else:
+            return distance

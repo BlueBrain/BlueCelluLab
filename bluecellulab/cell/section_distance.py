@@ -35,7 +35,6 @@ class EuclideanSectionDistance:
     dimensions : string
                  planes to project on, e.g. 'xy'
     """
-    # pylint: disable=invalid-name
 
     def __call__(
             self,
