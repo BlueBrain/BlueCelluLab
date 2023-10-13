@@ -203,7 +203,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Returns the id of the section with name secname."""
         return self.secname_to_psection[secname].isec
 
-    def re_init_rng(self, use_random123_stochkv=None):
+    def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
 
         if not self.is_made_passive:
