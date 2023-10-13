@@ -266,9 +266,8 @@ class Cell(InjectableMixin, PlottableMixin):
             ) from e
         return sec_ref.sec
 
-    def make_passive(self):
+    def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
-
         for section in self.all:
             mech_names = set()
             for seg in section:
@@ -280,33 +279,29 @@ class Cell(InjectableMixin, PlottableMixin):
                     neuron.h('uninsert %s' % mech_name, sec=section)
         self.is_made_passive = True
 
-    def enable_ttx(self):
-        """Add TTX to the bath (i.e. block the Na channels)"""
-
+    def enable_ttx(self) -> None:
+        """Add TTX to the bath (i.e. block the Na channels)."""
         if hasattr(self.cell.getCell(), 'enable_ttx'):
             self.cell.getCell().enable_ttx()
         else:
             self._default_enable_ttx()
 
-    def disable_ttx(self):
-        """Add TTX to the bath (i.e. block the Na channels)"""
-
+    def disable_ttx(self) -> None:
+        """Add TTX to the bath (i.e. block the Na channels)."""
         if hasattr(self.cell.getCell(), 'disable_ttx'):
             self.cell.getCell().disable_ttx()
         else:
             self._default_disable_ttx()
 
-    def _default_enable_ttx(self):
+    def _default_enable_ttx(self) -> None:
         """Default enable_ttx implementation."""
-
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
-    def _default_disable_ttx(self):
+    def _default_disable_ttx(self) -> None:
         """Default disable_ttx implementation."""
-
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
