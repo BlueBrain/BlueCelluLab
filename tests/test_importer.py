@@ -32,6 +32,15 @@ def test_import_mod_lib_env_var_set():
             assert importer.import_mod_lib(mock_neuron) == "/fake/path"
 
 
+def test_import_mod_lib_so_file():
+    mock_neuron = MagicMock()
+    fake_so_path = "/fake/path/to/library.so"
+    with patch.dict(os.environ, {"BLUECELLULAB_MOD_LIBRARY_PATH": fake_so_path}):
+        with patch("os.path.isdir", return_value=False):
+            importer.import_mod_lib(mock_neuron)
+            mock_neuron.h.nrn_load_dll.assert_called_with(fake_so_path)
+
+
 def test_import_mod_lib_no_env_with_folder():
     mock_neuron = MagicMock()
     with patch.dict(os.environ, {}, clear=True):
