@@ -24,7 +24,6 @@ from bluecellulab.exceptions import BluecellulabError
 def import_mod_lib(neuron: ModuleType) -> str:
     """Import mod files."""
     res = ""
-    print(os.environ['BLUECELLULAB_MOD_LIBRARY_PATH'])
     if 'BLUECELLULAB_MOD_LIBRARY_PATH' in os.environ:
         # Check if the current directory contains 'x86_64'.
         if os.path.isdir('x86_64'):
