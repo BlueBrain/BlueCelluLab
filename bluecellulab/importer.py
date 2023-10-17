@@ -24,6 +24,7 @@ from bluecellulab.exceptions import BluecellulabError
 def import_mod_lib(neuron: ModuleType) -> str:
     """Import mod files."""
     res = ""
+    print(os.environ['BLUECELLULAB_MOD_LIBRARY_PATH'])
     if 'BLUECELLULAB_MOD_LIBRARY_PATH' in os.environ:
         # Check if the current directory contains 'x86_64'.
         if os.path.isdir('x86_64'):
@@ -32,7 +33,10 @@ def import_mod_lib(neuron: ModuleType) -> str:
                                     " Please remove one of them.")
 
         mod_lib_path = os.environ["BLUECELLULAB_MOD_LIBRARY_PATH"]
-        neuron.load_mechanisms(mod_lib_path)
+        if mod_lib_path.endswith(".so"):
+            neuron.h.nrn_load_dll(mod_lib_path)
+        else:
+            neuron.load_mechanisms(mod_lib_path)
         res = mod_lib_path
     elif os.path.isdir('x86_64'):
         # NEURON 8.* automatically load these mechamisms
