@@ -37,7 +37,7 @@ setuptools.setup(
     long_description_content_type="text/x-rst",
     license="Apache2.0",
     install_requires=[
-        "NEURON>=8.0.2,<9.0.0",
+        "NEURON-nightly==9.0a1.dev85",
         "numpy>=1.8.0,<2.0.0",
         "matplotlib>=3.0.0,<4.0.0",
         "pandas>=1.0.0,<3.0.0",
