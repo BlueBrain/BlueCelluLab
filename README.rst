@@ -97,7 +97,7 @@ The following example shows how to create a cell, add a stimulus and run a simul
 Tutorial
 ========
 
-A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `examples page <examples/README.rst>`_.
+A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `examples page <https://github.com/BlueBrain/BlueCelluLab/blob/main/examples/README.rst>`_.
 
 API Documentation
 =================
