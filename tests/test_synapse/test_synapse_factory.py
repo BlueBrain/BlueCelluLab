@@ -9,7 +9,7 @@ from bluecellulab.cell.core import Cell
 
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.circuit.config.sections import Conditions
-from bluecellulab.circuit.synapse_properties import synapse_property_decoder
+from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty, synapse_property_decoder
 from bluecellulab.synapse import SynapseFactory
 from bluecellulab.synapse.synapse_factory import SynapseType
 from bluecellulab.synapse.synapse_types import GluSynapse
@@ -74,12 +74,26 @@ class TestSynapseFactory:
 
 
 def test_determine_synapse_type():
-    """Unit test for determine_synapse_type."""
-    assert SynapseFactory.determine_synapse_type(True, False) == SynapseType.GABAAB
-    assert SynapseFactory.determine_synapse_type(True, True) == SynapseType.GABAAB
+    # Mocking a pd.Series for syn_description
+    syn_description = pd.Series({
+        SynapseProperty.TYPE: 50,
+        SynapseProperties.plasticity[0]: None,
+        SynapseProperties.plasticity[1]: float('nan')
+    })
 
-    # Test when synapse is excitatory with plasticity
-    assert SynapseFactory.determine_synapse_type(False, True) == SynapseType.GLUSYNAPSE
+    # Test when synapse is inhibitory
+    assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.GABAAB
 
-    # Test when synapse is excitatory without plasticity
-    assert SynapseFactory.determine_synapse_type(False, False) == SynapseType.AMPANMDA
+    # Test when synapse is excitatory with incomplete plasticity
+    syn_description[SynapseProperty.TYPE] = 150
+    syn_description[SynapseProperties.plasticity[0]] = 1.0  # Just one property set
+    assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.AMPANMDA
+
+    # Test when synapse is excitatory with all plasticity properties filled
+    for prop in SynapseProperties.plasticity:
+        syn_description[prop] = 1.0  # Assign a valid value to each plasticity property
+    assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.GLUSYNAPSE
+
+    # Test when synapse is excitatory with one plasticity property as NaN
+    syn_description[SynapseProperties.plasticity[1]] = float('nan')
+    assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.AMPANMDA

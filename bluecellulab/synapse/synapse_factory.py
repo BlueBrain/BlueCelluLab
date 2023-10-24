@@ -15,6 +15,7 @@
 from __future__ import annotations  # PEP-563 forward reference annotations
 from enum import Enum
 import logging
+import math
 
 import neuron
 import numpy as np
@@ -49,12 +50,7 @@ class SynapseFactory:
         connection_modifiers: dict,
     ) -> Synapse:
         """Returns a Synapse object."""
-        is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
-        plasticity_available: bool = all(
-            x in syn_description for x in SynapseProperties.plasticity
-        )
-
-        syn_type = cls.determine_synapse_type(is_inhibitory, plasticity_available)
+        syn_type = cls.determine_synapse_type(syn_description)
         syn_hoc_args = cls.determine_synapse_location(syn_description, cell)
 
         synapse: Synapse
@@ -88,9 +84,14 @@ class SynapseFactory:
 
     @staticmethod
     def determine_synapse_type(
-        is_inhibitory: bool, plasticity_available: bool
+        syn_description: pd.Series,
     ) -> SynapseType:
         """Returns the type of synapse to be created."""
+        is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
+        plasticity_available: bool = all(
+            x in syn_description and syn_description[x] is not None and not math.isnan(syn_description[x])
+            for x in SynapseProperties.plasticity
+        )
         if is_inhibitory:
             return SynapseType.GABAAB
         else:
