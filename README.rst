@@ -20,7 +20,7 @@ BlueCelluLab
 +----------------+------------+
 
 
-The Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells. 
+The Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells.
 Suitable use cases for BlueCelluLab include:
 
 * Scripting and statistical analysis for single cells or cell pairs.
@@ -40,7 +40,7 @@ Citation
 
 When you use this BlueCelluLab software for your research, we ask you to cite the following reference(this includes poster presentations):
 
-.. code-block:: 
+.. code-block::
 
     @software{bluecellulab_zenodo,
       author       = {Van Geit, Werner and Tuncel, Anil and Gevaert, Mike and Torben-Nielsen, Benjamin and Muller, Eilif},
@@ -97,7 +97,7 @@ The following example shows how to create a cell, add a stimulus and run a simul
 Tutorial
 ========
 
-A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `examples page <examples/README.rst>`_.
+A more detailed explanation on how to use BlueCelluLab, as well as other examples can be found on the `examples page <https://github.com/BlueBrain/BlueCelluLab/blob/main/examples/README.rst>`_.
 
 API Documentation
 =================
@@ -114,7 +114,7 @@ Copyright
 
 Copyright (c) 2023 Blue Brain Project/EPFL
 
-This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0.html>`_ 
+This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0.html>`_
 
 For MOD files for which the original source is available on ModelDB, any specific licenses on mentioned on ModelDB, or the generic License of ModelDB apply.
 
@@ -148,11 +148,11 @@ The licenses of the morphology files used in this repository are available on: h
                  :target: https://zenodo.org/badge/latestdoi/640805129
 
 ..
-    The following image is also defined in the index.rst file, as the relative path is 
+    The following image is also defined in the index.rst file, as the relative path is
     different, depending from where it is sourced.
     The following location is used for the github README
-    The index.rst location is used for the docs README; index.rst also defined an end-marker, 
+    The index.rst location is used for the docs README; index.rst also defined an end-marker,
     to skip content after the marker 'substitutions'.
 
 .. substitutions
-.. |banner| image:: docs/source/logo/BlueCelluLabBanner.jpg
+.. |banner| image:: https://raw.githubusercontent.com/BlueBrain/BlueCelluLab/main/docs/source/logo/BlueCelluLabBanner.jpg
