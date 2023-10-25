@@ -100,9 +100,6 @@ class SSim:
         self.cells: CellDict = CellDict()
 
         self.gids_instantiated = False
-        self.connections: defaultdict = defaultdict(
-            lambda: defaultdict(lambda: None)
-        )
 
         # Make sure tstop is set correctly, because it is used by the
         # TStim noise stimulus
