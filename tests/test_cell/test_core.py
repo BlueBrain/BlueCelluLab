@@ -12,6 +12,7 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
+from bluecellulab.ssim import SSim
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -108,6 +109,12 @@ class TestCellBaseClass1:
         self.cell.add_recordings(varnames)
         for varname in varnames:
             assert varname in self.cell.recordings
+
+    def test_add_ais_recording(self):
+        """Cell Test add_ais_recording."""
+        self.cell.add_ais_recording()
+        ais_key = "self.axonal[1](0.5)._ref_v"
+        assert ais_key in self.cell.recordings
 
     def test_add_allsections_voltagerecordings(self):
         """Cell: Test cell.add_allsections_voltagerecordings"""
@@ -353,3 +360,40 @@ def test_add_synapse_replay():
     assert cell.connections[
         ("hippocampus_projections__hippocampus_neurons__chemical", 0)
     ].pre_spiketrain.tolist() == [16.0, 22.0, 48.0]
+
+
+@pytest.mark.v6
+class TestWithinCircuit:
+
+    def setup(self):
+        """Setup method called before each test method."""
+        sonata_sim_path = (
+            parent_dir
+            / "examples"
+            / "sim_quick_scx_sonata_multicircuit"
+            / "simulation_config_noinput.json"
+        )
+        cell_id = ("NodeA", 0)
+        ssim = SSim(sonata_sim_path)
+        ssim.instantiate_gids(cell_id, add_synapses=True, add_stimuli=False)
+        self.cell = ssim.cells[cell_id]
+        self.ssim = ssim  # for persistance
+
+    def test_pre_gids(self):
+        """Test get_pre_gids within a circuit."""
+        pre_gids = self.cell.pre_gids()
+        assert pre_gids == [0, 1]
+
+    def test_pre_gid_synapse_ids(self):
+        """Test pre_gid_synapse_ids within a circuit."""
+        pre_gids = self.cell.pre_gids()
+
+        first_gid_synapse_ids = self.cell.pre_gid_synapse_ids(pre_gids[0])
+        assert first_gid_synapse_ids == [('NodeB__NodeA__chemical', 0), ('NodeB__NodeA__chemical', 2)]
+
+        second_gid_synapse_ids = self.cell.pre_gid_synapse_ids(pre_gids[1])
+        assert len(second_gid_synapse_ids) == 4
+        assert second_gid_synapse_ids[0] == ('NodeA__NodeA__chemical', 0)
+        assert second_gid_synapse_ids[1] == ('NodeA__NodeA__chemical', 1)
+        assert second_gid_synapse_ids[2] == ('NodeB__NodeA__chemical', 1)
+        assert second_gid_synapse_ids[3] == ('NodeB__NodeA__chemical', 3)

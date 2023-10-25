@@ -41,6 +41,7 @@ from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
+from bluecellulab.synapse.synapse_types import SynapseID
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 logger = logging.getLogger(__name__)
@@ -101,11 +102,11 @@ class Cell(InjectableMixin, PlottableMixin):
             self.rng_settings = rng_settings
 
         self.recordings: dict[str, HocObjectType] = {}
-        self.synapses: dict[tuple[str, int], Synapse] = {}
-        self.connections: dict[tuple[str, int], bluecellulab.Connection] = {}
+        self.synapses: dict[SynapseID, Synapse] = {}
+        self.connections: dict[SynapseID, bluecellulab.Connection] = {}
 
-        self.ips: dict[tuple[str, int], HocObjectType] = {}
-        self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
+        self.ips: dict[SynapseID, HocObjectType] = {}
+        self.syn_mini_netcons: dict[SynapseID, HocObjectType] = {}
         self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
@@ -319,17 +320,14 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
         return area
 
-    def add_recording(self, var_name, dt=None):
+    def add_recording(self, var_name: str, dt: Optional[float] = None) -> None:
         """Add a recording to the cell.
 
-        Parameters
-        ----------
-        var_name : string
-                   Variable to be recorded
-        dt : float
-             Recording time step
+        Args:
+            var_name: Variable to be recorded.
+            dt: Recording time step. If not provided, the recording step will
+            default to the simulator's time step.
         """
-
         recording = neuron.h.Vector()
         if dt:
             # This float_epsilon stuff is some magic from M. Hines to make
@@ -347,56 +345,59 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get a more precise record_dt to make time points faill on dts."""
         return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
-    def add_recordings(self, var_names, dt=None):
+    def add_recordings(self, var_names: list[str], dt: Optional[float] = None) -> None:
         """Add a list of recordings to the cell.
 
-        Parameters
-        ----------
-        var_names : list of strings
-                    Variables to be recorded
-        dt : float
-             Recording time step
+        Args:
+            var_names: Variables to be recorded.
+            dt: Recording time step. If not provided, the recording step will
+            default to the simulator's time step.
         """
-
         for var_name in var_names:
             self.add_recording(var_name, dt)
 
-    def add_ais_recording(self, dt=None):
+    def add_ais_recording(self, dt: Optional[float] = None) -> None:
         """Adds recording to AIS."""
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
-    def add_voltage_recording(self, section, segx, dt: Optional[float] = None):
-        """Add a voltage recording to a certain section(segx)
+    def add_voltage_recording(
+        self, section: "neuron.h.Section", segx: float, dt: Optional[float] = None
+    ) -> None:
+        """Add a voltage recording to a certain section at a given segment
+        (segx).
 
-        Parameters
-        ----------
-        section : nrnSection
-                  Section to record from (Neuron section pointer)
-        segx : float
-               Segment x coordinate
-        dt: recording time step
+        Args:
+            section: Section to record from (Neuron section pointer).
+            segx: Segment x coordinate.
+            dt: Recording time step. If not provided, the recording step will default to the simulator's time step.
         """
         var_name = f"neuron.h.{section.name()}({segx})._ref_v"
         self.add_recording(var_name, dt)
 
-    def get_voltage_recording(self, section, segx: float) -> np.ndarray:
-        """Get a voltage recording for a certain section(segx)
+    def get_voltage_recording(
+        self, section: "neuron.h.Section", segx: float
+    ) -> np.ndarray:
+        """Get a voltage recording for a certain section at a given segment
+        (segx).
 
-        Parameters
-        ----------
-        section : nrnSection
-                  Section to record from (Neuron section pointer)
-        segx :
-               Segment x coordinate
+        Args:
+            section: Section to record from (Neuron section pointer).
+            segx: Segment x coordinate.
+
+        Returns:
+            A NumPy array containing the voltage recording values.
+
+        Raises:
+            BluecellulabError: If voltage recording was not added previously using add_voltage_recording.
         """
-
         recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
         else:
-            raise BluecellulabError('get_voltage_recording: Voltage recording %s'
-                                    ' was not added previously using '
-                                    'add_voltage_recording' % recording_name)
+            raise BluecellulabError(
+                f"get_voltage_recording: Voltage recording {recording_name}"
+                " was not added previously using add_voltage_recording"
+            )
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
@@ -418,7 +419,7 @@ class Cell(InjectableMixin, PlottableMixin):
         return np.array(self.recordings[var_name].to_python())
 
     def add_replay_synapse(self,
-                           synapse_id: tuple[str, int],
+                           synapse_id: SynapseID,
                            syn_description: pd.Series,
                            connection_modifiers: dict,
                            condition_parameters: Conditions,
@@ -444,39 +445,28 @@ class Cell(InjectableMixin, PlottableMixin):
         """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 
-    def pre_gids(self):
-        """List of unique gids of cells that connect to this cell.
+    def pre_gids(self) -> list[int]:
+        """Get the list of unique gids of cells that connect to this cell.
 
-        Returns
-        -------
-        A list of gids of cells that connect to this cell.
+        Returns:
+            A list of gids of cells that connect to this cell.
         """
         pre_gids = {self.synapses[syn_id].pre_gid for syn_id in self.synapses}
         return list(pre_gids)
 
-    def pre_gid_synapse_ids(self, pre_gid):
+    def pre_gid_synapse_ids(self, pre_gid: int) -> list[SynapseID]:
         """List of synapse_ids of synapses a cell uses to connect to this cell.
 
-        Parameters
-        ----------
-        pre_gid : int
-                  gid of the presynaptic cell
+        Args:
+            pre_gid: gid of the presynaptic cell.
 
-        Returns
-        -------
-        A list of the synapse_id's that connect the presynaptic cell with
-        this cell.
-        In case there are no such synapses because the cells e.g. are not
-        connected, an empty list is returned.
-        The synapse_id's can be used in the 'synapse' dictionary of this cell
-        to return the Synapse objects
+        Returns:
+            synapse_id's that connect the presynaptic cell with this cell.
         """
-
         syn_id_list = []
         for syn_id in self.synapses:
             if self.synapses[syn_id].pre_gid == pre_gid:
                 syn_id_list.append(syn_id)
-
         return syn_id_list
 
     def create_netcon_spikedetector(self, target, location: str, threshold: float = -30.0):
@@ -531,7 +521,7 @@ class Cell(InjectableMixin, PlottableMixin):
         return result.to_python()
 
     def add_replay_minis(self,
-                         synapse_id: tuple[str, int],
+                         synapse_id: SynapseID,
                          syn_description: pd.Series,
                          connection_modifiers: dict,
                          popids: tuple[int, int],
