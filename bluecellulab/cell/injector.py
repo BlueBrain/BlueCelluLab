@@ -156,20 +156,20 @@ class InjectableMixin:
     def _get_noise_step_rand(self, noisestim_count):
         """Return rng for noise step stimulus."""
         if self.rng_settings.mode == "Compatibility":
-            rng = bluecellulab.neuron.h.Random(self.gid + noisestim_count)
+            rng = bluecellulab.neuron.h.Random(self.cell_id.id + noisestim_count)
         elif self.rng_settings.mode == "UpdatedMCell":
             rng = bluecellulab.neuron.h.Random()
             rng.MCellRan4(
                 noisestim_count * 10000 + 100,
                 self.rng_settings.base_seed +
                 self.rng_settings.stimulus_seed +
-                self.gid * 1000)
+                self.cell_id.id * 1000)
         elif self.rng_settings.mode == "Random123":
             rng = bluecellulab.neuron.h.Random()
             rng.Random123(
                 noisestim_count + 100,
                 self.rng_settings.stimulus_seed + 500,
-                self.gid + 300)
+                self.cell_id.id + 300)
 
         self.persistent.append(rng)
         return rng
@@ -233,7 +233,7 @@ class InjectableMixin:
         if self.rng_settings.mode == "Random123":
             seed1 = stim_count + 2997  # stimulus block
             seed2 = self.rng_settings.stimulus_seed + 291204  # stimulus type
-            seed3 = self.gid + 123 if seed is None else seed  # GID
+            seed3 = self.cell_id.id + 123 if seed is None else seed  # GID
             logger.debug("Using ornstein_uhlenbeck process seeds %d %d %d" %
                          (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()
@@ -249,7 +249,7 @@ class InjectableMixin:
         if self.rng_settings.mode == "Random123":
             seed1 = shotnoise_stim_count + 2997
             seed2 = self.rng_settings.stimulus_seed + 19216
-            seed3 = self.gid + 123 if seed is None else seed
+            seed3 = self.cell_id.id + 123 if seed is None else seed
             logger.debug("Using shot noise seeds %d %d %d" %
                          (seed1, seed2, seed3))
             rng = bluecellulab.neuron.h.Random()

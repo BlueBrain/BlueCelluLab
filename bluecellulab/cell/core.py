@@ -50,10 +50,12 @@ logger = logging.getLogger(__name__)
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a Cell object."""
 
+    max_id = 0
+
     def __init__(self,
                  template_path: str | Path,
                  morphology_path: str | Path,
-                 gid: int = 0,
+                 cell_id: CellId = None,
                  record_dt: Optional[float] = None,
                  template_format: str = "v5",
                  emodel_properties: Optional[EmodelProperties] = None,
@@ -74,6 +76,10 @@ class Cell(InjectableMixin, PlottableMixin):
                 object used by the Cell. Defaults to None.
         """
         super().__init__()
+        if cell_id is None:
+            cell_id = CellId("", Cell.max_id)
+            Cell.max_id += 1
+        self.cell_id = cell_id
         # Persistent objects, like clamps, that exist as long
         # as the object exists
         self.persistent: list[HocObjectType] = []
@@ -83,7 +89,7 @@ class Cell(InjectableMixin, PlottableMixin):
         # Load the template
         neuron_template = NeuronTemplate(template_path, morphology_path)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
-        self.cell = neuron_template.get_cell(template_format, gid, emodel_properties)
+        self.cell = neuron_template.get_cell(template_format, self.cell_id.id, emodel_properties)
 
         self.soma = self.cell.getCell().soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
@@ -93,8 +99,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
         # Set the gid of the cell
-        self.cell.getCell().gid = gid
-        self.gid = gid
+        self.cell.getCell().gid = self.cell_id.id
 
         if rng_settings is None:
             self.rng_settings = RNGSettings("Random123")  # SONATA value
@@ -213,17 +218,17 @@ class Cell(InjectableMixin, PlottableMixin):
                 for section in self.somatic:
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
                         channel_id += 1
                 for section in self.basal:
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
                         channel_id += 1
                 for section in self.apical:
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.gid)
+                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
                         channel_id += 1
             else:
                 self.cell.re_init_rng()
@@ -437,7 +442,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.synapses[synapse_id] = synapse
 
-        logger.debug(f'Added synapse to cell {self.gid}')
+        logger.debug(f'Added synapse to cell {self.cell_id.id}')
 
     def add_replay_delayed_weight(
         self, sid: tuple[str, int], delay: float, weight: float
@@ -581,10 +586,10 @@ class Cell(InjectableMixin, PlottableMixin):
                     + self.rng_settings.minis_seed
                 self.ips[synapse_id].setRNGs(
                     sid + 200,
-                    self.gid + 250,
+                    self.cell_id.id + 250,
                     seed2 + 300,
                     sid + 200,
-                    self.gid + 250,
+                    self.cell_id.id + 250,
                     seed2 + 350)
             else:
                 exprng = bluecellulab.neuron.h.Random()
@@ -595,18 +600,18 @@ class Cell(InjectableMixin, PlottableMixin):
 
                 if self.rng_settings.mode == 'Compatibility':
                     exp_seed1 = sid * 100000 + 200
-                    exp_seed2 = self.gid + 250 + base_seed + \
+                    exp_seed2 = self.cell_id.id + 250 + base_seed + \
                         self.rng_settings.minis_seed
                     uniform_seed1 = sid * 100000 + 300
-                    uniform_seed2 = self.gid + 250 + base_seed + \
+                    uniform_seed2 = self.cell_id.id + 250 + base_seed + \
                         self.rng_settings.minis_seed
                 elif self.rng_settings.mode == "UpdatedMCell":
                     exp_seed1 = sid * 1000 + 200
-                    exp_seed2 = source_popid * 16777216 + self.gid + 250 + \
+                    exp_seed2 = source_popid * 16777216 + self.cell_id.id + 250 + \
                         base_seed + \
                         self.rng_settings.minis_seed
                     uniform_seed1 = sid * 1000 + 300
-                    uniform_seed2 = source_popid * 16777216 + self.gid + 250 \
+                    uniform_seed2 = source_popid * 16777216 + self.cell_id.id + 250 \
                         + base_seed + \
                         self.rng_settings.minis_seed
                 else:
@@ -810,7 +815,7 @@ class Cell(InjectableMixin, PlottableMixin):
                         spike_location=spike_location,
                     )
                     logger.debug(
-                        f"Added synapse replay from {pre_gid} to {self.gid}, {synapse_id}"
+                        f"Added synapse replay from {pre_gid} to {self.cell_id.id}, {synapse_id}"
                     )
 
                     self.connections[synapse_id] = connection
