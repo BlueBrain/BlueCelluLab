@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
@@ -88,17 +89,23 @@ class SynapseFactory:
     ) -> SynapseType:
         """Returns the type of synapse to be created."""
         is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
-        plasticity_available: bool = all(
+        all_plasticity_props_available: bool = all(
             x in syn_description and syn_description[x] is not None and not math.isnan(syn_description[x])
+            for x in SynapseProperties.plasticity
+        )
+        no_plasticity_props_available: bool = all(
+            x not in syn_description or syn_description[x] is None or math.isnan(syn_description[x])
             for x in SynapseProperties.plasticity
         )
         if is_inhibitory:
             return SynapseType.GABAAB
         else:
-            if plasticity_available:
+            if all_plasticity_props_available:
                 return SynapseType.GLUSYNAPSE
-            else:
+            elif no_plasticity_props_available:
                 return SynapseType.AMPANMDA
+            else:
+                raise BluecellulabError("SynapseFactory: Cannot determine synapse type")
 
     @classmethod
     def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> SynapseHocArgs:

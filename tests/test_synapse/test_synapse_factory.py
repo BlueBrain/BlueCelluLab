@@ -10,6 +10,7 @@ from bluecellulab.cell.core import Cell
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty, synapse_property_decoder
+from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.synapse import SynapseFactory
 from bluecellulab.synapse.synapse_factory import SynapseType
 from bluecellulab.synapse.synapse_types import GluSynapse
@@ -84,9 +85,10 @@ def test_determine_synapse_type():
     # Test when synapse is inhibitory
     assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.GABAAB
 
-    # Test when synapse is excitatory with incomplete plasticity
+    # Test when synapse is excitatory with no plasticity
     syn_description[SynapseProperty.TYPE] = 150
-    syn_description[SynapseProperties.plasticity[0]] = 1.0  # Just one property set
+    for prop in SynapseProperties.plasticity:
+        syn_description[prop] = float('nan')  # All properties are NaN
     assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.AMPANMDA
 
     # Test when synapse is excitatory with all plasticity properties filled
@@ -94,6 +96,7 @@ def test_determine_synapse_type():
         syn_description[prop] = 1.0  # Assign a valid value to each plasticity property
     assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.GLUSYNAPSE
 
-    # Test when synapse is excitatory with one plasticity property as NaN
+    # Test when synapse is excitatory with one plasticity property as NaN (should raise an exception)
     syn_description[SynapseProperties.plasticity[1]] = float('nan')
-    assert SynapseFactory.determine_synapse_type(syn_description) == SynapseType.AMPANMDA
+    with pytest.raises(BluecellulabError, match="SynapseFactory: Cannot determine synapse type"):
+        SynapseFactory.determine_synapse_type(syn_description)
