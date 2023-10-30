@@ -261,20 +261,34 @@ class TestCellBaseClassVClamp:
         assert current_after_vc_end == 0.0
 
 
-@pytest.mark.v5
-def test_get_recorded_spikes():
-    """Cell: Test get_recorded_spikes."""
-    cell = bluecellulab.Cell(
-        "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
-        "%s/examples/cell_example1" % str(parent_dir))
-    sim = bluecellulab.Simulation()
-    sim.add_cell(cell)
-    cell.start_recording_spikes(None, "soma", -30)
-    cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
-    sim.run(24, cvode=False)
-    spikes = cell.get_recorded_spikes("soma")
-    ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
-    assert np.allclose(spikes, ground_truth)
+class TestCellSpikes:
+
+    def setup(self):
+        self.cell = bluecellulab.Cell(
+            f"{parent_dir}/examples/cell_example1/test_cell.hoc",
+            f"{parent_dir}/examples/cell_example1")
+        self.sim = bluecellulab.Simulation()
+        self.sim.add_cell(self.cell)
+
+    @pytest.mark.v5
+    def test_get_recorded_spikes(self):
+        """Cell: Test get_recorded_spikes."""
+        self.cell.start_recording_spikes(None, "soma", -30)
+        self.cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+        self.sim.run(24, cvode=False)
+        spikes = self.cell.get_recorded_spikes("soma")
+        ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
+        assert np.allclose(spikes, ground_truth)
+
+    @pytest.mark.v5
+    def test_create_netcon_spikedetector(self):
+        """Cell: create_netcon_spikedetector."""
+        threshold = -29.0
+        netcon = self.cell.create_netcon_spikedetector(None, "AIS", -29.0)
+        assert netcon.threshold == threshold
+        netcon = self.cell.create_netcon_spikedetector(None, "soma", -29.0)
+        with pytest.raises(ValueError):
+            self.cell.create_netcon_spikedetector(None, "Dendrite", -29.0)
 
 
 @pytest.mark.v6
@@ -337,6 +351,10 @@ class TestCellV6:
     def test_area(self):
         """Test the cell's area computation."""
         assert self.cell.area() == 5812.493415302344
+
+    def test_locate_bapsite(self):
+        """Unit test for Cell::locate_bapsite."""
+        
 
 
 @pytest.mark.v6

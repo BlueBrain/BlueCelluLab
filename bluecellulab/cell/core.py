@@ -469,7 +469,7 @@ class Cell(InjectableMixin, PlottableMixin):
                 syn_id_list.append(syn_id)
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, location: str, threshold: float = -30.0):
+    def create_netcon_spikedetector(self, target: HocObjectType, location: str, threshold: float = -30.0) -> HocObjectType:
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
@@ -481,6 +481,9 @@ class Cell(InjectableMixin, PlottableMixin):
             threshold: spike detection threshold
 
         Returns: Neuron netcon object
+
+        Raises:
+            ValueError: If the spike detection location is not 'soma' or 'AIS'.
         """
         if location == "soma":
             sec = self.cell.getCell().soma[0]
@@ -489,13 +492,12 @@ class Cell(InjectableMixin, PlottableMixin):
             sec = self.cell.getCell().axon[1]
             source = self.cell.getCell().axon[1](0.5)._ref_v
         else:
-            raise Exception("Spike detection location must be soma or AIS")
+            raise ValueError("Spike detection location must be soma or AIS")
         netcon = bluecellulab.neuron.h.NetCon(source, target, sec=sec)
         netcon.threshold = threshold
-
         return netcon
 
-    def start_recording_spikes(self, target, location: str, threshold: float = -30):
+    def start_recording_spikes(self, target: HocObjectType, location: str, threshold: float = -30) -> None:
         """Start recording spikes in the current cell.
 
         Args:
