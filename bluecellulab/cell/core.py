@@ -820,11 +820,5 @@ class Cell(InjectableMixin, PlottableMixin):
             for persistent_object in self.persistent:
                 del persistent_object
 
-    @property
-    def hsynapses(self):
-        """Contains a dictionary of all the hoc synapses in the cell with as
-        key the gid."""
-        return {gid: synapse.hsynapse for (gid, synapse) in self.synapses.items()}
-
     def __del__(self):
         self.delete()
