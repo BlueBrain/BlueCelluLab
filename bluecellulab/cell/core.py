@@ -632,25 +632,6 @@ class Cell(InjectableMixin, PlottableMixin):
             self.ips[synapse_id].setTbins(tbins_vec)
             self.ips[synapse_id].setRate(rate_vec)
 
-    def locate_bapsite(self, seclist_name, distance):
-        """Return the location of the BAP site.
-
-        Parameters
-        ----------
-
-        seclist_name : str
-            SectionList to search in
-        distance : float
-            Distance from soma
-
-        Returns
-        -------
-
-        list of sections at the specified distance from the soma
-        """
-        return [x for x in self.cell.getCell().locateBAPSite(seclist_name,
-                                                             distance)]
-
     def get_childrensections(self, parentsection):
         """Get the children section of a neuron section.
 
