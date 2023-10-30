@@ -352,10 +352,6 @@ class TestCellV6:
         """Test the cell's area computation."""
         assert self.cell.area() == 5812.493415302344
 
-    def test_locate_bapsite(self):
-        """Unit test for Cell::locate_bapsite."""
-        
-
 
 @pytest.mark.v6
 def test_add_synapse_replay():
