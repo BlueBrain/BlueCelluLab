@@ -352,6 +352,17 @@ class TestCellV6:
         """Test the cell's area computation."""
         assert self.cell.area() == 5812.493415302344
 
+    def test_get_childrensections(self):
+        """Test the get_childrensections method."""
+        res = self.cell.get_childrensections(self.cell.soma)
+        assert len(res) == 3
+
+    def test_get_parentsection(self):
+        """Test the get_parentsection method."""
+        section = self.cell.get_childrensections(self.cell.soma)[0]
+        res = self.cell.get_parentsection(section)
+        assert res == self.cell.soma
+
 
 @pytest.mark.v6
 def test_add_synapse_replay():

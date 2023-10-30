@@ -632,14 +632,8 @@ class Cell(InjectableMixin, PlottableMixin):
             self.ips[synapse_id].setTbins(tbins_vec)
             self.ips[synapse_id].setRate(rate_vec)
 
-    def get_childrensections(self, parentsection):
-        """Get the children section of a neuron section.
-
-        Returns
-        -------
-
-        list of sections : child sections of the specified parent section
-        """
+    def get_childrensections(self, parentsection: HocObjectType) -> list[HocObjectType]:
+        """Get the children section of a neuron section."""
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
         children = []
         for index in range(0, int(number_children)):
@@ -647,14 +641,8 @@ class Cell(InjectableMixin, PlottableMixin):
         return children
 
     @staticmethod
-    def get_parentsection(childsection):
-        """Get the parent section of a neuron section.
-
-        Returns
-        -------
-
-        section : parent section of the specified child section
-        """
+    def get_parentsection(childsection: HocObjectType) -> HocObjectType:
+        """Get the parent section of a neuron section."""
         return neuron.h.SectionRef(sec=childsection).parent
 
     def addAxialCurrentRecordings(self, section):
