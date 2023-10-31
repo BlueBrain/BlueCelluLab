@@ -292,7 +292,7 @@ class Cell(InjectableMixin, PlottableMixin):
             self._default_enable_ttx()
 
     def disable_ttx(self) -> None:
-        """Add TTX to the environment (i.e. block the Na channels).
+        """Remove TTX from the environment (i.e. unblock the Na channels).
 
         Disable TTX by inserting TTXDynamicsSwitch and setting ttxo to
         1e-14
