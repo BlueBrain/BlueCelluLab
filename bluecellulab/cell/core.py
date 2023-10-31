@@ -31,7 +31,7 @@ from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
 from bluecellulab.cell.sonata_proxy import SonataProxy
 from bluecellulab.cell.serialized_sections import SerializedSections
-from bluecellulab.cell.template import NeuronTemplate
+from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
 from bluecellulab.circuit.node_id import CellId
@@ -84,8 +84,7 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron_template = NeuronTemplate(template_path, morphology_path)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
         self.cell = neuron_template.get_cell(template_format, gid, emodel_properties)
-
-        self.soma = self.cell.getCell().soma[0]
+        self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
@@ -93,7 +92,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
         # Set the gid of the cell
-        self.cell.getCell().gid = gid
+        public_hoc_cell(self.cell).gid = gid
         self.gid = gid
 
         if rng_settings is None:
@@ -113,11 +112,11 @@ class Cell(InjectableMixin, PlottableMixin):
         # time recording needs this push
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
-        self.somatic = [x for x in self.cell.getCell().somatic]
-        self.basal = [x for x in self.cell.getCell().basal]  # dend is same as basal
-        self.apical = [x for x in self.cell.getCell().apical]
-        self.axonal = [x for x in self.cell.getCell().axonal]
-        self.all = [x for x in self.cell.getCell().all]
+        self.somatic = [x for x in public_hoc_cell(self.cell).somatic]
+        self.basal = [x for x in public_hoc_cell(self.cell).basal]  # dend is same as basal
+        self.apical = [x for x in public_hoc_cell(self.cell).apical]
+        self.axonal = [x for x in public_hoc_cell(self.cell).axonal]
+        self.all = [x for x in public_hoc_cell(self.cell).all]
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
@@ -176,7 +175,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         # section are not serialized yet, do it now
         if self.serialized is None:
-            self.serialized = SerializedSections(self.cell.getCell())
+            self.serialized = SerializedSections(public_hoc_cell(self.cell))
 
         for isec in self.serialized.isec2sec:
             hsection = self.get_hsection(isec)
@@ -257,7 +256,7 @@ class Cell(InjectableMixin, PlottableMixin):
         section_id = int(section_id)
         # section are not serialized yet, do it now
         if self.serialized is None:
-            self.serialized = SerializedSections(self.cell.getCell())
+            self.serialized = SerializedSections(public_hoc_cell(self.cell))
 
         try:
             sec_ref = self.serialized.isec2sec[section_id]
@@ -286,8 +285,8 @@ class Cell(InjectableMixin, PlottableMixin):
         Enable TTX by inserting TTXDynamicsSwitch and setting ttxo to
         1.0
         """
-        if hasattr(self.cell.getCell(), 'enable_ttx'):
-            self.cell.getCell().enable_ttx()
+        if hasattr(public_hoc_cell(self.cell), 'enable_ttx'):
+            public_hoc_cell(self.cell).enable_ttx()
         else:
             self._default_enable_ttx()
 
@@ -297,8 +296,8 @@ class Cell(InjectableMixin, PlottableMixin):
         Disable TTX by inserting TTXDynamicsSwitch and setting ttxo to
         1e-14
         """
-        if hasattr(self.cell.getCell(), 'disable_ttx'):
-            self.cell.getCell().disable_ttx()
+        if hasattr(public_hoc_cell(self.cell), 'disable_ttx'):
+            public_hoc_cell(self.cell).disable_ttx()
         else:
             self._default_disable_ttx()
 
@@ -409,14 +408,14 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
-        all_sections = self.cell.getCell().all
+        all_sections = public_hoc_cell(self.cell).all
         for section in all_sections:
             self.add_voltage_recording(section, segx=0.5, dt=self.record_dt)
 
     def get_allsections_voltagerecordings(self) -> dict[str, np.ndarray]:
         """Get all the voltage recordings from all the sections."""
         all_section_voltages = {}
-        all_sections = self.cell.getCell().all
+        all_sections = public_hoc_cell(self.cell).all
         for section in all_sections:
             recording = self.get_voltage_recording(section, segx=0.5)
             all_section_voltages[section.name()] = recording
@@ -494,11 +493,11 @@ class Cell(InjectableMixin, PlottableMixin):
             ValueError: If the spike detection location is not 'soma' or 'AIS'.
         """
         if location == "soma":
-            sec = self.cell.getCell().soma[0]
-            source = self.cell.getCell().soma[0](1)._ref_v
+            sec = public_hoc_cell(self.cell).soma[0]
+            source = public_hoc_cell(self.cell).soma[0](1)._ref_v
         elif location == "AIS":
-            sec = self.cell.getCell().axon[1]
-            source = self.cell.getCell().axon[1](0.5)._ref_v
+            sec = public_hoc_cell(self.cell).axon[1]
+            source = public_hoc_cell(self.cell).axon[1](0.5)._ref_v
         else:
             raise ValueError("Spike detection location must be soma or AIS")
         netcon = bluecellulab.neuron.h.NetCon(source, target, sec=sec)
@@ -678,14 +677,14 @@ class Cell(InjectableMixin, PlottableMixin):
                 if "dend" in secname:
                     dendnumber = int(
                         secname.split("dend")[1].split("[")[1].split("]")[0])
-                    secnumber = int(self.cell.getCell().nSecAxonalOrig +
-                                    self.cell.getCell().nSecSoma + dendnumber)
+                    secnumber = int(public_hoc_cell(self.cell).nSecAxonalOrig +
+                                    public_hoc_cell(self.cell).nSecSoma + dendnumber)
                 elif "apic" in secname:
                     apicnumber = int(secname.split(
                         "apic")[1].split("[")[1].split("]")[0])
-                    secnumber = int(self.cell.getCell().nSecAxonalOrig +
-                                    self.cell.getCell().nSecSoma +
-                                    self.cell.getCell().nSecBasal + apicnumber)
+                    secnumber = int(public_hoc_cell(self.cell).nSecAxonalOrig +
+                                    public_hoc_cell(self.cell).nSecSoma +
+                                    public_hoc_cell(self.cell).nSecBasal + apicnumber)
                     logger.info((apicnumber, secnumber))
                 else:
                     raise Exception(
@@ -814,8 +813,8 @@ class Cell(InjectableMixin, PlottableMixin):
         """Delete the cell."""
         self.delete_plottable()
         if hasattr(self, 'cell') and self.cell is not None:
-            if self.cell.getCell() is not None and hasattr(self.cell.getCell(), 'clear'):
-                self.cell.getCell().clear()
+            if public_hoc_cell(self.cell) is not None and hasattr(public_hoc_cell(self.cell), 'clear'):
+                public_hoc_cell(self.cell).clear()
 
             self.connections = None
             self.synapses = None

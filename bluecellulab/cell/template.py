@@ -33,6 +33,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def public_hoc_cell(cell: HocObjectType) -> HocObjectType:
+    """Retrieve the hoc cell to access public hoc functions/attributes."""
+    if hasattr(cell, "getCell"):
+        return cell.getCell()
+    elif hasattr(cell, "CellRef"):
+        return cell.CellRef
+    else:
+        raise BluecellulabError("""Public cell properties cannot be accessed
+         from the hoc model. Either getCell() or CellRef needs to be provided""")
+
+
 class NeuronTemplate:
     """NeuronTemplate representation."""
 
