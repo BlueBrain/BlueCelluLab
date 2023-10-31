@@ -281,14 +281,14 @@ class Cell(InjectableMixin, PlottableMixin):
         self.is_made_passive = True
 
     def enable_ttx(self) -> None:
-        """Add TTX to the bath (i.e. block the Na channels)."""
+        """Add TTX to the environment (i.e. block the Na channels)."""
         if hasattr(self.cell.getCell(), 'enable_ttx'):
             self.cell.getCell().enable_ttx()
         else:
             self._default_enable_ttx()
 
     def disable_ttx(self) -> None:
-        """Add TTX to the bath (i.e. block the Na channels)."""
+        """Add TTX to the environment (i.e. block the Na channels)."""
         if hasattr(self.cell.getCell(), 'disable_ttx'):
             self.cell.getCell().disable_ttx()
         else:
