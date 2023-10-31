@@ -46,6 +46,7 @@ from bluecellulab.simulation import (
     set_global_condition_parameters,
     set_tstop_value
 )
+from bluecellulab.synapse.synapse_types import SynapseID
 
 logger = logging.getLogger(__name__)
 
@@ -513,7 +514,7 @@ class SSim:
                     None, location=self.spike_location, threshold=self.spike_threshold)
                 self.pc.cell(cell_id.id, nc)  # register cell spike detector
 
-    def _instantiate_synapse(self, cell_id: CellId, syn_id: tuple[str, int], syn_description,
+    def _instantiate_synapse(self, cell_id: CellId, syn_id: SynapseID, syn_description,
                              add_minis=False, popids=(0, 0)) -> None:
         """Instantiate one synapse for a given gid, syn_id and
         syn_description."""

@@ -41,34 +41,37 @@ from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
+from bluecellulab.synapse.synapse_types import SynapseID
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 logger = logging.getLogger(__name__)
 
 
 class Cell(InjectableMixin, PlottableMixin):
-    """Represents a BGLib Cell object."""
+    """Represents a Cell object."""
 
-    def __init__(self, template_path: str | Path, morphology_path: str | Path,
-                 gid=0, record_dt=None, template_format="v5",
+    def __init__(self,
+                 template_path: str | Path,
+                 morphology_path: str | Path,
+                 gid: int = 0,
+                 record_dt: Optional[float] = None,
+                 template_format: str = "v5",
                  emodel_properties: Optional[EmodelProperties] = None,
-                 rng_settings: Optional[RNGSettings] = None):
-        """Constructor.
+                 rng_settings: Optional[RNGSettings] = None) -> None:
+        """Initializes a Cell object.
 
-        Parameters
-        ----------
-        template_path : Full path to BGLib template to be loaded
-        morphology_path : path to morphology file
-        gid : integer
-             GID of the instantiated cell (default: 0)
-        record_dt : float
-                   Force a different timestep for the recordings
-                   (default: None)
-        template_format: str
-                         cell template format such as v6 or v6_air_scaler.
-        emodel_properties: properties such as threshold_current, holding_current
-        rng_settings: bluecellulab.RNGSettings
-                      random number generation setting object used by the Cell.
+        Args:
+            template_path: Full path to hoc template file.
+            morphology_path: Path to morphology file.
+            gid: ID of the cell, used in RNG seeds. Defaults to 0.
+            record_dt: Timestep for the recordings.
+                If not provided, a default is used. Defaults to None.
+            template_format: Cell template format such as 'v5'
+                or 'v6_air_scaler'. Defaults to "v5".
+            emodel_properties: Properties such as
+                threshold_current, holding_current. Defaults to None.
+            rng_settings: Random number generation setting
+                object used by the Cell. Defaults to None.
         """
         super().__init__()
         # Persistent objects, like clamps, that exist as long
@@ -99,11 +102,11 @@ class Cell(InjectableMixin, PlottableMixin):
             self.rng_settings = rng_settings
 
         self.recordings: dict[str, HocObjectType] = {}
-        self.synapses: dict[tuple[str, int], Synapse] = {}
-        self.connections: dict[tuple[str, int], bluecellulab.Connection] = {}
+        self.synapses: dict[SynapseID, Synapse] = {}
+        self.connections: dict[SynapseID, bluecellulab.Connection] = {}
 
-        self.ips: dict[tuple[str, int], HocObjectType] = {}
-        self.syn_mini_netcons: dict[tuple[str, int], HocObjectType] = {}
+        self.ips: dict[SynapseID, HocObjectType] = {}
+        self.syn_mini_netcons: dict[SynapseID, HocObjectType] = {}
         self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
@@ -160,7 +163,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
-    def init_psections(self):
+    def init_psections(self) -> None:
         """Initialize the psections list.
 
         This list contains the Python representation of the psections of
@@ -197,17 +200,11 @@ class Cell(InjectableMixin, PlottableMixin):
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
-    def get_section_id(self, secname=None):
-        """Get section based on section id.
+    def get_section_id(self, secname: str) -> int:
+        """Returns the id of the section with name secname."""
+        return self.secname_to_psection[secname].isec
 
-        Returns
-        -------
-        integer: section id
-                 section id of the section with name secname
-        """
-        return self.secname_to_psection[secname].section_id
-
-    def re_init_rng(self, use_random123_stochkv=None):
+    def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
 
         if not self.is_made_passive:
@@ -270,9 +267,8 @@ class Cell(InjectableMixin, PlottableMixin):
             ) from e
         return sec_ref.sec
 
-    def make_passive(self):
+    def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
-
         for section in self.all:
             mech_names = set()
             for seg in section:
@@ -284,51 +280,45 @@ class Cell(InjectableMixin, PlottableMixin):
                     neuron.h('uninsert %s' % mech_name, sec=section)
         self.is_made_passive = True
 
-    def enable_ttx(self):
-        """Add TTX to the bath (i.e. block the Na channels)"""
+    def enable_ttx(self) -> None:
+        """Add TTX to the environment (i.e. block the Na channels).
 
+        Enable TTX by inserting TTXDynamicsSwitch and setting ttxo to
+        1.0
+        """
         if hasattr(self.cell.getCell(), 'enable_ttx'):
             self.cell.getCell().enable_ttx()
         else:
             self._default_enable_ttx()
 
-    def disable_ttx(self):
-        """Add TTX to the bath (i.e. block the Na channels)"""
+    def disable_ttx(self) -> None:
+        """Remove TTX from the environment (i.e. unblock the Na channels).
 
+        Disable TTX by inserting TTXDynamicsSwitch and setting ttxo to
+        1e-14
+        """
         if hasattr(self.cell.getCell(), 'disable_ttx'):
             self.cell.getCell().disable_ttx()
         else:
             self._default_disable_ttx()
 
-    def _default_enable_ttx(self):
+    def _default_enable_ttx(self) -> None:
         """Default enable_ttx implementation."""
-
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
-    def _default_disable_ttx(self):
+    def _default_disable_ttx(self) -> None:
         """Default disable_ttx implementation."""
-
         for section in self.all:
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
 
-    def area(self):
-        """Calculate the total area of the cell.
-
-        Parameters
-        ----------
-
-
-        Returns
-        -------
-        area : float
-               Total surface area of the cell
-        """
-        area = 0
+    def area(self) -> float:
+        """The total surface area of the cell."""
+        area = 0.0
         for section in self.all:
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
@@ -338,17 +328,14 @@ class Cell(InjectableMixin, PlottableMixin):
             #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
         return area
 
-    def add_recording(self, var_name, dt=None):
+    def add_recording(self, var_name: str, dt: Optional[float] = None) -> None:
         """Add a recording to the cell.
 
-        Parameters
-        ----------
-        var_name : string
-                   Variable to be recorded
-        dt : float
-             Recording time step
+        Args:
+            var_name: Variable to be recorded.
+            dt: Recording time step. If not provided, the recording step will
+            default to the simulator's time step.
         """
-
         recording = neuron.h.Vector()
         if dt:
             # This float_epsilon stuff is some magic from M. Hines to make
@@ -362,60 +349,63 @@ class Cell(InjectableMixin, PlottableMixin):
         self.recordings[var_name] = recording
 
     @staticmethod
-    def get_precise_record_dt(dt):
+    def get_precise_record_dt(dt: float) -> float:
         """Get a more precise record_dt to make time points faill on dts."""
         return (1.0 + neuron.h.float_epsilon) / (1.0 / dt)
 
-    def add_recordings(self, var_names, dt=None):
+    def add_recordings(self, var_names: list[str], dt: Optional[float] = None) -> None:
         """Add a list of recordings to the cell.
 
-        Parameters
-        ----------
-        var_names : list of strings
-                    Variables to be recorded
-        dt : float
-             Recording time step
+        Args:
+            var_names: Variables to be recorded.
+            dt: Recording time step. If not provided, the recording step will
+            default to the simulator's time step.
         """
-
         for var_name in var_names:
             self.add_recording(var_name, dt)
 
-    def add_ais_recording(self, dt=None):
+    def add_ais_recording(self, dt: Optional[float] = None) -> None:
         """Adds recording to AIS."""
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
-    def add_voltage_recording(self, section, segx, dt: Optional[float] = None):
-        """Add a voltage recording to a certain section(segx)
+    def add_voltage_recording(
+        self, section: "neuron.h.Section", segx: float, dt: Optional[float] = None
+    ) -> None:
+        """Add a voltage recording to a certain section at a given segment
+        (segx).
 
-        Parameters
-        ----------
-        section : nrnSection
-                  Section to record from (Neuron section pointer)
-        segx : float
-               Segment x coordinate
-        dt: recording time step
+        Args:
+            section: Section to record from (Neuron section pointer).
+            segx: Segment x coordinate.
+            dt: Recording time step. If not provided, the recording step will default to the simulator's time step.
         """
         var_name = f"neuron.h.{section.name()}({segx})._ref_v"
         self.add_recording(var_name, dt)
 
-    def get_voltage_recording(self, section, segx: float) -> np.ndarray:
-        """Get a voltage recording for a certain section(segx)
+    def get_voltage_recording(
+        self, section: "neuron.h.Section", segx: float
+    ) -> np.ndarray:
+        """Get a voltage recording for a certain section at a given segment
+        (segx).
 
-        Parameters
-        ----------
-        section : nrnSection
-                  Section to record from (Neuron section pointer)
-        segx :
-               Segment x coordinate
+        Args:
+            section: Section to record from (Neuron section pointer).
+            segx: Segment x coordinate.
+
+        Returns:
+            A NumPy array containing the voltage recording values.
+
+        Raises:
+            BluecellulabError: If voltage recording was not added previously using add_voltage_recording.
         """
-
         recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
         else:
-            raise BluecellulabError('get_voltage_recording: Voltage recording %s'
-                                    ' was not added previously using '
-                                    'add_voltage_recording' % recording_name)
+            raise BluecellulabError(
+                f"get_voltage_recording: Voltage recording {recording_name}"
+                " was not added previously using add_voltage_recording"
+            )
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
@@ -437,7 +427,7 @@ class Cell(InjectableMixin, PlottableMixin):
         return np.array(self.recordings[var_name].to_python())
 
     def add_replay_synapse(self,
-                           synapse_id: tuple[str, int],
+                           synapse_id: SynapseID,
                            syn_description: pd.Series,
                            connection_modifiers: dict,
                            condition_parameters: Conditions,
@@ -463,42 +453,31 @@ class Cell(InjectableMixin, PlottableMixin):
         """Add a synaptic weight for sid that will be set with a time delay."""
         self.delayed_weights.put((delay, (sid, weight)))
 
-    def pre_gids(self):
-        """List of unique gids of cells that connect to this cell.
+    def pre_gids(self) -> list[int]:
+        """Get the list of unique gids of cells that connect to this cell.
 
-        Returns
-        -------
-        A list of gids of cells that connect to this cell.
+        Returns:
+            A list of gids of cells that connect to this cell.
         """
         pre_gids = {self.synapses[syn_id].pre_gid for syn_id in self.synapses}
         return list(pre_gids)
 
-    def pre_gid_synapse_ids(self, pre_gid):
+    def pre_gid_synapse_ids(self, pre_gid: int) -> list[SynapseID]:
         """List of synapse_ids of synapses a cell uses to connect to this cell.
 
-        Parameters
-        ----------
-        pre_gid : int
-                  gid of the presynaptic cell
+        Args:
+            pre_gid: gid of the presynaptic cell.
 
-        Returns
-        -------
-        A list of the synapse_id's that connect the presynaptic cell with
-        this cell.
-        In case there are no such synapses because the cells e.g. are not
-        connected, an empty list is returned.
-        The synapse_id's can be used in the 'synapse' dictionary of this cell
-        to return the Synapse objects
+        Returns:
+            synapse_id's that connect the presynaptic cell with this cell.
         """
-
         syn_id_list = []
         for syn_id in self.synapses:
             if self.synapses[syn_id].pre_gid == pre_gid:
                 syn_id_list.append(syn_id)
-
         return syn_id_list
 
-    def create_netcon_spikedetector(self, target, location: str, threshold: float = -30.0):
+    def create_netcon_spikedetector(self, target: HocObjectType, location: str, threshold: float = -30.0) -> HocObjectType:
         """Add and return a spikedetector.
 
         This is a NetCon that detects spike in the current cell, and that
@@ -510,6 +489,9 @@ class Cell(InjectableMixin, PlottableMixin):
             threshold: spike detection threshold
 
         Returns: Neuron netcon object
+
+        Raises:
+            ValueError: If the spike detection location is not 'soma' or 'AIS'.
         """
         if location == "soma":
             sec = self.cell.getCell().soma[0]
@@ -518,13 +500,12 @@ class Cell(InjectableMixin, PlottableMixin):
             sec = self.cell.getCell().axon[1]
             source = self.cell.getCell().axon[1](0.5)._ref_v
         else:
-            raise Exception("Spike detection location must be soma or AIS")
+            raise ValueError("Spike detection location must be soma or AIS")
         netcon = bluecellulab.neuron.h.NetCon(source, target, sec=sec)
         netcon.threshold = threshold
-
         return netcon
 
-    def start_recording_spikes(self, target, location: str, threshold: float = -30):
+    def start_recording_spikes(self, target: HocObjectType, location: str, threshold: float = -30) -> None:
         """Start recording spikes in the current cell.
 
         Args:
@@ -550,7 +531,7 @@ class Cell(InjectableMixin, PlottableMixin):
         return result.to_python()
 
     def add_replay_minis(self,
-                         synapse_id: tuple[str, int],
+                         synapse_id: SynapseID,
                          syn_description: pd.Series,
                          connection_modifiers: dict,
                          popids: tuple[int, int],
@@ -659,33 +640,8 @@ class Cell(InjectableMixin, PlottableMixin):
             self.ips[synapse_id].setTbins(tbins_vec)
             self.ips[synapse_id].setRate(rate_vec)
 
-    def locate_bapsite(self, seclist_name, distance):
-        """Return the location of the BAP site.
-
-        Parameters
-        ----------
-
-        seclist_name : str
-            SectionList to search in
-        distance : float
-            Distance from soma
-
-        Returns
-        -------
-
-        list of sections at the specified distance from the soma
-        """
-        return [x for x in self.cell.getCell().locateBAPSite(seclist_name,
-                                                             distance)]
-
-    def get_childrensections(self, parentsection):
-        """Get the children section of a neuron section.
-
-        Returns
-        -------
-
-        list of sections : child sections of the specified parent section
-        """
+    def get_childrensections(self, parentsection: HocObjectType) -> list[HocObjectType]:
+        """Get the children section of a neuron section."""
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
         children = []
         for index in range(0, int(number_children)):
@@ -693,14 +649,8 @@ class Cell(InjectableMixin, PlottableMixin):
         return children
 
     @staticmethod
-    def get_parentsection(childsection):
-        """Get the parent section of a neuron section.
-
-        Returns
-        -------
-
-        section : parent section of the specified child section
-        """
+    def get_parentsection(childsection: HocObjectType) -> HocObjectType:
+        """Get the parent section of a neuron section."""
         return neuron.h.SectionRef(sec=childsection).parent
 
     def addAxialCurrentRecordings(self, section):
@@ -877,12 +827,6 @@ class Cell(InjectableMixin, PlottableMixin):
         if hasattr(self, 'persistent'):
             for persistent_object in self.persistent:
                 del persistent_object
-
-    @property
-    def hsynapses(self):
-        """Contains a dictionary of all the hoc synapses in the cell with as
-        key the gid."""
-        return {gid: synapse.hsynapse for (gid, synapse) in self.synapses.items()}
 
     def __del__(self):
         self.delete()

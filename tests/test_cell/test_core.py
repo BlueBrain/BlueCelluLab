@@ -12,6 +12,7 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
+from bluecellulab.ssim import SSim
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -108,6 +109,12 @@ class TestCellBaseClass1:
         self.cell.add_recordings(varnames)
         for varname in varnames:
             assert varname in self.cell.recordings
+
+    def test_add_ais_recording(self):
+        """Cell Test add_ais_recording."""
+        self.cell.add_ais_recording()
+        ais_key = "self.axonal[1](0.5)._ref_v"
+        assert ais_key in self.cell.recordings
 
     def test_add_allsections_voltagerecordings(self):
         """Cell: Test cell.add_allsections_voltagerecordings"""
@@ -254,20 +261,34 @@ class TestCellBaseClassVClamp:
         assert current_after_vc_end == 0.0
 
 
-@pytest.mark.v5
-def test_get_recorded_spikes():
-    """Cell: Test get_recorded_spikes."""
-    cell = bluecellulab.Cell(
-        "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
-        "%s/examples/cell_example1" % str(parent_dir))
-    sim = bluecellulab.Simulation()
-    sim.add_cell(cell)
-    cell.start_recording_spikes(None, "soma", -30)
-    cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
-    sim.run(24, cvode=False)
-    spikes = cell.get_recorded_spikes("soma")
-    ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
-    assert np.allclose(spikes, ground_truth)
+class TestCellSpikes:
+
+    def setup(self):
+        self.cell = bluecellulab.Cell(
+            f"{parent_dir}/examples/cell_example1/test_cell.hoc",
+            f"{parent_dir}/examples/cell_example1")
+        self.sim = bluecellulab.Simulation()
+        self.sim.add_cell(self.cell)
+
+    @pytest.mark.v5
+    def test_get_recorded_spikes(self):
+        """Cell: Test get_recorded_spikes."""
+        self.cell.start_recording_spikes(None, "soma", -30)
+        self.cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+        self.sim.run(24, cvode=False)
+        spikes = self.cell.get_recorded_spikes("soma")
+        ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
+        assert np.allclose(spikes, ground_truth)
+
+    @pytest.mark.v5
+    def test_create_netcon_spikedetector(self):
+        """Cell: create_netcon_spikedetector."""
+        threshold = -29.0
+        netcon = self.cell.create_netcon_spikedetector(None, "AIS", -29.0)
+        assert netcon.threshold == threshold
+        netcon = self.cell.create_netcon_spikedetector(None, "soma", -29.0)
+        with pytest.raises(ValueError):
+            self.cell.create_netcon_spikedetector(None, "Dendrite", -29.0)
 
 
 @pytest.mark.v6
@@ -293,23 +314,54 @@ def test_add_dendrogram():
 
 
 @pytest.mark.v6
-def test_repr_and_str():
-    """Test the repr and str representations of a cell object."""
-    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
-                                         holding_current=1.4146618843078613,
-                                         ais_scaler=1.4561502933502197,
-                                         soma_scaler=1.0)
-    cell = bluecellulab.Cell(
-        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
-        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-        template_format="v6_adapted",
-        emodel_properties=emodel_properties)
-    # >>> print(cell)
-    # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
-    # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+class TestCellV6:
+    """Test class for testing Cell object functionalities with v6 template."""
 
-    # make sure NEURON template name is in the string representation
-    assert cell.cell.hname().split('[')[0] in str(cell)
+    def setup(self):
+        """Setup."""
+        emodel_properties = EmodelProperties(
+            threshold_current=1.1433533430099487,
+            holding_current=1.4146618843078613,
+            ais_scaler=1.4561502933502197,
+            soma_scaler=1.0
+        )
+        self.cell = bluecellulab.Cell(
+            "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+            "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+            template_format="v6_adapted",
+            emodel_properties=emodel_properties
+        )
+
+    def test_repr_and_str(self):
+        """Test the repr and str representations of a cell object."""
+        # >>> print(cell)
+        # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
+        # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+        # make sure NEURON template name is in the string representation
+        assert self.cell.cell.hname().split('[')[0] in str(self.cell)
+
+    def test_get_section_id(self):
+        """Test the get_section_id method."""
+        self.cell.init_psections()
+        assert self.cell.get_section_id(str(self.cell.soma)) == 0
+        assert self.cell.get_section_id(str(self.cell.axonal[0])) == 1
+        assert self.cell.get_section_id(str(self.cell.basal[0])) == 145
+        assert self.cell.get_section_id(str(self.cell.apical[0])) == 169
+
+    def test_area(self):
+        """Test the cell's area computation."""
+        assert self.cell.area() == 5812.493415302344
+
+    def test_get_childrensections(self):
+        """Test the get_childrensections method."""
+        res = self.cell.get_childrensections(self.cell.soma)
+        assert len(res) == 3
+
+    def test_get_parentsection(self):
+        """Test the get_parentsection method."""
+        section = self.cell.get_childrensections(self.cell.soma)[0]
+        res = self.cell.get_parentsection(section)
+        assert res == self.cell.soma
 
 
 @pytest.mark.v6
@@ -333,3 +385,40 @@ def test_add_synapse_replay():
     assert cell.connections[
         ("hippocampus_projections__hippocampus_neurons__chemical", 0)
     ].pre_spiketrain.tolist() == [16.0, 22.0, 48.0]
+
+
+@pytest.mark.v6
+class TestWithinCircuit:
+
+    def setup(self):
+        """Setup method called before each test method."""
+        sonata_sim_path = (
+            parent_dir
+            / "examples"
+            / "sim_quick_scx_sonata_multicircuit"
+            / "simulation_config_noinput.json"
+        )
+        cell_id = ("NodeA", 0)
+        ssim = SSim(sonata_sim_path)
+        ssim.instantiate_gids(cell_id, add_synapses=True, add_stimuli=False)
+        self.cell = ssim.cells[cell_id]
+        self.ssim = ssim  # for persistance
+
+    def test_pre_gids(self):
+        """Test get_pre_gids within a circuit."""
+        pre_gids = self.cell.pre_gids()
+        assert pre_gids == [0, 1]
+
+    def test_pre_gid_synapse_ids(self):
+        """Test pre_gid_synapse_ids within a circuit."""
+        pre_gids = self.cell.pre_gids()
+
+        first_gid_synapse_ids = self.cell.pre_gid_synapse_ids(pre_gids[0])
+        assert first_gid_synapse_ids == [('NodeB__NodeA__chemical', 0), ('NodeB__NodeA__chemical', 2)]
+
+        second_gid_synapse_ids = self.cell.pre_gid_synapse_ids(pre_gids[1])
+        assert len(second_gid_synapse_ids) == 4
+        assert second_gid_synapse_ids[0] == ('NodeA__NodeA__chemical', 0)
+        assert second_gid_synapse_ids[1] == ('NodeA__NodeA__chemical', 1)
+        assert second_gid_synapse_ids[2] == ('NodeB__NodeA__chemical', 1)
+        assert second_gid_synapse_ids[3] == ('NodeB__NodeA__chemical', 3)
