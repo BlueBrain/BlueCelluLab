@@ -197,6 +197,9 @@ class TestInjector:
         hypamp = self.cell.hypamp
         assert tstim.stim.to_python() == [0.0, hypamp, hypamp, 0.0, 0.0]
         assert tstim.tvec.to_python() == [4.0, 4.0, 24.0, 24.0, 24.0]
+        with pytest.raises(BluecellulabError):
+            self.cell.hypamp = None
+            self.cell.add_replay_hypamp(stimulus)
 
     def test_add_replay_relativelinear(self):
         """Unit test for add_replay_relativelinear."""
