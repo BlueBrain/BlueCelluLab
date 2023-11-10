@@ -85,9 +85,6 @@ class NeuronTemplate:
                     morph_fname,
                     *[emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
                 )
-            cell = getattr(neuron.h, self.template_name)(
-                gid, morph_dir, morph_fname
-            )
         elif template_format == "bluepyopt":
             cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)
         else:
