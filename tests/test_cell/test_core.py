@@ -296,12 +296,12 @@ def test_add_dendrogram():
     """Cell: Test get_recorded_spikes."""
     emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
                                          holding_current=1.4146618843078613,
-                                         ais_scaler=1.4561502933502197,
+                                         AIS_scaler=1.4561502933502197,
                                          soma_scaler=1.0)
     cell = bluecellulab.Cell(
         "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
         "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-        template_format="v6_adapted",
+        template_format="v6",
         emodel_properties=emodel_properties)
     cell.add_plot_window(['self.soma(0.5)._ref_v'])
     output_path = "cADpyr_L2TPC_dendrogram.png"
@@ -314,8 +314,25 @@ def test_add_dendrogram():
 
 
 @pytest.mark.v6
+<<<<<<< Updated upstream
 class TestCellV6:
     """Test class for testing Cell object functionalities with v6 template."""
+=======
+def test_repr_and_str():
+    """Test the repr and str representations of a cell object."""
+    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
+                                         holding_current=1.4146618843078613,
+                                         AIS_scaler=1.4561502933502197,
+                                         soma_scaler=1.0)
+    cell = bluecellulab.Cell(
+        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+        template_format="v6",
+        emodel_properties=emodel_properties)
+    # >>> print(cell)
+    # Cell Object: <bluecellulab.cell.core.Cell object at 0x7f73b3fb2550>.
+    # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
+>>>>>>> Stashed changes
 
     def setup(self):
         """Setup."""

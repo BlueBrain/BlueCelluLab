@@ -100,9 +100,9 @@ class TestOnSonataCell:
             script_dir
             / "examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc"
         )
-        self.template_format = "v6_adapted"
+        self.template_format = "v6"
         self.emodel_properties = EmodelProperties(
-            threshold_current=0.03203125, holding_current=-0.11, ais_scaler=1.11
+            threshold_current=0.03203125, holding_current=-0.11, AIS_scaler=1.11
         )
 
     def test_detect_hyp_current(self):
