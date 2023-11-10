@@ -61,10 +61,10 @@ def test_import_neurodamus(mocked_pkg_resources):
     mock_neuron.h.load_file.assert_any_call("/fake/path/to/hoc_file.hoc")
 
 
-@patch("builtins.print")
-def test_print_header(mocked_print):
+@patch("logging.info")
+def test_print_header(mocked_log):
     mock_neuron = MagicMock(__file__="/fake/path/to/neuron")
     importer.print_header(mock_neuron, "/fake/path/to/mod_lib")
-    # Check if the expected print calls were made
-    mocked_print.assert_any_call("Imported NEURON from: /fake/path/to/neuron")
-    mocked_print.assert_any_call("Mod lib: ", "/fake/path/to/mod_lib")
+    # Check if the expected log calls were made
+    mocked_log.assert_any_call("Imported NEURON from: /fake/path/to/neuron")
+    mocked_log.assert_any_call("Mod lib: %s", "/fake/path/to/mod_lib")
