@@ -14,11 +14,13 @@
 """Module that allows morphology sections to be accessed from an array by
 index."""
 
+import logging
 import warnings
 import neuron
 from bluecellulab.type_aliases import HocObjectType
 
 
+logger = logging.getLogger(__name__)
 warnings.filterwarnings("once", category=UserWarning, module=__name__)
 
 
@@ -31,7 +33,7 @@ class SerializedSections:
         for index, sec in enumerate(cell.all, start=1):
             v_value = sec(0.0001).v
             if v_value >= n:
-                print(f"{sec.name()} v(1)={sec(1).v} n3d()={sec.n3d()}")
+                logging.debug(f"{sec.name()} v(1)={sec(1).v} n3d()={sec.n3d()}")
                 raise ValueError("Error: failure in mk2_isec2sec()")
 
             if v_value < 0:

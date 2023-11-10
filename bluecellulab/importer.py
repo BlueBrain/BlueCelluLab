@@ -13,12 +13,17 @@
 # limitations under the License.
 """Main importer of bluecellulab."""
 
+import logging
 import os
 from types import ModuleType
 import pkg_resources
+
 import neuron
 
 from bluecellulab.exceptions import BluecellulabError
+
+
+logger = logging.getLogger(__name__)
 
 
 def import_mod_lib(neuron: ModuleType) -> str:
@@ -62,8 +67,8 @@ def import_neurodamus(neuron: ModuleType) -> None:
 
 def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
     """Print bluecellulab header to stdout."""
-    print("Imported NEURON from: %s" % neuron.__file__)
-    print('Mod lib: ', mod_lib_path)
+    logger.info("Imported NEURON from: %s" % neuron.__file__)
+    logger.info('Mod lib: ', mod_lib_path)
 
 
 mod_lib_paths = import_mod_lib(neuron)
