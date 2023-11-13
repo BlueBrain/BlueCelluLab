@@ -139,7 +139,7 @@ class Simulation:
         # initialized heavily influence the random number generator
         # e.g. finitialize() + step() != run()
 
-        logger.info(f'Running a simulation until {maxtime} ms ...')
+        logger.debug(f'Running a simulation until {maxtime} ms ...')
 
         self.init_callbacks()
 
@@ -175,7 +175,7 @@ class Simulation:
                     "stochastic channels")
             neuron.h.cvode_active(cvode_old_status)
 
-        logger.info("Finished simulation.")
+        logger.debug("Finished simulation.")
 
     def __del__(self):
         pass
