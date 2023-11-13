@@ -20,33 +20,7 @@ parent_dir = Path(__file__).resolve().parent.parent
 
 
 @pytest.mark.v6
-<<<<<<< Updated upstream
 class TestSynapseFactory:
-=======
-def test_create_synapse():
-    """Unit test for create_synapse."""
-    emodel_properties = EmodelProperties(threshold_current=1.1433533430099487,
-                                         holding_current=1.4146618843078613,
-                                         AIS_scaler=1.4561502933502197,
-                                         soma_scaler=1.0)
-    cell = Cell(
-        "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
-        "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-        template_format="v6",
-        emodel_properties=emodel_properties)
-    location = 0.5
-    syn_id = ("a", 0)
-    with open("tests/test_synapse/test-synapse-series.json") as f:
-        syn_description = pd.Series(json.load(f, object_hook=synapse_property_decoder))
-    condition_parameters = Conditions.init_empty()
-    popids = (0, 0)
-    extracellular_calcium = 2.0
-    connection_modifiers = {
-        'Weight': 1.15143,
-        'SpontMinis': 0.0,
-        'SynapseConfigure': ['%s.Use = 1 %s.Use_GB = 1 %s.Use_p = 1 %s.gmax0_AMPA = gmax_p_AMPA %s.rho_GB = 1 %s.rho0_GB = 1 %s.gmax_AMPA = %s.gmax_p_AMPA']
-    }
->>>>>>> Stashed changes
 
     def setup(self):
         emodel_properties = EmodelProperties(
