@@ -1,5 +1,7 @@
+import logging
 import os
 import pytest
+from types import ModuleType
 from unittest.mock import MagicMock, patch
 from bluecellulab import importer
 from bluecellulab.exceptions import BluecellulabError
@@ -61,10 +63,14 @@ def test_import_neurodamus(mocked_pkg_resources):
     mock_neuron.h.load_file.assert_any_call("/fake/path/to/hoc_file.hoc")
 
 
-@patch("builtins.print")
-def test_print_header(mocked_print):
-    mock_neuron = MagicMock(__file__="/fake/path/to/neuron")
-    importer.print_header(mock_neuron, "/fake/path/to/mod_lib")
-    # Check if the expected print calls were made
-    mocked_print.assert_any_call("Imported NEURON from: /fake/path/to/neuron")
-    mocked_print.assert_any_call("Mod lib: ", "/fake/path/to/mod_lib")
+def test_print_header(caplog):
+    # Creating a dummy ModuleType object with an attribute '__file__'
+    dummy_neuron = ModuleType("dummy_neuron")
+    dummy_neuron.__file__ = "/path/to/neuron"
+
+    mod_lib_path = "/path/to/mod_lib"
+    with caplog.at_level(logging.INFO):
+        importer.print_header(dummy_neuron, mod_lib_path)
+
+    assert "Imported NEURON from: /path/to/neuron" in caplog.text
+    assert "Mod lib: /path/to/mod_lib" in caplog.text
