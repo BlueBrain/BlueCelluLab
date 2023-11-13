@@ -67,8 +67,8 @@ def import_neurodamus(neuron: ModuleType) -> None:
 
 def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
     """Print bluecellulab header to stdout."""
-    logger.info("Imported NEURON from: %s" % neuron.__file__)
-    logger.info('Mod lib: ', mod_lib_path)
+    logger.info(f"Imported NEURON from: {neuron.__file__}")
+    logger.info(f"Mod lib: {mod_lib_path}")
 
 
 mod_lib_paths = import_mod_lib(neuron)
