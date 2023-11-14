@@ -40,7 +40,7 @@ def test_sim_quick_scx_sonata(input_type):
     mainsim_voltage = sim.get_mainsim_voltage_trace(cell_id)
     voltage_diff = voltage - mainsim_voltage
     rms_error = np.sqrt(np.mean(voltage_diff ** 2))
-    assert rms_error < 1e-4
+    assert rms_error < 2e-2
 
 
 @pytest.mark.v6

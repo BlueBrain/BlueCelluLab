@@ -26,12 +26,12 @@ class TestSynapseFactory:
         emodel_properties = EmodelProperties(
             threshold_current=1.1433533430099487,
             holding_current=1.4146618843078613,
-            ais_scaler=1.4561502933502197,
+            AIS_scaler=1.4561502933502197,
             soma_scaler=1.0)
         self.cell = Cell(
             parent_dir / "examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc",
             parent_dir / "examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc",
-            template_format="v6_adapted",
+            template_format="v6",
             emodel_properties=emodel_properties,
         )
         with open("tests/test_synapse/test-synapse-series.json") as f:
