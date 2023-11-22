@@ -43,7 +43,8 @@ setuptools.setup(
         "pandas>=1.0.0,<3.0.0",
         "bluepysnap>=1.0.5,<2.0.0",
         "pydantic>=1.10.2,<2.0.0",
-        "typing-extensions>=4.8.0"
+        "typing-extensions>=4.8.0",
+        "networkx"
     ],
     keywords=[
         'computational neuroscience',
