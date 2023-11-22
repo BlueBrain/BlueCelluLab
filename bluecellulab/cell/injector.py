@@ -214,7 +214,9 @@ class InjectableMixin:
     def add_replay_hypamp(self, stimulus: Hyperpolarizing):
         """Inject hypamp for the replay."""
         tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)  # type: ignore
-        amp = self.hypamp  # type: ignore
+        if self.hypamp is None:  # type: ignore
+            raise BluecellulabError("Cell.hypamp must be set for hypamp stimulus")
+        amp: float = self.hypamp  # type: ignore
         tstim.pulse(stimulus.delay, stimulus.duration, amp)
         self.persistent.append(tstim)  # type: ignore
         return tstim

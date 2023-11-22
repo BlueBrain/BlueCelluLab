@@ -15,6 +15,7 @@
 from __future__ import annotations  # PEP-563 forward reference annotations
 from enum import Enum
 import logging
+import math
 
 import neuron
 import numpy as np
@@ -22,6 +23,7 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.synapse import Synapse, GabaabSynapse, AmpanmdaSynapse, GluSynapse
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty
@@ -49,12 +51,7 @@ class SynapseFactory:
         connection_modifiers: dict,
     ) -> Synapse:
         """Returns a Synapse object."""
-        is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
-        plasticity_available: bool = all(
-            x in syn_description for x in SynapseProperties.plasticity
-        )
-
-        syn_type = cls.determine_synapse_type(is_inhibitory, plasticity_available)
+        syn_type = cls.determine_synapse_type(syn_description)
         syn_hoc_args = cls.determine_synapse_location(syn_description, cell)
 
         synapse: Synapse
@@ -88,16 +85,27 @@ class SynapseFactory:
 
     @staticmethod
     def determine_synapse_type(
-        is_inhibitory: bool, plasticity_available: bool
+        syn_description: pd.Series,
     ) -> SynapseType:
         """Returns the type of synapse to be created."""
+        is_inhibitory: bool = int(syn_description[SynapseProperty.TYPE]) < 100
+        all_plasticity_props_available: bool = all(
+            x in syn_description and syn_description[x] is not None and not math.isnan(syn_description[x])
+            for x in SynapseProperties.plasticity
+        )
+        no_plasticity_props_available: bool = all(
+            x not in syn_description or syn_description[x] is None or math.isnan(syn_description[x])
+            for x in SynapseProperties.plasticity
+        )
         if is_inhibitory:
             return SynapseType.GABAAB
         else:
-            if plasticity_available:
+            if all_plasticity_props_available:
                 return SynapseType.GLUSYNAPSE
-            else:
+            elif no_plasticity_props_available:
                 return SynapseType.AMPANMDA
+            else:
+                raise BluecellulabError("SynapseFactory: Cannot determine synapse type")
 
     @classmethod
     def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> SynapseHocArgs:

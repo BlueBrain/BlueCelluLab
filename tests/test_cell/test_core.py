@@ -261,20 +261,34 @@ class TestCellBaseClassVClamp:
         assert current_after_vc_end == 0.0
 
 
-@pytest.mark.v5
-def test_get_recorded_spikes():
-    """Cell: Test get_recorded_spikes."""
-    cell = bluecellulab.Cell(
-        "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
-        "%s/examples/cell_example1" % str(parent_dir))
-    sim = bluecellulab.Simulation()
-    sim.add_cell(cell)
-    cell.start_recording_spikes(None, "soma", -30)
-    cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
-    sim.run(24, cvode=False)
-    spikes = cell.get_recorded_spikes("soma")
-    ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
-    assert np.allclose(spikes, ground_truth)
+class TestCellSpikes:
+
+    def setup(self):
+        self.cell = bluecellulab.Cell(
+            f"{parent_dir}/examples/cell_example1/test_cell.hoc",
+            f"{parent_dir}/examples/cell_example1")
+        self.sim = bluecellulab.Simulation()
+        self.sim.add_cell(self.cell)
+
+    @pytest.mark.v5
+    def test_get_recorded_spikes(self):
+        """Cell: Test get_recorded_spikes."""
+        self.cell.start_recording_spikes(None, "soma", -30)
+        self.cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
+        self.sim.run(24, cvode=False)
+        spikes = self.cell.get_recorded_spikes("soma")
+        ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]
+        assert np.allclose(spikes, ground_truth)
+
+    @pytest.mark.v5
+    def test_create_netcon_spikedetector(self):
+        """Cell: create_netcon_spikedetector."""
+        threshold = -29.0
+        netcon = self.cell.create_netcon_spikedetector(None, "AIS", -29.0)
+        assert netcon.threshold == threshold
+        netcon = self.cell.create_netcon_spikedetector(None, "soma", -29.0)
+        with pytest.raises(ValueError):
+            self.cell.create_netcon_spikedetector(None, "Dendrite", -29.0)
 
 
 @pytest.mark.v6
@@ -353,6 +367,16 @@ class TestCellV6:
             emodel_properties=emodel_properties
         )
         assert self.cell.cell_id != cell2.cell_id
+    def test_get_childrensections(self):
+        """Test the get_childrensections method."""
+        res = self.cell.get_childrensections(self.cell.soma)
+        assert len(res) == 3
+
+    def test_get_parentsection(self):
+        """Test the get_parentsection method."""
+        section = self.cell.get_childrensections(self.cell.soma)[0]
+        res = self.cell.get_parentsection(section)
+        assert res == self.cell.soma
 
 
 @pytest.mark.v6

@@ -95,7 +95,7 @@ class Connection:
         connection_dict = {}
 
         connection_dict['pre_cell_id'] = self.post_synapse.pre_gid
-        connection_dict['post_cell_id'] = self.post_synapse.post_gid
+        connection_dict['post_cell_id'] = self.post_synapse.post_cell_id.id
         connection_dict['post_synapse_id'] = self.post_synapse.syn_id.sid
 
         connection_dict['post_netcon'] = {}
