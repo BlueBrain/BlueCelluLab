@@ -55,7 +55,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def __init__(self,
                  template_path: str | Path,
                  morphology_path: str | Path,
-                 cell_id: CellId = None,
+                 cell_id: Optional[CellId] = None,
                  record_dt: Optional[float] = None,
                  template_format: str = "v5",
                  emodel_properties: Optional[EmodelProperties] = None,

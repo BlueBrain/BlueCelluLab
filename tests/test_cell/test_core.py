@@ -367,6 +367,7 @@ class TestCellV6:
             emodel_properties=emodel_properties
         )
         assert self.cell.cell_id != cell2.cell_id
+
     def test_get_childrensections(self):
         """Test the get_childrensections method."""
         res = self.cell.get_childrensections(self.cell.soma)
