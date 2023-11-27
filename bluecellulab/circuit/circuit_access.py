@@ -605,8 +605,7 @@ class SonataCircuitAccess:
                 )
 
                 # add source_population_name as a column
-                source_population_name = edges[edge_population_name].source.name
-                synapses["source_population_name"] = source_population_name
+                synapses["source_population_name"] = edges[edge_population_name].source.name
 
                 # py-neurodamus
                 dt = neuron.h.dt
