@@ -115,11 +115,6 @@ class CircuitAccess(Protocol):
     ) -> pd.Series:
         raise NotImplementedError
 
-    def get_population_ids(
-        self, edge_name: str
-    ) -> tuple[int, int]:
-        raise NotImplementedError
-
     def extract_synapses(
         self, cell_id: CellId, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
