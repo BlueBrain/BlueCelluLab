@@ -71,7 +71,7 @@ class NeuronTemplate:
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
         if template_format == "v6":
             attr_names = getattr(
-                neuron.h, self.template_name + "_NeededAttributes", None
+                neuron.h, self.template_name.split('_bluecellulab')[0] + "_NeededAttributes", None
             )
             if attr_names is not None:
                 if emodel_properties is None:
@@ -85,23 +85,12 @@ class NeuronTemplate:
                     morph_fname,
                     *[emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
                 )
-            cell = getattr(neuron.h, self.template_name)(
-                gid, morph_dir, morph_fname
-            )
-        elif template_format == "v6_adapted":
-            if emodel_properties is None:
-                raise BluecellulabError(
-                    "EmodelProperties must be provided for template "
-                    "format v6_adapted"
+            else:
+                cell = getattr(neuron.h, self.template_name)(
+                    gid,
+                    morph_dir,
+                    morph_fname,
                 )
-
-            cell = getattr(neuron.h, self.template_name)(
-                gid,
-                morph_dir,
-                morph_fname,
-                emodel_properties.ais_scaler,
-                emodel_properties.soma_scaler
-            )
         elif template_format == "bluepyopt":
             cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)
         else:
@@ -124,7 +113,7 @@ class NeuronTemplate:
         match = re.search(r"begintemplate\s*(\S*)", template_content)
         template_name = match.group(1)  # type:ignore
 
-        logger.info("This Neuron version supports renaming templates, enabling...")
+        logger.debug("This Neuron version supports renaming templates, enabling...")
         # add bluecellulab to the template name, so that we don't interfere with
         # templates load outside of bluecellulab
         template_name = "%s_bluecellulab" % template_name
