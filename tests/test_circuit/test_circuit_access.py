@@ -187,8 +187,9 @@ class TestSonataCircuitAccess:
         assert res == (0.03, 0.05)
 
     def test_get_population_ids(self):
-        edge_name = "hippocampus_projections__hippocampus_neurons__chemical"
-        source_popid, target_popid = self.circuit_access.get_population_ids(edge_name)
+        source = "hippocampus_projections"
+        target = "hippocampus_neurons"
+        source_popid, target_popid = self.circuit_access.get_population_ids(source, target)
         assert source_popid == 2126
         assert target_popid == 378
 

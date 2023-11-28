@@ -115,11 +115,6 @@ class CircuitAccess(Protocol):
     ) -> pd.Series:
         raise NotImplementedError
 
-    def get_population_ids(
-        self, edge_name: str
-    ) -> tuple[int, int]:
-        raise NotImplementedError
-
     def extract_synapses(
         self, cell_id: CellId, projections: Optional[list[str] | str]
     ) -> pd.DataFrame:
@@ -551,10 +546,10 @@ class SonataCircuitAccess:
         return source_popid, target_popid
 
     def get_population_ids(
-        self, edge_name: str
+        self, source_population_name: str, target_population_name: str
     ) -> tuple[int, int]:
-        source, target = edge_name.split("__")[0:2]
-        source_popid, target_popid = self._compute_pop_ids(source, target)
+        source_popid, target_popid = self._compute_pop_ids(
+            source_population_name, target_population_name)
         return source_popid, target_popid
 
     def extract_synapses(
@@ -568,16 +563,16 @@ class SonataCircuitAccess:
         edges = self._circuit.edges
         # select edges that are in the projections, if there are projections
         if projections is None or len(projections) == 0:
-            edge_names = [x for x in edges]
+            edge_population_names = [x for x in edges]
         elif isinstance(projections, str):
-            edge_names = [x for x in edges if edges[x].source.name == projections]
+            edge_population_names = [x for x in edges if edges[x].source.name == projections]
         else:
-            edge_names = [x for x in edges if edges[x].source.name in projections]
+            edge_population_names = [x for x in edges if edges[x].source.name in projections]
 
         all_synapses_dfs: list[pd.DataFrame] = []
-        for edge_name in edge_names:
-            edge = edges[edge_name]
-            afferent_edges: CircuitEdgeIds = edge.afferent_edges(snap_node_id)
+        for edge_population_name in edge_population_names:
+            edge_population = edges[edge_population_name]
+            afferent_edges: CircuitEdgeIds = edge_population.afferent_edges(snap_node_id)
             if len(afferent_edges) != 0:
                 # first copy the common properties to modify them
                 edge_properties: list[SynapseProperty | str] = list(
@@ -587,31 +582,30 @@ class SonataCircuitAccess:
                 # remove optional properties if they are not present
                 for optional_property in [SynapseProperty.U_HILL_COEFFICIENT,
                                           SynapseProperty.CONDUCTANCE_RATIO]:
-                    if optional_property.to_snap() not in edge.property_names:
+                    if optional_property.to_snap() not in edge_population.property_names:
                         edge_properties.remove(optional_property)
 
                 # if all plasticity props are present, add them
                 if all(
-                    x in edge.property_names
+                    x in edge_population.property_names
                     for x in SynapseProperties.plasticity
                 ):
                     edge_properties += list(SynapseProperties.plasticity)
 
                 snap_properties = properties_to_snap(edge_properties)
-                synapses: pd.DataFrame = edge.get(afferent_edges, snap_properties)
+                synapses: pd.DataFrame = edge_population.get(afferent_edges, snap_properties)
                 column_names = list(synapses.columns)
                 synapses.columns = pd.Index(properties_from_snap(column_names))
 
                 # make multiindex
                 synapses = synapses.reset_index(drop=True)
                 synapses.index = pd.MultiIndex.from_tuples(
-                    zip([edge_name] * len(synapses), synapses.index),
+                    zip([edge_population_name] * len(synapses), synapses.index),
                     names=["edge_name", "synapse_id"],
                 )
 
                 # add source_population_name as a column
-                source_population_name = edges[edge_name].source.name
-                synapses["source_population_name"] = source_population_name
+                synapses["source_population_name"] = edges[edge_population_name].source.name
 
                 # py-neurodamus
                 dt = neuron.h.dt
@@ -622,7 +616,8 @@ class SonataCircuitAccess:
                 if SynapseProperty.NRRP in synapses:
                     circuit.validate.check_nrrp_value(synapses)
 
-                source_popid, target_popid = self.get_population_ids(edge_name)
+                source_popid, target_popid = self.get_population_ids(
+                    edge_population.source.name, edge_population.target.name)
                 synapses = synapses.assign(
                     source_popid=source_popid, target_popid=target_popid
                 )
