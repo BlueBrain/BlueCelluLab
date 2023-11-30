@@ -18,9 +18,9 @@ import warnings
 import logging
 
 import numpy as np
+from typing_extensions import deprecated
 
 import bluecellulab
-from bluecellulab import tools
 from bluecellulab.cell.stimuli_generator import (
     gen_ornstein_uhlenbeck,
     gen_shotnoise_signal,
@@ -416,13 +416,13 @@ class InjectableMixin:
         currents.play(pulse._ref_amp, time)
         return currents
 
-    @tools.deprecated("inject_current_waveform")
+    @deprecated("Use inject_current_waveform instead.")
     def injectCurrentWaveform(self, t_content, i_content, section=None,
                               segx=0.5):
         """Inject a current in the cell."""
         return self.inject_current_waveform(t_content, i_content, section, segx)
 
-    @tools.deprecated("add_sin_current")
+    @deprecated("Use add_sin_current instead.")
     def addSineCurrentInject(self, start_time, stop_time, freq,
                              amplitude, mid_level, dt=1.0):
         """Add a sinusoidal current injection.
