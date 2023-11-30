@@ -38,7 +38,7 @@ setuptools.setup(
         "numpy>=1.8.0,<2.0.0",
         "matplotlib>=3.0.0,<4.0.0",
         "pandas>=1.0.0,<3.0.0",
-        "bluepysnap>=1.0.5,<3.0.0",
+        "bluepysnap>=2.0.0,<3.0.0",
         "pydantic>=2.5.2,<3.0.0",
         "typing-extensions>=4.8.0"
     ],
