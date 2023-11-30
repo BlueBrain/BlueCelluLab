@@ -14,10 +14,9 @@
 """Classes to represent config sections."""
 
 from __future__ import annotations
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import Extra, Field, validator
-from pydantic.typing import Literal
+from pydantic import field_validator, Field
 from pydantic.dataclasses import dataclass
 
 from libsonata._libsonata import Conditions as LibSonataConditions
@@ -34,14 +33,14 @@ def string_to_bool(value: str) -> bool:
     raise ValueError(f"Invalid boolean value {value}")
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class ConditionEntry:
     """For mechanism specific conditions."""
     minis_single_vesicle: Optional[int] = Field(None, ge=0, le=1)
     init_depleted: Optional[int] = Field(None, ge=0, le=1)
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class MechanismConditions:
     """For mechanism specific conditions."""
     ampanmda: Optional[ConditionEntry] = None
@@ -49,7 +48,7 @@ class MechanismConditions:
     glusynapse: Optional[ConditionEntry] = None
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class Conditions:
     mech_conditions: Optional[MechanismConditions] = None
     celsius: Optional[float] = None
@@ -125,7 +124,7 @@ class Conditions:
         )
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class ConnectionOverrides:
     source: str
     target: str
@@ -135,7 +134,8 @@ class ConnectionOverrides:
     synapse_configure: Optional[str] = None
     mod_override: Optional[Literal["GluSynapse"]] = None
 
-    @validator("mod_override")
+    @field_validator("mod_override")
+    @classmethod
     def validate_mod_override(cls, value):
         """Make sure the mod file to override is present."""
         if isinstance(value, str) and not hasattr(bluecellulab.neuron.h, value):
