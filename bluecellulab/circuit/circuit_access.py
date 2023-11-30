@@ -36,7 +36,6 @@ from bluepysnap.circuit_ids import CircuitNodeId, CircuitEdgeIds
 from bluepysnap.exceptions import BluepySnapError
 from bluepysnap import Circuit as SnapCircuit
 import pandas as pd
-from pydantic import Extra
 from pydantic.dataclasses import dataclass
 
 from bluecellulab import circuit, neuron
@@ -54,7 +53,7 @@ from bluecellulab.exceptions import BluecellulabError, ExtraDependencyMissingErr
 logger = logging.getLogger(__name__)
 
 
-@dataclass(config=dict(extra=Extra.forbid))
+@dataclass(config=dict(extra="forbid"))
 class EmodelProperties:
     threshold_current: float
     holding_current: float

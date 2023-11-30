@@ -56,7 +56,7 @@ class TestInjector:
         assert tstim.stim.to_python() == [0.0, 4.0, 4.0, 0.0, 0.0]
         assert tstim.tvec.to_python() == [2.0, 2.0, 4.0, 4.0, 22.0]
 
-        with raises(TypeError):
+        with raises(ValidationError):
             unsupported_stimulus = Pulse(
                 target="single-cell",
                 delay=2,
