@@ -363,7 +363,7 @@ class TestCellV6:
         cell2 = bluecellulab.Cell(
             "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
             "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
-            template_format="v6_adapted",
+            template_format="v6",
             emodel_properties=emodel_properties
         )
         assert self.cell.cell_id != cell2.cell_id
