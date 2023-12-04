@@ -8,13 +8,14 @@ from matplotlib import pyplot as plt
 from bluecellulab import SSim
 from bluecellulab.graph import build_graph, plot_graph
 from bluecellulab.circuit import CellId
-import unittest
+import pytest
 
 script_dir = Path(__file__).parent
 
 
-class TestGraph(unittest.TestCase):
-    def setUp(self):
+class TestGraph():
+    """Test the graph.py module."""
+    def setup_method(self):
         """Set up the test environment."""
         circuit_path = (
             script_dir
@@ -44,32 +45,31 @@ class TestGraph(unittest.TestCase):
 
     def test_graph_type(self):
         """Test if the graph is an instance of nx.DiGraph."""
-        self.assertIsInstance(self.graph, nx.DiGraph)
+        assert isinstance(self.graph, nx.DiGraph)
 
     def test_number_of_edges(self):
         """Test if the graph has the correct number of edges."""
         expected_number_of_edges = 9
-        self.assertEqual(len(self.graph.edges), expected_number_of_edges, "The number of edges in the graph does not match the expected value.")
+        assert len(self.graph.edges) == expected_number_of_edges
 
     def test_existence_of_specific_edges(self):
         """Test for the existence of specific edges."""
         for edge in self.expected_edges:
-            self.assertTrue(self.graph.has_edge(*edge), f"Edge {edge} is missing in the graph.")
+            assert self.graph.has_edge(*edge), f"Edge {edge} is missing in the graph."
 
     def test_no_unexpected_edges(self):
         """Test if the graph does not have unexpected edges."""
         all_edges = set(self.graph.edges)
-        self.assertTrue(all_edges.issubset(set(self.expected_edges)), "There are unexpected edges in the graph.")
+        assert all_edges.issubset(set(self.expected_edges)), "There are unexpected edges in the graph."
 
     def test_correct_edge_attributes(self):
         """Test if the edges have the correct weight."""
         edge = (CellId(population_name='NodeA', id=0), CellId(population_name='NodeB', id=0))
         expected_weight = 0.37
         actual_weight = self.graph.edges[edge]['weight']
-        self.assertAlmostEqual(expected_weight, actual_weight, places=2,
-                               msg=f"Edge {edge} has incorrect weight: expected {expected_weight}, found {actual_weight}.")
+        assert abs(expected_weight - actual_weight) <= 0.01, f"Edge {edge} has incorrect weight: expected {expected_weight}, found {actual_weight}."
 
     def test_plot_graph(self):
         """Test the plot_graph function"""
         plot_graph(self.graph)
-        self.assertTrue(plt.fignum_exists(1), "No figure is created.")
+        assert plt.fignum_exists(1), "No figure is created."
