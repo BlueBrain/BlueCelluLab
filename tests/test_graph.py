@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from bluecellulab import SSim
 from bluecellulab.graph import build_graph, plot_graph
 from bluecellulab.circuit import CellId
-import pytest
 
 script_dir = Path(__file__).parent
 
