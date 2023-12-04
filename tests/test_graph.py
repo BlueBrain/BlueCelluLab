@@ -1,7 +1,5 @@
 """Unit tests for graph.py"""
 
-import os
-
 import networkx as nx
 from pathlib import Path
 
@@ -13,6 +11,7 @@ from bluecellulab.circuit import CellId
 import unittest
 
 script_dir = Path(__file__).parent
+
 
 class TestGraph(unittest.TestCase):
     def setUp(self):
