@@ -24,7 +24,6 @@ import os
 from pathlib import Path
 import sys
 from typing import Any, Optional, Tuple
-import warnings
 import logging
 
 import numpy as np
@@ -72,30 +71,6 @@ def set_verbose_from_env() -> None:
 
 
 set_verbose_from_env()
-
-
-class deprecated:
-    """Decorator to mark a function as deprecated."""
-
-    def __init__(self, new_function=""):
-        self.new_function = new_function
-
-    def __call__(self, func):
-        def rep_func(*args, **kwargs):
-            """Replacement function."""
-            warnings.warn(
-                "Call to deprecated function {%s}. Use {%s} instead." % (
-                    func.__name__, self.new_function),
-                category=DeprecationWarning)
-            return func(*args, **kwargs)
-        rep_func.__name__ = func.__name__
-        if func.__doc__ is None or func.__doc__ == "":
-            func.__doc__ = "Deprecated"
-        rep_func.__doc__ = func.__doc__ + "\n\n         \
-                .. note:: Replaced by %s\n\n       \
-                .. deprecated:: .1\n" % self.new_function
-        rep_func.__dict__.update(func.__dict__)
-        return rep_func
 
 
 def calculate_input_resistance(

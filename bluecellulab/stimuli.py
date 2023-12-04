@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Optional
 import warnings
 
-from pydantic import Extra, NonNegativeFloat, PositiveFloat, validator
+from pydantic import field_validator, NonNegativeFloat, PositiveFloat
 from pydantic.dataclasses import dataclass
 
 
@@ -92,7 +92,7 @@ class Pattern(Enum):
             raise ValueError(f"Unknown pattern {pattern}")
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class Stimulus:
     target: str
     delay: NonNegativeFloat
@@ -301,42 +301,43 @@ class Stimulus:
             raise ValueError(f"Unknown pattern {pattern}")
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class Noise(Stimulus):
     mean_percent: float
     variance: float
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class Hyperpolarizing(Stimulus):
     ...
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class Pulse(Stimulus):
     amp_start: float
     width: float
     frequency: float
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class RelativeLinear(Stimulus):
     percent_start: float
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class SynapseReplay(Stimulus):
     spike_file: str
     source: str
 
-    @validator("spike_file")
+    @field_validator("spike_file")
+    @classmethod
     def spike_file_exists(cls, v):
         if not Path(v).exists():
             raise ValueError(f"spike_file {v} does not exist")
         return v
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class ShotNoise(Stimulus):
     rise_time: float
     decay_time: float
@@ -348,14 +349,15 @@ class ShotNoise(Stimulus):
     mode: ClampMode = ClampMode.CURRENT
     reversal: float = 0.0
 
-    @validator("decay_time")
+    @field_validator("decay_time")
+    @classmethod
     def decay_time_gt_rise_time(cls, v, values):
-        if v <= values["rise_time"]:
+        if v <= values.data["rise_time"]:
             raise ValueError("decay_time must be greater than rise_time")
         return v
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class RelativeShotNoise(Stimulus):
     rise_time: float
     decay_time: float
@@ -367,14 +369,15 @@ class RelativeShotNoise(Stimulus):
     mode: ClampMode = ClampMode.CURRENT
     reversal: float = 0.0
 
-    @validator("decay_time")
+    @field_validator("decay_time")
+    @classmethod
     def decay_time_gt_rise_time(cls, v, values):
-        if v <= values["rise_time"]:
+        if v <= values.data["rise_time"]:
             raise ValueError("decay_time must be greater than rise_time")
         return v
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class OrnsteinUhlenbeck(Stimulus):
     tau: float
     sigma: PositiveFloat
@@ -384,9 +387,10 @@ class OrnsteinUhlenbeck(Stimulus):
     mode: ClampMode = ClampMode.CURRENT
     reversal: float = 0.0
 
-    @validator("mean")
+    @field_validator("mean")
+    @classmethod
     def mean_in_range(cls, v, values):
-        if v < 0 and abs(v) > 2 * values["sigma"]:
+        if v < 0 and abs(v) > 2 * values.data["sigma"]:
             warnings.warn(
                 "mean is outside of range [0, 2*sigma],",
                 " ornstein uhlenbeck signal is mostly zero.",
@@ -394,7 +398,7 @@ class OrnsteinUhlenbeck(Stimulus):
         return v
 
 
-@dataclass(frozen=True, config=dict(extra=Extra.forbid))
+@dataclass(frozen=True, config=dict(extra="forbid"))
 class RelativeOrnsteinUhlenbeck(Stimulus):
     tau: float
     mean_percent: float

@@ -79,10 +79,6 @@ class TestSonataCircuitAccess:
     def test_get_template_format(self):
         res = self.circuit_access.get_template_format()
         assert res == "v6"
-        # if there was @dynamics:AIS_scaler, it would be v6_adapted
-        self.circuit_access.available_cell_properties.add("@dynamics:AIS_scaler")
-        res = self.circuit_access.get_template_format()
-        assert res == "v6_adapted"
 
     def test_get_cell_properties(self):
         cell_id = CellId("hippocampus_neurons", 1)
@@ -187,8 +183,9 @@ class TestSonataCircuitAccess:
         assert res == (0.03, 0.05)
 
     def test_get_population_ids(self):
-        edge_name = "hippocampus_projections__hippocampus_neurons__chemical"
-        source_popid, target_popid = self.circuit_access.get_population_ids(edge_name)
+        source = "hippocampus_projections"
+        target = "hippocampus_neurons"
+        source_popid, target_popid = self.circuit_access.get_population_ids(source, target)
         assert source_popid == 2126
         assert target_popid == 378
 

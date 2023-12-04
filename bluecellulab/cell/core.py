@@ -20,12 +20,13 @@ import logging
 from pathlib import Path
 import queue
 from typing import Optional
+from typing_extensions import deprecated
 
 import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab import neuron, psection, tools
+from bluecellulab import neuron, psection
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
@@ -132,7 +133,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.secname_to_psection: dict[str, psection.PSection] = {}
 
         self.emodel_properties = emodel_properties
-        if template_format in ['v6', 'v6_adapted']:
+        if template_format in ['v6']:
             if self.emodel_properties is None:
                 raise BluecellulabError('EmodelProperties must be provided for v6 template')
             self.hypamp: float | None = self.emodel_properties.holding_current
@@ -697,7 +698,7 @@ class Cell(InjectableMixin, PlottableMixin):
                                 dend found in section %s" % secname)
 
     @staticmethod
-    @tools.deprecated("bluecellulab.cell.section_distance.EuclideanSectionDistance")
+    @deprecated("Use bluecellulab.cell.section_distance.EuclideanSectionDistance instead.")
     def euclid_section_distance(
             hsection1=None,
             hsection2=None,

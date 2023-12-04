@@ -65,10 +65,10 @@ def test_public_hoc_cell_v6_template():
     emodel_properties = EmodelProperties(
         threshold_current=1.1433533430099487,
         holding_current=1.4146618843078613,
-        ais_scaler=1.4561502933502197,
+        AIS_scaler=1.4561502933502197,
         soma_scaler=1.0
     )
-    cell = template.get_cell("v6_adapted", 5, emodel_properties)
+    cell = template.get_cell("v6", 5, emodel_properties)
     hoc_public = public_hoc_cell(cell)
     assert hoc_public.gid == 5.0
 

@@ -36,7 +36,6 @@ from bluepysnap.circuit_ids import CircuitNodeId, CircuitEdgeIds
 from bluepysnap.exceptions import BluepySnapError
 from bluepysnap import Circuit as SnapCircuit
 import pandas as pd
-from pydantic import Extra
 from pydantic.dataclasses import dataclass
 
 from bluecellulab import circuit, neuron
@@ -54,11 +53,11 @@ from bluecellulab.exceptions import BluecellulabError, ExtraDependencyMissingErr
 logger = logging.getLogger(__name__)
 
 
-@dataclass(config=dict(extra=Extra.forbid))
+@dataclass(config=dict(extra="forbid"))
 class EmodelProperties:
     threshold_current: float
     holding_current: float
-    ais_scaler: Optional[float] = 1.0
+    AIS_scaler: Optional[float] = 1.0
     soma_scaler: Optional[float] = 1.0
 
 
@@ -113,11 +112,6 @@ class CircuitAccess(Protocol):
     def get_cell_properties(
         self, cell_id: CellId, properties: list[str] | str
     ) -> pd.Series:
-        raise NotImplementedError
-
-    def get_population_ids(
-        self, edge_name: str
-    ) -> tuple[int, int]:
         raise NotImplementedError
 
     def extract_synapses(
@@ -196,7 +190,7 @@ class BluepyCircuitAccess:
             emodel_properties = EmodelProperties(
                 threshold_current=emodel_info["threshold_current"],
                 holding_current=emodel_info["holding_current"],
-                ais_scaler=None
+                AIS_scaler=None
             )
         elif self.node_properties_available:
             cell_properties = self.get_cell_properties(
@@ -209,26 +203,24 @@ class BluepyCircuitAccess:
             emodel_properties = EmodelProperties(
                 threshold_current=float(cell_properties["@dynamics:threshold_current"]),
                 holding_current=float(cell_properties["@dynamics:holding_current"]),
-                ais_scaler=None
+                AIS_scaler=None
             )
         else:  # old circuits
             return None
 
         if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            emodel_properties.ais_scaler = float(self.get_cell_properties(
+            emodel_properties.AIS_scaler = float(self.get_cell_properties(
                 cell_id, properties=["@dynamics:AIS_scaler"])["@dynamics:AIS_scaler"])
 
         if "@dynamics:soma_scaler" in self.available_cell_properties:
-            emodel_properties.ais_scaler = float(self.get_cell_properties(
+            emodel_properties.AIS_scaler = float(self.get_cell_properties(
                 cell_id, properties=["@dynamics:soma_scaler"])["@dynamics:soma_scaler"])
 
         return emodel_properties
 
     def get_template_format(self) -> Optional[str]:
         """Return the template format."""
-        if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_adapted'
-        elif self.use_mecombo_tsv or self.node_properties_available:
+        if self.use_mecombo_tsv or self.node_properties_available:
             return 'v6'
         else:
             return None
@@ -509,9 +501,9 @@ class SonataCircuitAccess:
     def get_emodel_properties(self, cell_id: CellId) -> Optional[EmodelProperties]:
         cell_properties = self._circuit.nodes[cell_id.population_name].get(cell_id.id)
         if "@dynamics:AIS_scaler" in cell_properties:
-            ais_scaler = cell_properties["@dynamics:AIS_scaler"]
+            AIS_scaler = cell_properties["@dynamics:AIS_scaler"]
         else:
-            ais_scaler = 1.0
+            AIS_scaler = 1.0
         if "@dynamics:soma_scaler" in cell_properties:
             soma_scaler = cell_properties["@dynamics:soma_scaler"]
         else:
@@ -520,15 +512,12 @@ class SonataCircuitAccess:
         return EmodelProperties(
             cell_properties["@dynamics:threshold_current"],
             cell_properties["@dynamics:holding_current"],
-            ais_scaler,
+            AIS_scaler,
             soma_scaler,
         )
 
     def get_template_format(self) -> Optional[str]:
-        if "@dynamics:AIS_scaler" in self.available_cell_properties:
-            return 'v6_adapted'
-        else:
-            return 'v6'
+        return 'v6'
 
     def get_cell_properties(
         self, cell_id: CellId, properties: list[str] | str
@@ -551,10 +540,10 @@ class SonataCircuitAccess:
         return source_popid, target_popid
 
     def get_population_ids(
-        self, edge_name: str
+        self, source_population_name: str, target_population_name: str
     ) -> tuple[int, int]:
-        source, target = edge_name.split("__")[0:2]
-        source_popid, target_popid = self._compute_pop_ids(source, target)
+        source_popid, target_popid = self._compute_pop_ids(
+            source_population_name, target_population_name)
         return source_popid, target_popid
 
     def extract_synapses(
@@ -568,16 +557,16 @@ class SonataCircuitAccess:
         edges = self._circuit.edges
         # select edges that are in the projections, if there are projections
         if projections is None or len(projections) == 0:
-            edge_names = [x for x in edges]
+            edge_population_names = [x for x in edges]
         elif isinstance(projections, str):
-            edge_names = [x for x in edges if edges[x].source.name == projections]
+            edge_population_names = [x for x in edges if edges[x].source.name == projections]
         else:
-            edge_names = [x for x in edges if edges[x].source.name in projections]
+            edge_population_names = [x for x in edges if edges[x].source.name in projections]
 
         all_synapses_dfs: list[pd.DataFrame] = []
-        for edge_name in edge_names:
-            edge = edges[edge_name]
-            afferent_edges: CircuitEdgeIds = edge.afferent_edges(snap_node_id)
+        for edge_population_name in edge_population_names:
+            edge_population = edges[edge_population_name]
+            afferent_edges: CircuitEdgeIds = edge_population.afferent_edges(snap_node_id)
             if len(afferent_edges) != 0:
                 # first copy the common properties to modify them
                 edge_properties: list[SynapseProperty | str] = list(
@@ -587,31 +576,30 @@ class SonataCircuitAccess:
                 # remove optional properties if they are not present
                 for optional_property in [SynapseProperty.U_HILL_COEFFICIENT,
                                           SynapseProperty.CONDUCTANCE_RATIO]:
-                    if optional_property.to_snap() not in edge.property_names:
+                    if optional_property.to_snap() not in edge_population.property_names:
                         edge_properties.remove(optional_property)
 
                 # if all plasticity props are present, add them
                 if all(
-                    x in edge.property_names
+                    x in edge_population.property_names
                     for x in SynapseProperties.plasticity
                 ):
                     edge_properties += list(SynapseProperties.plasticity)
 
                 snap_properties = properties_to_snap(edge_properties)
-                synapses: pd.DataFrame = edge.get(afferent_edges, snap_properties)
+                synapses: pd.DataFrame = edge_population.get(afferent_edges, snap_properties)
                 column_names = list(synapses.columns)
                 synapses.columns = pd.Index(properties_from_snap(column_names))
 
                 # make multiindex
                 synapses = synapses.reset_index(drop=True)
                 synapses.index = pd.MultiIndex.from_tuples(
-                    zip([edge_name] * len(synapses), synapses.index),
+                    zip([edge_population_name] * len(synapses), synapses.index),
                     names=["edge_name", "synapse_id"],
                 )
 
                 # add source_population_name as a column
-                source_population_name = edges[edge_name].source.name
-                synapses["source_population_name"] = source_population_name
+                synapses["source_population_name"] = edges[edge_population_name].source.name
 
                 # py-neurodamus
                 dt = neuron.h.dt
@@ -622,7 +610,8 @@ class SonataCircuitAccess:
                 if SynapseProperty.NRRP in synapses:
                     circuit.validate.check_nrrp_value(synapses)
 
-                source_popid, target_popid = self.get_population_ids(edge_name)
+                source_popid, target_popid = self.get_population_ids(
+                    edge_population.source.name, edge_population.target.name)
                 synapses = synapses.assign(
                     source_popid=source_popid, target_popid=target_popid
                 )
