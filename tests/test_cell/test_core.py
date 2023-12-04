@@ -357,7 +357,7 @@ class TestCellV6:
         emodel_properties = EmodelProperties(
             threshold_current=1.1433533430099487,
             holding_current=1.4146618843078613,
-            ais_scaler=1.4561502933502197,
+            AIS_scaler=1.4561502933502197,
             soma_scaler=1.0
         )
         cell2 = bluecellulab.Cell(
