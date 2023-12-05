@@ -15,7 +15,7 @@ def build_graph(cells: CellDict) -> nx.DiGraph:
 
     # Add nodes (cells) to the graph
     for cell_id, cell in cells.items():
-        G.add_node(cell_id, label=str(cell_id.id), population=cell_id.population_name)
+        G.add_node(cell_id)
 
     # Extract and add edges (connections) to the graph from each cell
     for cell_id, cell in cells.items():
