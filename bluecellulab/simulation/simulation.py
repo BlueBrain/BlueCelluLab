@@ -157,7 +157,7 @@ class Simulation:
 
         if self.pc is not None:
             for cell in self.cells:
-                self.pc.prcellstate(cell.gid, f"bluecellulab_t={bluecellulab.neuron.h.t}")
+                self.pc.prcellstate(cell.cell_id.id, f"bluecellulab_t={bluecellulab.neuron.h.t}")
 
         try:
             neuron.h.continuerun(neuron.h.tstop)

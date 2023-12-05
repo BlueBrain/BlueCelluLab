@@ -20,6 +20,7 @@ import logging
 
 import bluecellulab
 from bluecellulab.circuit import SynapseProperty
+from bluecellulab.circuit.node_id import CellId
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
@@ -46,7 +47,7 @@ class Synapse:
     def __init__(
             self,
             rng_settings: RNGSettings,
-            gid: int,
+            cell_id: CellId,
             hoc_args: SynapseHocArgs,
             syn_id: tuple[str, int],
             syn_description: pd.Series,
@@ -72,7 +73,7 @@ class Synapse:
         self._delay_weights: list[tuple[float, float]] = []
         self._weight: Optional[float] = None
 
-        self.post_gid = gid
+        self.post_cell_id = cell_id
         self.syn_id = SynapseID(*syn_id)
         self.extracellular_calcium = extracellular_calcium
         self.syn_description: pd.Series = self.update_syn_description(syn_description)
@@ -146,7 +147,7 @@ class Synapse:
             ValueError: when rng mode is not recognised.
         """
         if self.rng_settings.mode == "Random123":
-            self.randseed1 = self.post_gid + 250
+            self.randseed1 = self.post_cell_id.id + 250
             self.randseed2 = self.syn_id.sid + 100
             self.randseed3 = self.source_popid * 65536 + self.target_popid + \
                 self.rng_settings.synapse_seed + 300
@@ -158,12 +159,12 @@ class Synapse:
             rndd = bluecellulab.neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 self.randseed1 = self.syn_id.sid * 100000 + 100
-                self.randseed2 = self.post_gid + \
+                self.randseed2 = self.post_cell_id.id + \
                     250 + self.rng_settings.base_seed
             elif self.rng_settings.mode == "UpdatedMCell":
                 self.randseed1 = self.syn_id.sid * 1000 + 100
                 self.randseed2 = self.source_popid * 16777216 + \
-                    self.post_gid + \
+                    self.post_cell_id.id + \
                     250 + self.rng_settings.base_seed + \
                     self.rng_settings.synapse_seed
             else:
@@ -209,7 +210,7 @@ class Synapse:
 
         synapse_dict['synapse_id'] = self.syn_id
         synapse_dict['pre_cell_id'] = self.pre_gid
-        synapse_dict['post_cell_id'] = self.post_gid
+        synapse_dict['post_cell_id'] = self.post_cell_id.id
         synapse_dict['syn_description'] = self.syn_description.to_dict()
         # if keys are enum make them str
         synapse_dict['syn_description'] = {
@@ -286,7 +287,7 @@ class GluSynapse(Synapse):
         if self.syn_description[SynapseProperty.NRRP] >= 0:
             self.hsynapse.Nrrp = self.syn_description[SynapseProperty.NRRP]
 
-        self.randseed1 = self.post_gid
+        self.randseed1 = self.post_cell_id.id
         self.randseed2 = 100000 + self.syn_id.sid
         self.randseed3 = self.rng_settings.synapse_seed + 200
         self.hsynapse.setRNG(self.randseed1, self.randseed2, self.randseed3)
@@ -330,19 +331,19 @@ class GabaabSynapse(Synapse):
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
                     self.syn_id.sid * 100000 + 100,
-                    self.post_gid + 250 + self.rng_settings.base_seed)
+                    self.post_cell_id.id + 250 + self.rng_settings.base_seed)
             elif self.rng_settings.mode == "UpdatedMCell":
                 rng.MCellRan4(
                     self.syn_id.sid * 1000 + 100,
                     self.source_popid *
                     16777216 +
-                    self.post_gid +
+                    self.post_cell_id.id +
                     250 +
                     self.rng_settings.base_seed +
                     self.rng_settings.synapse_seed)
             elif self.rng_settings.mode == "Random123":
                 rng.Random123(
-                    self.post_gid +
+                    self.post_cell_id.id +
                     250,
                     self.syn_id.sid +
                     100,

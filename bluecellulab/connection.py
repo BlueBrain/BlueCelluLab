@@ -18,6 +18,7 @@ from typing import Optional
 import numpy as np
 
 import bluecellulab
+from bluecellulab.cell.core import Cell
 from bluecellulab.circuit import SynapseProperty
 
 
@@ -28,7 +29,7 @@ class Connection:
             self,
             post_synapse,
             pre_spiketrain: Optional[np.ndarray] = None,
-            pre_cell=None,
+            pre_cell: Optional[Cell] = None,
             stim_dt=None,
             parallel_context=None,
             spike_threshold: float = -30.0,
@@ -76,7 +77,7 @@ class Connection:
             self.post_netcon = self.pre_cell.create_netcon_spikedetector(
                 self.post_synapse.hsynapse, location=spike_location,
                 threshold=spike_threshold) if self.pc is None else \
-                self.pc.gid_connect(self.pre_cell.gid, self.post_synapse.hsynapse)
+                self.pc.gid_connect(self.pre_cell.cell_id.id, self.post_synapse.hsynapse)
             self.post_netcon.weight[0] = self.post_netcon_weight
             self.post_netcon.delay = self.post_netcon_delay
             self.post_netcon.threshold = spike_threshold
@@ -94,7 +95,7 @@ class Connection:
         connection_dict = {}
 
         connection_dict['pre_cell_id'] = self.post_synapse.pre_gid
-        connection_dict['post_cell_id'] = self.post_synapse.post_gid
+        connection_dict['post_cell_id'] = self.post_synapse.post_cell_id.id
         connection_dict['post_synapse_id'] = self.post_synapse.syn_id.sid
 
         connection_dict['post_netcon'] = {}

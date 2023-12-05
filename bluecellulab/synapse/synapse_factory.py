@@ -60,13 +60,13 @@ class SynapseFactory:
                 randomize_gaba_risetime = condition_parameters.randomize_gaba_rise_time
             else:
                 randomize_gaba_risetime = True
-            synapse = GabaabSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
+            synapse = GabaabSynapse(cell.rng_settings, cell.cell_id, syn_hoc_args, syn_id, syn_description,
                                     popids, extracellular_calcium, randomize_gaba_risetime)
         elif syn_type == SynapseType.AMPANMDA:
-            synapse = AmpanmdaSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
+            synapse = AmpanmdaSynapse(cell.rng_settings, cell.cell_id, syn_hoc_args, syn_id, syn_description,
                                       popids, extracellular_calcium)
         else:
-            synapse = GluSynapse(cell.rng_settings, cell.gid, syn_hoc_args, syn_id, syn_description,
+            synapse = GluSynapse(cell.rng_settings, cell.cell_id, syn_hoc_args, syn_id, syn_description,
                                  popids, extracellular_calcium)
 
         synapse = cls.apply_connection_modifiers(connection_modifiers, synapse)

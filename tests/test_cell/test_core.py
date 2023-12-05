@@ -352,6 +352,22 @@ class TestCellV6:
         """Test the cell's area computation."""
         assert self.cell.area() == 5812.493415302344
 
+    def test_cell_id(self):
+        """Test for checking if cell_id is different btw. 2 cells when unspecified."""
+        emodel_properties = EmodelProperties(
+            threshold_current=1.1433533430099487,
+            holding_current=1.4146618843078613,
+            AIS_scaler=1.4561502933502197,
+            soma_scaler=1.0
+        )
+        cell2 = bluecellulab.Cell(
+            "%s/examples/circuit_sonata_quick_scx/components/hoc/cADpyr_L2TPC.hoc" % str(parent_dir),
+            "%s/examples/circuit_sonata_quick_scx/components/morphologies/asc/rr110330_C3_idA.asc" % str(parent_dir),
+            template_format="v6",
+            emodel_properties=emodel_properties
+        )
+        assert self.cell.cell_id != cell2.cell_id
+
     def test_get_childrensections(self):
         """Test the get_childrensections method."""
         res = self.cell.get_childrensections(self.cell.soma)

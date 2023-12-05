@@ -17,7 +17,6 @@ simulations."""
 
 from __future__ import annotations
 from collections.abc import Iterable
-from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 import logging
@@ -100,9 +99,6 @@ class SSim:
         self.cells: CellDict = CellDict()
 
         self.gids_instantiated = False
-        self.connections: defaultdict = defaultdict(
-            lambda: defaultdict(lambda: None)
-        )
 
         # Make sure tstop is set correctly, because it is used by the
         # TStim noise stimulus
@@ -732,7 +728,7 @@ class SSim:
         cell_kwargs = {
             'template_path': self.circuit_access.emodel_path(cell_id),
             'morphology_path': self.circuit_access.morph_filepath(cell_id),
-            'gid': cell_id.id,
+            'cell_id': cell_id,
             'record_dt': self.record_dt,
             'rng_settings': self.rng_settings,
             'template_format': self.circuit_access.get_template_format(),
@@ -746,7 +742,7 @@ class SSim:
         cell_kwargs = self.fetch_cell_kwargs(cell_id)
         return bluecellulab.Cell(template_path=cell_kwargs['template_path'],
                                  morphology_path=cell_kwargs['morphology_path'],
-                                 gid=cell_kwargs['gid'],
+                                 cell_id=cell_kwargs['cell_id'],
                                  record_dt=cell_kwargs['record_dt'],
                                  rng_settings=cell_kwargs['rng_settings'],
                                  template_format=cell_kwargs['template_format'],
