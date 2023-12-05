@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 class Cell(InjectableMixin, PlottableMixin):
     """Represents a Cell object."""
 
-    max_id = 0
+    last_id = 0
 
     def __init__(self,
                  template_path: str | Path,
@@ -78,8 +78,8 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         super().__init__()
         if cell_id is None:
-            cell_id = CellId("", Cell.max_id)
-            Cell.max_id += 1
+            cell_id = CellId("", Cell.last_id)
+            Cell.last_id += 1
         self.cell_id = cell_id
         # Persistent objects, like clamps, that exist as long
         # as the object exists
