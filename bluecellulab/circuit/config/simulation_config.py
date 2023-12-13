@@ -303,10 +303,10 @@ class SonataSimulationConfig:
 
     def get_all_stimuli_entries(self) -> list[Stimulus]:
         result: list[Stimulus] = []
-        inputs = self.impl.config["inputs"]
+        inputs = self.impl.config.get("inputs")
         if inputs is None:
             return result
-        for value in self.impl.config["inputs"].values():
+        for value in inputs.values():
             stimulus = Stimulus.from_sonata(value)
             if stimulus:
                 result.append(stimulus)
