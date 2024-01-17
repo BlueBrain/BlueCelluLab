@@ -66,7 +66,7 @@ class SynapseProperties:
         SynapseProperty.AXONAL_DELAY,
         SynapseProperty.POST_SECTION_ID,
         SynapseProperty.POST_SEGMENT_ID,
-        SynapseProperty.POST_SEGMENT_OFFSET,
+        "afferent_section_pos",
         SynapseProperty.G_SYNX,
         SynapseProperty.U_SYN,
         SynapseProperty.D_SYN,
