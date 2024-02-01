@@ -11,7 +11,7 @@ class TestBGLibBaseClass1:
 
     """Test BGLib base class"""
 
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.taper_cell = bluecellulab.Cell(
             "%s/examples/tapertest_cells/taper_cell.hoc" % script_dir,
@@ -20,7 +20,7 @@ class TestBGLibBaseClass1:
             "%s/examples/tapertest_cells/notaper_cell.hoc" % script_dir,
             "%s/examples/tapertest_cells" % script_dir)
 
-    def teardown(self):
+    def teardown_method(self):
         """Teardown"""
         del self.taper_cell
         del self.notaper_cell

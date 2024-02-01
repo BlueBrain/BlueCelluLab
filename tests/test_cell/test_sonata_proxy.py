@@ -22,7 +22,7 @@ hipp_circuit_with_projections = (
 
 class TestSonataProxy:
 
-    def setup(self):
+    def setup_method(self):
         circuit_access = SonataCircuitAccess(str(hipp_circuit_with_projections))
         cell_id = CellId("hippocampus_neurons", 1)
         self.sonata_proxy = SonataProxy(cell_id, circuit_access)
