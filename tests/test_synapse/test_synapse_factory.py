@@ -22,7 +22,7 @@ parent_dir = Path(__file__).resolve().parent.parent
 @pytest.mark.v6
 class TestSynapseFactory:
 
-    def setup(self):
+    def setup_method(self):
         emodel_properties = EmodelProperties(
             threshold_current=1.1433533430099487,
             holding_current=1.4146618843078613,

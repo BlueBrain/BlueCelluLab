@@ -43,7 +43,7 @@ def test_sample_array():
 
 class TestSonataSimulationAccess:
 
-    def setup(self):
+    def setup_method(self):
         self.simulation_access = SonataSimulationAccess(str(hipp_simulation_with_projections))
 
     @staticmethod
