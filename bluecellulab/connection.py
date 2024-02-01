@@ -15,9 +15,9 @@
 
 from typing import Optional
 
+import neuron
 import numpy as np
 
-import bluecellulab
 from bluecellulab.cell.core import Cell
 from bluecellulab.circuit import SynapseProperty
 
@@ -57,10 +57,10 @@ class Connection:
                                  "a negative time, this is not supported by "
                                  "NEURON's Vecstim: %s" %
                                  str(self.pre_spiketrain))
-            t_vec = bluecellulab.neuron.h.Vector(self.pre_spiketrain)
-            vecstim = bluecellulab.neuron.h.VecStim()
+            t_vec = neuron.h.Vector(self.pre_spiketrain)
+            vecstim = neuron.h.VecStim()
             vecstim.play(t_vec, stim_dt)
-            self.post_netcon = bluecellulab.neuron.h.NetCon(
+            self.post_netcon = neuron.h.NetCon(
                 vecstim, self.post_synapse.hsynapse,
                 spike_threshold,
                 self.post_netcon_delay,
@@ -68,8 +68,8 @@ class Connection:
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 self.post_synapse.hsynapse).split('[')[0]
-            if hasattr(bluecellulab.neuron.h, nc_param_name):
-                nc_type_param = int(getattr(bluecellulab.neuron.h, nc_param_name))
+            if hasattr(neuron.h, nc_param_name):
+                nc_type_param = int(getattr(neuron.h, nc_param_name))
                 self.post_netcon.weight[nc_type_param] = 2  # NC_REPLAY
             self.persistent.append(t_vec)
             self.persistent.append(vecstim)
@@ -84,8 +84,8 @@ class Connection:
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 self.post_synapse.hsynapse).split('[')[0]
-            if hasattr(bluecellulab.neuron.h, nc_param_name):
-                nc_type_param = int(getattr(bluecellulab.neuron.h, nc_param_name))
+            if hasattr(neuron.h, nc_param_name):
+                nc_type_param = int(getattr(neuron.h, nc_param_name))
                 self.post_netcon.weight[nc_type_param] = 0  # NC_PRESYN
 
     @property

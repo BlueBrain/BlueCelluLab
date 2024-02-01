@@ -26,6 +26,7 @@ import sys
 from typing import Any, Optional, Tuple
 import logging
 
+import neuron
 import numpy as np
 
 import bluecellulab
@@ -170,7 +171,7 @@ def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
     if enable_ttx:
         cell.enable_ttx()
 
-    vclamp = bluecellulab.neuron.h.SEClamp(0.5, sec=cell.soma)
+    vclamp = neuron.h.SEClamp(0.5, sec=cell.soma)
     vclamp.rs = 0.01
     vclamp.dur1 = 2000
     vclamp.amp1 = v_hold
@@ -666,7 +667,7 @@ class get_stdout(list):
 def check_empty_topology() -> bool:
     """Return true if NEURON simulator topology command is empty."""
     with get_stdout() as stdout:
-        bluecellulab.neuron.h.topology()
+        neuron.h.topology()
 
     return stdout == ['', '']
 

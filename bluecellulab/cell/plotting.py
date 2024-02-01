@@ -15,6 +15,8 @@
 
 from __future__ import annotations
 
+import neuron
+
 import bluecellulab
 
 
@@ -76,26 +78,27 @@ class PlottableMixin:
     def init_callbacks(self):
         """Initialize the callback function (if necessary)."""
         if not self.delayed_weights.empty():
-            self.fih_weights = bluecellulab.neuron.h.FInitializeHandler(
+            self.fih_weights = neuron.h.FInitializeHandler(
                 1, self.weights_callback)
 
         if self.plot_callback_necessary:
-            self.fih_plots = bluecellulab.neuron.h.FInitializeHandler(1, self.plot_callback)
+            self.fih_plots = neuron.h.FInitializeHandler(1, self.plot_callback)
 
     def weights_callback(self):
         """Callback function that updates the delayed weights, when a certain
         delay has been reached."""
         while not self.delayed_weights.empty() and \
-                abs(self.delayed_weights.queue[0][0] - bluecellulab.neuron.h.t) < \
-                bluecellulab.neuron.h.dt:
+                abs(self.delayed_weights.queue[0][0] - neuron.h.t) < \
+                neuron.h.dt:
             (_, (sid, weight)) = self.delayed_weights.get()
             if sid in self.connections:
                 if self.connections[sid].post_netcon is not None:
                     self.connections[sid].post_netcon.weight[0] = weight
 
         if not self.delayed_weights.empty():
-            bluecellulab.neuron.h.cvode.event(self.delayed_weights.queue[0][0],
-                                              self.weights_callback)
+            neuron.h.cvode.event(
+                self.delayed_weights.queue[0][0], self.weights_callback
+            )
 
     def plot_callback(self):
         """Update all the windows."""
@@ -104,5 +107,5 @@ class PlottableMixin:
         for cell_dendrogram in self.cell_dendrograms:
             cell_dendrogram.redraw()
 
-        bluecellulab.neuron.h.cvode.event(
-            bluecellulab.neuron.h.t + 1, self.plot_callback)
+        neuron.h.cvode.event(
+            neuron.h.t + 1, self.plot_callback)

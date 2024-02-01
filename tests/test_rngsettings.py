@@ -1,5 +1,7 @@
 """Unit tests for the RNGSettings class."""
 
+import neuron
+
 import bluecellulab
 from bluecellulab.exceptions import UndefinedRNGException
 
@@ -7,20 +9,20 @@ from bluecellulab.exceptions import UndefinedRNGException
 def test_setting_rngmodes():
     """Test the setting of rng mode."""
     rng_obj = bluecellulab.RNGSettings(mode="Compatibility")
-    assert bluecellulab.neuron.h.rngMode == 0
+    assert neuron.h.rngMode == 0
 
     rng_obj.mode = "Random123"
-    assert bluecellulab.neuron.h.rngMode == 1
+    assert neuron.h.rngMode == 1
 
     rng_obj.mode = "UpdatedMCell"
-    assert bluecellulab.neuron.h.rngMode == 2
+    assert neuron.h.rngMode == 2
 
     bluecellulab.RNGSettings(mode="Random123")
-    assert bluecellulab.neuron.h.rngMode == 1
+    assert neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
 
     bluecellulab.RNGSettings()
-    assert bluecellulab.neuron.h.rngMode == 1
+    assert neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
 
     try:

@@ -15,10 +15,11 @@
 
 from __future__ import annotations
 from typing import Any, NamedTuple, Optional
-import pandas as pd
 import logging
 
-import bluecellulab
+import neuron
+import pandas as pd
+
 from bluecellulab.circuit import SynapseProperty
 from bluecellulab.circuit.node_id import CellId
 from bluecellulab.rngsettings import RNGSettings
@@ -138,7 +139,7 @@ class Synapse:
             cmd = cmd.replace('%s', '\n%(syn)s')
             hoc_cmd = cmd % {'syn': self.hsynapse.hname()}  # type: ignore
             hoc_cmd = '{%s}' % hoc_cmd
-            bluecellulab.neuron.h(hoc_cmd)
+            neuron.h(hoc_cmd)
 
     def _set_gabaab_ampanmda_rng(self) -> None:
         """Setup the RNG for the gabaab and ampanmd helpers.
@@ -156,7 +157,7 @@ class Synapse:
                 self.randseed2,
                 self.randseed3)
         else:
-            rndd = bluecellulab.neuron.h.Random()
+            rndd = neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 self.randseed1 = self.syn_id.sid * 100000 + 100
                 self.randseed2 = self.post_cell_id.id + \
@@ -252,7 +253,7 @@ class GluSynapse(Synapse):
         """
         self.mech_name = 'GluSynapse'
 
-        self.hsynapse = bluecellulab.neuron.h.GluSynapse(
+        self.hsynapse = neuron.h.GluSynapse(
             self.hoc_args.location,
             sec=self.hoc_args.section
         )
@@ -271,7 +272,7 @@ class GluSynapse(Synapse):
         self.hsynapse.gmax_d_AMPA = self.syn_description["gmax_d_AMPA"]
         self.hsynapse.gmax_p_AMPA = self.syn_description["gmax_p_AMPA"]
 
-        if self.hsynapse.rho0_GB > bluecellulab.neuron.h.rho_star_GB_GluSynapse:
+        if self.hsynapse.rho0_GB > neuron.h.rho_star_GB_GluSynapse:
             self.hsynapse.gmax0_AMPA = self.hsynapse.gmax_p_AMPA
             self.hsynapse.Use = self.hsynapse.Use_p
         else:
@@ -321,13 +322,13 @@ class GabaabSynapse(Synapse):
         """
         self.mech_name = 'ProbGABAAB_EMS'
 
-        self.hsynapse = bluecellulab.neuron.h.ProbGABAAB_EMS(
+        self.hsynapse = neuron.h.ProbGABAAB_EMS(
             self.hoc_args.location,
             sec=self.hoc_args.section
         )
 
         if randomize_gaba_risetime is True:
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             if self.rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
                     self.syn_id.sid * 100000 + 100,
@@ -397,7 +398,7 @@ class AmpanmdaSynapse(Synapse):
         """
         self.mech_name = 'ProbAMPANMDA_EMS'
 
-        self.hsynapse = bluecellulab.neuron.h.ProbAMPANMDA_EMS(
+        self.hsynapse = neuron.h.ProbAMPANMDA_EMS(
             self.hoc_args.location,
             sec=self.hoc_args.section,
         )

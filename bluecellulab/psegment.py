@@ -13,7 +13,8 @@
 # limitations under the License.
 """Represent a NEURON Segment in Python (for drawing)."""
 
-import bluecellulab
+import neuron
+
 from bluecellulab.neuron_interpreter import eval_neuron
 
 type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b', 'myelin': 'g'}
@@ -72,14 +73,15 @@ class PSegment:
 
     def getVariableValue(self, variable):
         """Get a variable value in a segment."""
-        if variable == "v" or \
-                bluecellulab.neuron.h.execute1("{%s.%s(%f)}" %
-                                               (bluecellulab.neuron.h.secname(
-                                                   sec=self.parentsection.hsection),
-                                                   variable,
-                                                   self.hsegment.x),
-                                               0):
+        if variable == "v" or neuron.h.execute1(
+            "{%s.%s(%f)}"
+            % (
+                neuron.h.secname(sec=self.parentsection.hsection),
+                variable,
+                self.hsegment.x,
+            ),
+            0,
+        ):
             return eval_neuron(f"self.hsegment.{variable}", self=self)
-
         else:
             return None

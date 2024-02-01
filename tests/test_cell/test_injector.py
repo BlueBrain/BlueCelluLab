@@ -3,6 +3,7 @@
 import math
 from pathlib import Path
 
+import neuron
 import numpy as np
 from pydantic import ValidationError
 import pytest
@@ -297,11 +298,11 @@ class TestInjector:
 
     def test_inject_current_clamp_signal(self):
         """Unit test for inject_current_clamp_signal."""
-        tvec = bluecellulab.neuron.h.Vector(np.arange(10))
-        svec = bluecellulab.neuron.h.Vector(np.random.normal(0, 0.1, 10))
+        tvec = neuron.h.Vector(np.arange(10))
+        svec = neuron.h.Vector(np.random.normal(0, 0.1, 10))
 
-        original_tvec = bluecellulab.neuron.h.Vector().copy(tvec)
-        original_svec = bluecellulab.neuron.h.Vector().copy(svec)
+        original_tvec = neuron.h.Vector().copy(tvec)
+        original_svec = neuron.h.Vector().copy(svec)
 
         soma = self.cell.soma
         segx = 0.5
@@ -337,11 +338,11 @@ class TestInjector:
 
     def test_inject_dynamic_clamp_signal(self):
         """Unit test for inject_dynamic_clamp_signal."""
-        tvec = bluecellulab.neuron.h.Vector(np.arange(10))
-        svec = bluecellulab.neuron.h.Vector(np.random.normal(0, 0.1, 10))
+        tvec = neuron.h.Vector(np.arange(10))
+        svec = neuron.h.Vector(np.random.normal(0, 0.1, 10))
 
-        original_tvec = bluecellulab.neuron.h.Vector().copy(tvec)
-        original_svec = bluecellulab.neuron.h.Vector().copy(svec)
+        original_tvec = neuron.h.Vector().copy(tvec)
+        original_svec = neuron.h.Vector().copy(svec)
 
         soma = self.cell.soma
         segx = 0.5
@@ -477,7 +478,7 @@ class TestInjectorSonata:
         section = self.cell.cell.getCell().dend[15]
         syn = self.cell.add_alpha_synapse(onset, tau, gmax, e, section)
 
-        current_vector = bluecellulab.neuron.h.Vector()
+        current_vector = neuron.h.Vector()
         current_vector.record(syn._ref_i)
         sim = bluecellulab.Simulation()
         sim.add_cell(self.cell)

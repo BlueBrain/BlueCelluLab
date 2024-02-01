@@ -4,12 +4,13 @@ import math
 import random
 import warnings
 from pathlib import Path
-from bluecellulab.circuit.circuit_access import EmodelProperties
 
+import neuron
 import numpy as np
 import pytest
 
 import bluecellulab
+from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.ssim import SSim
@@ -71,8 +72,8 @@ class TestCellBaseClass1:
 
     def test_fields(self):
         """Cell: Test the fields of a Cell object"""
-        assert isinstance(self.cell.soma, bluecellulab.neuron.nrn.Section)
-        assert isinstance(self.cell.axonal[0], bluecellulab.neuron.nrn.Section)
+        assert isinstance(self.cell.soma, neuron.nrn.Section)
+        assert isinstance(self.cell.axonal[0], neuron.nrn.Section)
         assert math.fabs(self.cell.threshold - 0.184062) < 0.00001
         assert math.fabs(self.cell.hypamp - -0.070557) < 0.00001
         # Lowered precision because of commit
@@ -88,7 +89,7 @@ class TestCellBaseClass1:
     def test_get_hsection(self):
         """Cell: Test cell.get_hsection"""
         assert isinstance(
-            self.cell.get_hsection(0), bluecellulab.neuron.nrn.Section)
+            self.cell.get_hsection(0), neuron.nrn.Section)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""
@@ -168,28 +169,14 @@ class TestCellBaseClass1:
                                                   location1=location1,
                                                   location2=location2,
                                                   projection='xyz')
+            x1 = neuron.h.x3d(0, sec=hsection1)
+            y1 = neuron.h.y3d(0, sec=hsection1)
+            z1 = neuron.h.z3d(0, sec=hsection1)
+            x2 = neuron.h.x3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
+            y2 = neuron.h.y3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
+            z2 = neuron.h.z3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
 
-            x1 = bluecellulab.neuron.h.x3d(0,
-                                           sec=hsection1)
-            y1 = bluecellulab.neuron.h.y3d(0,
-                                           sec=hsection1)
-            z1 = bluecellulab.neuron.h.z3d(0,
-                                           sec=hsection1)
-            x2 = bluecellulab.neuron.h.x3d(
-                bluecellulab.neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            y2 = bluecellulab.neuron.h.y3d(
-                bluecellulab.neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            z2 = bluecellulab.neuron.h.z3d(
-                bluecellulab.neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            import numpy as np
-            distance_hand = np.sqrt((x1 - x2) ** 2
-                                    + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+            distance_hand = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
             assert distance_euclid == distance_hand
 
 

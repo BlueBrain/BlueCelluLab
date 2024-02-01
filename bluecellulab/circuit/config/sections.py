@@ -20,6 +20,7 @@ from pydantic import field_validator, Field
 from pydantic.dataclasses import dataclass
 
 from libsonata._libsonata import Conditions as LibSonataConditions
+import neuron
 
 import bluecellulab
 
@@ -138,7 +139,7 @@ class ConnectionOverrides:
     @classmethod
     def validate_mod_override(cls, value):
         """Make sure the mod file to override is present."""
-        if isinstance(value, str) and not hasattr(bluecellulab.neuron.h, value):
+        if isinstance(value, str) and not hasattr(neuron.h, value):
             raise bluecellulab.ConfigError(
                 f"Mod file for {value} is not found.")
         return value

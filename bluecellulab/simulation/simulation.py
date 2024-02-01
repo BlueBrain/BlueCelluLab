@@ -13,14 +13,14 @@
 # limitations under the License.
 """Simulation class of bluecellulab."""
 
-
+import contextlib
 import sys
 from typing import Optional
 import logging
 
+import neuron
+
 import bluecellulab
-import contextlib
-from bluecellulab.importer import neuron
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ class Simulation:
 
         if self.pc is not None:
             for cell in self.cells:
-                self.pc.prcellstate(cell.cell_id.id, f"bluecellulab_t={bluecellulab.neuron.h.t}")
+                self.pc.prcellstate(cell.cell_id.id, f"bluecellulab_t={neuron.h.t}")
 
         try:
             neuron.h.continuerun(neuron.h.tstop)

@@ -17,7 +17,7 @@ import logging
 
 from typing import Optional
 
-import bluecellulab
+import neuron
 from bluecellulab import Singleton
 from bluecellulab.circuit.circuit_access import CircuitAccess
 from bluecellulab.exceptions import UndefinedRNGException
@@ -57,23 +57,23 @@ class RNGSettings(metaclass=Singleton):
             self.base_seed = circuit_access.config.base_seed if circuit_access else 0
         else:
             self.base_seed = base_seed
-        bluecellulab.neuron.h.globalSeed = self.base_seed
+        neuron.h.globalSeed = self.base_seed
 
         if self._mode == 'Random123':
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             rng.Random123_globalindex(self.base_seed)
 
         self.synapse_seed = circuit_access.config.synapse_seed if circuit_access else 0
-        bluecellulab.neuron.h.synapseSeed = self.synapse_seed
+        neuron.h.synapseSeed = self.synapse_seed
 
         self.ionchannel_seed = circuit_access.config.ionchannel_seed if circuit_access else 0
-        bluecellulab.neuron.h.ionchannelSeed = self.ionchannel_seed
+        neuron.h.ionchannelSeed = self.ionchannel_seed
 
         self.stimulus_seed = circuit_access.config.stimulus_seed if circuit_access else 0
-        bluecellulab.neuron.h.stimulusSeed = self.stimulus_seed
+        neuron.h.stimulusSeed = self.stimulus_seed
 
         self.minis_seed = circuit_access.config.minis_seed if circuit_access else 0
-        bluecellulab.neuron.h.minisSeed = self.minis_seed
+        neuron.h.minisSeed = self.minis_seed
 
     @property
     def mode(self):
@@ -90,7 +90,7 @@ class RNGSettings(metaclass=Singleton):
                 % (self.mode, list(options.keys()))
             )
         else:
-            bluecellulab.neuron.h.rngMode = options[new_val]
+            neuron.h.rngMode = options[new_val]
             self._mode = new_val
 
     def __repr__(self) -> str:

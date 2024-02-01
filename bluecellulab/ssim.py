@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Optional
 import logging
 
+import neuron
 import numpy as np
 import pandas as pd
 from pydantic.types import NonNegativeInt
@@ -89,7 +90,7 @@ class SSim:
             self.simulation_access = BluepySimulationAccess(simulation_config)
             SimulationValidator(self.circuit_access).validate()
 
-        self.pc = bluecellulab.neuron.h.ParallelContext() if print_cellstate else None
+        self.pc = neuron.h.ParallelContext() if print_cellstate else None
 
         self.rng_settings = bluecellulab.RNGSettings(
             rng_mode,
