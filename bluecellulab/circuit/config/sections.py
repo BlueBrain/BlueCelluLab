@@ -19,10 +19,17 @@ from typing import Literal, Optional
 from pydantic import field_validator, Field
 from pydantic.dataclasses import dataclass
 
-from libsonata._libsonata import Conditions as LibSonataConditions
 import neuron
 
 import bluecellulab
+
+# libsonata reorganized it's module layout; maintain compatibility with both:
+# https://github.com/BlueBrain/libsonata/pull/345
+try:
+    from libsonata._libsonata import Conditions as LibSonataConditions
+except ImportError:
+    from libsonata._libsonata import SimulationConfig
+    LibSonataConditions = SimulationConfig.Conditions
 
 
 def string_to_bool(value: str) -> bool:
