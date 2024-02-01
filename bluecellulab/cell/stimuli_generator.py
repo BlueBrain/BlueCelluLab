@@ -14,8 +14,9 @@
 """Generates stimuli to be injected into cells."""
 
 import math
-
 import logging
+
+import neuron
 
 import bluecellulab
 from bluecellulab.cell.random import gamma
@@ -39,9 +40,9 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
     """
     if rng is None:
         logger.info("Using a default RNG for shot noise generation")
-        rng = bluecellulab.neuron.h.Random()  # Creates a default RNG
+        rng = neuron.h.Random()  # Creates a default RNG
 
-    tvec = bluecellulab.neuron.h.Vector()
+    tvec = neuron.h.Vector()
     tvec.indgen(0, duration, dt)  # time vector
     ntstep = len(tvec)  # total number of timesteps
 
@@ -51,22 +52,22 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
 
     exp_scale = 1 / rate  # scale parameter of exponential distribution of time intervals
     rng.negexp(exp_scale)
-    iei = bluecellulab.neuron.h.Vector(napprox)
+    iei = neuron.h.Vector(napprox)
     iei.setrand(rng)  # generate inter-event intervals
 
-    ev = bluecellulab.neuron.h.Vector()
+    ev = neuron.h.Vector()
     ev.integral(iei, 1).mul(1000)  # generate events in ms
     # add events if last event falls short of duration
     while ev[-1] < duration:
-        iei_new = bluecellulab.neuron.h.Vector(100)  # generate 100 new inter-event intervals
+        iei_new = neuron.h.Vector(100)  # generate 100 new inter-event intervals
         iei_new.setrand(rng)            # here rng is still negexp
-        ev_new = bluecellulab.neuron.h.Vector()
+        ev_new = neuron.h.Vector()
         ev_new.integral(iei_new, 1).mul(1000).add(ev[-1])  # generate new shifted events in ms
         ev.append(ev_new)  # append new events
     ev.where("<", duration)  # remove events exceeding duration
     ev.div(dt)  # divide events by timestep
 
-    nev = bluecellulab.neuron.h.Vector([round(x) for x in ev])  # round to integer timestep index
+    nev = neuron.h.Vector([round(x) for x in ev])  # round to integer timestep index
     nev.where("<", ntstep)  # remove events exceeding number of timesteps
 
     sign = 1
@@ -80,7 +81,7 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
     # sample gamma-distributed amplitudes
     amp = gamma(rng, gamma_shape, gamma_scale, len(nev))
 
-    E = bluecellulab.neuron.h.Vector(ntstep, 0)  # full signal
+    E = neuron.h.Vector(ntstep, 0)  # full signal
     for n, A in zip(nev, amp):
         E.x[int(n)] += sign * A  # add impulses, may overlap due to rounding to timestep
 
@@ -95,8 +96,8 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
     t_peak = math.log(R / D) / (R - D)
     A = (a / b - 1) / (a ** t_peak - b ** t_peak)
 
-    P = bluecellulab.neuron.h.Vector(ntstep, 0)
-    B = bluecellulab.neuron.h.Vector(ntstep, 0)
+    P = neuron.h.Vector(ntstep, 0)
+    B = neuron.h.Vector(ntstep, 0)
 
     # composite autoregressive process with exact solution
     # P[n] = b * (a ^ n - b ^ n) / (a - b)
@@ -143,15 +144,15 @@ def gen_ornstein_uhlenbeck(tau, sigma, mean, duration, dt=0.25, rng=None):
 
     if rng is None:
         logger.info("Using a default RNG for Ornstein-Uhlenbeck process")
-        rng = bluecellulab.neuron.h.Random()  # Creates a default RNG
+        rng = neuron.h.Random()  # Creates a default RNG
 
-    tvec = bluecellulab.neuron.h.Vector()
+    tvec = neuron.h.Vector()
     tvec.indgen(0, duration, dt)  # time vector
     ntstep = len(tvec)  # total number of timesteps
 
-    svec = bluecellulab.neuron.h.Vector(ntstep, 0)  # stim vector
+    svec = neuron.h.Vector(ntstep, 0)  # stim vector
 
-    noise = bluecellulab.neuron.h.Vector(ntstep)  # Gaussian noise
+    noise = neuron.h.Vector(ntstep)  # Gaussian noise
     rng.normal(0.0, 1.0)
     noise.setrand(rng)  # generate Gaussian noise
 

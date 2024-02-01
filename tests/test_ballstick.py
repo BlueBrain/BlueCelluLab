@@ -6,6 +6,7 @@ Models simulated in N disticnt ways, all shoudl
 
 import os
 
+import neuron
 import numpy as np
 
 import bluecellulab
@@ -37,13 +38,13 @@ class Params:
 
         cell = bluecellulab.Cell(self.templatefile, self.morphfile)
         self.soma_L, self.soma_D, self.soma_A = \
-            cell.soma.L, cell.soma.diam, bluecellulab.neuron.h.area(
+            cell.soma.L, cell.soma.diam, neuron.h.area(
                 0.5, sec=cell.soma)
         # print 'SOMA L=%f, diam=%f,surf=%f' % (self.soma_L, self.soma_D,
         # self.soma_A)
 
         self.dend0_L, self.dend0_D, self.dend0_A = cell.basal[0].L, cell.basal[
-            0].diam, bluecellulab.neuron.h.area(
+            0].diam, neuron.h.area(
             0.5, sec=cell.basal[0])
         self.dend0_NSEG = cell.basal[0].nseg
 
@@ -62,7 +63,7 @@ class Params:
 
 def run_pyneuron(soma_l, soma_d, params):
     """Run ballstick with PyNeuron"""
-    soma = bluecellulab.neuron.h.Section()
+    soma = neuron.h.Section()
     soma.L = soma_l
     soma.diam = soma_d
     soma.nseg = 1
@@ -73,7 +74,7 @@ def run_pyneuron(soma_l, soma_d, params):
     soma(0.5).e_pas = params.EL
     soma(0.5).g_pas = 1.0 / params.RM
 
-    dend = bluecellulab.neuron.h.Section()
+    dend = neuron.h.Section()
     dend.L = params.dend0_L
     dend.diam = params.dend0_D
     dend.nseg = params.dend0_NSEG
@@ -86,26 +87,26 @@ def run_pyneuron(soma_l, soma_d, params):
         seg.g_pas = 1.0 / params.RM
     dend.connect(soma, 0.5, 0)  # mid-soma to begin-den
 
-    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=dend)
+    syn = neuron.h.ExpSyn(params.SYN_LOC, sec=dend)
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
 
-    ns = bluecellulab.neuron.h.NetStim()
+    ns = neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
 
-    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
-    v_vec = bluecellulab.neuron.h.Vector()
-    t_vec = bluecellulab.neuron.h.Vector()
+    v_vec = neuron.h.Vector()
+    t_vec = neuron.h.Vector()
     v_vec.record(soma(0.5)._ref_v)
-    t_vec.record(bluecellulab.neuron.h._ref_t)
+    t_vec.record(neuron.h._ref_t)
 
-    bluecellulab.neuron.h.finitialize(params.V_INIT)
-    bluecellulab.neuron.h.dt = params.DT
-    bluecellulab.neuron.run(params.T_STOP)
+    neuron.h.finitialize(params.V_INIT)
+    neuron.h.dt = params.DT
+    neuron.run(params.T_STOP)
 
     voltage = np.array(v_vec)
     time = np.array(t_vec)
@@ -120,28 +121,28 @@ def run_pyneuron(soma_l, soma_d, params):
 def run_pyneuron_with_template(params):
     """Run ballstick with PyNeuron and template"""
 
-    bluecellulab.neuron.h.load_file(params.templatefile)
-    cell = bluecellulab.neuron.h.ballstick_cell(0, params.morphfile)
+    neuron.h.load_file(params.templatefile)
+    cell = neuron.h.ballstick_cell(0, params.morphfile)
     basal = cell.getCell().dend[0]
     soma = cell.getCell().soma[0]
-    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=basal)
+    syn = neuron.h.ExpSyn(params.SYN_LOC, sec=basal)
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
-    ns = bluecellulab.neuron.h.NetStim()
+    ns = neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
-    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
-    v_vec = bluecellulab.neuron.h.Vector()
-    t_vec = bluecellulab.neuron.h.Vector()
+    v_vec = neuron.h.Vector()
+    t_vec = neuron.h.Vector()
     v_vec.record(soma(0.5)._ref_v)
-    t_vec.record(bluecellulab.neuron.h._ref_t)
+    t_vec.record(neuron.h._ref_t)
 
-    bluecellulab.neuron.h.finitialize(params.V_INIT)
-    bluecellulab.neuron.h.dt = params.DT
-    bluecellulab.neuron.run(params.T_STOP)
+    neuron.h.finitialize(params.V_INIT)
+    neuron.h.dt = params.DT
+    neuron.run(params.T_STOP)
 
     voltage = np.array(v_vec)
     time = np.array(t_vec)
@@ -159,15 +160,15 @@ def run_pyneuron_with_template(params):
 def run_bluecellulab(params):
     """Run ballstick with bluecellulab"""
     cell = bluecellulab.Cell(params.templatefile, params.morphfile)
-    syn = bluecellulab.neuron.h.ExpSyn(params.SYN_LOC, sec=cell.basal[0])
+    syn = neuron.h.ExpSyn(params.SYN_LOC, sec=cell.basal[0])
     syn.tau = params.SYN_DECAY
     syn.e = params.SYN_E
-    ns = bluecellulab.neuron.h.NetStim()
+    ns = neuron.h.NetStim()
     ns.interval = 100000
     ns.number = 1
     ns.start = params.SYN_ACTIVATION_T
     ns.noise = 0
-    nc = bluecellulab.neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
+    nc = neuron.h.NetCon(ns, syn, 0, params.SYN_DELAY, params.SYN_G)
 
     sim = bluecellulab.Simulation()
     sim.add_cell(cell)
@@ -278,10 +279,10 @@ def test_ballstick_load():
     cell = bluecellulab.Cell(params.templatefile, params.morphfile)
     assert abs(cell.soma.L - 19.6) < 0.001
     assert abs(cell.soma.diam - 10.229) < 0.001
-    assert abs(bluecellulab.neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001
+    assert abs(neuron.h.area(0.5, sec=cell.soma) - 872.567) < 0.001
     assert abs(cell.basal[0].L - 200.0) < 0.001
     assert abs(cell.basal[0].diam - 3.0) < 0.001
-    assert abs(bluecellulab.neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
+    assert abs(neuron.h.area(0.5, sec=cell.basal[0]) - 9.424) < 0.001
 
     del cell
 

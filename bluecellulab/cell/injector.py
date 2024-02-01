@@ -17,10 +17,10 @@ import math
 import warnings
 import logging
 
+import neuron
 import numpy as np
 from typing_extensions import deprecated
 
-import bluecellulab
 from bluecellulab.cell.stimuli_generator import (
     gen_ornstein_uhlenbeck,
     gen_shotnoise_signal,
@@ -60,7 +60,7 @@ class InjectableMixin:
 
     def add_pulse(self, stimulus):
         """Inject pulse stimulus for replay."""
-        tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)
+        tstim = neuron.h.TStim(0.5, sec=self.soma)
         tstim.train(stimulus.delay,
                     stimulus.duration,
                     stimulus.amp_start,
@@ -74,7 +74,7 @@ class InjectableMixin:
         if section is None:
             section = self.soma
 
-        tstim = bluecellulab.neuron.h.TStim(segx, sec=section)
+        tstim = neuron.h.TStim(segx, sec=section)
         duration = stop_time - start_time
         tstim.pulse(start_time, duration, level)
         self.persistent.append(tstim)
@@ -86,7 +86,7 @@ class InjectableMixin:
         if section is None:
             section = self.soma
 
-        tstim = bluecellulab.neuron.h.TStim(segx, sec=section)
+        tstim = neuron.h.TStim(segx, sec=section)
 
         tstim.ramp(
             0.0,
@@ -133,7 +133,7 @@ class InjectableMixin:
             section = self.soma
         if current_record_dt is None:
             current_record_dt = self.record_dt
-        vclamp = bluecellulab.neuron.h.SEClamp(segx, sec=section)
+        vclamp = neuron.h.SEClamp(segx, sec=section)
         self.persistent.append(vclamp)
 
         vclamp.amp1 = level
@@ -142,7 +142,7 @@ class InjectableMixin:
         if rs is not None:
             vclamp.rs = rs
 
-        current = bluecellulab.neuron.h.Vector()
+        current = neuron.h.Vector()
         if current_record_dt is None:
             current.record(vclamp._ref_i)
         else:
@@ -156,16 +156,16 @@ class InjectableMixin:
     def _get_noise_step_rand(self, noisestim_count):
         """Return rng for noise step stimulus."""
         if self.rng_settings.mode == "Compatibility":
-            rng = bluecellulab.neuron.h.Random(self.cell_id.id + noisestim_count)
+            rng = neuron.h.Random(self.cell_id.id + noisestim_count)
         elif self.rng_settings.mode == "UpdatedMCell":
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             rng.MCellRan4(
                 noisestim_count * 10000 + 100,
                 self.rng_settings.base_seed +
                 self.rng_settings.stimulus_seed +
                 self.cell_id.id * 1000)
         elif self.rng_settings.mode == "Random123":
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             rng.Random123(
                 noisestim_count + 100,
                 self.rng_settings.stimulus_seed + 500,
@@ -181,11 +181,11 @@ class InjectableMixin:
                        duration, seed=None, noisestim_count=0):
         """Inject a step current with noise on top."""
         if seed is not None:
-            rand = bluecellulab.neuron.h.Random(seed)
+            rand = neuron.h.Random(seed)
         else:
             rand = self._get_noise_step_rand(noisestim_count)
 
-        tstim = bluecellulab.neuron.h.TStim(segx, rand, sec=section)
+        tstim = neuron.h.TStim(segx, rand, sec=section)
         tstim.noise(delay, duration, mean, variance)
         self.persistent.append(rand)
         self.persistent.append(tstim)
@@ -213,7 +213,7 @@ class InjectableMixin:
 
     def add_replay_hypamp(self, stimulus: Hyperpolarizing):
         """Inject hypamp for the replay."""
-        tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)  # type: ignore
+        tstim = neuron.h.TStim(0.5, sec=self.soma)  # type: ignore
         if self.hypamp is None:  # type: ignore
             raise BluecellulabError("Cell.hypamp must be set for hypamp stimulus")
         amp: float = self.hypamp  # type: ignore
@@ -223,7 +223,7 @@ class InjectableMixin:
 
     def add_replay_relativelinear(self, stimulus):
         """Add a relative linear stimulus."""
-        tstim = bluecellulab.neuron.h.TStim(0.5, sec=self.soma)
+        tstim = neuron.h.TStim(0.5, sec=self.soma)
         amp = stimulus.percent_start / 100.0 * self.threshold
         tstim.pulse(stimulus.delay, stimulus.duration, amp)
         self.persistent.append(tstim)
@@ -238,7 +238,7 @@ class InjectableMixin:
             seed3 = self.cell_id.id + 123 if seed is None else seed  # GID
             logger.debug("Using ornstein_uhlenbeck process seeds %d %d %d" %
                          (seed1, seed2, seed3))
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
             raise BluecellulabError("Shot noise stimulus requires Random123")
@@ -254,7 +254,7 @@ class InjectableMixin:
             seed3 = self.cell_id.id + 123 if seed is None else seed
             logger.debug("Using shot noise seeds %d %d %d" %
                          (seed1, seed2, seed3))
-            rng = bluecellulab.neuron.h.Random()
+            rng = neuron.h.Random()
             rng.Random123(seed1, seed2, seed3)
         else:
             raise BluecellulabError("Shot noise stimulus requires Random123")
@@ -264,7 +264,7 @@ class InjectableMixin:
 
     def inject_current_clamp_signal(self, section, segx, tvec, svec):
         """Inject any signal via current clamp."""
-        cs = bluecellulab.neuron.h.IClamp(segx, sec=section)
+        cs = neuron.h.IClamp(segx, sec=section)
         cs.dur = tvec[-1]
         svec.play(cs._ref_amp, tvec, 1)
 
@@ -279,7 +279,7 @@ class InjectableMixin:
         Args:
             reversal (float): reversal potential of conductance (mV)
         """
-        clamp = bluecellulab.neuron.h.SEClamp(segx, sec=section)
+        clamp = neuron.h.SEClamp(segx, sec=section)
         clamp.dur1 = tvec[-1]
         clamp.amp1 = reversal
         # support delay with initial zero
@@ -287,7 +287,7 @@ class InjectableMixin:
         svec.insrt(0, 0)
         # replace svec with inverted and clamped signal
         # rs is in MOhm, so conductance is in uS (micro Siemens)
-        svec = bluecellulab.neuron.h.Vector(
+        svec = neuron.h.Vector(
             [1 / x if x > 1E-9 and x < 1E9 else 1E9 for x in svec])
         svec.play(clamp._ref_rs, tvec, 1)
 
@@ -400,14 +400,14 @@ class InjectableMixin:
         """Inject a custom current to the cell."""
         start_time = t_content[0]
         stop_time = t_content[-1]
-        time = bluecellulab.neuron.h.Vector()
-        currents = bluecellulab.neuron.h.Vector()
+        time = neuron.h.Vector()
+        currents = neuron.h.Vector()
         time = time.from_python(t_content)
         currents = currents.from_python(i_content)
 
         if section is None:
             section = self.soma
-        pulse = bluecellulab.neuron.h.IClamp(segx, sec=section)
+        pulse = neuron.h.IClamp(segx, sec=section)
         self.persistent.append(pulse)
         self.persistent.append(time)
         self.persistent.append(currents)
@@ -443,7 +443,7 @@ class InjectableMixin:
         """Add a sinusoidal current to the cell."""
         if section is None:
             section = self.soma
-        tstim = bluecellulab.neuron.h.TStim(segx, sec=section)
+        tstim = neuron.h.TStim(segx, sec=section)
         tstim.sin(amp, start_time, duration, frequency)
         self.persistent.append(tstim)
         return tstim
@@ -458,7 +458,7 @@ class InjectableMixin:
         segx=0.5,
     ) -> HocObjectType:
         """Add an AlphaSynapse NEURON point process stimulus to the cell."""
-        syn = bluecellulab.neuron.h.AlphaSynapse(segx, sec=section)
+        syn = neuron.h.AlphaSynapse(segx, sec=section)
         syn.onset = onset
         syn.tau = tau
         syn.gmax = gmax

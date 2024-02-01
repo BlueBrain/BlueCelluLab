@@ -13,8 +13,9 @@
 # limitations under the License.
 """Represents a python version of NEURON Section (for drawing)."""
 
+import neuron
+
 import bluecellulab
-from bluecellulab import neuron
 
 
 class PSection:

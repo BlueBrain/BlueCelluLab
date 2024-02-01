@@ -2,6 +2,7 @@
 
 import os
 
+import neuron
 from pytest import raises
 import pytest
 
@@ -14,11 +15,11 @@ script_dir = os.path.dirname(__file__)
 
 def test_eval_neuron():
     """Unit test for the eval_neuron function."""
-    eval_neuron("bluecellulab.neuron.h.nil", bluecellulab=bluecellulab)
+    eval_neuron("neuron.h.nil", neuron=neuron)
     with raises(NeuronEvalError):
         eval_neuron("1+1")
     with raises(NeuronEvalError):
-        eval_neuron("bluecellulab.neuron.h.nil; 2-1", bluecellulab=bluecellulab)
+        eval_neuron("neuron.h.nil; 2-1", neuron=neuron)
     with raises(NeuronEvalError):
         eval_neuron("a=1")
 

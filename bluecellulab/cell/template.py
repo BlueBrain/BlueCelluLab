@@ -22,8 +22,8 @@ import re
 import string
 from typing import Optional
 
-import bluecellulab
-from bluecellulab import neuron
+import neuron
+
 from bluecellulab.circuit import EmodelProperties
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.type_aliases import HocObjectType
@@ -132,7 +132,7 @@ class NeuronTemplate:
             template_content,
         )
 
-        bluecellulab.neuron.h(template_content)
+        neuron.h(template_content)
 
         return template_name
 

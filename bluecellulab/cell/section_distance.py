@@ -13,9 +13,8 @@
 # limitations under the License.
 """Distance computing functionality between Neuron sections."""
 
+import neuron
 import numpy as np
-
-import bluecellulab
 
 
 class EuclideanSectionDistance:
@@ -72,7 +71,7 @@ class EuclideanSectionDistance:
     def grindaway(hsection):
         """Grindaway."""
         # get the data for the section
-        n_segments = int(bluecellulab.neuron.h.n3d(sec=hsection))
+        n_segments = int(neuron.h.n3d(sec=hsection))
         n_comps = hsection.nseg
 
         xs = np.zeros(n_segments)
@@ -80,10 +79,10 @@ class EuclideanSectionDistance:
         zs = np.zeros(n_segments)
         lengths = np.zeros(n_segments)
         for index in range(n_segments):
-            xs[index] = bluecellulab.neuron.h.x3d(index, sec=hsection)
-            ys[index] = bluecellulab.neuron.h.y3d(index, sec=hsection)
-            zs[index] = bluecellulab.neuron.h.z3d(index, sec=hsection)
-            lengths[index] = bluecellulab.neuron.h.arc3d(index, sec=hsection)
+            xs[index] = neuron.h.x3d(index, sec=hsection)
+            ys[index] = neuron.h.y3d(index, sec=hsection)
+            zs[index] = neuron.h.z3d(index, sec=hsection)
+            lengths[index] = neuron.h.arc3d(index, sec=hsection)
 
         # to use Vector class's .interpolate()
         # must first scale the independent variable

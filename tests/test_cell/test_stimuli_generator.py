@@ -2,7 +2,7 @@
 
 from pytest import approx
 
-import bluecellulab
+import neuron
 from bluecellulab.cell.stimuli_generator import (
     gen_shotnoise_signal,
     get_relative_shotnoise_params,
@@ -12,7 +12,7 @@ from bluecellulab.cell.stimuli_generator import (
 
 def test_gen_shotnoise_signal():
     """Test if the shotnoise signal is generated correctly."""
-    rng = bluecellulab.neuron.h.Random()
+    rng = neuron.h.Random()
     rng.Random123(1, 2, 3)
     time_vec, stim_vec = gen_shotnoise_signal(4.0, 0.4, 2E3, 40E-3, 16E-4, 2,
                                               rng=rng)
@@ -37,7 +37,7 @@ def test_get_relative_shotnoise_params():
 
 def test_gen_ornstein_uhlenbeck():
     """Test if the ornstein uhlenbeck signal is generated correctly."""
-    rng = bluecellulab.neuron.h.Random()
+    rng = neuron.h.Random()
     rng.Random123(1, 2, 3)
     time_vec, stim_vec = gen_ornstein_uhlenbeck(2.8, 0.0042, 0.029, 2, rng=rng)
     assert list(time_vec) == approx([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5,

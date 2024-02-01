@@ -22,11 +22,12 @@ import queue
 from typing import Optional
 from typing_extensions import deprecated
 
+import neuron
 import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab import neuron, psection
+from bluecellulab import psection
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
@@ -328,9 +329,9 @@ class Cell(InjectableMixin, PlottableMixin):
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
             for x in x_s:
-                area += bluecellulab.neuron.h.area(x, sec=section)
+                area += neuron.h.area(x, sec=section)
             # for segment in section:
-            #    area += bluecellulab.neuron.h.area(segment.x, sec=section)
+            #    area += neuron.h.area(segment.x, sec=section)
         return area
 
     def add_recording(self, var_name: str, dt: Optional[float] = None) -> None:
@@ -346,11 +347,11 @@ class Cell(InjectableMixin, PlottableMixin):
             # This float_epsilon stuff is some magic from M. Hines to make
             # the time points fall exactly on the dts
             recording.record(
-                eval_neuron(var_name, self=self, neuron=bluecellulab.neuron),
+                eval_neuron(var_name, self=self, neuron=neuron),
                 self.get_precise_record_dt(dt),
             )
         else:
-            recording.record(eval_neuron(var_name, self=self, neuron=bluecellulab.neuron))
+            recording.record(eval_neuron(var_name, self=self, neuron=neuron))
         self.recordings[var_name] = recording
 
     @staticmethod
@@ -506,7 +507,7 @@ class Cell(InjectableMixin, PlottableMixin):
             source = public_hoc_cell(self.cell).axon[1](0.5)._ref_v
         else:
             raise ValueError("Spike detection location must be soma or AIS")
-        netcon = bluecellulab.neuron.h.NetCon(source, target, sec=sec)
+        netcon = neuron.h.NetCon(source, target, sec=sec)
         netcon.threshold = threshold
         return netcon
 
@@ -519,7 +520,7 @@ class Cell(InjectableMixin, PlottableMixin):
             threshold: spike detection threshold
         """
         nc = self.create_netcon_spikedetector(target, location, threshold)
-        spike_vec = bluecellulab.neuron.h.Vector()
+        spike_vec = neuron.h.Vector()
         nc.record(spike_vec)
         self.recordings[f"spike_detector_{location}_{threshold}"] = spike_vec
 
@@ -576,18 +577,18 @@ class Cell(InjectableMixin, PlottableMixin):
         if spont_minis_rate is not None and spont_minis_rate > 0:
             sec = self.get_hsection(post_sec_id)
             # add the *minis*: spontaneous synaptic events
-            self.ips[synapse_id] = bluecellulab.neuron.h.\
+            self.ips[synapse_id] = neuron.h.\
                 InhPoissonStim(location, sec=sec)
 
-            self.syn_mini_netcons[synapse_id] = bluecellulab.neuron.h.\
+            self.syn_mini_netcons[synapse_id] = neuron.h.\
                 NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
             self.syn_mini_netcons[synapse_id].delay = 0.1
             self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
             nc_param_name = 'nc_type_param_{}'.format(
                 synapse.hsynapse).split('[')[0]
-            if hasattr(bluecellulab.neuron.h, nc_param_name):
-                nc_type_param = int(getattr(bluecellulab.neuron.h, nc_param_name))
+            if hasattr(neuron.h, nc_param_name):
+                nc_type_param = int(getattr(neuron.h, nc_param_name))
                 # NC_SPONTMINI
                 self.syn_mini_netcons[synapse_id].weight[nc_type_param] = 1
 
@@ -602,10 +603,10 @@ class Cell(InjectableMixin, PlottableMixin):
                     self.cell_id.id + 250,
                     seed2 + 350)
             else:
-                exprng = bluecellulab.neuron.h.Random()
+                exprng = neuron.h.Random()
                 self.persistent.append(exprng)
 
-                uniformrng = bluecellulab.neuron.h.Random()
+                uniformrng = neuron.h.Random()
                 self.persistent.append(uniformrng)
 
                 if self.rng_settings.mode == 'Compatibility':
@@ -636,9 +637,9 @@ class Cell(InjectableMixin, PlottableMixin):
 
                 self.ips[synapse_id].setRNGs(exprng, uniformrng)
 
-            tbins_vec = bluecellulab.neuron.h.Vector(1)
+            tbins_vec = neuron.h.Vector(1)
             tbins_vec.x[0] = 0.0
-            rate_vec = bluecellulab.neuron.h.Vector(1)
+            rate_vec = neuron.h.Vector(1)
             rate_vec.x[0] = spont_minis_rate
             self.persistent.append(tbins_vec)
             self.persistent.append(rate_vec)

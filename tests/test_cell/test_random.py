@@ -1,7 +1,7 @@
 """Unit tests for cell/random module."""
+import neuron
 from pytest import approx
 
-from bluecellulab import neuron
 from bluecellulab.cell.random import gamma
 
 
