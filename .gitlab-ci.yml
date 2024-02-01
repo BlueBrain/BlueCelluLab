@@ -23,6 +23,6 @@ tests:
   - !reference [.gitlab-access]
   script:
   - pip install .  # Install the package itself
-  - git clone git@bbpgitlab.epfl.ch:cells/bluecellulab-bb5-tests.git
+  - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@bbpgitlab.epfl.ch/cells/bluecellulab-bb5-tests.git
   - cd bluecellulab-bb5-tests
   - make
