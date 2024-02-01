@@ -169,28 +169,14 @@ class TestCellBaseClass1:
                                                   location1=location1,
                                                   location2=location2,
                                                   projection='xyz')
+            x1 = neuron.h.x3d(0, sec=hsection1)
+            y1 = neuron.h.y3d(0, sec=hsection1)
+            z1 = neuron.h.z3d(0, sec=hsection1)
+            x2 = neuron.h.x3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
+            y2 = neuron.h.y3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
+            z2 = neuron.h.z3d(neuron.h.n3d(sec=hsection2) - 1, sec=hsection2)
 
-            x1 = neuron.h.x3d(0,
-                                           sec=hsection1)
-            y1 = neuron.h.y3d(0,
-                                           sec=hsection1)
-            z1 = neuron.h.z3d(0,
-                                           sec=hsection1)
-            x2 = neuron.h.x3d(
-                neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            y2 = neuron.h.y3d(
-                neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            z2 = neuron.h.z3d(
-                neuron.h.n3d(
-                    sec=hsection2) - 1,
-                sec=hsection2)
-            import numpy as np
-            distance_hand = np.sqrt((x1 - x2) ** 2
-                                    + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+            distance_hand = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
             assert distance_euclid == distance_hand
 
 

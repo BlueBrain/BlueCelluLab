@@ -96,8 +96,9 @@ class PlottableMixin:
                     self.connections[sid].post_netcon.weight[0] = weight
 
         if not self.delayed_weights.empty():
-            neuron.h.cvode.event(self.delayed_weights.queue[0][0],
-                                              self.weights_callback)
+            neuron.h.cvode.event(
+                self.delayed_weights.queue[0][0], self.weights_callback
+            )
 
     def plot_callback(self):
         """Update all the windows."""

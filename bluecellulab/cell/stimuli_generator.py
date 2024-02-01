@@ -18,7 +18,6 @@ import logging
 
 import neuron
 
-import bluecellulab
 from bluecellulab.cell.random import gamma
 
 logger = logging.getLogger(__name__)
