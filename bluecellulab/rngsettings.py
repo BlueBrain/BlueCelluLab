@@ -21,6 +21,7 @@ import neuron
 from bluecellulab import Singleton
 from bluecellulab.circuit.circuit_access import CircuitAccess
 from bluecellulab.exceptions import UndefinedRNGException
+from bluecellulab.importer import load_hoc_and_mod_files
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 class RNGSettings(metaclass=Singleton):
     """Class that represents RNG settings in bluecellulab."""
 
+    @load_hoc_and_mod_files
     def __init__(
             self,
             mode: Optional[str] = None,
@@ -41,7 +43,6 @@ class RNGSettings(metaclass=Singleton):
         circuit: circuit access object, if present seeds are read from simulation
         base_seed: base seed for entire sim, overrides config value
         """
-
         self._mode = ""
         if mode is None:
             if circuit_access is not None:

@@ -21,6 +21,7 @@ import pkg_resources
 import neuron
 
 from bluecellulab.exceptions import BluecellulabError
+from bluecellulab.utils import run_once
 
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,18 @@ def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
     logger.info(f"Mod lib: {mod_lib_path}")
 
 
-mod_lib_paths = import_mod_lib(neuron)
-import_neurodamus(neuron)
-print_header(neuron, mod_lib_paths)
+@run_once
+def _load_hoc_and_mod_files() -> None:
+    """Import hoc and mod files."""
+    logger.info("Loading the mod files.")
+    mod_lib_paths = import_mod_lib(neuron)
+    logger.info("Loading the hoc files.")
+    import_neurodamus(neuron)
+    print_header(neuron, mod_lib_paths)
+
+
+def load_hoc_and_mod_files(func):
+    def wrapper(*args, **kwargs):
+        _load_hoc_and_mod_files()
+        return func(*args, **kwargs)
+    return wrapper
