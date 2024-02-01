@@ -58,14 +58,14 @@ def test_shorten_and_hash_string():
 class TestCellBaseClass1:
     """First Cell test class"""
 
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.cell = bluecellulab.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
             "%s/examples/cell_example1" % str(parent_dir))
         assert isinstance(self.cell, bluecellulab.Cell)
 
-    def teardown(self):
+    def teardown_method(self):
         """Teardown"""
         del self.cell
 
@@ -198,14 +198,14 @@ class TestCellBaseClassVClamp:
 
     """First Cell test class"""
 
-    def setup(self):
+    def setup_method(self):
         """Setup"""
         self.cell = bluecellulab.Cell(
             "%s/examples/cell_example1/test_cell.hoc" % str(parent_dir),
             "%s/examples/cell_example1" % str(parent_dir))
         assert (isinstance(self.cell, bluecellulab.Cell))
 
-    def teardown(self):
+    def teardown_method(self):
         """Teardown"""
         del self.cell
 
@@ -263,7 +263,7 @@ class TestCellBaseClassVClamp:
 
 class TestCellSpikes:
 
-    def setup(self):
+    def setup_method(self):
         self.cell = bluecellulab.Cell(
             f"{parent_dir}/examples/cell_example1/test_cell.hoc",
             f"{parent_dir}/examples/cell_example1")
@@ -317,7 +317,7 @@ def test_add_dendrogram():
 class TestCellV6:
     """Test class for testing Cell object functionalities with v6 template."""
 
-    def setup(self):
+    def setup_method(self):
         """Setup."""
         emodel_properties = EmodelProperties(
             threshold_current=1.1433533430099487,
@@ -406,7 +406,7 @@ def test_add_synapse_replay():
 @pytest.mark.v6
 class TestWithinCircuit:
 
-    def setup(self):
+    def setup_method(self):
         """Setup method called before each test method."""
         sonata_sim_path = (
             parent_dir

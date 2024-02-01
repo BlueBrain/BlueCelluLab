@@ -44,7 +44,7 @@ def test_sonata_circuit_access_file_not_found():
 
 
 class TestSonataCircuitAccess:
-    def setup(self):
+    def setup_method(self):
         self.circuit_access = SonataCircuitAccess(hipp_circuit_with_projections)
 
     def test_available_cell_properties(self):
