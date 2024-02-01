@@ -1,6 +1,11 @@
 Changelog
 ==========
 
+2.0.0
+---------
+
+* update to BluePySnap 3.0.0
+
 1.3
 ---------
 
