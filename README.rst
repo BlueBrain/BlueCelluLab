@@ -104,6 +104,18 @@ API Documentation
 
 The API documentation can be found on `ReadTheDocs <https://bluecellulab.readthedocs.io>`_.
 
+Running the tests
+=================
+
+Testing is set up using `tox`:
+
+.. code-block:: bash
+
+    pip install tox
+
+    tox -e py3  # runs the tests
+    tox -e lint  # runs the format checks
+
 Funding & Acknowledgements
 ==========================
 
