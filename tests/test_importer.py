@@ -74,3 +74,18 @@ def test_print_header(caplog):
 
     assert "Imported NEURON from: /path/to/neuron" in caplog.text
     assert "Mod lib: /path/to/mod_lib" in caplog.text
+
+
+def test_print_header_with_decorator(caplog):
+    """Ensure the decorator loading hoc and mod files work as expected."""
+    with caplog.at_level(logging.INFO):
+        @importer.load_hoc_and_mod_files
+        def x():
+            pass
+
+        x()  # call 3 times to ensure the decorator is called only once
+        x()
+        x()
+
+    assert caplog.text.count("Loading the mod files.") == 1
+    assert caplog.text.count("Loading the hoc files.") == 1

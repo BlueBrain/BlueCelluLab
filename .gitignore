@@ -24,3 +24,4 @@ nrnivmodl.log
 .ruff_cache
 .pytest_cache
 *.btr
+*.whl

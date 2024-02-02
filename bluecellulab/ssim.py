@@ -39,6 +39,7 @@ from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
+from bluecellulab.importer import load_hoc_and_mod_files
 from bluecellulab.stimuli import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
 import bluecellulab.stimuli as stimuli
 from bluecellulab.exceptions import BluecellulabError
@@ -54,6 +55,7 @@ logger = logging.getLogger(__name__)
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
+    @load_hoc_and_mod_files
     def __init__(
         self,
         simulation_config: str | Path | SimulationConfig,
