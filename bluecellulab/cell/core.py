@@ -384,9 +384,9 @@ class Cell(InjectableMixin, PlottableMixin):
 
         Args:
             section: Section to record from (Neuron section pointer).
-            segx: Segment x coordinate. Specify a value between 0 and 1. 
+            segx: Segment x coordinate. Specify a value between 0 and 1.
                   0 is typically the end closest to the soma, 1 is the distal end.
-            dt: Recording time step. If not provided, the recording step will 
+            dt: Recording time step. If not provided, the recording step will
                 default to the simulator's time step.
         """
         var_name = f"neuron.h.{section.name()}({segx})._ref_v"
@@ -400,7 +400,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         Args:
             section: Section to record from (Neuron section pointer).
-            segx: Segment x coordinate. Specify a value between 0 and 1. 
+            segx: Segment x coordinate. Specify a value between 0 and 1.
                   0 is typically the end closest to the soma, 1 is the distal end.
 
         Returns:
