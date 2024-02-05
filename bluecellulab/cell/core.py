@@ -377,7 +377,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
     def add_voltage_recording(
-        self, section: "neuron.h.Section", segx: float, dt: Optional[float] = None
+        self, section: "neuron.h.Section", segx: float = 0.5, dt: Optional[float] = None
     ) -> None:
         """Add a voltage recording to a certain section at a given segment
         (segx).
@@ -393,7 +393,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.add_recording(var_name, dt)
 
     def get_voltage_recording(
-        self, section: "neuron.h.Section", segx: float
+        self, section: "neuron.h.Section", segx: float = 0.5
     ) -> np.ndarray:
         """Get a voltage recording for a certain section at a given segment
         (segx).
@@ -422,14 +422,14 @@ class Cell(InjectableMixin, PlottableMixin):
         """Add a voltage recording to every section of the cell."""
         all_sections = public_hoc_cell(self.cell).all
         for section in all_sections:
-            self.add_voltage_recording(section, segx=0.5, dt=self.record_dt)
+            self.add_voltage_recording(section, dt=self.record_dt)
 
     def get_allsections_voltagerecordings(self) -> dict[str, np.ndarray]:
         """Get all the voltage recordings from all the sections."""
         all_section_voltages = {}
         all_sections = public_hoc_cell(self.cell).all
         for section in all_sections:
-            recording = self.get_voltage_recording(section, segx=0.5)
+            recording = self.get_voltage_recording(section)
             all_section_voltages[section.name()] = recording
         return all_section_voltages
 
