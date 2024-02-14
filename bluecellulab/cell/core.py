@@ -101,9 +101,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
 
-        # Set the gid of the cell
-        self.cell.getCell().gid = self.cell_id.id
-
         if rng_settings is None:
             self.rng_settings = RNGSettings("Random123")  # SONATA value
         else:

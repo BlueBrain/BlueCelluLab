@@ -10,25 +10,24 @@ from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import BluecellulabError
 
 
-parent_dir = Path(__file__).resolve().parent.parent
+examples_dir = Path(__file__).resolve().parent.parent / "examples"
 
 hipp_hoc_path = (
-    parent_dir
-    / "examples"
+    examples_dir
     / "hippocampus_opt_cell_template"
     / "electrophysiology"
     / "cell.hoc"
 )
 hipp_morph_path = (
-    parent_dir / "examples" / "hippocampus_opt_cell_template" / "morphology" / "cell.asc"
+    examples_dir / "hippocampus_opt_cell_template" / "morphology" / "cell.asc"
 )
 
 v6_hoc_path = (
-    parent_dir / "examples" / "circuit_sonata_quick_scx" / "components" / "hoc" / "cADpyr_L2TPC.hoc"
+    examples_dir / "circuit_sonata_quick_scx" / "components" / "hoc" / "cADpyr_L2TPC.hoc"
 )
 
 v6_morph_path = (
-    parent_dir / "examples" / "circuit_sonata_quick_scx" / "components" / "morphologies" / "asc" / "rr110330_C3_idA.asc"
+    examples_dir / "circuit_sonata_quick_scx" / "components" / "morphologies" / "asc" / "rr110330_C3_idA.asc"
 )
 
 
@@ -79,3 +78,12 @@ def test_public_hoc_cell_failure():
     with pytest.raises(BluecellulabError) as excinfo:
         public_hoc_cell(cell_without_getCell_or_CellRef)
     assert "Public cell properties cannot be accessed" in str(excinfo.value)
+
+
+def test_load_bpo_template():
+    """Test the loading of a hoc without getCell or gid."""
+    hoc_path = examples_dir / "bpo_cell" / "0_cADpyr_L5TPC_a6e707a_1_sNone.hoc"
+    morph_path = examples_dir / "bpo_cell" / "C060114A5.asc"
+    neuron_template = NeuronTemplate(hoc_path, morph_path)
+    cell = neuron_template.get_cell("bluepyopt", None, None)
+    assert len(cell.soma[0].children()) == 11
