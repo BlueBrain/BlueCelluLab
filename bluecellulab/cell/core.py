@@ -118,11 +118,11 @@ class Cell(InjectableMixin, PlottableMixin):
         # time recording needs this push
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
-        self.somatic = [x for x in public_hoc_cell(self.cell).somatic]
-        self.basal = [x for x in public_hoc_cell(self.cell).basal]  # dend is same as basal
-        self.apical = [x for x in public_hoc_cell(self.cell).apical]
-        self.axonal = [x for x in public_hoc_cell(self.cell).axonal]
-        self.all = [x for x in public_hoc_cell(self.cell).all]
+        self.somatic = list(public_hoc_cell(self.cell).somatic)
+        self.basal = list(public_hoc_cell(self.cell).basal)  # dend is same as basal
+        self.apical = list(public_hoc_cell(self.cell).apical)
+        self.axonal = list(public_hoc_cell(self.cell).axonal)
+        self.all = list(public_hoc_cell(self.cell).all)
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
