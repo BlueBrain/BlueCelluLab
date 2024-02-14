@@ -646,7 +646,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get the children section of a neuron section."""
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
         children = []
-        for index in range(0, int(number_children)):
+        for index in range(int(number_children)):
             children.append(neuron.h.SectionRef(sec=self.soma).child[index])
         return children
 
@@ -673,7 +673,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def somatic_branches(self):
         """Show the index numbers."""
         nchild = neuron.h.SectionRef(sec=self.soma).nchild()
-        for index in range(0, int(nchild)):
+        for index in range(int(nchild)):
             secname = neuron.h.secname(sec=neuron.h.SectionRef(
                 sec=self.soma).child[index])
             if "axon" not in secname:
@@ -734,8 +734,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
                 children = [
                     neuron.h.SectionRef(sec=max_diam_section).child[index]
-                    for index in range(0, int(neuron.h.SectionRef(
-                        sec=max_diam_section).nchild()))]
+                    for index in range(int(neuron.h.SectionRef(
+                                                         sec=max_diam_section).nchild()))]
                 if len(children) == 0:
                     break
                 maxdiam = 0
