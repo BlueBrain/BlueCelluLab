@@ -158,10 +158,7 @@ class PSection:
         if self.isLeaf:
             treeWidth = self.maxsegdiam + self.xSpacing
         else:
-            treeWidth = 0
-            for child in self.pchildren:
-                treeWidth += child.treeWidth()
-
+            treeWidth = sum(child.treeWidth() for child in self.pchildren)
         return max(self.diam + self.xSpacing, treeWidth)
 
     def treeHeight(self):
