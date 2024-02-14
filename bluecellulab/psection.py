@@ -124,7 +124,7 @@ class PSection:
 
     def getAllPDescendants(self):
         """Return all the psection that are descendants of this psection."""
-        pdescendants = [x for x in self.pchildren]
+        pdescendants = list(self.pchildren)
         for child in self.pchildren:
             pdescendants += child.getAllPDescendants()
         return pdescendants

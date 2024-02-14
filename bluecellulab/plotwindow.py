@@ -52,7 +52,7 @@ class PlotWindow:
             # Sorry, don't see a way but disable this warning to access this
             colors = pylab.rcParams['axes.prop_cycle'].by_key()['color']
 
-            linecolors = [x for x in itertools.islice(itertools.cycle(colors), 0, 50)]
+            linecolors = list(itertools.islice(itertools.cycle(colors), 0, 50))
 
             self.line[var_name] = pylab.Line2D(
                 time, recording, label=var_name,
