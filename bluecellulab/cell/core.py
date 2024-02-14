@@ -559,7 +559,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
         weight_scalar = connection_modifiers.get('Weight', 1.0)
         exc_mini_frequency, inh_mini_frequency = mini_frequencies \
-                if mini_frequencies is not None else (None, None)
+            if mini_frequencies is not None else (None, None)
 
         synapse = self.synapses[synapse_id]
 
@@ -575,10 +575,10 @@ class Cell(InjectableMixin, PlottableMixin):
             sec = self.get_hsection(post_sec_id)
             # add the *minis*: spontaneous synaptic events
             self.ips[synapse_id] = neuron.h.\
-                    InhPoissonStim(location, sec=sec)
+                InhPoissonStim(location, sec=sec)
 
             self.syn_mini_netcons[synapse_id] = neuron.h.\
-                    NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
+                NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
             self.syn_mini_netcons[synapse_id].delay = 0.1
             self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
@@ -590,7 +590,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
             if self.rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \
-                        + self.rng_settings.minis_seed
+                    + self.rng_settings.minis_seed
                 self.ips[synapse_id].setRNGs(
                     sid + 200,
                     self.cell_id.id + 250,
@@ -670,7 +670,7 @@ class Cell(InjectableMixin, PlottableMixin):
             self.get_recording(secname)
             self.get_recording(child)
 
-    def somatic_branches(self):
+    def somatic_branches(self) -> None:
         """Show the index numbers."""
         nchild = neuron.h.SectionRef(sec=self.soma).nchild()
         for index in range(int(nchild)):
@@ -690,9 +690,9 @@ class Cell(InjectableMixin, PlottableMixin):
                                     public_hoc_cell(self.cell).nSecBasal + apicnumber)
                     logger.info((apicnumber, secnumber))
                 else:
-                    raise Exception(
-                        "somaticbranches: No apic or \
-                                dend found in section %s" % secname)
+                    raise BluecellulabError(
+                        f"somaticbranches: No apic or dend found in section {secname}"
+                    )
 
     @staticmethod
     @deprecated("Use bluecellulab.cell.section_distance.EuclideanSectionDistance instead.")
@@ -735,7 +735,7 @@ class Cell(InjectableMixin, PlottableMixin):
                 children = [
                     neuron.h.SectionRef(sec=max_diam_section).child[index]
                     for index in range(int(neuron.h.SectionRef(
-                                                         sec=max_diam_section).nchild()))]
+                        sec=max_diam_section).nchild()))]
                 if len(children) == 0:
                     break
                 maxdiam = 0
