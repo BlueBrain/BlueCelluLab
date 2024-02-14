@@ -799,18 +799,14 @@ class Cell(InjectableMixin, PlottableMixin):
     @property
     def info_dict(self):
         """Return a dictionary with all the information of this cell."""
-
-        cell_info = {}
-
-        cell_info['synapses'] = {}
-        for sid, synapse in self.synapses.items():
-            cell_info['synapses'][sid] = synapse.info_dict
-
-        cell_info['connections'] = {}
-        for sid, connection in self.connections.items():
-            cell_info['connections'][sid] = connection.info_dict
-
-        return cell_info
+        return {
+            'synapses': {
+                sid: synapse.info_dict for sid, synapse in self.synapses.items()
+            },
+            'connections': {
+                sid: connection.info_dict for sid, connection in self.connections.items()
+            }
+        }
 
     def delete(self):
         """Delete the cell."""
