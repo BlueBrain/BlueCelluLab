@@ -557,38 +557,32 @@ class Cell(InjectableMixin, PlottableMixin):
             syn_description, self
         )
 
-        if 'Weight' in connection_modifiers:
-            weight_scalar = connection_modifiers['Weight']
-        else:
-            weight_scalar = 1.0
-
+        weight_scalar = connection_modifiers.get('Weight', 1.0)
         exc_mini_frequency, inh_mini_frequency = mini_frequencies \
-            if mini_frequencies is not None else (None, None)
+                if mini_frequencies is not None else (None, None)
 
         synapse = self.synapses[synapse_id]
 
         # SpontMinis in sim config takes precedence of values in nodes file
         if 'SpontMinis' in connection_modifiers:
             spont_minis_rate = connection_modifiers['SpontMinis']
+        elif synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
+            spont_minis_rate = exc_mini_frequency
         else:
-            if synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
-                spont_minis_rate = exc_mini_frequency
-            else:
-                spont_minis_rate = inh_mini_frequency
+            spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
             sec = self.get_hsection(post_sec_id)
             # add the *minis*: spontaneous synaptic events
             self.ips[synapse_id] = neuron.h.\
-                InhPoissonStim(location, sec=sec)
+                    InhPoissonStim(location, sec=sec)
 
             self.syn_mini_netcons[synapse_id] = neuron.h.\
-                NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
+                    NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
             self.syn_mini_netcons[synapse_id].delay = 0.1
             self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
-            nc_param_name = 'nc_type_param_{}'.format(
-                synapse.hsynapse).split('[')[0]
+            nc_param_name = f'nc_type_param_{synapse.hsynapse}'.split('[')[0]
             if hasattr(neuron.h, nc_param_name):
                 nc_type_param = int(getattr(neuron.h, nc_param_name))
                 # NC_SPONTMINI
@@ -596,7 +590,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
             if self.rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \
-                    + self.rng_settings.minis_seed
+                        + self.rng_settings.minis_seed
                 self.ips[synapse_id].setRNGs(
                     sid + 200,
                     self.cell_id.id + 250,
