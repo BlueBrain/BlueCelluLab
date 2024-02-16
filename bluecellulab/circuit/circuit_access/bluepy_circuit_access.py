@@ -10,6 +10,7 @@ import pandas as pd
 from bluecellulab import circuit, neuron
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.circuit.config import BluepySimulationConfig
+from bluecellulab.circuit.config.definition import SimulationConfig
 from bluecellulab.circuit.node_id import CellId
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty, properties_from_bluepy, properties_to_bluepy
 
@@ -30,8 +31,11 @@ logger = logging.getLogger(__name__)
 class BluepyCircuitAccess:
     """Bluepy implementation of CircuitAccess protocol."""
 
-    def __init__(self, simulation_config: str | Path | BluepySimulationConfig) -> None:
-        """Initialize bluepy circuit object. BlueConfig also is a valid type."""
+    def __init__(self, simulation_config: str | Path | SimulationConfig) -> None:
+        """Initialize bluepy circuit object.
+
+        BlueConfig also is a valid type.
+        """
         if not BLUEPY_AVAILABLE:
             raise ExtraDependencyMissingError("bluepy")
         if isinstance(simulation_config, Path):
