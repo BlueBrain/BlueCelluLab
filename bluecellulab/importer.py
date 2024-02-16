@@ -75,6 +75,7 @@ def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
 @run_once
 def _load_hoc_and_mod_files() -> None:
     """Import hoc and mod files."""
+    neuron.load_mechanisms(".")
     logger.info("Loading the mod files.")
     mod_lib_paths = import_mod_lib(neuron)
     logger.info("Loading the hoc files.")
