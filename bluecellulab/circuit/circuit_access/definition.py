@@ -23,7 +23,7 @@ import pandas as pd
 from pydantic.dataclasses import dataclass
 
 from bluecellulab.circuit import CellId
-from bluecellulab.circuit.config.simulation_config import SimulationConfig
+from bluecellulab.circuit.config import SimulationConfig
 
 
 @dataclass(config=dict(extra="forbid"))

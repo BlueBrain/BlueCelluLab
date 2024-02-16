@@ -12,7 +12,7 @@ import pandas as pd
 from bluecellulab import circuit, neuron
 from bluecellulab.circuit.circuit_access.definition import EmodelProperties
 from bluecellulab.circuit import CellId, SynapseProperty
-from bluecellulab.circuit.config.simulation_config import SimulationConfig
+from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.synapse_properties import SynapseProperties
 from bluecellulab.circuit.config import SimulationConfig, SonataSimulationConfig
 from bluecellulab.circuit.synapse_properties import (

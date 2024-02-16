@@ -9,7 +9,7 @@ from typing import Optional
 import pandas as pd
 from bluecellulab import circuit, neuron
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.circuit.config.simulation_config import BluepySimulationConfig
+from bluecellulab.circuit.config import BluepySimulationConfig
 from bluecellulab.circuit.node_id import CellId
 from bluecellulab.circuit.synapse_properties import SynapseProperties, SynapseProperty, properties_from_bluepy, properties_to_bluepy
 
