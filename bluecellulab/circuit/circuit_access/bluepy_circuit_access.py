@@ -24,8 +24,6 @@ if BLUEPY_AVAILABLE:
     import bluepy
     from bluepy.enums import Cell as BluepyCell
     from bluepy.impl.connectome_sonata import SonataConnectome
-else:
-    BlueConfig = type("BlueConfig", (), {})
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +31,8 @@ logger = logging.getLogger(__name__)
 class BluepyCircuitAccess:
     """Bluepy implementation of CircuitAccess protocol."""
 
-    def __init__(self, simulation_config: str | Path | BlueConfig | BluepySimulationConfig) -> None:
-        """Initialize bluepy circuit object."""
+    def __init__(self, simulation_config: str | Path | BluepySimulationConfig) -> None:
+        """Initialize bluepy circuit object. BlueConfig also is a valid type."""
         if not BLUEPY_AVAILABLE:
             raise ExtraDependencyMissingError("bluepy")
         if isinstance(simulation_config, Path):

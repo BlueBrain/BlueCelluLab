@@ -9,8 +9,6 @@ from pathlib import Path
 if BLUEPY_AVAILABLE:
     from bluepy_configfile.configfile import BlueConfig
     from bluepy.utils import open_utf8
-else:
-    BlueConfig = type("BlueConfig", (), {})
 
 from bluecellulab.circuit.config.sections import Conditions, ConnectionOverrides
 from bluecellulab.stimuli import Stimulus
@@ -20,7 +18,8 @@ class BluepySimulationConfig:
     """Bluepy implementation of SimulationConfig protocol."""
     _connection_overrides: list[ConnectionOverrides] = []
 
-    def __init__(self, config: str | BlueConfig) -> None:
+    def __init__(self, config: str) -> None:
+        """a str or a BlueConfig object are valid."""
         if not BLUEPY_AVAILABLE:
             raise ExtraDependencyMissingError("bluepy")
         if isinstance(config, str):
