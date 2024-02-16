@@ -14,6 +14,9 @@ plugins = ["pydantic.mypy"]
 [tool.coverage.run]
 concurrency = ["multiprocessing"]
 parallel = true
+omit = [
+    "bluecellulab/circuit/circuit_access/bluepy_circuit_access.py"
+]
 
 [tool.coverage.report]
 exclude_lines = [
