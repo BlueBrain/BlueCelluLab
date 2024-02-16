@@ -213,7 +213,7 @@ class BluepyCircuitAccess:
                 cell_id, properties=["@dynamics:AIS_scaler"])["@dynamics:AIS_scaler"])
 
         if "@dynamics:soma_scaler" in self.available_cell_properties:
-            emodel_properties.AIS_scaler = float(self.get_cell_properties(
+            emodel_properties.soma_scaler = float(self.get_cell_properties(
                 cell_id, properties=["@dynamics:soma_scaler"])["@dynamics:soma_scaler"])
 
         return emodel_properties
