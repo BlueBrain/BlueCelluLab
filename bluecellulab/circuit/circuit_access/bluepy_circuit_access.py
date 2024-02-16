@@ -20,7 +20,6 @@ from bluecellulab import BLUEPY_AVAILABLE
 
 
 if BLUEPY_AVAILABLE:
-    from bluepy_configfile.configfile import BlueConfig
     import bluepy
     from bluepy.enums import Cell as BluepyCell
     from bluepy.impl.connectome_sonata import SonataConnectome
