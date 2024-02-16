@@ -557,7 +557,7 @@ class SonataCircuitAccess:
         edges = self._circuit.edges
         # select edges that are in the projections, if there are projections
         if projections is None or len(projections) == 0:
-            edge_population_names = [x for x in edges]
+            edge_population_names = list(edges)
         elif isinstance(projections, str):
             edge_population_names = [x for x in edges if edges[x].source.name == projections]
         else:

@@ -118,11 +118,11 @@ class Cell(InjectableMixin, PlottableMixin):
         # time recording needs this push
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
-        self.somatic = [x for x in public_hoc_cell(self.cell).somatic]
-        self.basal = [x for x in public_hoc_cell(self.cell).basal]  # dend is same as basal
-        self.apical = [x for x in public_hoc_cell(self.cell).apical]
-        self.axonal = [x for x in public_hoc_cell(self.cell).axonal]
-        self.all = [x for x in public_hoc_cell(self.cell).all]
+        self.somatic = list(public_hoc_cell(self.cell).somatic)
+        self.basal = list(public_hoc_cell(self.cell).basal)  # dend is same as basal
+        self.apical = list(public_hoc_cell(self.cell).apical)
+        self.axonal = list(public_hoc_cell(self.cell).axonal)
+        self.all = list(public_hoc_cell(self.cell).all)
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
@@ -557,11 +557,7 @@ class Cell(InjectableMixin, PlottableMixin):
             syn_description, self
         )
 
-        if 'Weight' in connection_modifiers:
-            weight_scalar = connection_modifiers['Weight']
-        else:
-            weight_scalar = 1.0
-
+        weight_scalar = connection_modifiers.get('Weight', 1.0)
         exc_mini_frequency, inh_mini_frequency = mini_frequencies \
             if mini_frequencies is not None else (None, None)
 
@@ -570,11 +566,10 @@ class Cell(InjectableMixin, PlottableMixin):
         # SpontMinis in sim config takes precedence of values in nodes file
         if 'SpontMinis' in connection_modifiers:
             spont_minis_rate = connection_modifiers['SpontMinis']
+        elif synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
+            spont_minis_rate = exc_mini_frequency
         else:
-            if synapse.mech_name in ["GluSynapse", "ProbAMPANMDA_EMS"]:
-                spont_minis_rate = exc_mini_frequency
-            else:
-                spont_minis_rate = inh_mini_frequency
+            spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
             sec = self.get_hsection(post_sec_id)
@@ -587,8 +582,7 @@ class Cell(InjectableMixin, PlottableMixin):
             self.syn_mini_netcons[synapse_id].delay = 0.1
             self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
-            nc_param_name = 'nc_type_param_{}'.format(
-                synapse.hsynapse).split('[')[0]
+            nc_param_name = f'nc_type_param_{synapse.hsynapse}'.split('[')[0]
             if hasattr(neuron.h, nc_param_name):
                 nc_type_param = int(getattr(neuron.h, nc_param_name))
                 # NC_SPONTMINI
@@ -652,7 +646,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get the children section of a neuron section."""
         number_children = neuron.h.SectionRef(sec=parentsection).nchild()
         children = []
-        for index in range(0, int(number_children)):
+        for index in range(int(number_children)):
             children.append(neuron.h.SectionRef(sec=self.soma).child[index])
         return children
 
@@ -676,10 +670,10 @@ class Cell(InjectableMixin, PlottableMixin):
             self.get_recording(secname)
             self.get_recording(child)
 
-    def somatic_branches(self):
+    def somatic_branches(self) -> None:
         """Show the index numbers."""
         nchild = neuron.h.SectionRef(sec=self.soma).nchild()
-        for index in range(0, int(nchild)):
+        for index in range(int(nchild)):
             secname = neuron.h.secname(sec=neuron.h.SectionRef(
                 sec=self.soma).child[index])
             if "axon" not in secname:
@@ -696,9 +690,9 @@ class Cell(InjectableMixin, PlottableMixin):
                                     public_hoc_cell(self.cell).nSecBasal + apicnumber)
                     logger.info((apicnumber, secnumber))
                 else:
-                    raise Exception(
-                        "somaticbranches: No apic or \
-                                dend found in section %s" % secname)
+                    raise BluecellulabError(
+                        f"somaticbranches: No apic or dend found in section {secname}"
+                    )
 
     @staticmethod
     @deprecated("Use bluecellulab.cell.section_distance.EuclideanSectionDistance instead.")
@@ -740,7 +734,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
                 children = [
                     neuron.h.SectionRef(sec=max_diam_section).child[index]
-                    for index in range(0, int(neuron.h.SectionRef(
+                    for index in range(int(neuron.h.SectionRef(
                         sec=max_diam_section).nchild()))]
                 if len(children) == 0:
                     break
@@ -805,18 +799,14 @@ class Cell(InjectableMixin, PlottableMixin):
     @property
     def info_dict(self):
         """Return a dictionary with all the information of this cell."""
-
-        cell_info = {}
-
-        cell_info['synapses'] = {}
-        for sid, synapse in self.synapses.items():
-            cell_info['synapses'][sid] = synapse.info_dict
-
-        cell_info['connections'] = {}
-        for sid, connection in self.connections.items():
-            cell_info['connections'][sid] = connection.info_dict
-
-        return cell_info
+        return {
+            'synapses': {
+                sid: synapse.info_dict for sid, synapse in self.synapses.items()
+            },
+            'connections': {
+                sid: connection.info_dict for sid, connection in self.connections.items()
+            }
+        }
 
     def delete(self):
         """Delete the cell."""
