@@ -82,18 +82,20 @@ class BluepySimulationAccess:
         """Initialize the simulation access object."""
         if not BLUEPY_AVAILABLE:
             raise ExtraDependencyMissingError("bluepy")
+
         if isinstance(sim_config, BluepySimulationConfig):
             self._config = sim_config
             sim_config = sim_config.impl
         elif isinstance(sim_config, Path):
             sim_config = str(sim_config)
-        if isinstance(sim_config, str) and not Path(sim_config).exists():
-            raise FileNotFoundError(
-                f"Circuit config file {sim_config} not found.")
+            self._config = BluepySimulationConfig(sim_config)
+        elif isinstance(sim_config, str):
+            self._config = BluepySimulationConfig(sim_config)
+            if not Path(sim_config).exists():
+                raise FileNotFoundError(
+                    f"Circuit config file {sim_config} not found.")
 
         self.impl = bluepy.Simulation(sim_config)
-        if type(sim_config) is str:
-            self._config = BluepySimulationConfig(sim_config)
 
     def get_soma_voltage(
         self, cell_id: CellId, t_start: float, t_end: float, t_step: Optional[float] = None
