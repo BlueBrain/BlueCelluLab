@@ -20,7 +20,7 @@ class BluepySimulationConfig:
     _connection_overrides: list[ConnectionOverrides] = []
 
     def __init__(self, config: str) -> None:
-        """a str or a BlueConfig object are valid."""
+        """A str or a BlueConfig object are valid."""
         if not BLUEPY_AVAILABLE:
             raise ExtraDependencyMissingError("bluepy")
         if isinstance(config, str):
