@@ -156,7 +156,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.psections: dict[int, psection.PSection] = {}
 
         neuron.h.pop_section()  # Undoing soma push
-        # self.init_psections()
+        self.init_psections()
         self.sonata_proxy: Optional[SonataProxy] = None
 
     def __repr__(self) -> str:
@@ -202,6 +202,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
             for hchild in psec.hchildren:
                 childname = neuron.h.secname(sec=hchild)
+                if "myelin" in childname:
+                    continue
                 pchild = self.get_psection(secname=childname)
                 psec.add_pchild(pchild)
 
