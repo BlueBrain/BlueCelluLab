@@ -67,7 +67,7 @@ class TestSynapseFactory:
         ipt = 13
         isec = 169
         syn_offset = 1.2331762313842773
-        section = self.cell.get_hsection(isec)
+        section = self.cell.get_psection(isec).hsection
         res = SynapseFactory.synlocation_to_segx(section, ipt, syn_offset)
         assert res == pytest.approx(0.9999999)
         res = SynapseFactory.synlocation_to_segx(section, ipt, syn_offset=-1.0)

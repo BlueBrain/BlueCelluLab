@@ -46,7 +46,6 @@ from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
-from bluecellulab.utils import run_once
 
 logger = logging.getLogger(__name__)
 
@@ -184,24 +183,23 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
-    @run_once
     def init_psections(self) -> None:
         """Initialize the psections list.
 
         This list contains the Python representation of the psections of
         this morphology.
         """
-        for hsection in self.all:
-            secname = neuron.h.secname(sec=hsection)
-            self.secname_to_hsection[secname] = hsection
-            self.secname_to_psection[secname] = PSection(hsection)
+        for sec in self.all:
+            secname = neuron.h.secname(sec=sec)
+            self.secname_to_hsection[secname] = sec
+            self.secname_to_psection[secname] = PSection(sec)
 
         # section are not serialized yet, do it now
         if self.serialized is None:
             self.serialized = SerializedSections(public_hoc_cell(self.cell))
 
-        for isec in self.serialized.isec2sec:
-            hsection = self.get_hsection(isec)
+        for isec, val in self.serialized.isec2sec.items():
+            hsection: NeuronSection = val.sec
             if hsection:
                 secname = neuron.h.secname(sec=hsection)
                 self.psections[isec] = self.secname_to_psection[secname]
@@ -262,22 +260,6 @@ class Cell(InjectableMixin, PlottableMixin):
             return self.secname_to_psection[secname]
         else:
             raise Exception("Cell: get_psection requires or a section_id or a secname")
-
-    def get_hsection(self, section_id: int | float) -> NeuronSection:
-        """Use the serialized object to find a hoc section from a section
-        id."""
-        section_id = int(section_id)
-        # section are not serialized yet, do it now
-        if self.serialized is None:
-            self.serialized = SerializedSections(public_hoc_cell(self.cell))
-
-        try:
-            sec_ref = self.serialized.isec2sec[section_id]
-        except IndexError as e:
-            raise IndexError(
-                f"bluecellulab get_hsection: section-id {section_id} not found in {self.morphology_path}"
-            ) from e
-        return sec_ref.sec
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
@@ -579,7 +561,7 @@ class Cell(InjectableMixin, PlottableMixin):
             spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
-            sec = self.get_hsection(post_sec_id)
+            sec = self.get_psection(post_sec_id).hsection
             # add the *minis*: spontaneous synaptic events
             self.ips[synapse_id] = neuron.h.\
                 InhPoissonStim(location, sec=sec)

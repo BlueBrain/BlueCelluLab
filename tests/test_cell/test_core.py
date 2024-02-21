@@ -86,10 +86,10 @@ class TestCellBaseClass1:
         assert math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001
         assert math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001
 
-    def test_get_hsection(self):
-        """Cell: Test cell.get_hsection"""
+    def test_get_psection(self):
+        """Cell: Test cell.get_psection"""
         assert isinstance(
-            self.cell.get_hsection(0), neuron.nrn.Section)
+            self.cell.get_psection(0).hsection, neuron.nrn.Section)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""

@@ -16,6 +16,7 @@
 import neuron
 
 import bluecellulab
+from bluecellulab.type_aliases import NeuronSection
 
 
 class PSection:
@@ -24,7 +25,7 @@ class PSection:
     def __init__(self, hsection, isec=None):
         self.L = hsection.L
         self.diam = hsection.diam
-        self.hsection = hsection
+        self.hsection: NeuronSection = hsection
         self.name = neuron.h.secname(sec=hsection)
         self.href = neuron.h.SectionRef(sec=self.hsection)
         self.pparent = None
