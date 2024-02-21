@@ -16,7 +16,49 @@ from __future__ import annotations
 import neuron
 
 import bluecellulab
-from bluecellulab.type_aliases import NeuronSection
+from bluecellulab.cell.serialized_sections import SerializedSections
+from bluecellulab.type_aliases import HocObjectType, NeuronSection
+
+
+def init_psections(
+    hoc_cell: HocObjectType,
+) -> tuple[dict[int, PSection], dict[str, PSection]]:
+    """Initialize the psections list.
+
+    This list contains the Python representation of the psections of
+    this morphology.
+    """
+    psections: dict[int, PSection] = {}
+    secname_to_psection: dict[str, PSection] = {}
+    for sec in hoc_cell.all:
+        secname = neuron.h.secname(sec=sec)
+        secname_to_psection[secname] = PSection(sec)
+
+    serial_sections = SerializedSections(hoc_cell)
+    for isec, val in serial_sections.isec2sec.items():
+        hsection: NeuronSection = val.sec
+        if hsection:
+            secname = neuron.h.secname(sec=hsection)
+            psections[isec] = secname_to_psection[secname]
+            psections[isec].isec = isec
+
+    # Set the parents and children of all the psections
+    for psec in psections.values():
+        hparent = psec.hparent
+        if hparent:
+            parentname = hparent.name()
+            psec.pparent = secname_to_psection[parentname]
+        else:
+            psec.pparent = None
+
+        for hchild in psec.hchildren:
+            childname = hchild.name()
+            if "myelin" in childname:
+                continue
+            pchild = secname_to_psection[childname]
+            psec.add_pchild(pchild)
+
+    return psections, secname_to_psection
 
 
 class PSection:

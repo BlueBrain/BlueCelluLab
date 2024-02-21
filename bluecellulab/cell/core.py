@@ -27,12 +27,11 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab.psection import PSection
+from bluecellulab.psection import PSection, init_psections
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
 from bluecellulab.cell.sonata_proxy import SonataProxy
-from bluecellulab.cell.serialized_sections import SerializedSections
 from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
@@ -120,7 +119,7 @@ class Cell(InjectableMixin, PlottableMixin):
                             dt=self.record_dt)
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
-        self.psections, self.secname_to_psection = self.init_psections()
+        self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
 
         self.emodel_properties = emodel_properties
         if template_format == 'v6':
@@ -174,44 +173,6 @@ class Cell(InjectableMixin, PlottableMixin):
     def connect_to_circuit(self, sonata_proxy: SonataProxy) -> None:
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
-
-    def init_psections(self) -> tuple[dict[int, PSection], dict[str, PSection]]:
-        """Initialize the psections list.
-
-        This list contains the Python representation of the psections of
-        this morphology.
-        """
-        psections: dict[int, PSection] = {}
-        secname_to_psection: dict[str, PSection] = {}
-        for sec in self.all:
-            secname = neuron.h.secname(sec=sec)
-            secname_to_psection[secname] = PSection(sec)
-
-        serial_sections = SerializedSections(public_hoc_cell(self.cell))
-        for isec, val in serial_sections.isec2sec.items():
-            hsection: NeuronSection = val.sec
-            if hsection:
-                secname = neuron.h.secname(sec=hsection)
-                psections[isec] = secname_to_psection[secname]
-                psections[isec].isec = isec
-
-        # Set the parents and children of all the psections
-        for psec in psections.values():
-            hparent = psec.hparent
-            if hparent:
-                parentname = hparent.name()
-                psec.pparent = secname_to_psection[parentname]
-            else:
-                psec.pparent = None
-
-            for hchild in psec.hchildren:
-                childname = hchild.name()
-                if "myelin" in childname:
-                    continue
-                pchild = secname_to_psection[childname]
-                psec.add_pchild(pchild)
-
-        return psections, secname_to_psection
 
     def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
