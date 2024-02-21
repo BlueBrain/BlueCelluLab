@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Represents a python version of NEURON Section (for drawing)."""
-
+from __future__ import annotations
 import neuron
 
 import bluecellulab
@@ -59,12 +59,12 @@ class PSection:
         self.ySpacing = 5
 
     @property
-    def isLeaf(self):
+    def is_leaf(self) -> bool:
         """Return true if section is a leaf in the morphological structure."""
         return not self.hchildren
 
     @property
-    def hparent(self):
+    def hparent(self) -> NeuronSection | None:
         """Return the hoc section of the parent."""
         if self.href.has_parent():
             return self.href.parent
@@ -72,12 +72,12 @@ class PSection:
             return None
 
     @property
-    def hchildren(self):
+    def hchildren(self) -> list[NeuronSection]:
         """Return a list with the hoc sections of the children."""
         return [self.href.child[index] for index in
                 range(0, int(self.href.nchild()))]
 
-    def add_pchild(self, pchild):
+    def add_pchild(self, pchild) -> None:
         """Add a python represent of a child section."""
         self.pchildren.append(pchild)
 
@@ -156,7 +156,7 @@ class PSection:
 
     def treeWidth(self):
         """Width of a dendritic tree."""
-        if self.isLeaf:
+        if self.is_leaf:
             treeWidth = self.maxsegdiam + self.xSpacing
         else:
             treeWidth = sum(child.treeWidth() for child in self.pchildren)
