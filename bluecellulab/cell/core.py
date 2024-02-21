@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab import psection
+from bluecellulab.psection import PSection
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
@@ -126,7 +126,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.secname_to_isec: dict[str, int] = {}
         self.secname_to_hsection: dict[str, HocObjectType] = {}
-        self.secname_to_psection: dict[str, psection.PSection] = {}
+        self.secname_to_psection: dict[str, PSection] = {}
 
         self.emodel_properties = emodel_properties
         if template_format == 'v6':
@@ -149,7 +149,7 @@ class Cell(InjectableMixin, PlottableMixin):
         # Used to know when re_init_rng() can be executed
         self.is_made_passive = False
 
-        self.psections: dict[int, psection.PSection] = {}
+        self.psections: dict[int, PSection] = {}
 
         neuron.h.pop_section()  # Undoing soma push
         self.init_psections()
@@ -194,7 +194,7 @@ class Cell(InjectableMixin, PlottableMixin):
         for hsection in self.all:
             secname = neuron.h.secname(sec=hsection)
             self.secname_to_hsection[secname] = hsection
-            self.secname_to_psection[secname] = psection.PSection(hsection)
+            self.secname_to_psection[secname] = PSection(hsection)
 
         # section are not serialized yet, do it now
         if self.serialized is None:
@@ -252,28 +252,16 @@ class Cell(InjectableMixin, PlottableMixin):
             else:
                 self.cell.re_init_rng()
 
-    def get_psection(self, section_id=None, secname=None):
-        """Return a python section with the specified section id or name.
-
-        Parameters
-        ----------
-        section_id: int
-                    Return the PSection object based on section id
-        secname: string
-                 Return the PSection object based on section name
-
-        Returns
-        -------
-        psection: PSection
-                  PSection object of the specified section id or name
-        """
+    def get_psection(
+        self, section_id: int | None = None, secname: str | None = None
+    ) -> PSection:
+        """Return a python section with the specified section id or name."""
         if section_id is not None:
             return self.psections[section_id]
         elif secname is not None:
             return self.secname_to_psection[secname]
         else:
-            raise Exception(
-                "Cell: get_psection requires or a section_id or a secname")
+            raise Exception("Cell: get_psection requires or a section_id or a secname")
 
     def get_hsection(self, section_id: int | float) -> NeuronSection:
         """Use the serialized object to find a hoc section from a section
