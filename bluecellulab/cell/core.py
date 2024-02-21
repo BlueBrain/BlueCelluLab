@@ -123,7 +123,6 @@ class Cell(InjectableMixin, PlottableMixin):
                             dt=self.record_dt)
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
-        self.secname_to_isec: dict[str, int] = {}
         self.secname_to_psection: dict[str, PSection] = {}
 
         self.emodel_properties = emodel_properties
@@ -202,7 +201,6 @@ class Cell(InjectableMixin, PlottableMixin):
                 secname = neuron.h.secname(sec=hsection)
                 self.psections[isec] = self.secname_to_psection[secname]
                 self.psections[isec].isec = isec
-                self.secname_to_isec[secname] = isec
 
         # Set the parents and children of all the psections
         for psec in self.psections.values():
