@@ -200,13 +200,13 @@ class Cell(InjectableMixin, PlottableMixin):
         for psec in self.psections.values():
             hparent = psec.hparent
             if hparent:
-                parentname = neuron.h.secname(sec=hparent)
+                parentname = hparent.name()
                 psec.pparent = self.get_psection(secname=parentname)
             else:
                 psec.pparent = None
 
             for hchild in psec.hchildren:
-                childname = neuron.h.secname(sec=hchild)
+                childname = hchild.name()
                 if "myelin" in childname:
                     continue
                 pchild = self.get_psection(secname=childname)
