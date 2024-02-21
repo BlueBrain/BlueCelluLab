@@ -112,7 +112,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.ips: dict[SynapseID, HocObjectType] = {}
         self.syn_mini_netcons: dict[SynapseID, HocObjectType] = {}
-        self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
         # time recording needs this push
@@ -191,11 +190,8 @@ class Cell(InjectableMixin, PlottableMixin):
             secname = neuron.h.secname(sec=sec)
             self.secname_to_psection[secname] = PSection(sec)
 
-        # section are not serialized yet, do it now
-        if self.serialized is None:
-            self.serialized = SerializedSections(public_hoc_cell(self.cell))
-
-        for isec, val in self.serialized.isec2sec.items():
+        serial_sections = SerializedSections(public_hoc_cell(self.cell))
+        for isec, val in serial_sections.isec2sec.items():
             hsection: NeuronSection = val.sec
             if hsection:
                 secname = neuron.h.secname(sec=hsection)
