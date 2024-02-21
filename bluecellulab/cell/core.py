@@ -99,8 +99,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
-        self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
-
         if rng_settings is None:
             self.rng_settings = RNGSettings("Random123")  # SONATA value
         else:
