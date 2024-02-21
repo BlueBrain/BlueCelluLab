@@ -120,7 +120,7 @@ class Cell(InjectableMixin, PlottableMixin):
                             dt=self.record_dt)
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
-        self.secname_to_psection: dict[str, PSection] = {}
+        self.psections, self.secname_to_psection = self.init_psections()
 
         self.emodel_properties = emodel_properties
         if template_format == 'v6':
@@ -143,10 +143,7 @@ class Cell(InjectableMixin, PlottableMixin):
         # Used to know when re_init_rng() can be executed
         self.is_made_passive = False
 
-        self.psections: dict[int, PSection] = {}
-
         neuron.h.pop_section()  # Undoing soma push
-        self.init_psections()
         self.sonata_proxy: Optional[SonataProxy] = None
 
     @property
@@ -178,30 +175,32 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
-    def init_psections(self) -> None:
+    def init_psections(self) -> tuple[dict[int, PSection], dict[str, PSection]]:
         """Initialize the psections list.
 
         This list contains the Python representation of the psections of
         this morphology.
         """
+        psections: dict[int, PSection] = {}
+        secname_to_psection: dict[str, PSection] = {}
         for sec in self.all:
             secname = neuron.h.secname(sec=sec)
-            self.secname_to_psection[secname] = PSection(sec)
+            secname_to_psection[secname] = PSection(sec)
 
         serial_sections = SerializedSections(public_hoc_cell(self.cell))
         for isec, val in serial_sections.isec2sec.items():
             hsection: NeuronSection = val.sec
             if hsection:
                 secname = neuron.h.secname(sec=hsection)
-                self.psections[isec] = self.secname_to_psection[secname]
-                self.psections[isec].isec = isec
+                psections[isec] = secname_to_psection[secname]
+                psections[isec].isec = isec
 
         # Set the parents and children of all the psections
-        for psec in self.psections.values():
+        for psec in psections.values():
             hparent = psec.hparent
             if hparent:
                 parentname = hparent.name()
-                psec.pparent = self.secname_to_psection[parentname]
+                psec.pparent = secname_to_psection[parentname]
             else:
                 psec.pparent = None
 
@@ -209,8 +208,10 @@ class Cell(InjectableMixin, PlottableMixin):
                 childname = hchild.name()
                 if "myelin" in childname:
                     continue
-                pchild = self.secname_to_psection[childname]
+                pchild = secname_to_psection[childname]
                 psec.add_pchild(pchild)
+
+        return psections, secname_to_psection
 
     def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
