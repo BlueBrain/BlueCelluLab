@@ -118,11 +118,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # time recording needs this push
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
-        self.somatic = list(public_hoc_cell(self.cell).somatic)
-        self.basal = list(public_hoc_cell(self.cell).basal)  # dend is same as basal
-        self.apical = list(public_hoc_cell(self.cell).apical)
-        self.axonal = list(public_hoc_cell(self.cell).axonal)
-        self.all = list(public_hoc_cell(self.cell).all)
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
@@ -158,6 +153,26 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron.h.pop_section()  # Undoing soma push
         self.init_psections()
         self.sonata_proxy: Optional[SonataProxy] = None
+
+    @property
+    def somatic(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).somatic)
+
+    @property
+    def basal(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).basal)
+
+    @property
+    def apical(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).apical)
+
+    @property
+    def axonal(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).axonal)
+
+    @property
+    def all(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
