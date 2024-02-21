@@ -366,6 +366,31 @@ class TestCellV6:
         res = self.cell.get_parentsection(section)
         assert res == self.cell.soma
 
+    def test_somatic_sections(self):
+        """Test that somatic property returns a non-empty list sections."""
+        assert isinstance(self.cell.somatic, list)
+        assert len(self.cell.somatic) > 0
+
+    def test_basal_sections(self):
+        """Test that basal property returns a non-empty list of sections."""
+        assert isinstance(self.cell.basal, list)
+        assert len(self.cell.basal) > 0
+
+    def test_apical_sections(self):
+        """Test that apical property returns a non-empty list sections."""
+        assert isinstance(self.cell.apical, list)
+        assert len(self.cell.apical) > 0
+
+    def test_axonal_sections(self):
+        """Test that axonal property returns a non-empty list of sections."""
+        assert isinstance(self.cell.axonal, list)
+        assert len(self.cell.axonal) > 0
+
+    def test_all_sections(self):
+        """Test that the all property returns a non-empty list of all sections."""
+        assert isinstance(self.cell.all, list)
+        assert len(self.cell.all) > 0
+
 
 @pytest.mark.v6
 def test_add_synapse_replay():
