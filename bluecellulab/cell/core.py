@@ -124,7 +124,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.secname_to_isec: dict[str, int] = {}
-        self.secname_to_hsection: dict[str, HocObjectType] = {}
         self.secname_to_psection: dict[str, PSection] = {}
 
         self.emodel_properties = emodel_properties
@@ -191,7 +190,6 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         for sec in self.all:
             secname = neuron.h.secname(sec=sec)
-            self.secname_to_hsection[secname] = sec
             self.secname_to_psection[secname] = PSection(sec)
 
         # section are not serialized yet, do it now
