@@ -201,7 +201,7 @@ class Cell(InjectableMixin, PlottableMixin):
             hparent = psec.hparent
             if hparent:
                 parentname = hparent.name()
-                psec.pparent = self.get_psection(secname=parentname)
+                psec.pparent = self.secname_to_psection[parentname]
             else:
                 psec.pparent = None
 
@@ -209,12 +209,8 @@ class Cell(InjectableMixin, PlottableMixin):
                 childname = hchild.name()
                 if "myelin" in childname:
                     continue
-                pchild = self.get_psection(secname=childname)
+                pchild = self.secname_to_psection[childname]
                 psec.add_pchild(pchild)
-
-    def get_section_id(self, secname: str) -> int:
-        """Returns the id of the section with name secname."""
-        return self.secname_to_psection[secname].isec
 
     def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
@@ -240,16 +236,12 @@ class Cell(InjectableMixin, PlottableMixin):
             else:
                 self.cell.re_init_rng()
 
-    def get_psection(
-        self, section_id: int | None = None, secname: str | None = None
-    ) -> PSection:
+    def get_psection(self, section_id: int | None = None) -> PSection:
         """Return a python section with the specified section id or name."""
         if section_id is not None:
             return self.psections[section_id]
-        elif secname is not None:
-            return self.secname_to_psection[secname]
         else:
-            raise Exception("Cell: get_psection requires or a section_id or a secname")
+            raise BluecellulabError("Cell: get_psection requires or a section_id or a secname")
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""

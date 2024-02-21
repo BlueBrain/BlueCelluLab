@@ -90,6 +90,8 @@ class TestCellBaseClass1:
         """Cell: Test cell.get_psection"""
         assert isinstance(
             self.cell.get_psection(0).hsection, neuron.nrn.Section)
+        with pytest.raises(BluecellulabError):
+            self.cell.get_psection(None)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""
@@ -326,14 +328,6 @@ class TestCellV6:
         # NEURON ID: cADpyr_L2TPC_bluecellulab_0x7f73b48e2510.
         # make sure NEURON template name is in the string representation
         assert self.cell.cell.hname().split('[')[0] in str(self.cell)
-
-    def test_get_section_id(self):
-        """Test the get_section_id method."""
-        self.cell.init_psections()
-        assert self.cell.get_section_id(str(self.cell.soma)) == 0
-        assert self.cell.get_section_id(str(self.cell.axonal[0])) == 1
-        assert self.cell.get_section_id(str(self.cell.basal[0])) == 145
-        assert self.cell.get_section_id(str(self.cell.apical[0])) == 169
 
     def test_area(self):
         """Test the cell's area computation."""
