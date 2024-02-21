@@ -46,6 +46,7 @@ from bluecellulab.stimuli import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
+from bluecellulab.utils import run_once
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +184,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
+    @run_once
     def init_psections(self) -> None:
         """Initialize the psections list.
 
