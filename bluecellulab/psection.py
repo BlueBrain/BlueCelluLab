@@ -129,7 +129,7 @@ class PSection:
         varmin = None
         varmax = None
         for psegment in self.psegments:
-            value = psegment.getVariableValue(variable)
+            value = psegment.get_variable_value(variable)
             if value:
                 varmin = min(value, varmin) if varmin else value
                 varmax = max(value, varmax) if varmax else value
