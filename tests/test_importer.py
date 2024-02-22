@@ -69,7 +69,7 @@ def test_print_header(caplog):
     dummy_neuron.__file__ = "/path/to/neuron"
 
     mod_lib_path = "/path/to/mod_lib"
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.DEBUG):
         importer.print_header(dummy_neuron, mod_lib_path)
 
     assert "Imported NEURON from: /path/to/neuron" in caplog.text
@@ -78,7 +78,7 @@ def test_print_header(caplog):
 
 def test_print_header_with_decorator(caplog):
     """Ensure the decorator loading hoc and mod files work as expected."""
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.DEBUG):
         @importer.load_hoc_and_mod_files
         def x():
             pass
