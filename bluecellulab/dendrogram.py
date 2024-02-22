@@ -56,6 +56,12 @@ def draw_tree(psection: PSection, figure, x, y, variable=None, varbounds=None) -
         new_x = new_x + child.tree_width()
 
 
+def redraw_psection(psection: PSection) -> None:
+    """Redraw psection."""
+    for psegment in psection.psegments:
+        psegment.redraw()
+
+
 class Dendrogram:
     """Class that represent a dendrogram plot."""
 
@@ -160,7 +166,7 @@ class Dendrogram:
         for section in self.psections:
             section_id = section.isec
             if section_id is not None:
-                psections[section_id].redraw()
+                redraw_psection(psections[section_id])
 
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()
@@ -183,7 +189,7 @@ class Dendrogram:
         if self.active:
             if not self.drawCount:
                 for psection in self.psections:
-                    psection.redraw()
+                    redraw_psection(psection)
                 self.canvas.blit(self.ax.bbox)
                 self.drawCount = 1
             else:

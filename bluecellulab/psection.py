@@ -124,11 +124,6 @@ class PSection:
         """Add a python represent of a child section."""
         self.pchildren.append(pchild)
 
-    def redraw(self):
-        """Redraw psection."""
-        for psegment in self.psegments:
-            psegment.redraw()
-
     def getSectionVarBounds(self, variable):
         """Get bounds a variable in a section."""
         varmin = None
