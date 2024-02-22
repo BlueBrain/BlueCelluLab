@@ -123,12 +123,13 @@ class PSection:
         """Add a python represent of a child section."""
         self.pchildren.append(pchild)
 
-    def setupDraw(self, figure, x, y, variable=None, varbounds=None):
+    @staticmethod
+    def setupDraw(psegments, maxsegdiam, figure, x, y, variable=None, varbounds=None):
         """Setup draw of psection."""
         y_accum = 0
-        for psegment in self.psegments:
+        for psegment in psegments:
             psegment.setupDraw(figure,
-                               x + (self.maxsegdiam - psegment.diam) / 2,
+                               x + (maxsegdiam - psegment.diam) / 2,
                                y + y_accum,
                                variable=variable,
                                varbounds=varbounds)
@@ -171,30 +172,6 @@ class PSection:
         for child in self.pchildren:
             pdescendants += child.all_descendants()
         return pdescendants
-
-    def drawTree(self, figure, x, y, variable=None, varbounds=None):
-        """Draw a dendritic tree."""
-        import pylab
-
-        # Draw myself
-        self.setupDraw(figure, x, y, variable=variable, varbounds=varbounds)
-
-        # Draw children
-
-        # First child is a same x coordinate
-        new_x = x  # + self.L + self.xSpacing
-
-        # Children drawn L + ySpacing heigher
-        new_y = y + self.L + self.ySpacing
-
-        for child in self.pchildren:
-            child.drawTree(
-                figure, new_x, new_y, variable=variable, varbounds=varbounds)
-            pylab.plot(
-                [x + self.diam / 2, new_x + child.diam / 2],
-                [y + self.L, new_y], 'k')
-            # Prepare new_x for next child
-            new_x = new_x + child.tree_width()
 
     def tree_width(self) -> float:
         """Width of a dendritic tree."""

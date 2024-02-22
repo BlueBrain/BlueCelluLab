@@ -14,8 +14,33 @@
 """Class that represents a dendrogram window."""
 
 import numpy as np
+import pylab
 
 from bluecellulab.psection import PSection
+
+
+def drawTree(psection: PSection, figure, x, y, variable=None, varbounds=None) -> None:
+    """Draw a dendritic tree."""
+    # Draw myself
+    psection.setupDraw(
+        psection.psegments, psection.maxsegdiam, figure, x, y, variable=variable, varbounds=varbounds
+    )
+
+    # Draw children
+
+    # First child is a same x coordinate
+    new_x = x  # + self.L + self.xSpacing
+
+    # Children drawn L + ySpacing heigher
+    new_y = y + psection.L + psection.ySpacing
+
+    for child in psection.pchildren:
+        drawTree(child, figure, new_x, new_y, variable=variable, varbounds=varbounds)
+        pylab.plot(
+            [x + psection.diam / 2, new_x + child.diam / 2],
+            [y + psection.L, new_y], 'k')
+        # Prepare new_x for next child
+        new_x = new_x + child.tree_width()
 
 
 class Dendrogram:
@@ -80,9 +105,9 @@ class Dendrogram:
             cbar.ax.set_yticklabels(["%.2e" % (
                 varbounds[0]), "%.2e" % (varbounds[1])])
 
-        self.proot.drawTree(self.dend_figure, self.proot.xSpacing,
-                            self.proot.ySpacing, variable=variable,
-                            varbounds=varbounds)
+        drawTree(self.proot, self.dend_figure, self.proot.xSpacing,
+                 self.proot.ySpacing, variable=variable,
+                 varbounds=varbounds)
 
         if scale_bar:
             pylab.plot(
@@ -122,7 +147,8 @@ class Dendrogram:
 
         for section in self.psections:
             section_id = section.isec
-            psections[section_id].redraw()
+            if section_id is not None:
+                psections[section_id].redraw()
 
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()
