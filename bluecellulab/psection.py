@@ -194,18 +194,18 @@ class PSection:
                 [x + self.diam / 2, new_x + child.diam / 2],
                 [y + self.L, new_y], 'k')
             # Prepare new_x for next child
-            new_x = new_x + child.treeWidth()
+            new_x = new_x + child.tree_width()
 
-    def treeWidth(self):
+    def tree_width(self) -> float:
         """Width of a dendritic tree."""
         if self.is_leaf:
-            treeWidth = self.maxsegdiam + self.xSpacing
+            width = self.maxsegdiam + self.xSpacing
         else:
-            treeWidth = sum(child.treeWidth() for child in self.pchildren)
-        return max(self.diam + self.xSpacing, treeWidth)
+            width = sum(child.tree_width() for child in self.pchildren)
+        return max(self.diam + self.xSpacing, width)
 
-    def treeHeight(self):
+    def tree_height(self) -> float:
         """Height of dendritic tree."""
         return self.L + self.ySpacing + \
-            (max([child.treeHeight() for child in self.pchildren])
+            (max([child.tree_height() for child in self.pchildren])
              if self.pchildren else 0)

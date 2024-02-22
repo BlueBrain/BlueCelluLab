@@ -15,13 +15,15 @@
 
 import numpy as np
 
+from bluecellulab.psection import PSection
+
 
 class Dendrogram:
     """Class that represent a dendrogram plot."""
 
     def __init__(
             self,
-            psections,
+            psections: list[PSection],
             variable=None,
             active=False,
             save_fig_path=None,
@@ -49,14 +51,14 @@ class Dendrogram:
         # neuron.h.finitialize()
 
         # self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
-        self.proot = psections[0]
+        self.proot: PSection = psections[0]
         # self.psections = [self.proot] + self.proot.getAllPDescendants()
 
         xSpacing = self.proot.xSpacing
         ySpacing = self.proot.ySpacing
 
-        max_y = self.proot.treeHeight() + self.proot.ySpacing + title_space
-        max_x = self.proot.treeWidth() + self.proot.xSpacing + scale_bar_size
+        max_y = self.proot.tree_height() + self.proot.ySpacing + title_space
+        max_x = self.proot.tree_width() + self.proot.xSpacing + scale_bar_size
         pylab.xlim([0, max_x])
         pylab.ylim([0, max_y])
         pylab.gca().set_xticks([])
