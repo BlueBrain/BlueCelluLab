@@ -209,7 +209,3 @@ class PSection:
         return self.L + self.ySpacing + \
             (max([child.treeHeight() for child in self.pchildren])
              if self.pchildren else 0)
-
-    def getHChildren(self):
-        """All hoc children of a section."""
-        return self.hchildren
