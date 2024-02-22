@@ -64,14 +64,14 @@ def init_psections(
 class PSection:
     """Class that represents a cell section."""
 
-    def __init__(self, hsection, isec=None):
-        self.L = hsection.L
-        self.diam = hsection.diam
-        self.hsection: NeuronSection = hsection
-        self.name = neuron.h.secname(sec=hsection)
-        self.href = neuron.h.SectionRef(sec=self.hsection)
-        self.pparent = None
-        self.pchildren = []
+    def __init__(self, hsection: NeuronSection, isec: int | None = None):
+        self.L: float = hsection.L
+        self.diam: float = hsection.diam
+        self.hsection = hsection
+        self.name: str = neuron.h.secname(sec=hsection)
+        self.href: NeuronSection = neuron.h.SectionRef(sec=self.hsection)
+        self.pparent: PSection | None = None
+        self.pchildren: list[PSection] = []
         self.isec = isec
 
         if 'apic' in self.name:
