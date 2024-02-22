@@ -140,7 +140,7 @@ class Dendrogram:
         if not interactive and fig_show:
             pylab.show()
 
-    def redraw(self):
+    def redraw(self) -> None:
         """Redraw the dendrogram."""
         if self.active:
             if not self.drawCount:
@@ -150,5 +150,3 @@ class Dendrogram:
                 self.drawCount = 1
             else:
                 self.drawCount = self.drawCount - 1
-
-        return True
