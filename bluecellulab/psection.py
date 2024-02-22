@@ -90,15 +90,15 @@ class PSection:
                 self.name)
 
         self.psegments = []
-        self.maxsegdiam = 0
+        self.maxsegdiam = 0.0
         for hsegment in hsection:
             # psegment = bluecellulab.PSegment(hsection(hsegment.x), self)
             psegment = bluecellulab.PSegment(hsegment, self)
             self.psegments.append(psegment)
             self.maxsegdiam = max(self.maxsegdiam, psegment.diam)
 
-        self.xSpacing = 1
-        self.ySpacing = 5
+        self.xSpacing = 1.0
+        self.ySpacing = 5.0
 
     @property
     def is_leaf(self) -> bool:
