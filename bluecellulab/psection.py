@@ -17,6 +17,7 @@ import neuron
 
 import bluecellulab
 from bluecellulab.cell.serialized_sections import SerializedSections
+from bluecellulab.psegment import PSegment
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 
@@ -89,7 +90,7 @@ class PSection:
                 "PSection: Section of unknown type: %s" %
                 self.name)
 
-        self.psegments = []
+        self.psegments: list[PSegment] = []
         self.maxsegdiam = 0.0
         for hsegment in hsection:
             # psegment = bluecellulab.PSegment(hsection(hsegment.x), self)
@@ -122,18 +123,6 @@ class PSection:
     def add_pchild(self, pchild) -> None:
         """Add a python represent of a child section."""
         self.pchildren.append(pchild)
-
-    @staticmethod
-    def setupDraw(psegments, maxsegdiam, figure, x, y, variable=None, varbounds=None):
-        """Setup draw of psection."""
-        y_accum = 0
-        for psegment in psegments:
-            psegment.setupDraw(figure,
-                               x + (maxsegdiam - psegment.diam) / 2,
-                               y + y_accum,
-                               variable=variable,
-                               varbounds=varbounds)
-            y_accum += psegment.L
 
     def redraw(self):
         """Redraw psection."""

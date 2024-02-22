@@ -17,12 +17,25 @@ import numpy as np
 import pylab
 
 from bluecellulab.psection import PSection
+from bluecellulab.psegment import PSegment
+
+
+def setup_draw(psegments: list[PSegment], maxsegdiam: float, figure, x, y, variable=None, varbounds=None) -> None:
+    """Setup draw of psection."""
+    y_accum = 0.0
+    for psegment in psegments:
+        psegment.setupDraw(figure,
+                           x + (maxsegdiam - psegment.diam) / 2,
+                           y + y_accum,
+                           variable=variable,
+                           varbounds=varbounds)
+        y_accum += psegment.L
 
 
 def draw_tree(psection: PSection, figure, x, y, variable=None, varbounds=None) -> None:
     """Draw a dendritic tree."""
     # Draw myself
-    psection.setupDraw(
+    setup_draw(
         psection.psegments, psection.maxsegdiam, figure, x, y, variable=variable, varbounds=varbounds
     )
 
@@ -105,8 +118,8 @@ class Dendrogram:
                 varbounds[0]), "%.2e" % (varbounds[1])])
 
         draw_tree(self.proot, self.dend_figure, self.proot.xSpacing,
-                 self.proot.ySpacing, variable=variable,
-                 varbounds=varbounds)
+                  self.proot.ySpacing, variable=variable,
+                  varbounds=varbounds)
 
         if scale_bar:
             pylab.plot(
