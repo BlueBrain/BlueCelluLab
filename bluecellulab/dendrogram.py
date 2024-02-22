@@ -19,7 +19,7 @@ import pylab
 from bluecellulab.psection import PSection
 
 
-def drawTree(psection: PSection, figure, x, y, variable=None, varbounds=None) -> None:
+def draw_tree(psection: PSection, figure, x, y, variable=None, varbounds=None) -> None:
     """Draw a dendritic tree."""
     # Draw myself
     psection.setupDraw(
@@ -35,7 +35,7 @@ def drawTree(psection: PSection, figure, x, y, variable=None, varbounds=None) ->
     new_y = y + psection.L + psection.ySpacing
 
     for child in psection.pchildren:
-        drawTree(child, figure, new_x, new_y, variable=variable, varbounds=varbounds)
+        draw_tree(child, figure, new_x, new_y, variable=variable, varbounds=varbounds)
         pylab.plot(
             [x + psection.diam / 2, new_x + child.diam / 2],
             [y + psection.L, new_y], 'k')
@@ -105,7 +105,7 @@ class Dendrogram:
             cbar.ax.set_yticklabels(["%.2e" % (
                 varbounds[0]), "%.2e" % (varbounds[1])])
 
-        drawTree(self.proot, self.dend_figure, self.proot.xSpacing,
+        draw_tree(self.proot, self.dend_figure, self.proot.xSpacing,
                  self.proot.ySpacing, variable=variable,
                  varbounds=varbounds)
 
