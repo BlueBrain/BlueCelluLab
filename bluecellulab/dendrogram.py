@@ -50,9 +50,8 @@ class Dendrogram:
         self.psections = psections
         # neuron.h.finitialize()
 
-        # self.hroot = neuron.h.SectionRef(sec=self.sections[0]).root
         self.proot: PSection = psections[0]
-        # self.psections = [self.proot] + self.proot.getAllPDescendants()
+        self.psections = [self.proot] + self.proot.all_descendants()
 
         xSpacing = self.proot.xSpacing
         ySpacing = self.proot.ySpacing
@@ -121,8 +120,9 @@ class Dendrogram:
 
         self.dend_figure.canvas.draw()
 
-        for secid in self.psections:
-            psections[secid].redraw()
+        for section in self.psections:
+            section_id = section.isec
+            psections[section_id].redraw()
 
         self.canvas = self.dend_figure.gca().figure.canvas
         self.ax = self.dend_figure.gca()

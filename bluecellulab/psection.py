@@ -165,11 +165,11 @@ class PSection:
 
         return varbounds
 
-    def getAllPDescendants(self):
+    def all_descendants(self) -> list[PSection]:
         """Return all the psection that are descendants of this psection."""
         pdescendants = list(self.pchildren)
         for child in self.pchildren:
-            pdescendants += child.getAllPDescendants()
+            pdescendants += child.all_descendants()
         return pdescendants
 
     def drawTree(self, figure, x, y, variable=None, varbounds=None):
