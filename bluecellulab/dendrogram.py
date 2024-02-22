@@ -57,7 +57,6 @@ class Dendrogram:
             scale_bar_size=10.0,
             fig_title=None,
             fig_show=True):
-        import pylab
 
         if interactive:
             pylab.ion()
