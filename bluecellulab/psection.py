@@ -120,9 +120,10 @@ class PSection:
         return [self.href.child[index] for index in
                 range(0, int(self.href.nchild()))]
 
-    def add_pchild(self, pchild) -> None:
+    def add_pchild(self, pchild: PSection) -> None:
         """Add a python represent of a child section."""
         self.pchildren.append(pchild)
+        pchild.pparent = self
 
     def getSectionVarBounds(self, variable):
         """Get bounds a variable in a section."""
