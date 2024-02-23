@@ -88,10 +88,17 @@ class TestCellBaseClass1:
 
     def test_get_psection(self):
         """Cell: Test cell.get_psection"""
+        idx = 0
+        name = "Cell[0].soma[0]"
         assert isinstance(
-            self.cell.get_psection(0).hsection, neuron.nrn.Section)
+            self.cell.get_psection(idx).hsection, neuron.nrn.Section)
+        assert isinstance(
+            self.cell.get_psection(name).hsection, neuron.nrn.Section)
+        assert self.cell.get_psection(idx) == self.cell.get_psection(name)
         with pytest.raises(BluecellulabError):
             self.cell.get_psection(None)
+        with pytest.raises(BluecellulabError):
+            self.cell.get_psection(5.8673453123)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""

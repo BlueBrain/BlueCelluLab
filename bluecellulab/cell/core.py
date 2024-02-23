@@ -198,12 +198,16 @@ class Cell(InjectableMixin, PlottableMixin):
             else:
                 self.cell.re_init_rng()
 
-    def get_psection(self, section_id: int | None = None) -> PSection:
-        """Return a python section with the specified section id or name."""
-        if section_id is not None:
+    def get_psection(self, section_id: int | str) -> PSection:
+        """Return a python section with the specified section id."""
+        if isinstance(section_id, int):
             return self.psections[section_id]
+        elif isinstance(section_id, str):
+            return self.secname_to_psection[section_id]
         else:
-            raise BluecellulabError("Cell: get_psection requires or a section_id or a secname")
+            raise BluecellulabError(
+                "Section id must be an int or a str, not {type(section_id)}"
+            )
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
