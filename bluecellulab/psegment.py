@@ -61,7 +61,7 @@ class PSegment:
     def redraw(self):
         """Redraw a segment."""
         if self.plotvariable:
-            plotvariable_value = self.getVariableValue(self.plotvariable)
+            plotvariable_value = self.get_variable_value(self.plotvariable)
             if plotvariable_value is not None:
                 self.patch.set_facecolor(self.color_map(
                     (plotvariable_value - self.varbounds[0]) /
@@ -71,7 +71,7 @@ class PSegment:
                 self.patch.set_hatch("/")
             self.ax.draw_artist(self.patch)
 
-    def getVariableValue(self, variable):
+    def get_variable_value(self, variable):
         """Get a variable value in a segment."""
         if variable == "v" or neuron.h.execute1(
             "{%s.%s(%f)}"

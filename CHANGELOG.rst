@@ -1,6 +1,30 @@
 Changelog
 ==========
 
+2.3.0
+-------
+
+* Cell class no longer serialises the following attributes
+  - secname_to_hsection
+  - secname_to_isec
+  - serialized
+  - cellname
+* The direct access to hsection option is removed. The access is through psection.
+* solves the dependency issue between init_psections and get_psections
+* avoids storing lists of NEURON sections for each Cell. Instead turns them into properties.
+* Dendrogram plotting functions are decoupled from PSection
+
+
+2.2.0
+------
+
+* Add default value for segx param, improve docs vcs: #minor (#127)
+
+2.1.0
+---------
+
+* Allow API functions to be used without loading hoc/mod (#124)
+
 2.0.0
 ---------
 

@@ -86,10 +86,19 @@ class TestCellBaseClass1:
         assert math.fabs(self.cell.apical[10].diam - 0.95999) < 0.00001
         assert math.fabs(self.cell.apical[10].L - 23.73195) < 0.00001
 
-    def test_get_hsection(self):
-        """Cell: Test cell.get_hsection"""
+    def test_get_psection(self):
+        """Cell: Test cell.get_psection"""
+        idx = 0
+        name = "Cell[0].soma[0]"
         assert isinstance(
-            self.cell.get_hsection(0), neuron.nrn.Section)
+            self.cell.get_psection(idx).hsection, neuron.nrn.Section)
+        assert isinstance(
+            self.cell.get_psection(name).hsection, neuron.nrn.Section)
+        assert self.cell.get_psection(idx) == self.cell.get_psection(name)
+        with pytest.raises(BluecellulabError):
+            self.cell.get_psection(None)
+        with pytest.raises(BluecellulabError):
+            self.cell.get_psection(5.8673453123)
 
     def test_add_recording(self):
         """Cell: Test cell.add_recording"""
@@ -327,14 +336,6 @@ class TestCellV6:
         # make sure NEURON template name is in the string representation
         assert self.cell.cell.hname().split('[')[0] in str(self.cell)
 
-    def test_get_section_id(self):
-        """Test the get_section_id method."""
-        self.cell.init_psections()
-        assert self.cell.get_section_id(str(self.cell.soma)) == 0
-        assert self.cell.get_section_id(str(self.cell.axonal[0])) == 1
-        assert self.cell.get_section_id(str(self.cell.basal[0])) == 145
-        assert self.cell.get_section_id(str(self.cell.apical[0])) == 169
-
     def test_area(self):
         """Test the cell's area computation."""
         assert self.cell.area() == 5812.493415302344
@@ -365,6 +366,31 @@ class TestCellV6:
         section = self.cell.get_childrensections(self.cell.soma)[0]
         res = self.cell.get_parentsection(section)
         assert res == self.cell.soma
+
+    def test_somatic_sections(self):
+        """Test that somatic property returns a non-empty list sections."""
+        assert isinstance(self.cell.somatic, list)
+        assert len(self.cell.somatic) > 0
+
+    def test_basal_sections(self):
+        """Test that basal property returns a non-empty list of sections."""
+        assert isinstance(self.cell.basal, list)
+        assert len(self.cell.basal) > 0
+
+    def test_apical_sections(self):
+        """Test that apical property returns a non-empty list sections."""
+        assert isinstance(self.cell.apical, list)
+        assert len(self.cell.apical) > 0
+
+    def test_axonal_sections(self):
+        """Test that axonal property returns a non-empty list of sections."""
+        assert isinstance(self.cell.axonal, list)
+        assert len(self.cell.axonal) > 0
+
+    def test_all_sections(self):
+        """Test that the all property returns a non-empty list of all sections."""
+        assert isinstance(self.cell.all, list)
+        assert len(self.cell.all) > 0
 
 
 @pytest.mark.v6

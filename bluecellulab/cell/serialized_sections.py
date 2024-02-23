@@ -13,11 +13,11 @@
 # limitations under the License.
 """Module that allows morphology sections to be accessed from an array by
 index."""
-
+from __future__ import annotations
 import logging
 import warnings
 import neuron
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ warnings.filterwarnings("once", category=UserWarning, module=__name__)
 class SerializedSections:
 
     def __init__(self, cell: HocObjectType) -> None:
-        self.isec2sec = {}
+        self.isec2sec: dict[int, NeuronSection] = {}
         n = cell.nSecAll
 
         for index, sec in enumerate(cell.all, start=1):

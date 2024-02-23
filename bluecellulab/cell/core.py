@@ -27,12 +27,11 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
-from bluecellulab import psection
+from bluecellulab.psection import PSection, init_psections
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
 from bluecellulab.cell.sonata_proxy import SonataProxy
-from bluecellulab.cell.serialized_sections import SerializedSections
 from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
@@ -99,8 +98,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
-        self.cellname = neuron.h.secname(sec=self.soma).split(".")[0]
-
         if rng_settings is None:
             self.rng_settings = RNGSettings("Random123")  # SONATA value
         else:
@@ -112,25 +109,17 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.ips: dict[SynapseID, HocObjectType] = {}
         self.syn_mini_netcons: dict[SynapseID, HocObjectType] = {}
-        self.serialized: Optional[SerializedSections] = None
 
         # Be careful when removing this,
         # time recording needs this push
         self.soma.push()
         self.hocname = neuron.h.secname(sec=self.soma).split(".")[0]
-        self.somatic = list(public_hoc_cell(self.cell).somatic)
-        self.basal = list(public_hoc_cell(self.cell).basal)  # dend is same as basal
-        self.apical = list(public_hoc_cell(self.cell).apical)
-        self.axonal = list(public_hoc_cell(self.cell).axonal)
-        self.all = list(public_hoc_cell(self.cell).all)
         self.record_dt = record_dt
         self.add_recordings(['self.soma(0.5)._ref_v', 'neuron.h._ref_t'],
                             dt=self.record_dt)
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
-        self.secname_to_isec: dict[str, int] = {}
-        self.secname_to_hsection: dict[str, HocObjectType] = {}
-        self.secname_to_psection: dict[str, psection.PSection] = {}
+        self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
 
         self.emodel_properties = emodel_properties
         if template_format == 'v6':
@@ -153,11 +142,28 @@ class Cell(InjectableMixin, PlottableMixin):
         # Used to know when re_init_rng() can be executed
         self.is_made_passive = False
 
-        self.psections: dict[int, psection.PSection] = {}
-
         neuron.h.pop_section()  # Undoing soma push
-        # self.init_psections()
         self.sonata_proxy: Optional[SonataProxy] = None
+
+    @property
+    def somatic(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).somatic)
+
+    @property
+    def basal(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).basal)
+
+    @property
+    def apical(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).apical)
+
+    @property
+    def axonal(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).axonal)
+
+    @property
+    def all(self) -> list[NeuronSection]:
+        return list(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
@@ -167,47 +173,6 @@ class Cell(InjectableMixin, PlottableMixin):
     def connect_to_circuit(self, sonata_proxy: SonataProxy) -> None:
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
-
-    def init_psections(self) -> None:
-        """Initialize the psections list.
-
-        This list contains the Python representation of the psections of
-        this morphology.
-        """
-        for hsection in self.all:
-            secname = neuron.h.secname(sec=hsection)
-            self.secname_to_hsection[secname] = hsection
-            self.secname_to_psection[secname] = psection.PSection(hsection)
-
-        # section are not serialized yet, do it now
-        if self.serialized is None:
-            self.serialized = SerializedSections(public_hoc_cell(self.cell))
-
-        for isec in self.serialized.isec2sec:
-            hsection = self.get_hsection(isec)
-            if hsection:
-                secname = neuron.h.secname(sec=hsection)
-                self.psections[isec] = self.secname_to_psection[secname]
-                self.psections[isec].isec = isec
-                self.secname_to_isec[secname] = isec
-
-        # Set the parents and children of all the psections
-        for psec in self.psections.values():
-            hparent = psec.hparent
-            if hparent:
-                parentname = neuron.h.secname(sec=hparent)
-                psec.pparent = self.get_psection(secname=parentname)
-            else:
-                psec.pparent = None
-
-            for hchild in psec.hchildren:
-                childname = neuron.h.secname(sec=hchild)
-                pchild = self.get_psection(secname=childname)
-                psec.add_pchild(pchild)
-
-    def get_section_id(self, secname: str) -> int:
-        """Returns the id of the section with name secname."""
-        return self.secname_to_psection[secname].isec
 
     def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
         """Reinitialize the random number generator for stochastic channels."""
@@ -233,44 +198,16 @@ class Cell(InjectableMixin, PlottableMixin):
             else:
                 self.cell.re_init_rng()
 
-    def get_psection(self, section_id=None, secname=None):
-        """Return a python section with the specified section id or name.
-
-        Parameters
-        ----------
-        section_id: int
-                    Return the PSection object based on section id
-        secname: string
-                 Return the PSection object based on section name
-
-        Returns
-        -------
-        psection: PSection
-                  PSection object of the specified section id or name
-        """
-        if section_id is not None:
+    def get_psection(self, section_id: int | str) -> PSection:
+        """Return a python section with the specified section id."""
+        if isinstance(section_id, int):
             return self.psections[section_id]
-        elif secname is not None:
-            return self.secname_to_psection[secname]
+        elif isinstance(section_id, str):
+            return self.secname_to_psection[section_id]
         else:
-            raise Exception(
-                "Cell: get_psection requires or a section_id or a secname")
-
-    def get_hsection(self, section_id: int | float) -> NeuronSection:
-        """Use the serialized object to find a hoc section from a section
-        id."""
-        section_id = int(section_id)
-        # section are not serialized yet, do it now
-        if self.serialized is None:
-            self.serialized = SerializedSections(public_hoc_cell(self.cell))
-
-        try:
-            sec_ref = self.serialized.isec2sec[section_id]
-        except IndexError as e:
-            raise IndexError(
-                f"bluecellulab get_hsection: section-id {section_id} not found in {self.morphology_path}"
-            ) from e
-        return sec_ref.sec
+            raise BluecellulabError(
+                f"Section id must be an int or a str, not {type(section_id)}"
+            )
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
@@ -551,7 +488,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
         base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
-        post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
+        # numpy int to int
+        post_sec_id = int(syn_description[SynapseProperty.POST_SECTION_ID])
 
         location = SynapseFactory.determine_synapse_location(
             syn_description, self
@@ -572,7 +510,7 @@ class Cell(InjectableMixin, PlottableMixin):
             spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
-            sec = self.get_hsection(post_sec_id)
+            sec = self.get_psection(post_sec_id).hsection
             # add the *minis*: spontaneous synaptic events
             self.ips[synapse_id] = neuron.h.\
                 InhPoissonStim(location, sec=sec)
