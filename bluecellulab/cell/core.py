@@ -206,7 +206,7 @@ class Cell(InjectableMixin, PlottableMixin):
             return self.secname_to_psection[section_id]
         else:
             raise BluecellulabError(
-                "Section id must be an int or a str, not {type(section_id)}"
+                f"Section id must be an int or a str, not {type(section_id)}"
             )
 
     def make_passive(self) -> None:
