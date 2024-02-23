@@ -110,7 +110,7 @@ class SynapseFactory:
     @classmethod
     def determine_synapse_location(cls, syn_description: pd.Series, cell: bluecellulab.Cell) -> SynapseHocArgs:
         """Returns the location of the synapse."""
-        isec = syn_description[SynapseProperty.POST_SECTION_ID]
+        isec = int(syn_description[SynapseProperty.POST_SECTION_ID])  # numpy int to int
         section: NeuronSection = cell.get_psection(section_id=isec).hsection
 
         # old circuits don't have it, it needs to be computed via synlocation_to_segx

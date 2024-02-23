@@ -488,7 +488,8 @@ class Cell(InjectableMixin, PlottableMixin):
 
         base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
-        post_sec_id = syn_description[SynapseProperty.POST_SECTION_ID]
+        # numpy int to int
+        post_sec_id = int(syn_description[SynapseProperty.POST_SECTION_ID])
 
         location = SynapseFactory.determine_synapse_location(
             syn_description, self
