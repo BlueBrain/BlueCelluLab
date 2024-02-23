@@ -1,4 +1,4 @@
-# Copyright 2012-2023 Blue Brain Project / EPFL
+# Copyright 2012-2024 Blue Brain Project / EPFL
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ class BluepySimulationAccess:
                 f"Circuit config file {sim_config} not found.")
 
         self.impl = bluepy.Simulation(sim_config)
-        self._config = BluepySimulationConfig(sim_config)
+        self._config = BluepySimulationConfig(sim_config)  # type: ignore
 
     def get_soma_voltage(
         self, cell_id: CellId, t_start: float, t_end: float, t_step: Optional[float] = None
