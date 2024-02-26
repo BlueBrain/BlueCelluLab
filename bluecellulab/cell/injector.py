@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Contains injection functionality for the cell."""
-
+from __future__ import annotations
 import math
 import warnings
 import logging
@@ -36,7 +36,7 @@ from bluecellulab.stimuli import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.type_aliases import NeuronSection
 
 
 logger = logging.getLogger(__name__)
@@ -69,16 +69,36 @@ class InjectableMixin:
         self.persistent.append(tstim)
         return tstim
 
-    def add_step(self, start_time, stop_time, level, section=None, segx=0.5):
-        """Add a step current injection."""
-        if section is None:
-            section = self.soma
+    def add_step(
+        self,
+        start_time: float,
+        stop_time: float,
+        level: float,
+        section: NeuronSection | None = None,
+        segx: float = 0.5,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Add a step current injection.
 
-        tstim = neuron.h.TStim(segx, sec=section)
-        duration = stop_time - start_time
-        tstim.pulse(start_time, duration, level)
-        self.persistent.append(tstim)
-        return tstim
+        Args:
+            start_time: Start time of the step injection in seconds.
+            stop_time: Stop time of the step injection in seconds.
+            level: Current level to inject in amperes (A).
+            section: The section to inject current into.
+                Defaults to the soma section.
+            segx: The fractional location within the section to inject.
+                Defaults to 0.5 (center of the section).
+
+        Returns:
+            Tuple of time and current data.
+        """
+
+        if section is None:
+            section = self.soma  # type: ignore
+
+        t_content = np.arange(start_time, stop_time, 1)
+        i_content = level * np.ones_like(t_content)
+        self.inject_current_waveform(t_content, i_content, section, segx)
+        return (t_content, i_content)
 
     def add_ramp(self, start_time, stop_time, start_level, stop_level,
                  section=None, segx=0.5):
@@ -450,9 +470,9 @@ class InjectableMixin:
         tau: float,
         gmax: float,
         e: float,
-        section: HocObjectType,
+        section: NeuronSection,
         segx=0.5,
-    ) -> HocObjectType:
+    ) -> NeuronSection:
         """Add an AlphaSynapse NEURON point process stimulus to the cell."""
         syn = neuron.h.AlphaSynapse(segx, sec=section)
         syn.onset = onset
