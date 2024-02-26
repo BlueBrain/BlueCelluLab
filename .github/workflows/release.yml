@@ -8,7 +8,7 @@ on:
 jobs:
   call-test-workflow:
     uses: BlueBrain/BlueCelluLab/.github/workflows/test.yml@main
-    with:
+    secrets:
       token: ${{ secrets.CODECOV_TOKEN }}
 
   build-and-publish:
