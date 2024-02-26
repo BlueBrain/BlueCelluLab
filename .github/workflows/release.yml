@@ -8,6 +8,8 @@ on:
 jobs:
   call-test-workflow:
     uses: BlueBrain/BlueCelluLab/.github/workflows/test.yml@main
+    with:
+      token: ${{ secrets.CODECOV_TOKEN }}
 
   build-and-publish:
     name: Build, publish on PyPI and make a GitHub release
