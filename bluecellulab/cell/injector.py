@@ -395,26 +395,22 @@ class InjectableMixin:
         else:
             return self.inject_current_clamp_signal(section, segx, tvec, svec)
 
-    def inject_current_waveform(self, t_content, i_content, section=None,
-                                segx=0.5):
-        """Inject a custom current to the cell."""
-        start_time = t_content[0]
-        stop_time = t_content[-1]
-        time = neuron.h.Vector()
-        currents = neuron.h.Vector()
-        time = time.from_python(t_content)
-        currents = currents.from_python(i_content)
-
+    def inject_current_waveform(self, t_content, i_content, section=None, segx=0.5):
+        """Inject a custom current waveform into the cell."""
         if section is None:
             section = self.soma
+
+        time_vector = neuron.h.Vector().from_python(t_content)
+        current_vector = neuron.h.Vector().from_python(i_content)
+
         pulse = neuron.h.IClamp(segx, sec=section)
-        self.persistent.append(pulse)
-        self.persistent.append(time)
-        self.persistent.append(currents)
-        setattr(pulse, 'del', start_time)
-        pulse.dur = stop_time - start_time
-        currents.play(pulse._ref_amp, time)
-        return currents
+        self.persistent.extend([pulse, time_vector, current_vector])
+
+        pulse.delay = t_content[0]
+        pulse.dur = t_content[-1] - t_content[0]
+        current_vector.play(pulse._ref_amp, time_vector)
+
+        return current_vector
 
     @deprecated("Use inject_current_waveform instead.")
     def injectCurrentWaveform(self, t_content, i_content, section=None,
