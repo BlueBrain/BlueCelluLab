@@ -82,7 +82,7 @@ class InjectableMixin:
         Args:
             start_time: Start time of the step injection in seconds.
             stop_time: Stop time of the step injection in seconds.
-            level: Current level to inject in amperes (A).
+            level: Current level to inject in nanoamperes (nA).
             section: The section to inject current into.
                 Defaults to the soma section.
             segx: The fractional location within the section to inject.
@@ -114,8 +114,8 @@ class InjectableMixin:
         Args:
             start_time: Start time of the ramp injection in seconds.
             stop_time: Stop time of the ramp injection in seconds.
-            start_level: Current level at the start of the ramp in amperes (A).
-            stop_level: Current level at the end of the ramp in amperes (A).
+            start_level: Current level at the start of the ramp in nanoamperes (nA).
+            stop_level: Current level at the end of the ramp in nanoamperes (nA).
             section: The section to inject current into (optional). Defaults to soma.
             segx: The fractional location within the section to inject (optional).
 
