@@ -100,25 +100,37 @@ class InjectableMixin:
         self.inject_current_waveform(t_content, i_content, section, segx)
         return (t_content, i_content)
 
-    def add_ramp(self, start_time, stop_time, start_level, stop_level,
-                 section=None, segx=0.5):
-        """Add a ramp current injection."""
+    def add_ramp(
+        self,
+        start_time: float,
+        stop_time: float,
+        start_level: float,
+        stop_level: float,
+        section: NeuronSection | None = None,
+        segx: float = 0.5,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Add a ramp current injection.
+
+        Args:
+            start_time: Start time of the ramp injection in seconds.
+            stop_time: Stop time of the ramp injection in seconds.
+            start_level: Current level at the start of the ramp in amperes (A).
+            stop_level: Current level at the end of the ramp in amperes (A).
+            section: The section to inject current into (optional). Defaults to soma.
+            segx: The fractional location within the section to inject (optional).
+
+        Returns:
+            A tuple of numpy arrays containing time and current data.
+        """
         if section is None:
-            section = self.soma
+            section = self.soma  # type: ignore
 
-        tstim = neuron.h.TStim(segx, sec=section)
+        t_content = np.arange(start_time, stop_time, 1)
+        slope = (stop_level - start_level) / (stop_time - start_time)
+        i_content = start_level + slope * (t_content - start_time)
+        self.inject_current_waveform(t_content, i_content, section, segx)
 
-        tstim.ramp(
-            0.0,
-            start_time,
-            start_level,
-            stop_level,
-            stop_time - start_time,
-            0.0,
-            0.0)
-
-        self.persistent.append(tstim)
-        return tstim
+        return t_content, i_content
 
     def add_voltage_clamp(
             self, stop_time, level, rs=None, section=None, segx=0.5,
