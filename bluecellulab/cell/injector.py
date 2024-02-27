@@ -432,12 +432,6 @@ class InjectableMixin:
 
         return current_vector
 
-    @deprecated("Use inject_current_waveform instead.")
-    def injectCurrentWaveform(self, t_content, i_content, section=None,
-                              segx=0.5):
-        """Inject a current in the cell."""
-        return self.inject_current_waveform(t_content, i_content, section, segx)
-
     @deprecated("Use add_sin_current instead.")
     def addSineCurrentInject(self, start_time, stop_time, freq,
                              amplitude, mid_level, dt=1.0):
@@ -451,7 +445,7 @@ class InjectableMixin:
         t_content = np.arange(start_time, stop_time, dt)
         i_content = [amplitude * math.sin(freq * (x - start_time) * (
             2 * math.pi)) + mid_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content)
+        self.inject_current_waveform(t_content, i_content)
         return (t_content, i_content)
 
     def add_sin_current(self, amp, start_time, duration, frequency,

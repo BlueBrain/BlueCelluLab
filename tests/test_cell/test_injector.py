@@ -396,7 +396,7 @@ class TestInjector:
         i_content = [amplitude * math.sin(freq * (x - start_time) * (
             2 * math.pi)) + mid_level for x in t_content]
 
-        current = self.cell.injectCurrentWaveform(t_content, i_content)
+        current = self.cell.inject_current_waveform(t_content, i_content)
         assert current.as_numpy() == approx(np.array(
             [0.00000000e+00, 2.35726407e-14, 4.71452814e-14, -6.11403104e-13,
              9.42905627e-14, -1.92849988e-12, -1.22280621e-12, -3.24559665e-12,
