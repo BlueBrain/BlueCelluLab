@@ -18,7 +18,7 @@ from typing import Optional, Protocol
 
 
 from bluecellulab.circuit.config.sections import Conditions, ConnectionOverrides
-from bluecellulab.stimuli import Stimulus
+from bluecellulab.stimulus.circuit_stimulus_definitions import Stimulus
 
 
 class SimulationConfig(Protocol):

@@ -27,7 +27,7 @@ from bluecellulab.cell.stimuli_generator import (
     get_relative_shotnoise_params,
 )
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.stimuli import (
+from bluecellulab.stimulus.circuit_stimulus_definitions import (
     ClampMode,
     Hyperpolarizing,
     Noise,

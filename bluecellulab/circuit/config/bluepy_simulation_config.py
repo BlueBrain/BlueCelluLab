@@ -25,7 +25,7 @@ if BLUEPY_AVAILABLE:
     from bluepy.utils import open_utf8
 
 from bluecellulab.circuit.config.sections import Conditions, ConnectionOverrides
-from bluecellulab.stimuli import Stimulus
+from bluecellulab.stimulus.circuit_stimulus_definitions import Stimulus
 
 
 class BluepySimulationConfig:

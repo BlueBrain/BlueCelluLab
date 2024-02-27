@@ -13,7 +13,7 @@ import bluecellulab
 
 from bluecellulab.circuit import SonataCircuitAccess
 from bluecellulab.circuit.node_id import CellId
-from bluecellulab.stimuli import (
+from bluecellulab.stimulus.circuit_stimulus_definitions import (
     Pulse,
     Noise,
     Hyperpolarizing,

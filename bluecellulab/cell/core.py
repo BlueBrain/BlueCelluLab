@@ -41,7 +41,7 @@ from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.importer import load_hoc_and_mod_files
 from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
-from bluecellulab.stimuli import SynapseReplay
+from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
