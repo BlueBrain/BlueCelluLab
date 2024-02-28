@@ -126,7 +126,7 @@ class TestOnSonataCell:
             emodel_properties=self.emodel_properties,
         )
 
-        assert input_resistance == pytest.approx(375.70208128630753)
+        assert input_resistance == pytest.approx(375.7000429068128)
 
     def test_calculate_SS_voltage(self):
         """Unit test calculate_SS_voltage."""

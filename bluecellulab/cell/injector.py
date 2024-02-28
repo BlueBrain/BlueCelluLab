@@ -76,6 +76,7 @@ class InjectableMixin:
         level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
+        dt: float = 0.025
     ) -> tuple[np.ndarray, np.ndarray]:
         """Add a step current injection.
 
@@ -95,7 +96,7 @@ class InjectableMixin:
         if section is None:
             section = self.soma  # type: ignore
 
-        t_content = np.arange(start_time, stop_time, 1)
+        t_content = np.arange(start_time, stop_time, dt)
         i_content = level * np.ones_like(t_content)
         self.inject_current_waveform(t_content, i_content, section, segx)
         return (t_content, i_content)
@@ -108,6 +109,7 @@ class InjectableMixin:
         stop_level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
+        dt: float = 0.025
     ) -> tuple[np.ndarray, np.ndarray]:
         """Add a ramp current injection.
 
@@ -125,7 +127,7 @@ class InjectableMixin:
         if section is None:
             section = self.soma  # type: ignore
 
-        t_content = np.arange(start_time, stop_time, 1)
+        t_content = np.arange(start_time, stop_time, dt)
         slope = (stop_level - start_level) / (stop_time - start_time)
         i_content = start_level + slope * (t_content - start_time)
         self.inject_current_waveform(t_content, i_content, section, segx)

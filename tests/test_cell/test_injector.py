@@ -71,13 +71,13 @@ class TestInjector:
 
     def test_inject_step(self):
         """Test the step current injection."""
-        t_arr, i_arr = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0)
+        t_arr, i_arr = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0, dt=1)
         assert t_arr.tolist() == [2., 3., 4., 5.]
         assert i_arr.tolist() == [1., 1., 1., 1.]
 
     def test_inject_ramp(self):
         """Test the ramp injection."""
-        t_arr, i_arr = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level=0.5, stop_level=1)
+        t_arr, i_arr = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level=0.5, stop_level=1, dt=1)
         assert t_arr.tolist() == [2., 3., 4., 5.]
         assert i_arr.tolist() == [0.5, 0.625, 0.75, 0.875]
 
