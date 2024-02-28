@@ -19,3 +19,5 @@ BlueCelluLab's usage examples
      - Simulating back propagating action potential in a dendritic tree
    * - `epsp.ipynb <4-epsp/epsp.ipynb>`_
      - Simulating excitatory post synaptic potential on a Hippocampal CA1 cell
+   * - Exploring the stimuli available at BlueCelluLab
+     - `stimuli.ipynb <5-stimuli/stimuli.ipynb>`_
