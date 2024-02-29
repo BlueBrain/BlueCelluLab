@@ -13,6 +13,7 @@
    :maxdepth: 2
 
    Home <self>
+   list_of_stim
    api.rst
    compiling-mechanisms.rst
    changelog

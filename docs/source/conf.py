@@ -34,7 +34,17 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
+    "sphinx.ext.doctest",
+    "matplotlib.sphinxext.plot_directive",
 ]
+
+# Configure doctest
+doctest_test_doctest_blocks = 'default'
+
+# For matplotlib plots in Sphinx
+plot_include_source = True
+plot_html_show_source_link = False
+
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 autodoc_default_options = {
     "members": True,
