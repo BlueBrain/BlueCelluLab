@@ -36,6 +36,7 @@ from bluecellulab.stimulus.circuit_stimulus_definitions import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
+from bluecellulab.stimulus.factory import StimulusFactory
 from bluecellulab.type_aliases import NeuronSection
 
 
@@ -92,12 +93,8 @@ class InjectableMixin:
         Returns:
             Tuple of time and current data.
         """
-
-        if section is None:
-            section = self.soma  # type: ignore
-
-        t_content = np.arange(start_time, stop_time, dt)
-        i_content = level * np.ones_like(t_content)
+        stim = StimulusFactory(dt=dt).step(start_time, stop_time, level)
+        t_content, i_content = stim.time, stim.current
         self.inject_current_waveform(t_content, i_content, section, segx)
         return (t_content, i_content)
 
@@ -124,12 +121,8 @@ class InjectableMixin:
         Returns:
             A tuple of numpy arrays containing time and current data.
         """
-        if section is None:
-            section = self.soma  # type: ignore
-
-        t_content = np.arange(start_time, stop_time, dt)
-        slope = (stop_level - start_level) / (stop_time - start_time)
-        i_content = start_level + slope * (t_content - start_time)
+        stim = StimulusFactory(dt=dt).ramp(start_time, stop_time, start_level, stop_level)
+        t_content, i_content = stim.time, stim.current
         self.inject_current_waveform(t_content, i_content, section, segx)
 
         return t_content, i_content
