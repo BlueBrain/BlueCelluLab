@@ -90,3 +90,37 @@ def test_empty_stimulus():
     assert stimulus.dt == dt
     assert np.all(stimulus.time == np.arange(0, duration, dt))
     assert np.all(stimulus.current == np.zeros_like(stimulus.time))
+
+
+def test_combine_multiple_stimuli():
+    """Test combining multiple stimuli."""
+    dt = 0.1
+    stim1 = Step(dt, 99, 101, 3)
+    stim2 = Ramp(dt, 3, 4, 2, 4)
+    stim3 = EmptyStimulus(dt, 1)
+    stim4 = Step(dt, 5, 6, 1)
+
+    combined = stim1 + stim2 + stim3 + stim4
+
+    assert isinstance(combined, CombinedStimulus)
+    assert combined.dt == dt
+
+    shifted_stim2_time = stim2.time + stim1.time[-1] + dt
+    shifted_stim3_time = stim3.time + shifted_stim2_time[-1] + dt
+    shifted_stim4_time = stim4.time + shifted_stim3_time[-1] + dt
+
+    expected_time = np.concatenate([
+        stim1.time,
+        shifted_stim2_time,
+        shifted_stim3_time,
+        shifted_stim4_time,
+    ])
+    expected_current = np.concatenate([
+        stim1.current,
+        stim2.current,
+        stim3.current,
+        stim4.current,
+    ])
+
+    assert np.all(combined.time == expected_time)
+    assert np.all(combined.current == expected_current)
