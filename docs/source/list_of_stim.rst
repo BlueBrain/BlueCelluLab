@@ -55,6 +55,57 @@ Ramp Stimulus
    ramp.plot()
 
 
+
+APWaveform
+~~~~~~~~~~
+
+**Definition**: The action potential waveform is a step stimulus with a defined amplitude and duration.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   ap_waveform = stim_factory.ap_waveform(threshold_current=0.5)
+   ap_waveform.plot_during_simulation(600)
+
+
+IDRest
+~~~~~~
+
+**Definition**: The IDRest stimulus is a step stimulus with a defined amplitude and duration.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   id_rest = stim_factory.idrest(threshold_current=0.5)
+   id_rest.plot_during_simulation(2000)
+
+IV
+~~
+
+**Definition**: The IV stimulus is a step stimulus with a defined amplitude (negative value) and duration.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   iv = stim_factory.iv(threshold_current=0.5)
+   iv.plot_during_simulation(4500)
+
+FirePattern
+~~~~~~~~~~~~~
+
+**Definition**: The fire pattern stimulus is a step stimulus with a defined amplitude and duration.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   fire_pattern = stim_factory.fire_pattern(threshold_current=0.5)
+   fire_pattern.plot_during_simulation(4500)
+
+
 .. plot::
    :context: close-figs
    :include-source: False

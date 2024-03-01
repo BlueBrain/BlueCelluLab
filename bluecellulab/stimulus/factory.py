@@ -111,7 +111,7 @@ class Step(Stimulus):
         self.amplitude = amplitude
 
     @classmethod
-    def as_ap_waveform(
+    def threshold_based(
         cls,
         dt: float,
         threshold_current: float,
@@ -172,7 +172,7 @@ class StimulusFactory:
     def ap_waveform(
         self,
         threshold_current: float,
-        threshold_percentage: float = 220,
+        threshold_percentage: float = 220.0,
         start: float = 250.0,
         end: float = 300.0,
         post_wait: float = 250.0,
@@ -186,6 +186,69 @@ class StimulusFactory:
             end: The end time of the step.
             post_wait: The time to wait after the end of the step.
         """
-        return Step.as_ap_waveform(
+        return Step.threshold_based(
+            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+        )
+
+    def idrest(
+        self,
+        threshold_current: float,
+        threshold_percentage: float = 200.0,
+        start: float = 250.0,
+        end: float = 1600.0,
+        post_wait: float = 250.0,
+    ) -> Stimulus:
+        """Returns the IDRest Stimulus object, a type of Step stimulus.
+
+        Args:
+            threshold_current: The threshold current of the Cell.
+            threshold_percentage: Percentage of desired threshold_current amplification.
+            start: The start time of the step.
+            end: The end time of the step.
+            post_wait: The time to wait after the end of the step.
+        """
+        return Step.threshold_based(
+            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+        )
+
+    def iv(
+        self,
+        threshold_current: float,
+        threshold_percentage: float = -40.0,
+        start: float = 250.0,
+        end: float = 3250.0,
+        post_wait: float = 250.0,
+    ) -> Stimulus:
+        """Returns the IV Stimulus object, a type of Step stimulus.
+
+        Args:
+            threshold_current: The threshold current of the Cell.
+            threshold_percentage: Percentage of desired threshold_current amplification.
+            start: The start time of the step.
+            end: The end time of the step.
+            post_wait: The time to wait after the end of the step.
+        """
+        return Step.threshold_based(
+            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+        )
+
+    def fire_pattern(
+        self,
+        threshold_current: float,
+        threshold_percentage: float = 200.0,
+        start: float = 250.0,
+        end: float = 3850.0,
+        post_wait: float = 250.0,
+    ) -> Stimulus:
+        """Returns the FirePattern Stimulus object, a type of Step stimulus.
+
+        Args:
+            threshold_current: The threshold current of the Cell.
+            threshold_percentage: Percentage of desired threshold_current amplification.
+            start: The start time of the step.
+            end: The end time of the step.
+            post_wait: The time to wait after the end of the step.
+        """
+        return Step.threshold_based(
             self.dt, threshold_current, threshold_percentage, start, end, post_wait
         )

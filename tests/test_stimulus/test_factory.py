@@ -60,6 +60,25 @@ class TestStimulusFactory:
         assert s.current[0] == 2.2
         assert s.current[-1] == 0.0
 
+    def test_create_idrest(self):
+        s = self.factory.idrest(threshold_current=1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 1600
+
+    def test_create_iv(self):
+        s = self.factory.iv(threshold_current=1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 3250
+        # assert there are negative values
+        assert np.any(s.current < 0)
+        # assert no positive values
+        assert not np.any(s.current > 0)
+
+    def create_firing_pattern(self):
+        s = self.factory.firing_pattern(threshold_current=1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 3850
+
 
 def test_combined_stimulus():
     """Test combining Stimulus objects."""
