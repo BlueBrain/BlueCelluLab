@@ -9,8 +9,6 @@ class TestStimulus:
     def test_abstract_methods(self):
         with pytest.raises(TypeError):
             s = Stimulus(0.1)
-            s.time
-            s.current
 
     def test_repr(self):
         s = Step(0.1, 1, 2, 3)
@@ -74,8 +72,8 @@ class TestStimulusFactory:
         # assert no positive values
         assert not np.any(s.current > 0)
 
-    def create_firing_pattern(self):
-        s = self.factory.firing_pattern(threshold_current=1)
+    def test_create_fire_pattern(self):
+        s = self.factory.fire_pattern(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 3850
 
