@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Contains injection functionality for the cell."""
-
+from __future__ import annotations
 import math
 import warnings
 import logging
@@ -27,7 +27,7 @@ from bluecellulab.cell.stimuli_generator import (
     get_relative_shotnoise_params,
 )
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.stimuli import (
+from bluecellulab.stimulus.circuit_stimulus_definitions import (
     ClampMode,
     Hyperpolarizing,
     Noise,
@@ -36,7 +36,8 @@ from bluecellulab.stimuli import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
-from bluecellulab.type_aliases import HocObjectType
+from bluecellulab.stimulus.factory import StimulusFactory
+from bluecellulab.type_aliases import NeuronSection
 
 
 logger = logging.getLogger(__name__)
@@ -69,36 +70,62 @@ class InjectableMixin:
         self.persistent.append(tstim)
         return tstim
 
-    def add_step(self, start_time, stop_time, level, section=None, segx=0.5):
-        """Add a step current injection."""
-        if section is None:
-            section = self.soma
+    def add_step(
+        self,
+        start_time: float,
+        stop_time: float,
+        level: float,
+        section: NeuronSection | None = None,
+        segx: float = 0.5,
+        dt: float = 0.025
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Add a step current injection.
 
-        tstim = neuron.h.TStim(segx, sec=section)
-        duration = stop_time - start_time
-        tstim.pulse(start_time, duration, level)
-        self.persistent.append(tstim)
-        return tstim
+        Args:
+            start_time: Start time of the step injection in seconds.
+            stop_time: Stop time of the step injection in seconds.
+            level: Current level to inject in nanoamperes (nA).
+            section: The section to inject current into.
+                Defaults to the soma section.
+            segx: The fractional location within the section to inject.
+                Defaults to 0.5 (center of the section).
 
-    def add_ramp(self, start_time, stop_time, start_level, stop_level,
-                 section=None, segx=0.5):
-        """Add a ramp current injection."""
-        if section is None:
-            section = self.soma
+        Returns:
+            Tuple of time and current data.
+        """
+        stim = StimulusFactory(dt=dt).step(start_time, stop_time, level)
+        t_content, i_content = stim.time, stim.current
+        self.inject_current_waveform(t_content, i_content, section, segx)
+        return (t_content, i_content)
 
-        tstim = neuron.h.TStim(segx, sec=section)
+    def add_ramp(
+        self,
+        start_time: float,
+        stop_time: float,
+        start_level: float,
+        stop_level: float,
+        section: NeuronSection | None = None,
+        segx: float = 0.5,
+        dt: float = 0.025
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Add a ramp current injection.
 
-        tstim.ramp(
-            0.0,
-            start_time,
-            start_level,
-            stop_level,
-            stop_time - start_time,
-            0.0,
-            0.0)
+        Args:
+            start_time: Start time of the ramp injection in seconds.
+            stop_time: Stop time of the ramp injection in seconds.
+            start_level: Current level at the start of the ramp in nanoamperes (nA).
+            stop_level: Current level at the end of the ramp in nanoamperes (nA).
+            section: The section to inject current into (optional). Defaults to soma.
+            segx: The fractional location within the section to inject (optional).
 
-        self.persistent.append(tstim)
-        return tstim
+        Returns:
+            A tuple of numpy arrays containing time and current data.
+        """
+        stim = StimulusFactory(dt=dt).ramp(start_time, stop_time, start_level, stop_level)
+        t_content, i_content = stim.time, stim.current
+        self.inject_current_waveform(t_content, i_content, section, segx)
+
+        return t_content, i_content
 
     def add_voltage_clamp(
             self, stop_time, level, rs=None, section=None, segx=0.5,
@@ -395,32 +422,22 @@ class InjectableMixin:
         else:
             return self.inject_current_clamp_signal(section, segx, tvec, svec)
 
-    def inject_current_waveform(self, t_content, i_content, section=None,
-                                segx=0.5):
-        """Inject a custom current to the cell."""
-        start_time = t_content[0]
-        stop_time = t_content[-1]
-        time = neuron.h.Vector()
-        currents = neuron.h.Vector()
-        time = time.from_python(t_content)
-        currents = currents.from_python(i_content)
-
+    def inject_current_waveform(self, t_content, i_content, section=None, segx=0.5):
+        """Inject a custom current waveform into the cell."""
         if section is None:
             section = self.soma
-        pulse = neuron.h.IClamp(segx, sec=section)
-        self.persistent.append(pulse)
-        self.persistent.append(time)
-        self.persistent.append(currents)
-        setattr(pulse, 'del', start_time)
-        pulse.dur = stop_time - start_time
-        currents.play(pulse._ref_amp, time)
-        return currents
 
-    @deprecated("Use inject_current_waveform instead.")
-    def injectCurrentWaveform(self, t_content, i_content, section=None,
-                              segx=0.5):
-        """Inject a current in the cell."""
-        return self.inject_current_waveform(t_content, i_content, section, segx)
+        time_vector = neuron.h.Vector().from_python(t_content)
+        current_vector = neuron.h.Vector().from_python(i_content)
+
+        pulse = neuron.h.IClamp(segx, sec=section)
+        self.persistent.extend([pulse, time_vector, current_vector])
+
+        pulse.delay = t_content[0]
+        pulse.dur = t_content[-1] - t_content[0]
+        current_vector.play(pulse._ref_amp, time_vector)
+
+        return current_vector
 
     @deprecated("Use add_sin_current instead.")
     def addSineCurrentInject(self, start_time, stop_time, freq,
@@ -435,7 +452,7 @@ class InjectableMixin:
         t_content = np.arange(start_time, stop_time, dt)
         i_content = [amplitude * math.sin(freq * (x - start_time) * (
             2 * math.pi)) + mid_level for x in t_content]
-        self.injectCurrentWaveform(t_content, i_content)
+        self.inject_current_waveform(t_content, i_content)
         return (t_content, i_content)
 
     def add_sin_current(self, amp, start_time, duration, frequency,
@@ -454,9 +471,9 @@ class InjectableMixin:
         tau: float,
         gmax: float,
         e: float,
-        section: HocObjectType,
+        section: NeuronSection,
         segx=0.5,
-    ) -> HocObjectType:
+    ) -> NeuronSection:
         """Add an AlphaSynapse NEURON point process stimulus to the cell."""
         syn = neuron.h.AlphaSynapse(segx, sec=section)
         syn.onset = onset

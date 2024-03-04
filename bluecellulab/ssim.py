@@ -40,8 +40,8 @@ from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
 from bluecellulab.importer import load_hoc_and_mod_files
-from bluecellulab.stimuli import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
-import bluecellulab.stimuli as stimuli
+from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
+import bluecellulab.stimulus.circuit_stimulus_definitions as circuit_stimulus_definitions
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.simulation import (
     set_global_condition_parameters,
@@ -298,40 +298,40 @@ class SSim:
             for cell_id in self.cells:
                 if cell_id not in gids_of_target:
                     continue
-                if isinstance(stimulus, stimuli.Noise):
+                if isinstance(stimulus, circuit_stimulus_definitions.Noise):
                     if add_noise_stimuli:
                         self.cells[cell_id].add_replay_noise(
                             stimulus, noisestim_count=noisestim_count)
-                elif isinstance(stimulus, stimuli.Hyperpolarizing):
+                elif isinstance(stimulus, circuit_stimulus_definitions.Hyperpolarizing):
                     if add_hyperpolarizing_stimuli:
                         self.cells[cell_id].add_replay_hypamp(stimulus)
-                elif isinstance(stimulus, stimuli.Pulse):
+                elif isinstance(stimulus, circuit_stimulus_definitions.Pulse):
                     if add_pulse_stimuli:
                         self.cells[cell_id].add_pulse(stimulus)
-                elif isinstance(stimulus, stimuli.RelativeLinear):
+                elif isinstance(stimulus, circuit_stimulus_definitions.RelativeLinear):
                     if add_relativelinear_stimuli:
                         self.cells[cell_id].add_replay_relativelinear(stimulus)
-                elif isinstance(stimulus, stimuli.ShotNoise):
+                elif isinstance(stimulus, circuit_stimulus_definitions.ShotNoise):
                     if add_shotnoise_stimuli:
                         self.cells[cell_id].add_replay_shotnoise(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             shotnoise_stim_count=shotnoise_stim_count)
-                elif isinstance(stimulus, stimuli.RelativeShotNoise):
+                elif isinstance(stimulus, circuit_stimulus_definitions.RelativeShotNoise):
                     if add_shotnoise_stimuli:
                         self.cells[cell_id].add_replay_relative_shotnoise(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             shotnoise_stim_count=shotnoise_stim_count)
-                elif isinstance(stimulus, stimuli.OrnsteinUhlenbeck):
+                elif isinstance(stimulus, circuit_stimulus_definitions.OrnsteinUhlenbeck):
                     if add_ornstein_uhlenbeck_stimuli:
                         self.cells[cell_id].add_ornstein_uhlenbeck(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
-                elif isinstance(stimulus, stimuli.RelativeOrnsteinUhlenbeck):
+                elif isinstance(stimulus, circuit_stimulus_definitions.RelativeOrnsteinUhlenbeck):
                     if add_ornstein_uhlenbeck_stimuli:
                         self.cells[cell_id].add_relative_ornstein_uhlenbeck(
                             self.cells[cell_id].soma, 0.5, stimulus,
                             stim_count=ornstein_uhlenbeck_stim_count)
-                elif isinstance(stimulus, stimuli.SynapseReplay):  # sonata only
+                elif isinstance(stimulus, circuit_stimulus_definitions.SynapseReplay):  # sonata only
                     if self.circuit_access.target_contains_cell(
                         stimulus.target, cell_id
                     ):

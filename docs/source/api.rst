@@ -17,6 +17,7 @@ bluecellulab
    connection
    dendrogram
    exceptions
+   graph
    importer
    neuron_interpreter
    plotwindow
@@ -25,7 +26,8 @@ bluecellulab
    rngsettings
    simulation
    ssim
-   stimuli
+   stimulus
    synapse
    tools
-
+   utils
+   type_aliases

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from bluecellulab.circuit.config.sections import Conditions, ConnectionOverrides
-from bluecellulab.stimuli import Stimulus
+from bluecellulab.stimulus.circuit_stimulus_definitions import Stimulus
 
 from bluepysnap import Simulation as SnapSimulation
 

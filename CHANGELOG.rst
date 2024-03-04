@@ -1,6 +1,16 @@
 Changelog
 ==========
 
+2.4.0
+------
+
+* Add StimulusFactory enabling Python generated Stimulus creation
+* Stimulus creation through StimulusFactory is decoupled from the Cell object
+* Cell.add_step and Cell.add_ramp use StimulusFactory
+* Move stimuli module to stimulus/circuit_stimulus_definitions
+* [DOCS] Add list of stimuli page that describe, generate and plot the stimuli
+* Add jupyter notebook displaying how to inject the StimulusFactory Stimulus into Cell
+
 2.3.0
 -------
 

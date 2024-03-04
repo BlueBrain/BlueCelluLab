@@ -2,13 +2,13 @@
 
 from pydantic import ValidationError
 import pytest
-from bluecellulab.stimuli import SynapseReplay
+from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
 
 
 def test_synapse_replay_validator():
     """Assures synapse replay's validator fails."""
     with pytest.raises(ValidationError):
-        synapse_replay = SynapseReplay(
+        _ = SynapseReplay(
             target="target1",
             source="source1",
             delay=0,

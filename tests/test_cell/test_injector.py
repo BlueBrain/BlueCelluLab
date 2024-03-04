@@ -13,7 +13,7 @@ import bluecellulab
 
 from bluecellulab.circuit import SonataCircuitAccess
 from bluecellulab.circuit.node_id import CellId
-from bluecellulab.stimuli import (
+from bluecellulab.stimulus.circuit_stimulus_definitions import (
     Pulse,
     Noise,
     Hyperpolarizing,
@@ -71,15 +71,15 @@ class TestInjector:
 
     def test_inject_step(self):
         """Test the step current injection."""
-        tstim = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0)
-        assert tstim.stim.to_python() == [0.0, 1.0, 1.0, 0.0, 0.0]
-        assert tstim.tvec.to_python() == [2.0, 2.0, 6.0, 6.0, 6.0]
+        t_arr, i_arr = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0, dt=1)
+        assert t_arr.tolist() == [2., 3., 4., 5.]
+        assert i_arr.tolist() == [1., 1., 1., 1.]
 
     def test_inject_ramp(self):
         """Test the ramp injection."""
-        tstim = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level=0.5, stop_level=1)
-        assert tstim.stim.to_python() == [0.0, 0.0, 0.5, 1.0, 0.0, 0.0]
-        assert tstim.tvec.to_python() == [0.0, 2.0, 2.0, 6.0, 6.0, 6.0]
+        t_arr, i_arr = self.cell.add_ramp(start_time=2.0, stop_time=6.0, start_level=0.5, stop_level=1, dt=1)
+        np.testing.assert_allclose(t_arr, [2., 3., 4., 5.], rtol=1e-5)
+        np.testing.assert_allclose(i_arr, [0.5, 0.666667, 0.833333, 1], rtol=1e-5)
 
     def test_voltage_clamp(self):
         """Test adding voltage clamp."""
@@ -396,7 +396,7 @@ class TestInjector:
         i_content = [amplitude * math.sin(freq * (x - start_time) * (
             2 * math.pi)) + mid_level for x in t_content]
 
-        current = self.cell.injectCurrentWaveform(t_content, i_content)
+        current = self.cell.inject_current_waveform(t_content, i_content)
         assert current.as_numpy() == approx(np.array(
             [0.00000000e+00, 2.35726407e-14, 4.71452814e-14, -6.11403104e-13,
              9.42905627e-14, -1.92849988e-12, -1.22280621e-12, -3.24559665e-12,

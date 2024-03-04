@@ -12,7 +12,7 @@ from bluecellulab.circuit.config.sections import (
     ConnectionOverrides,
     MechanismConditions,
 )
-from bluecellulab.stimuli import Noise, Hyperpolarizing
+from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, Hyperpolarizing
 from tests.helpers.os_utils import cwd
 
 
