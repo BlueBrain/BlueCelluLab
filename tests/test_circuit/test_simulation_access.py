@@ -46,8 +46,7 @@ class TestSonataSimulationAccess:
     def setup_method(self):
         self.simulation_access = SonataSimulationAccess(str(hipp_simulation_with_projections))
 
-    @staticmethod
-    def test_init_file_not_found():
+    def test_init_file_not_found(self):
         """Test BluepySimulationAccess init edge cases."""
         with pytest.raises(FileNotFoundError):
             SonataSimulationAccess(parent_dir / "examples" / "non_existing_file")
