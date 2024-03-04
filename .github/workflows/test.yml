@@ -4,7 +4,10 @@ on:
     pull_request:
     # allows this workflow to be reusable (e.g. by the build workflow)
     workflow_call:
-
+      secrets:
+        CODECOV_TOKEN:
+          description: The token to upload coverage to codecov
+          required: true
 
 jobs:
   tests:
