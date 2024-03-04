@@ -22,5 +22,6 @@ omit = [
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "raise NotImplementedError"
+    "raise NotImplementedError",
+    "..."
 ]
