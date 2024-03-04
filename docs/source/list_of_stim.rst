@@ -41,6 +41,29 @@ Step Stimulus
    step.plot()
 
 
+Multiple step stimuli with different amplitudes.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   step1 = stim_factory.step(start=50, end=150, amplitude=60)
+   step2 = stim_factory.step(start=50, end=150, amplitude=80)
+   step3 = stim_factory.step(start=50, end=150, amplitude=100)
+   step4 = stim_factory.step(start=50, end=150, amplitude=120)
+
+   # Create a figure and an Axes object
+   fig, ax = plt.subplots()
+
+   # Plot the step functions on the same axes
+   step1.plot_during_simulation(200, ax=ax, color='red')
+   step2.plot_during_simulation(200, ax=ax, color='green')
+   step3.plot_during_simulation(200, ax=ax, color='blue')
+   step4.plot_during_simulation(200, ax=ax, color='orange')
+
+   plt.show()
+
+
 Ramp Stimulus
 ~~~~~~~~~~~~~
 
