@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        description: The token to upload coverage to codecov
+        required: true
 
 jobs:
   call-test-workflow:
