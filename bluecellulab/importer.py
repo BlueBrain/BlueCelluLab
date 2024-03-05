@@ -13,10 +13,10 @@
 # limitations under the License.
 """Main importer of bluecellulab."""
 
+from importlib import resources
 import logging
 import os
 from types import ModuleType
-import pkg_resources
 
 import neuron
 
@@ -62,7 +62,7 @@ def import_neurodamus(neuron: ModuleType) -> None:
     ]
 
     for hoc_file in hoc_files:
-        hoc_file_path = pkg_resources.resource_filename("bluecellulab", f"hoc/{hoc_file}")
+        hoc_file_path = str(resources.files("bluecellulab") / f"hoc/{hoc_file}")
         neuron.h.load_file(hoc_file_path)
 
 
