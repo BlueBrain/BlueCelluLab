@@ -1,6 +1,6 @@
 """A simple ball and stick model."""
 
-from importlib import resources
+import importlib_resources as resources
 from bluecellulab.cell import Cell
 
 

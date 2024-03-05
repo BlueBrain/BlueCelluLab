@@ -13,7 +13,7 @@
 # limitations under the License.
 """Main importer of bluecellulab."""
 
-from importlib import resources
+import importlib_resources as resources
 import logging
 import os
 from types import ModuleType
