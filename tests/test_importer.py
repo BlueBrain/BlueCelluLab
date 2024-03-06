@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 import pytest
 from types import ModuleType
 from unittest.mock import MagicMock, patch
@@ -51,16 +52,16 @@ def test_import_mod_lib_no_env_with_folder():
 
 
 @patch.object(
-    importer.pkg_resources,
-    "resource_filename",
-    return_value="/fake/path/to/hoc_file.hoc",
+    importer.resources,
+    "files",
+    return_value=Path("/fake/path/"),
 )
-def test_import_neurodamus(mocked_pkg_resources):
+def test_import_neurodamus(mocked_resources):
     mock_neuron = MagicMock()
     importer.import_neurodamus(mock_neuron)
     assert mock_neuron.h.load_file.called
     # Check that it was called with the expected arguments
-    mock_neuron.h.load_file.assert_any_call("/fake/path/to/hoc_file.hoc")
+    mock_neuron.h.load_file.assert_any_call("/fake/path/hoc/Cell.hoc")
 
 
 def test_print_header(caplog):
