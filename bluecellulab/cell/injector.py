@@ -77,7 +77,7 @@ class InjectableMixin:
         level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
-        dt: float = 0.025
+        dt: float = 1.0
     ) -> tuple[np.ndarray, np.ndarray]:
         """Add a step current injection.
 
@@ -106,7 +106,7 @@ class InjectableMixin:
         stop_level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
-        dt: float = 0.025
+        dt: float = 1.0
     ) -> tuple[np.ndarray, np.ndarray]:
         """Add a ramp current injection.
 
