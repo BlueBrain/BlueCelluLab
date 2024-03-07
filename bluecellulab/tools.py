@@ -15,14 +15,12 @@
 
 
 from __future__ import annotations
-import io
 import json
 import math
 import multiprocessing
 import multiprocessing.pool
 import os
 from pathlib import Path
-import sys
 from typing import Any, Optional, Tuple
 import logging
 
@@ -32,6 +30,7 @@ import numpy as np
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import UnsteadyCellError
+from bluecellulab.utils import CaptureOutput
 
 logger = logging.getLogger(__name__)
 
@@ -652,21 +651,9 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class get_stdout(list):
-    def __enter__(self):
-        self.orig_stdout = sys.stdout
-        sys.stdout = self.stringio = io.StringIO()
-        return self
-
-    def __exit__(self, *args):
-        self.extend(self.stringio.getvalue().splitlines())
-        del self.stringio
-        sys.stdout = self.orig_stdout
-
-
 def check_empty_topology() -> bool:
     """Return true if NEURON simulator topology command is empty."""
-    with get_stdout() as stdout:
+    with CaptureOutput() as stdout:
         neuron.h.topology()
 
     return stdout == ['', '']
