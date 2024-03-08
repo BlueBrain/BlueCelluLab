@@ -20,7 +20,7 @@ import multiprocessing
 import multiprocessing.pool
 import os
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 import logging
 
 import neuron
@@ -642,19 +642,3 @@ def check_empty_topology() -> bool:
         neuron.h.topology()
 
     return stdout == ['', '']
-
-
-class Singleton(type):
-    """Singleton metaclass implementation.
-
-    Source: https://stackoverflow.com/a/6798042/1935611
-    """
-    _instances: dict[Any, Any] = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs)
-        else:  # to run init on the same object
-            cls._instances[cls].__init__(*args, **kwargs)
-        return cls._instances[cls]

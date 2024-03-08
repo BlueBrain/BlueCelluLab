@@ -8,7 +8,7 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.tools import Singleton, template_accepts_cvode, check_empty_topology
+from bluecellulab.tools import template_accepts_cvode, check_empty_topology
 
 script_dir = Path(__file__).parent
 
@@ -31,30 +31,6 @@ def test_calculate_SS_voltage_subprocess():
         emodel_properties=None,
         step_level=0)
     assert abs(SS_voltage_stoch - -73.9235504304) < 0.001
-
-
-def test_singleton():
-    """Make sure only 1 object gets created in a singleton."""
-
-    class TestClass(metaclass=Singleton):
-        """Class to test Singleton object creation."""
-
-        n_init_calls = 0
-
-        def __init__(self):
-            print("I'm called but not re-instantiated")
-            TestClass.n_init_calls += 1
-
-    test_obj1 = TestClass()
-    test_obj2 = TestClass()
-    test_objs = [TestClass() for _ in range(10)]
-
-    assert test_obj1 is test_obj2
-    assert id(test_obj1) == id(test_obj2)
-
-    assert len(set(test_objs)) == 1
-
-    assert TestClass.n_init_calls == 12
 
 
 def test_detect_spike():

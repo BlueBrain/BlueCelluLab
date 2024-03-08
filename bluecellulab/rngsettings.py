@@ -18,7 +18,7 @@ import logging
 from typing import Optional
 
 import neuron
-from bluecellulab import Singleton
+from bluecellulab.utils import Singleton
 from bluecellulab.circuit.circuit_access import CircuitAccess
 from bluecellulab.exceptions import UndefinedRNGException
 from bluecellulab.importer import load_hoc_and_mod_files
