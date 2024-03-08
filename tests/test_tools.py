@@ -143,6 +143,25 @@ class TestOnSonataCell:
         )
         assert spike_occurred is True
 
+    def test_search_threshold_current(self):
+        """Unit test for search_threshold_current."""
+        hyp_level = -2
+        inj_start, inj_stop = 100, 200
+        min_current, max_current = 0, 10
+
+        threshold_current = bluecellulab.search_threshold_current(
+            template_name=self.template_name,
+            morphology_path=self.morphology_path,
+            template_format=self.template_format,
+            emodel_properties=self.emodel_properties,
+            hyp_level=hyp_level,
+            inj_start=inj_start,
+            inj_stop=inj_stop,
+            min_current=min_current,
+            max_current=max_current,
+        )
+        assert threshold_current == pytest.approx(2.00195, abs=1e-5)
+
     def test_detect_spike_step_subprocess(self):
         """Unit test for detect_spike_step_subprocess."""
         hyp_level = -2

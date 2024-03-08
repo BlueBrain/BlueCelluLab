@@ -315,25 +315,37 @@ def detect_spike(voltage: np.ndarray) -> bool:
         return bool(np.max(voltage) > -20)  # bool not np.bool_
 
 
-def search_threshold_current(template_name, morphology_name, hyp_level,
-                             inj_start, inj_stop, min_current, max_current):
+def search_threshold_current(
+    template_name: str | Path,
+    morphology_path: str | Path,
+    template_format: str,
+    emodel_properties: EmodelProperties | None,
+    hyp_level: float,
+    inj_start: float,
+    inj_stop: float,
+    min_current: float,
+    max_current: float,
+):
     """Search current necessary to reach threshold."""
     med_current = min_current + abs(min_current - max_current) / 2
     logger.info("Med current %d" % med_current)
 
     spike_detected = detect_spike_step(
-        template_name, morphology_name, hyp_level, inj_start, inj_stop,
-        med_current)
+        template_name, morphology_path, template_format, emodel_properties,
+        hyp_level, inj_start, inj_stop, med_current
+    )
     logger.info("Spike threshold detection at: %f nA" % med_current)
 
     if abs(max_current - min_current) < .01:
         return max_current
     elif spike_detected:
-        return search_threshold_current(template_name, morphology_name,
+        return search_threshold_current(template_name, morphology_path,
+                                        template_format, emodel_properties,
                                         hyp_level, inj_start, inj_stop,
                                         min_current, med_current)
     else:
-        return search_threshold_current(template_name, morphology_name,
+        return search_threshold_current(template_name, morphology_path,
+                                        template_format, emodel_properties,
                                         hyp_level, inj_start, inj_stop,
                                         med_current, max_current)
 
