@@ -350,61 +350,6 @@ def search_threshold_current(
                                         med_current, max_current)
 
 
-def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
-                                stop_time=None, ignore_timerange=False,
-                                timeout=600):
-    """Calculate the steady state voltage at a certain current step."""
-    pool = multiprocessing.Pool(processes=1)
-    # print "Calculate_SS_voltage_replay %f" % step_level
-    result = pool.apply_async(calculate_SS_voltage_replay_subprocess,
-                              [blueconfig, gid, step_level, start_time,
-                               stop_time, ignore_timerange])
-
-    try:
-        output = result.get(timeout=timeout)
-        # (SS_voltage, (time, voltage)) = result.get(timeout=timeout)
-    except multiprocessing.TimeoutError:
-        output = (float('nan'), (None, None))
-
-    # (SS_voltage, voltage) = calculate_SS_voltage_replay_subprocess(
-    # blueconfig, gid, step_level)
-    pool.terminate()
-    return output
-
-
-def calculate_SS_voltage_replay_subprocess(blueconfig, gid, step_level,
-                                           start_time=None, stop_time=None,
-                                           ignore_timerange=False):
-    """Subprocess wrapper of calculate_SS_voltage."""
-    process_name = multiprocessing.current_process().name
-    ssim = bluecellulab.SSim(blueconfig)
-    if ignore_timerange:
-        tstart = 0
-        tstop = int(ssim.circuit_access.config.duration)
-    else:
-        tstart = start_time
-        tstop = stop_time
-    # print "%s: Calculating SS voltage of step level %f nA" %
-    # (process_name, step_level)
-    # print "Calculate_SS_voltage_replay_subprocess instantiating gid ..."
-    ssim.instantiate_gids(
-        [gid], add_synapses=True, add_minis=True, add_stimuli=True, add_replay=True)
-    # print "Calculate_SS_voltage_replay_subprocess instantiating gid done"
-
-    ssim.cells[gid].add_ramp(0, tstop, step_level, step_level)
-    ssim.run(t_stop=tstop)
-    time = ssim.get_time_trace()
-    voltage = ssim.get_voltage_trace(gid)
-    SS_voltage = np.mean(voltage[np.where(
-        (time < tstop) & (time > tstart))])
-    logger.info("%s: Calculated SS voltage for gid %d "
-                "with step level %f nA: %s mV" %
-                (process_name, gid, step_level, SS_voltage))
-    # print "Calculate_SS_voltage_replay_subprocess voltage:%f" % SS_voltage
-
-    return (SS_voltage, (time, voltage))
-
-
 class NoDaemonProcess(multiprocessing.Process):
     """Class that represents a non-daemon process."""
 
