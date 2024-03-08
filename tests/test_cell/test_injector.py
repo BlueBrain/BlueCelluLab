@@ -71,9 +71,9 @@ class TestInjector:
 
     def test_inject_step(self):
         """Test the step current injection."""
-        t_arr, i_arr = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0, dt=1)
-        assert t_arr.tolist() == [2., 3., 4., 5.]
-        assert i_arr.tolist() == [1., 1., 1., 1.]
+        tstim = self.cell.add_step(start_time=2.0, stop_time=6.0, level=1.0)
+        assert tstim.stim.to_python() == [0.0, 1.0, 1.0, 0.0, 0.0]
+        assert tstim.tvec.to_python() == [2.0, 2.0, 6.0, 6.0, 6.0]
 
     def test_inject_ramp(self):
         """Test the ramp injection."""
