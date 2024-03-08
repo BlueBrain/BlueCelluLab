@@ -350,13 +350,6 @@ def search_threshold_current(
                                         med_current, max_current)
 
 
-def detect_threshold_current(template_name, morphology_name, hyp_level,
-                             inj_start, inj_stop):
-    """Search current necessary to reach threshold."""
-    return search_threshold_current(template_name, morphology_name,
-                                    hyp_level, inj_start, inj_stop, 0.0, 1.0)
-
-
 def calculate_SS_voltage_replay(blueconfig, gid, step_level, start_time=None,
                                 stop_time=None, ignore_timerange=False,
                                 timeout=600):
