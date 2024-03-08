@@ -1,4 +1,7 @@
-from bluecellulab.utils import CaptureOutput, run_once
+import json
+
+import numpy as np
+from bluecellulab.utils import CaptureOutput, NumpyEncoder, run_once
 
 
 # Decorated function for testing
@@ -41,3 +44,15 @@ def test_no_output():
         pass  # No output
 
     assert len(output) == 0
+
+
+def test_numpy_encoder():
+    """Utils: Test NumpyEncoder"""
+    assert json.dumps(np.int32(1), cls=NumpyEncoder) == "1"
+    assert json.dumps(np.float32(1.2), cls=NumpyEncoder)[0:3] == "1.2"
+    assert json.dumps(np.array([1, 2, 3]), cls=NumpyEncoder) == "[1, 2, 3]"
+    assert json.dumps(np.array([1.2, 2.3, 3.4]), cls=NumpyEncoder) == "[1.2, 2.3, 3.4]"
+    assert (
+        json.dumps(np.array([True, False, True]), cls=NumpyEncoder)
+        == "[true, false, true]"
+    )

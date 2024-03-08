@@ -1,6 +1,5 @@
 """Unit tests for tools.py"""
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +8,7 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.tools import NumpyEncoder, Singleton, template_accepts_cvode, check_empty_topology
+from bluecellulab.tools import Singleton, template_accepts_cvode, check_empty_topology
 
 script_dir = Path(__file__).parent
 
@@ -56,18 +55,6 @@ def test_singleton():
     assert len(set(test_objs)) == 1
 
     assert TestClass.n_init_calls == 12
-
-
-def test_numpy_encoder():
-    """Tools: Test NumpyEncoder"""
-    assert json.dumps(np.int32(1), cls=NumpyEncoder) == "1"
-    assert json.dumps(np.float32(1.2), cls=NumpyEncoder)[0:3] == "1.2"
-    assert json.dumps(np.array([1, 2, 3]), cls=NumpyEncoder) == "[1, 2, 3]"
-    assert json.dumps(np.array([1.2, 2.3, 3.4]), cls=NumpyEncoder) == "[1.2, 2.3, 3.4]"
-    assert (
-        json.dumps(np.array([True, False, True]), cls=NumpyEncoder)
-        == "[true, false, true]"
-    )
 
 
 def test_detect_spike():
