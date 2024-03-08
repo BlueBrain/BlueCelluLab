@@ -1,4 +1,4 @@
-"""Utility functions."""
+"""Utility functions used within BlueCellulab."""
 import contextlib
 import io
 import json
