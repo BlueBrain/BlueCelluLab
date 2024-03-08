@@ -36,8 +36,7 @@ from bluecellulab.stimulus.circuit_stimulus_definitions import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
-from bluecellulab.stimulus.factory import StimulusFactory
-from bluecellulab.type_aliases import NeuronSection
+from bluecellulab.type_aliases import NeuronSection, TStim
 
 
 logger = logging.getLogger(__name__)
@@ -59,15 +58,15 @@ class InjectableMixin:
         else:  # Current
             return self.threshold  # type: ignore
 
-    def add_pulse(self, stimulus):
+    def add_pulse(self, stimulus) -> TStim:
         """Inject pulse stimulus for replay."""
-        tstim = neuron.h.TStim(0.5, sec=self.soma)
+        tstim = neuron.h.TStim(0.5, sec=self.soma)  # type: ignore
         tstim.train(stimulus.delay,
                     stimulus.duration,
                     stimulus.amp_start,
                     stimulus.frequency,
                     stimulus.width)
-        self.persistent.append(tstim)
+        self.persistent.append(tstim)  # type: ignore
         return tstim
 
     def add_step(
@@ -77,8 +76,7 @@ class InjectableMixin:
         level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
-        dt: float = 0.025
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> TStim:
         """Add a step current injection.
 
         Args:
@@ -91,12 +89,16 @@ class InjectableMixin:
                 Defaults to 0.5 (center of the section).
 
         Returns:
-            Tuple of time and current data.
+            TStim NEURON object responsible of vectoral injection.
         """
-        stim = StimulusFactory(dt=dt).step(start_time, stop_time, level)
-        t_content, i_content = stim.time, stim.current
-        self.inject_current_waveform(t_content, i_content, section, segx)
-        return (t_content, i_content)
+        if section is None:
+            section = self.soma  # type: ignore
+
+        tstim = neuron.h.TStim(segx, sec=section)
+        duration = stop_time - start_time
+        tstim.pulse(start_time, duration, level)
+        self.persistent.append(tstim)  # type: ignore
+        return tstim
 
     def add_ramp(
         self,
@@ -106,8 +108,7 @@ class InjectableMixin:
         stop_level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
-        dt: float = 0.025
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> TStim:
         """Add a ramp current injection.
 
         Args:
@@ -119,13 +120,21 @@ class InjectableMixin:
             segx: The fractional location within the section to inject (optional).
 
         Returns:
-            A tuple of numpy arrays containing time and current data.
+            TStim NEURON object responsible of vectoral injection.
         """
-        stim = StimulusFactory(dt=dt).ramp(start_time, stop_time, start_level, stop_level)
-        t_content, i_content = stim.time, stim.current
-        self.inject_current_waveform(t_content, i_content, section, segx)
-
-        return t_content, i_content
+        if section is None:
+            section = self.soma  # type: ignore
+        tstim = neuron.h.TStim(segx, sec=section)
+        tstim.ramp(
+            0.0,
+            start_time,
+            start_level,
+            stop_level,
+            stop_time - start_time,
+            0.0,
+            0.0)
+        self.persistent.append(tstim)  # type: ignore
+        return tstim
 
     def add_voltage_clamp(
             self, stop_time, level, rs=None, section=None, segx=0.5,
