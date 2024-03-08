@@ -36,7 +36,6 @@ from bluecellulab.stimulus.circuit_stimulus_definitions import (
     RelativeOrnsteinUhlenbeck,
     RelativeShotNoise,
 )
-from bluecellulab.stimulus.factory import StimulusFactory
 from bluecellulab.type_aliases import NeuronSection, TStim
 
 
@@ -109,8 +108,7 @@ class InjectableMixin:
         stop_level: float,
         section: NeuronSection | None = None,
         segx: float = 0.5,
-        dt: float = 1.0
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> TStim:
         """Add a ramp current injection.
 
         Args:
@@ -122,13 +120,21 @@ class InjectableMixin:
             segx: The fractional location within the section to inject (optional).
 
         Returns:
-            A tuple of numpy arrays containing time and current data.
+            TStim NEURON object responsible of vectoral injection.
         """
-        stim = StimulusFactory(dt=dt).ramp(start_time, stop_time, start_level, stop_level)
-        t_content, i_content = stim.time, stim.current
-        self.inject_current_waveform(t_content, i_content, section, segx)
-
-        return t_content, i_content
+        if section is None:
+            section = self.soma  # type: ignore
+        tstim = neuron.h.TStim(segx, sec=section)
+        tstim.ramp(
+            0.0,
+            start_time,
+            start_level,
+            stop_level,
+            stop_time - start_time,
+            0.0,
+            0.0)
+        self.persistent.append(tstim)  # type: ignore
+        return tstim
 
     def add_voltage_clamp(
             self, stop_time, level, rs=None, section=None, segx=0.5,
