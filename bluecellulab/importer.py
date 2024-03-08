@@ -21,7 +21,7 @@ from types import ModuleType
 import neuron
 
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.utils import run_once
+from bluecellulab.utils import CaptureOutput, run_once
 
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,9 @@ def import_neurodamus(neuron: ModuleType) -> None:
 
     for hoc_file in hoc_files:
         hoc_file_path = str(resources.files("bluecellulab") / f"hoc/{hoc_file}")
-        neuron.h.load_file(hoc_file_path)
+        with CaptureOutput() as stdoud:
+            neuron.h.load_file(hoc_file_path)
+            logger.debug(f"Loaded {hoc_file}. stdout from the hoc: {stdoud}")
 
 
 def print_header(neuron: ModuleType, mod_lib_path: str) -> None:

@@ -7,8 +7,9 @@ import numpy as np
 import pytest
 
 import bluecellulab
+from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.tools import NumpyEncoder, Singleton, template_accepts_cvode
+from bluecellulab.tools import NumpyEncoder, Singleton, template_accepts_cvode, check_empty_topology
 
 script_dir = Path(__file__).parent
 
@@ -229,3 +230,10 @@ class TestOnSonataCircuit:
         )
         assert i_hold == pytest.approx(-0.03160848349)
         assert v_control == pytest.approx(v_hold)
+
+
+def test_check_empty_topology():
+    """Unit test for the check_empty_topology function."""
+    assert check_empty_topology() is True
+    cell = create_ball_stick()
+    assert check_empty_topology() is False

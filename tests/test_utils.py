@@ -1,4 +1,4 @@
-from bluecellulab.utils import run_once
+from bluecellulab.utils import CaptureOutput, run_once
 
 
 # Decorated function for testing
@@ -24,3 +24,20 @@ def test_run_once_execution():
     assert counter[0] == 1
 
     assert increment_counter(counter) is None
+
+
+def test_capture_output():
+    with CaptureOutput() as output:
+        print("Hello, World!")
+        print("This is a test.")
+
+    assert len(output) == 2
+    assert "Hello, World!" in output
+    assert "This is a test." in output
+
+
+def test_no_output():
+    with CaptureOutput() as output:
+        pass  # No output
+
+    assert len(output) == 0
