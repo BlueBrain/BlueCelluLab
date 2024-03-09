@@ -15,8 +15,6 @@
 
 
 from __future__ import annotations
-import multiprocessing
-import multiprocessing.pool
 from pathlib import Path
 from typing import Optional, Tuple
 import logging
@@ -27,7 +25,7 @@ import numpy as np
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import UnsteadyCellError
-from bluecellulab.utils import CaptureOutput
+from bluecellulab.utils import CaptureOutput, IsolatedProcess
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +61,9 @@ def calculate_SS_voltage(
     emodel_properties: EmodelProperties | None,
     step_level: float,
 ) -> float:
-    """Calculate the steady state voltage at a certain current step.
-
-    The use of Pool is safe here since it will just run a single task.
-    """
-    with multiprocessing.Pool(processes=1) as pool:
-        SS_voltage = pool.apply(
+    """Calculate the steady state voltage at a certain current step."""
+    with IsolatedProcess() as runner:
+        SS_voltage = runner.apply(
             calculate_SS_voltage_subprocess,
             [
                 template_path,
@@ -155,10 +150,8 @@ def holding_current(
     ssim = bluecellulab.SSim(circuit_path)
 
     cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
-
-    # using a pool with NEURON here is safe since it'll run one task only
-    with multiprocessing.Pool(processes=1) as pool:
-        i_hold, v_control = pool.apply(
+    with IsolatedProcess() as runner:
+        i_hold, v_control = runner.apply(
             holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]
         )
 
@@ -253,9 +246,8 @@ def detect_spike_step(
     step_level: float,
 ) -> bool:
     """Detect if there is a spike at a certain step level."""
-    # Here it is safe to use a pool with NEURON since it'll run one task only
-    with multiprocessing.Pool(processes=1) as pool:
-        spike_detected = pool.apply(
+    with IsolatedProcess() as runner:
+        spike_detected = runner.apply(
             detect_spike_step_subprocess,
             [
                 template_path,

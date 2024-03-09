@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+from multiprocessing.pool import Pool
 from typing import Any
 
 import numpy as np
@@ -58,3 +59,13 @@ class Singleton(type):
         else:  # to run init on the same object
             cls._instances[cls].__init__(*args, **kwargs)
         return cls._instances[cls]
+
+
+class IsolatedProcess(Pool):
+    """Multiprocessing Pool that restricts a worker to run max 1 process.
+
+    Use this when running isolated NEURON simulations. Running 2 NEURON
+    simulations on a single process is to be avoided.
+    """
+    def __init__(self):
+        super().__init__(processes=1, maxtasksperchild=1)

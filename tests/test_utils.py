@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from bluecellulab.utils import CaptureOutput, NumpyEncoder, Singleton, run_once
+from bluecellulab.utils import CaptureOutput, IsolatedProcess, NumpyEncoder, Singleton, run_once
 
 
 # Decorated function for testing
@@ -80,3 +80,10 @@ def test_singleton():
     assert len(set(test_objs)) == 1
 
     assert TestClass.n_init_calls == 12
+
+
+def test_isolated_process():
+    """Test to ensure isolated process keeps its properties."""
+    runner = IsolatedProcess()
+    assert runner._processes == 1
+    assert runner._maxtasksperchild == 1
