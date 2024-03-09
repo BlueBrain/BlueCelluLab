@@ -67,18 +67,17 @@ def calculate_SS_voltage(
 
     The use of Pool is safe here since it will just run a single task.
     """
-    pool = multiprocessing.Pool(processes=1)
-    SS_voltage = pool.apply(
-        calculate_SS_voltage_subprocess,
-        [
-            template_path,
-            morphology_path,
-            template_format,
-            emodel_properties,
-            step_level,
-        ],
-    )
-    pool.terminate()
+    with multiprocessing.Pool(processes=1) as pool:
+        SS_voltage = pool.apply(
+            calculate_SS_voltage_subprocess,
+            [
+                template_path,
+                morphology_path,
+                template_format,
+                emodel_properties,
+                step_level,
+            ],
+        )
     return SS_voltage
 
 
@@ -158,11 +157,10 @@ def holding_current(
     cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
 
     # using a pool with NEURON here is safe since it'll run one task only
-    pool = multiprocessing.Pool(processes=1)
-    i_hold, v_control = pool.apply(
-        holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]
-    )
-    pool.terminate()
+    with multiprocessing.Pool(processes=1) as pool:
+        i_hold, v_control = pool.apply(
+            holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]
+        )
 
     return i_hold, v_control
 
@@ -256,21 +254,20 @@ def detect_spike_step(
 ) -> bool:
     """Detect if there is a spike at a certain step level."""
     # Here it is safe to use a pool with NEURON since it'll run one task only
-    pool = multiprocessing.Pool(processes=1)
-    spike_detected = pool.apply(
-        detect_spike_step_subprocess,
-        [
-            template_path,
-            morphology_path,
-            template_format,
-            emodel_properties,
-            hyp_level,
-            inj_start,
-            inj_stop,
-            step_level,
-        ],
-    )
-    pool.terminate()
+    with multiprocessing.Pool(processes=1) as pool:
+        spike_detected = pool.apply(
+            detect_spike_step_subprocess,
+            [
+                template_path,
+                morphology_path,
+                template_format,
+                emodel_properties,
+                hyp_level,
+                inj_start,
+                inj_stop,
+                step_level,
+            ],
+        )
     return spike_detected
 
 
