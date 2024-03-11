@@ -99,7 +99,8 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron.h.finitialize()
 
         if rng_settings is None:
-            self.rng_settings = RNGSettings("Random123")  # SONATA value
+            self.rng_settings = RNGSettings.get_instance()
+            self.rng_settings.set_seeds("Random123")
         else:
             self.rng_settings = rng_settings
 

@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from bluecellulab.utils import CaptureOutput, IsolatedProcess, NumpyEncoder, Singleton, run_once
+from bluecellulab.utils import CaptureOutput, IsolatedProcess, NumpyEncoder, run_once
 
 
 # Decorated function for testing
@@ -56,30 +56,6 @@ def test_numpy_encoder():
         json.dumps(np.array([True, False, True]), cls=NumpyEncoder)
         == "[true, false, true]"
     )
-
-
-def test_singleton():
-    """Make sure only 1 object gets created in a singleton."""
-
-    class TestClass(metaclass=Singleton):
-        """Class to test Singleton object creation."""
-
-        n_init_calls = 0
-
-        def __init__(self):
-            print("I'm called but not re-instantiated")
-            TestClass.n_init_calls += 1
-
-    test_obj1 = TestClass()
-    test_obj2 = TestClass()
-    test_objs = [TestClass() for _ in range(10)]
-
-    assert test_obj1 is test_obj2
-    assert id(test_obj1) == id(test_obj2)
-
-    assert len(set(test_objs)) == 1
-
-    assert TestClass.n_init_calls == 12
 
 
 def test_isolated_process():

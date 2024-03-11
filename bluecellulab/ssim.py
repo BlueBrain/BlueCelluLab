@@ -40,6 +40,7 @@ from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
 from bluecellulab.importer import load_hoc_and_mod_files
+from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
 import bluecellulab.stimulus.circuit_stimulus_definitions as circuit_stimulus_definitions
 from bluecellulab.exceptions import BluecellulabError
@@ -94,10 +95,12 @@ class SSim:
 
         self.pc = neuron.h.ParallelContext() if print_cellstate else None
 
-        self.rng_settings = bluecellulab.RNGSettings(
+        self.rng_settings = RNGSettings.get_instance()
+        self.rng_settings.set_seeds(
             rng_mode,
             self.circuit_access.config,
-            base_seed=base_seed)
+            base_seed=base_seed
+        )
 
         self.cells: CellDict = CellDict()
 

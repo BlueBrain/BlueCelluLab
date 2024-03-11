@@ -24,6 +24,7 @@ from bluecellulab.stimulus.circuit_stimulus_definitions import (
     RelativeShotNoise,
     ClampMode,
 )
+from bluecellulab import RNGSettings
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.cell.stimuli_generator import gen_shotnoise_signal
 from bluecellulab.cell import SonataProxy
@@ -126,7 +127,7 @@ class TestInjector:
         """Unit test for _get_noise_step_rand."""
         noisestim_count = 5
         for mode in ["Compatibility", "UpdatedMCell", "Random123"]:
-            rng_obj = bluecellulab.RNGSettings()
+            rng_obj = RNGSettings.get_instance()
             rng_obj.mode = mode
             self.cell.rng_settings = rng_obj
             rng = self.cell._get_noise_step_rand(noisestim_count)
@@ -137,9 +138,8 @@ class TestInjector:
 
     def test_add_noise_step(self):
         """Test adding a step current with noise on top."""
-        rng_obj = bluecellulab.RNGSettings()
+        rng_obj = RNGSettings.get_instance()
         rng_obj.mode = "Compatibility"
-        self.cell.rng_settings = rng_obj
         tstim = self.cell.add_noise_step(
             section=self.cell.soma, segx=0.5, mean=2, variance=0.05, delay=2,
             duration=8, noisestim_count=5)
@@ -156,7 +156,7 @@ class TestInjector:
 
     def test_add_noise_step_with_seed(self):
         """Test adding a step current with noise on top with a seed."""
-        rng_obj = bluecellulab.RNGSettings()
+        rng_obj = RNGSettings.get_instance()
         rng_obj.mode = "Compatibility"
         tstim = self.cell.add_noise_step(
             section=self.cell.soma, segx=0.5, mean=2, variance=0.05, delay=2,
@@ -174,7 +174,7 @@ class TestInjector:
 
     def test_add_replay_noise(self):
         """Unit test for add_replay_noise."""
-        rng_obj = bluecellulab.RNGSettings()
+        rng_obj = RNGSettings.get_instance()
         rng_obj.mode = "Compatibility"
         stimulus = Noise(
             mean_percent=1, variance=0.1, delay=4, duration=10, target="single-cell"
@@ -213,31 +213,28 @@ class TestInjector:
 
     def test_get_ornstein_uhlenbeck_rand(self):
         """Unit test to check RNG generated for ornstein_uhlenbeck."""
-        rng_obj = bluecellulab.RNGSettings()
-        rng_obj.mode = "Random123"
-        self.cell.rng_settings = rng_obj
         rng = self.cell._get_ornstein_uhlenbeck_rand(0, 144)
         assert rng.uniform(1, 15) == 12.477080945047298
 
         with raises(BluecellulabError):
+            rng_obj = RNGSettings.get_instance()
             rng_obj.mode = "Compatibility"
             self.cell._get_ornstein_uhlenbeck_rand(0, 144)
 
     def test_get_shotnoise_step_rand(self):
         """Unit test to check RNG generated for shotnoise."""
-        rng_obj = bluecellulab.RNGSettings()
-        rng_obj.mode = "Random123"
-        self.cell.rng_settings = rng_obj
         rng = self.cell._get_shotnoise_step_rand(0, 144)
         assert rng.uniform(1, 15) == 7.260484082563668
 
         with raises(BluecellulabError):
+            rng_obj = RNGSettings.get_instance()
             rng_obj.mode = "Compatibility"
             self.cell._get_shotnoise_step_rand(0, 144)
 
     def test_add_replay_shotnoise(self):
         """Unit test for add_replay_shotnoise."""
-        rng_obj = bluecellulab.RNGSettings(mode="Random123", base_seed=549821)
+        rng_obj = RNGSettings.get_instance()
+        rng_obj.set_seeds(base_seed=549821, mode="Random123")
         rng_obj.stimulus_seed = 549821
         self.cell.rng_settings = rng_obj
         soma = self.cell.soma
@@ -263,7 +260,8 @@ class TestInjector:
 
     def test_add_ornstein_uhlenbeck(self):
         """Unit test for add_ornstein_uhlenbeck."""
-        rng_obj = bluecellulab.RNGSettings(mode="Random123", base_seed=549821)
+        rng_obj = RNGSettings.get_instance()
+        rng_obj.set_seeds(base_seed=549821, mode="Random123")
         rng_obj.stimulus_seed = 549821
         self.cell.rng_settings = rng_obj
         soma = self.cell.soma
@@ -317,7 +315,7 @@ class TestInjector:
 
     def test_inject_current_clamp_via_shotnoise_signal(self):
         """Unit test for inject_current_clamp_signal using a shotnoise_step."""
-        rng_obj = bluecellulab.RNGSettings()
+        rng_obj = RNGSettings.get_instance()
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
 
@@ -358,7 +356,7 @@ class TestInjector:
 
     def test_add_replay_relative_shotnoise(self):
         """Unit test for add_replay_relative_shotnoise."""
-        rng_obj = bluecellulab.RNGSettings()
+        rng_obj = RNGSettings.get_instance()
         rng_obj.mode = "Random123"
         self.cell.rng_settings = rng_obj
         stimulus = RelativeShotNoise(
@@ -430,7 +428,8 @@ class TestInjectorSonata:
         template_format = circuit_access.get_template_format()
         morph = circuit_access.morph_filepath(cell_id)
         emodel_properties = circuit_access.get_emodel_properties(cell_id)
-        rng_settings = bluecellulab.RNGSettings(sim_config=circuit_access.config)
+        rng_settings = RNGSettings.get_instance()
+        rng_settings.set_seeds(sim_config=circuit_access.config)
         cls.cell = bluecellulab.Cell(template_path=hoc, morphology_path=morph, rng_settings=rng_settings,
                                      template_format=template_format, emodel_properties=emodel_properties)
 

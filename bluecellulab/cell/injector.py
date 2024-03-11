@@ -27,6 +27,7 @@ from bluecellulab.cell.stimuli_generator import (
     get_relative_shotnoise_params,
 )
 from bluecellulab.exceptions import BluecellulabError
+from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import (
     ClampMode,
     Hyperpolarizing,
@@ -268,9 +269,10 @@ class InjectableMixin:
 
     def _get_ornstein_uhlenbeck_rand(self, stim_count, seed):
         """Return rng for ornstein_uhlenbeck simulation."""
-        if self.rng_settings.mode == "Random123":
+        rng_settings = RNGSettings.get_instance()
+        if rng_settings.mode == "Random123":
             seed1 = stim_count + 2997  # stimulus block
-            seed2 = self.rng_settings.stimulus_seed + 291204  # stimulus type
+            seed2 = rng_settings.stimulus_seed + 291204  # stimulus type
             seed3 = self.cell_id.id + 123 if seed is None else seed  # GID
             logger.debug("Using ornstein_uhlenbeck process seeds %d %d %d" %
                          (seed1, seed2, seed3))
@@ -284,9 +286,10 @@ class InjectableMixin:
 
     def _get_shotnoise_step_rand(self, shotnoise_stim_count, seed=None):
         """Return rng for shot noise step stimulus."""
-        if self.rng_settings.mode == "Random123":
+        rng_settings = RNGSettings.get_instance()
+        if rng_settings.mode == "Random123":
             seed1 = shotnoise_stim_count + 2997
-            seed2 = self.rng_settings.stimulus_seed + 19216
+            seed2 = rng_settings.stimulus_seed + 19216
             seed3 = self.cell_id.id + 123 if seed is None else seed
             logger.debug("Using shot noise seeds %d %d %d" %
                          (seed1, seed2, seed3))

@@ -4,7 +4,6 @@ import contextlib
 import io
 import json
 from multiprocessing.pool import Pool
-from typing import Any
 
 import numpy as np
 
@@ -43,22 +42,6 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
-
-
-class Singleton(type):
-    """Singleton metaclass implementation.
-
-    Source: https://stackoverflow.com/a/6798042/1935611
-    """
-    _instances: dict[Any, Any] = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs)
-        else:  # to run init on the same object
-            cls._instances[cls].__init__(*args, **kwargs)
-        return cls._instances[cls]
 
 
 class IsolatedProcess(Pool):

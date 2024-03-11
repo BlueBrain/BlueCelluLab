@@ -19,18 +19,29 @@ from typing import Optional
 
 import neuron
 from bluecellulab.circuit.config.definition import SimulationConfig
-from bluecellulab.utils import Singleton
 from bluecellulab.exceptions import UndefinedRNGException
 from bluecellulab.importer import load_hoc_and_mod_files
 
 logger = logging.getLogger(__name__)
 
 
-class RNGSettings(metaclass=Singleton):
-    """Class that represents RNG settings in bluecellulab."""
+class RNGSettings:
+    """Singleton object that represents RNG settings in bluecellulab."""
+
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        """Return the instance of the class."""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     @load_hoc_and_mod_files
-    def __init__(
+    def __init__(self, mode="Random123") -> None:
+        self.mode = mode
+
+    def set_seeds(
             self,
             mode: Optional[str] = None,
             sim_config: Optional[SimulationConfig] = None,
