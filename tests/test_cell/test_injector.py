@@ -430,7 +430,7 @@ class TestInjectorSonata:
         template_format = circuit_access.get_template_format()
         morph = circuit_access.morph_filepath(cell_id)
         emodel_properties = circuit_access.get_emodel_properties(cell_id)
-        rng_settings = bluecellulab.RNGSettings(circuit_access=circuit_access)
+        rng_settings = bluecellulab.RNGSettings(sim_config=circuit_access.config)
         cls.cell = bluecellulab.Cell(template_path=hoc, morphology_path=morph, rng_settings=rng_settings,
                                      template_format=template_format, emodel_properties=emodel_properties)
 

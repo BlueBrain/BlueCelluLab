@@ -96,7 +96,7 @@ class SSim:
 
         self.rng_settings = bluecellulab.RNGSettings(
             rng_mode,
-            self.circuit_access,
+            self.circuit_access.config,
             base_seed=base_seed)
 
         self.cells: CellDict = CellDict()
