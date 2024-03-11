@@ -9,6 +9,7 @@ from bluecellulab.exceptions import UndefinedRNGException
 def test_setting_rngmodes():
     """Test the setting of rng mode."""
     rng_obj = bluecellulab.RNGSettings(mode="Compatibility")
+    initial_obj_id = id(rng_obj)  # this should never change - Singleton object
     assert neuron.h.rngMode == 0
 
     rng_obj.mode = "Random123"
@@ -20,6 +21,7 @@ def test_setting_rngmodes():
     bluecellulab.RNGSettings(mode="Random123")
     assert neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
+    assert id(rng_obj) == initial_obj_id
 
     bluecellulab.RNGSettings()
     assert neuron.h.rngMode == 1
@@ -32,6 +34,7 @@ def test_setting_rngmodes():
 
     # make sure only one object is created
     assert rng_obj is bluecellulab.RNGSettings()
+    assert id(rng_obj) == id(bluecellulab.RNGSettings()) == initial_obj_id
 
 
 def test_str_repr_obj():
