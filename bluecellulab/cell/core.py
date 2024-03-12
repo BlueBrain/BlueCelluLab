@@ -84,8 +84,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[HocObjectType] = []
 
-        self.morphology_path = morphology_path
-
         # Load the template
         neuron_template = NeuronTemplate(template_path, morphology_path)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
