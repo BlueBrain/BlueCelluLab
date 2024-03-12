@@ -65,24 +65,18 @@ class Cell(InjectableMixin, PlottableMixin):
         """Initializes a Cell object.
 
         Args:
-            template_path: Full path to hoc template file.
+            template_path: Path to hoc template file.
             morphology_path: Path to morphology file.
-            gid: ID of the cell, used in RNG seeds. Defaults to 0.
+            cell_id: ID of the cell, used in RNG seeds.
             record_dt: Timestep for the recordings.
-                If not provided, a default is used. Defaults to None.
-            template_format: Cell template format such as 'v5'
-                or 'v6_air_scaler'. Defaults to "v5".
-            emodel_properties: Properties such as
-                threshold_current, holding_current. Defaults to None.
+            template_format: Cell template format such as 'v5' or 'v6_air_scaler'.
+            emodel_properties: Template specific emodel properties.
         """
         super().__init__()
         if cell_id is None:
             cell_id = CellId("", Cell.last_id)
             Cell.last_id += 1
         self.cell_id = cell_id
-        # Persistent objects, like clamps, that exist as long
-        # as the object exists
-        self.persistent: list[HocObjectType] = []
 
         # Load the template
         neuron_template = NeuronTemplate(template_path, morphology_path)
@@ -134,6 +128,10 @@ class Cell(InjectableMixin, PlottableMixin):
 
         neuron.h.pop_section()  # Undoing soma push
         self.sonata_proxy: Optional[SonataProxy] = None
+
+        # Persistent objects, like clamps, that exist as long
+        # as the object exists
+        self.persistent: list[HocObjectType] = []
 
     @property
     def somatic(self) -> list[NeuronSection]:
