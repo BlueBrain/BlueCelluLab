@@ -105,12 +105,11 @@ class Cell(InjectableMixin, PlottableMixin):
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
 
-        self.emodel_properties = emodel_properties
         if template_format == 'v6':
-            if self.emodel_properties is None:
+            if emodel_properties is None:
                 raise BluecellulabError('EmodelProperties must be provided for v6 template')
-            self.hypamp: float | None = self.emodel_properties.holding_current
-            self.threshold: float | None = self.emodel_properties.threshold_current
+            self.hypamp: float | None = emodel_properties.holding_current
+            self.threshold: float | None = emodel_properties.threshold_current
         else:
             try:
                 self.hypamp = self.cell.getHypAmp()
