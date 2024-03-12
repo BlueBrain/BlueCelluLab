@@ -98,12 +98,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
 
-        if rng_settings is None:
-            self.rng_settings = RNGSettings.get_instance()
-            self.rng_settings.set_seeds("Random123")
-        else:
-            self.rng_settings = rng_settings
-
         self.recordings: dict[str, HocObjectType] = {}
         self.synapses: dict[SynapseID, Synapse] = {}
         self.connections: dict[SynapseID, bluecellulab.Connection] = {}

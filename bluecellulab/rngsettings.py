@@ -38,8 +38,21 @@ class RNGSettings:
         return cls._instance
 
     @load_hoc_and_mod_files
-    def __init__(self, mode="Random123") -> None:
+    def __init__(
+        self,
+        mode="Random123",
+        base_seed=0,
+        synapse_seed=0,
+        ionchannel_seed=0,
+        stimulus_seed=0,
+        minis_seed=0,
+    ) -> None:
         self.mode = mode
+        self.base_seed = base_seed
+        self.synapse_seed = synapse_seed
+        self.ionchannel_seed = ionchannel_seed
+        self.stimulus_seed = stimulus_seed
+        self.minis_seed = minis_seed
 
     def set_seeds(
             self,
@@ -75,10 +88,11 @@ class RNGSettings:
             rng = neuron.h.Random()
             rng.Random123_globalindex(self.base_seed)
 
-        self.synapse_seed = sim_config.synapse_seed if sim_config else 0
-        self.ionchannel_seed = sim_config.ionchannel_seed if sim_config else 0
-        self.stimulus_seed = sim_config.stimulus_seed if sim_config else 0
-        self.minis_seed = sim_config.minis_seed if sim_config else 0
+        if sim_config:
+            self.synapse_seed = sim_config.synapse_seed
+            self.ionchannel_seed = sim_config.ionchannel_seed
+            self.stimulus_seed = sim_config.stimulus_seed
+            self.minis_seed = sim_config.minis_seed
 
     @property
     def mode(self):
