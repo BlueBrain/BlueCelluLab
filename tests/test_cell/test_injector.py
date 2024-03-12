@@ -129,7 +129,6 @@ class TestInjector:
         for mode in ["Compatibility", "UpdatedMCell", "Random123"]:
             rng_obj = RNGSettings.get_instance()
             rng_obj.mode = mode
-            self.cell.rng_settings = rng_obj
             rng = self.cell._get_noise_step_rand(noisestim_count)
         rng.Random123()
         rng.poisson(4)
