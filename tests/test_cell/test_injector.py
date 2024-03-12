@@ -356,9 +356,6 @@ class TestInjector:
 
     def test_add_replay_relative_shotnoise(self):
         """Unit test for add_replay_relative_shotnoise."""
-        rng_obj = RNGSettings.get_instance()
-        rng_obj.mode = "Random123"
-        self.cell.rng_settings = rng_obj
         stimulus = RelativeShotNoise(
             target="single-cell", delay=0, duration=2,
             rise_time=0.4, decay_time=4, mean_percent=70, sd_percent=40, amp_cv=0.63,
