@@ -26,6 +26,7 @@ jobs:
       run: |
         pip install tox-gh-actions
         pip install tox-uv
+        pip install uv==0.1.16
     - name: Run tox
       run: |
         tox
@@ -49,6 +50,7 @@ jobs:
         python -m pip install --upgrade pip setuptools
         pip install tox-gh-actions
         pip install tox-uv
+        pip install uv==0.1.16
     - name: Run tox
       run: |
         tox -e lint
@@ -66,6 +68,7 @@ jobs:
         python -m pip install --upgrade pip setuptools
         pip install tox-gh-actions
         pip install tox-uv
+        pip install uv==0.1.16
     - name: Run tox
       run: |
         tox -e examples
@@ -83,6 +86,7 @@ jobs:
         python -m pip install --upgrade pip setuptools
         pip install tox-gh-actions
         pip install tox-uv
+        pip install uv==0.1.16
     - name: Run tox
       run: |
         tox -e docs
