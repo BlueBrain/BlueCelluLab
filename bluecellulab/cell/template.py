@@ -48,7 +48,8 @@ class NeuronTemplate:
     """NeuronTemplate representation."""
 
     def __init__(
-        self, template_filepath: str | Path, morph_filepath: str | Path
+        self, template_filepath: str | Path, morph_filepath: str | Path,
+        template_format: str, emodel_properties: Optional[EmodelProperties]
     ) -> None:
         """Load the hoc template and init object."""
         if isinstance(template_filepath, Path):
@@ -63,18 +64,18 @@ class NeuronTemplate:
 
         self.template_name = self.load(template_filepath)
         self.morph_filepath = morph_filepath
+        self.template_format = template_format
+        self.emodel_properties = emodel_properties
 
-    def get_cell(
-        self, template_format: str, gid: Optional[int], emodel_properties: Optional[EmodelProperties]
-    ) -> HocObjectType:
+    def get_cell(self, gid: Optional[int]) -> HocObjectType:
         """Returns the hoc object matching the template format."""
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
-        if template_format == "v6":
+        if self.template_format == "v6":
             attr_names = getattr(
                 neuron.h, self.template_name.split('_bluecellulab')[0] + "_NeededAttributes", None
             )
             if attr_names is not None:
-                if emodel_properties is None:
+                if self.emodel_properties is None:
                     raise BluecellulabError(
                         "EmodelProperties must be provided for template "
                         "format v6 that specifies _NeededAttributes"
@@ -83,7 +84,7 @@ class NeuronTemplate:
                     gid,
                     morph_dir,
                     morph_fname,
-                    *[emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
+                    *[self.emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
                 )
             else:
                 cell = getattr(neuron.h, self.template_name)(
@@ -91,7 +92,7 @@ class NeuronTemplate:
                     morph_dir,
                     morph_fname,
                 )
-        elif template_format == "bluepyopt":
+        elif self.template_format == "bluepyopt":
             cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)
         else:
             cell = getattr(neuron.h, self.template_name)(gid, self.morph_filepath)

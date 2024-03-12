@@ -79,9 +79,9 @@ class Cell(InjectableMixin, PlottableMixin):
         self.cell_id = cell_id
 
         # Load the template
-        neuron_template = NeuronTemplate(template_path, morphology_path)
+        neuron_template = NeuronTemplate(template_path, morphology_path, template_format, emodel_properties)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
-        self.cell = neuron_template.get_cell(template_format, self.cell_id.id, emodel_properties)
+        self.cell = neuron_template.get_cell(self.cell_id.id)
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong

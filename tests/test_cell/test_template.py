@@ -33,8 +33,8 @@ v6_morph_path = (
 
 def test_get_cell_with_bluepyopt_template():
     """Unit test for the get_cell method with bluepyopt_template."""
-    template = NeuronTemplate(hipp_hoc_path, hipp_morph_path)
-    cell = template.get_cell("bluepyopt", None, None)
+    template = NeuronTemplate(hipp_hoc_path, hipp_morph_path, "bluepyopt", None)
+    cell = template.get_cell(gid=None)
     assert cell.hname() == f"bACnoljp_bluecellulab_{(hex(id(template)))}[0]"
 
 
@@ -43,31 +43,31 @@ def test_neuron_template_init():
     missing_file = "missing_file"
 
     with pytest.raises(FileNotFoundError):
-        NeuronTemplate(missing_file, hipp_morph_path)
+        NeuronTemplate(missing_file, hipp_morph_path, "bluepyopt", None)
     with pytest.raises(FileNotFoundError):
-        NeuronTemplate(hipp_hoc_path, missing_file)
+        NeuronTemplate(hipp_hoc_path, missing_file, "bluepyopt", None)
 
-    NeuronTemplate(hipp_hoc_path, hipp_morph_path)
+    NeuronTemplate(hipp_hoc_path, hipp_morph_path, "bluepyopt", None)
 
 
 def test_public_hoc_cell_bluepyopt_template():
     """Unit test for public_hoc_cell."""
-    template = NeuronTemplate(hipp_hoc_path, hipp_morph_path)
-    cell = template.get_cell("bluepyopt", None, None)
+    template = NeuronTemplate(hipp_hoc_path, hipp_morph_path, "bluepyopt", None)
+    cell = template.get_cell(None)
     hoc_public = public_hoc_cell(cell)
     assert hoc_public.gid == 0.0
 
 
 def test_public_hoc_cell_v6_template():
     """Unit test for public_hoc_cell."""
-    template = NeuronTemplate(v6_hoc_path, v6_morph_path)
     emodel_properties = EmodelProperties(
         threshold_current=1.1433533430099487,
         holding_current=1.4146618843078613,
         AIS_scaler=1.4561502933502197,
         soma_scaler=1.0
     )
-    cell = template.get_cell("v6", 5, emodel_properties)
+    template = NeuronTemplate(v6_hoc_path, v6_morph_path, "v6", emodel_properties)
+    cell = template.get_cell(5)
     hoc_public = public_hoc_cell(cell)
     assert hoc_public.gid == 5.0
 
@@ -84,6 +84,6 @@ def test_load_bpo_template():
     """Test the loading of a hoc without getCell or gid."""
     hoc_path = examples_dir / "bpo_cell" / "0_cADpyr_L5TPC_a6e707a_1_sNone.hoc"
     morph_path = examples_dir / "bpo_cell" / "C060114A5.asc"
-    neuron_template = NeuronTemplate(hoc_path, morph_path)
-    cell = neuron_template.get_cell("bluepyopt", None, None)
+    neuron_template = NeuronTemplate(hoc_path, morph_path, "bluepyopt", None)
+    cell = neuron_template.get_cell(None)
     assert len(cell.soma[0].children()) == 11
