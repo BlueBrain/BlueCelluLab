@@ -21,18 +21,14 @@
 {load_file("fileUtils.hoc")}
 
 rngMode = 0  // corresponds to COMPATIBILITY defined below
-ionchannelSeed = 0
-synapseSeed = 0
-stimulusSeed = 0
-minisSeed = 0
 globalSeed = 0
 
 begintemplate RNGSettings
 
-public init, interpret, getRNGMode, getIonChannelSeed, getSynapseSeed, getStimulusSeed, getMinisSeed, getGlobalSeed
+public init, interpret, getRNGMode, getGlobalSeed
 public COMPATIBILITY, RANDOM123, UPMCELLRAN4
 
-external rngMode, ionchannelSeed, synapseSeed, stimulusSeed, minisSeed, globalSeed, terminate
+external rngMode, globalSeed, terminate
 
 proc init() {
     // consts for random number handling

@@ -76,16 +76,9 @@ class RNGSettings:
             rng.Random123_globalindex(self.base_seed)
 
         self.synapse_seed = sim_config.synapse_seed if sim_config else 0
-        neuron.h.synapseSeed = self.synapse_seed
-
         self.ionchannel_seed = sim_config.ionchannel_seed if sim_config else 0
-        neuron.h.ionchannelSeed = self.ionchannel_seed
-
         self.stimulus_seed = sim_config.stimulus_seed if sim_config else 0
-        neuron.h.stimulusSeed = self.stimulus_seed
-
         self.minis_seed = sim_config.minis_seed if sim_config else 0
-        neuron.h.minisSeed = self.minis_seed
 
     @property
     def mode(self):
