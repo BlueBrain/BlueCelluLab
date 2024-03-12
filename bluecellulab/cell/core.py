@@ -82,6 +82,21 @@ class Cell(InjectableMixin, PlottableMixin):
         neuron_template = NeuronTemplate(template_path, morphology_path, template_format, emodel_properties)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
         self.cell = neuron_template.get_cell(self.cell_id.id)
+        if template_format == 'v6':
+            if emodel_properties is None:
+                raise BluecellulabError('EmodelProperties must be provided for v6 template')
+            self.hypamp: float | None = emodel_properties.holding_current
+            self.threshold: float | None = emodel_properties.threshold_current
+        else:
+            try:
+                self.hypamp = self.cell.getHypAmp()
+            except AttributeError:
+                self.hypamp = None
+
+            try:
+                self.threshold = self.cell.getThreshold()
+            except AttributeError:
+                self.threshold = None
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
@@ -104,22 +119,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
-
-        if template_format == 'v6':
-            if emodel_properties is None:
-                raise BluecellulabError('EmodelProperties must be provided for v6 template')
-            self.hypamp: float | None = emodel_properties.holding_current
-            self.threshold: float | None = emodel_properties.threshold_current
-        else:
-            try:
-                self.hypamp = self.cell.getHypAmp()
-            except AttributeError:
-                self.hypamp = None
-
-            try:
-                self.threshold = self.cell.getThreshold()
-            except AttributeError:
-                self.threshold = None
 
         # Keep track of when a cell is made passive by make_passive()
         # Used to know when re_init_rng() can be executed
