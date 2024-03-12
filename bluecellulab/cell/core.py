@@ -61,8 +61,7 @@ class Cell(InjectableMixin, PlottableMixin):
                  cell_id: Optional[CellId] = None,
                  record_dt: Optional[float] = None,
                  template_format: str = "v5",
-                 emodel_properties: Optional[EmodelProperties] = None,
-                 rng_settings: Optional[RNGSettings] = None) -> None:
+                 emodel_properties: Optional[EmodelProperties] = None) -> None:
         """Initializes a Cell object.
 
         Args:
@@ -75,8 +74,6 @@ class Cell(InjectableMixin, PlottableMixin):
                 or 'v6_air_scaler'. Defaults to "v5".
             emodel_properties: Properties such as
                 threshold_current, holding_current. Defaults to None.
-            rng_settings: Random number generation setting
-                object used by the Cell. Defaults to None.
         """
         super().__init__()
         if cell_id is None:

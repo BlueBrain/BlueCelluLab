@@ -736,7 +736,6 @@ class SSim:
             'morphology_path': self.circuit_access.morph_filepath(cell_id),
             'cell_id': cell_id,
             'record_dt': self.record_dt,
-            'rng_settings': self.rng_settings,
             'template_format': self.circuit_access.get_template_format(),
             'emodel_properties': emodel_properties,
         }
@@ -750,6 +749,5 @@ class SSim:
                                  morphology_path=cell_kwargs['morphology_path'],
                                  cell_id=cell_kwargs['cell_id'],
                                  record_dt=cell_kwargs['record_dt'],
-                                 rng_settings=cell_kwargs['rng_settings'],
                                  template_format=cell_kwargs['template_format'],
                                  emodel_properties=cell_kwargs['emodel_properties'])

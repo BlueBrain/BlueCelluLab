@@ -420,7 +420,7 @@ class TestInjectorSonata:
         emodel_properties = circuit_access.get_emodel_properties(cell_id)
         rng_settings = RNGSettings.get_instance()
         rng_settings.set_seeds(sim_config=circuit_access.config)
-        cls.cell = bluecellulab.Cell(template_path=hoc, morphology_path=morph, rng_settings=rng_settings,
+        cls.cell = bluecellulab.Cell(template_path=hoc, morphology_path=morph,
                                      template_format=template_format, emodel_properties=emodel_properties)
 
         sonata_proxy = SonataProxy(cell_id, circuit_access)
