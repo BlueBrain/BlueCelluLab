@@ -235,7 +235,6 @@ class TestInjector:
         rng_obj = RNGSettings.get_instance()
         rng_obj.set_seeds(base_seed=549821, mode="Random123")
         rng_obj.stimulus_seed = 549821
-        self.cell.rng_settings = rng_obj
         soma = self.cell.soma
         segx = 0.5
         stimulus = ShotNoise(
@@ -262,7 +261,6 @@ class TestInjector:
         rng_obj = RNGSettings.get_instance()
         rng_obj.set_seeds(base_seed=549821, mode="Random123")
         rng_obj.stimulus_seed = 549821
-        self.cell.rng_settings = rng_obj
         soma = self.cell.soma
         segx = 0.5
         stimulus = OrnsteinUhlenbeck(
