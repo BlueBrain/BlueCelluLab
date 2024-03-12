@@ -315,10 +315,6 @@ class TestInjector:
 
     def test_inject_current_clamp_via_shotnoise_signal(self):
         """Unit test for inject_current_clamp_signal using a shotnoise_step."""
-        rng_obj = RNGSettings.get_instance()
-        rng_obj.mode = "Random123"
-        self.cell.rng_settings = rng_obj
-
         soma = self.cell.soma
         segx = 0.5
         rng = self.cell._get_shotnoise_step_rand(shotnoise_stim_count=0, seed=None)
