@@ -487,7 +487,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         sid = synapse_id[1]
 
-        base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
         # numpy int to int
         post_sec_id = int(syn_description[SynapseProperty.POST_SECTION_ID])
@@ -527,9 +526,10 @@ class Cell(InjectableMixin, PlottableMixin):
                 # NC_SPONTMINI
                 self.syn_mini_netcons[synapse_id].weight[nc_type_param] = 1
 
-            if self.rng_settings.mode == 'Random123':
+            rng_settings = RNGSettings.get_instance()
+            if rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \
-                    + self.rng_settings.minis_seed
+                    + rng_settings.minis_seed
                 self.ips[synapse_id].setRNGs(
                     sid + 200,
                     self.cell_id.id + 250,
@@ -544,25 +544,26 @@ class Cell(InjectableMixin, PlottableMixin):
                 uniformrng = neuron.h.Random()
                 self.persistent.append(uniformrng)
 
-                if self.rng_settings.mode == 'Compatibility':
+                base_seed = rng_settings.base_seed
+                if rng_settings.mode == 'Compatibility':
                     exp_seed1 = sid * 100000 + 200
                     exp_seed2 = self.cell_id.id + 250 + base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                     uniform_seed1 = sid * 100000 + 300
                     uniform_seed2 = self.cell_id.id + 250 + base_seed + \
-                        self.rng_settings.minis_seed
-                elif self.rng_settings.mode == "UpdatedMCell":
+                        rng_settings.minis_seed
+                elif rng_settings.mode == "UpdatedMCell":
                     exp_seed1 = sid * 1000 + 200
                     exp_seed2 = source_popid * 16777216 + self.cell_id.id + 250 + \
                         base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                     uniform_seed1 = sid * 1000 + 300
                     uniform_seed2 = source_popid * 16777216 + self.cell_id.id + 250 \
                         + base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                 else:
                     raise ValueError(
-                        f"Cell: Unknown rng mode: {self.rng_settings.mode}")
+                        f"Cell: Unknown rng mode: {rng_settings.mode}")
 
                 exprng.MCellRan4(exp_seed1, exp_seed2)
                 exprng.negexp(1.0)
