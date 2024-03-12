@@ -192,20 +192,21 @@ class InjectableMixin:
 
     def _get_noise_step_rand(self, noisestim_count):
         """Return rng for noise step stimulus."""
-        if self.rng_settings.mode == "Compatibility":
+        rng_settings = RNGSettings.get_instance()
+        if rng_settings.mode == "Compatibility":
             rng = neuron.h.Random(self.cell_id.id + noisestim_count)
-        elif self.rng_settings.mode == "UpdatedMCell":
+        elif rng_settings.mode == "UpdatedMCell":
             rng = neuron.h.Random()
             rng.MCellRan4(
                 noisestim_count * 10000 + 100,
-                self.rng_settings.base_seed +
-                self.rng_settings.stimulus_seed +
+                rng_settings.base_seed +
+                rng_settings.stimulus_seed +
                 self.cell_id.id * 1000)
-        elif self.rng_settings.mode == "Random123":
+        elif rng_settings.mode == "Random123":
             rng = neuron.h.Random()
             rng.Random123(
                 noisestim_count + 100,
-                self.rng_settings.stimulus_seed + 500,
+                rng_settings.stimulus_seed + 500,
                 self.cell_id.id + 300)
 
         self.persistent.append(rng)
