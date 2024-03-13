@@ -4,6 +4,15 @@ Changelog
 2.4.0
 ------
 
+* Decouple Cell and Synapse from RNGSettings
+* Have a single way of isolating processes via IsolatedProcess
+* Implement: Add missing unit tests for tools functions #76
+* Remove redundancies in tools.py
+* RNGSettings.get_instance() replaces constructor
+
+2.3.2
+------
+
 * Add StimulusFactory enabling Python generated Stimulus creation
 * Stimulus creation through StimulusFactory is decoupled from the Cell object
 * Cell.add_step and Cell.add_ramp use StimulusFactory
