@@ -32,7 +32,7 @@ from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
 from bluecellulab.cell.sonata_proxy import SonataProxy
-from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell
+from bluecellulab.cell.template import NeuronTemplate, TemplateParams, public_hoc_cell
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
 from bluecellulab.circuit.node_id import CellId
@@ -54,6 +54,24 @@ class Cell(InjectableMixin, PlottableMixin):
 
     last_id = 0
 
+    @classmethod
+    def from_template_parameters(
+        cls, template_params: TemplateParams, cell_id: Optional[CellId] = None,
+        record_dt: Optional[float] = None
+    ) -> Cell:
+        """Create a cell from a TemplateParams object.
+
+        Useful in isolating runs.
+        """
+        return cls(
+            template_path=template_params.template_filepath,
+            morphology_path=template_params.morph_filepath,
+            cell_id=cell_id,
+            record_dt=record_dt,
+            template_format=template_params.template_format,
+            emodel_properties=template_params.emodel_properties,
+        )
+
     @load_hoc_and_mod_files
     def __init__(self,
                  template_path: str | Path,
@@ -73,6 +91,12 @@ class Cell(InjectableMixin, PlottableMixin):
             emodel_properties: Template specific emodel properties.
         """
         super().__init__()
+        self.template_params = TemplateParams(
+            template_filepath=template_path,
+            morph_filepath=morphology_path,
+            template_format=template_format,
+            emodel_properties=emodel_properties,
+        )
         if cell_id is None:
             cell_id = CellId("", Cell.last_id)
             Cell.last_id += 1
