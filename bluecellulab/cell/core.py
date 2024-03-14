@@ -317,7 +317,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
     def add_voltage_recording(
-        self, section: "neuron.h.Section", segx: float = 0.5, dt: Optional[float] = None
+        self, section: Optional[NeuronSection] = None, segx: float = 0.5, dt: Optional[float] = None
     ) -> None:
         """Add a voltage recording to a certain section at a given segment
         (segx).
@@ -329,11 +329,13 @@ class Cell(InjectableMixin, PlottableMixin):
             dt: Recording time step. If not provided, the recording step will
                 default to the simulator's time step.
         """
+        if section is None:
+            section = self.soma
         var_name = f"neuron.h.{section.name()}({segx})._ref_v"
         self.add_recording(var_name, dt)
 
     def get_voltage_recording(
-        self, section: "neuron.h.Section", segx: float = 0.5
+        self, section: Optional[NeuronSection] = None, segx: float = 0.5
     ) -> np.ndarray:
         """Get a voltage recording for a certain section at a given segment
         (segx).
@@ -349,6 +351,8 @@ class Cell(InjectableMixin, PlottableMixin):
         Raises:
             BluecellulabError: If voltage recording was not added previously using add_voltage_recording.
         """
+        if section is None:
+            section = self.soma
         recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
