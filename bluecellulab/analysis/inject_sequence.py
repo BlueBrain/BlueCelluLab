@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import NamedTuple
 
+import neuron
 import numpy as np
 from bluecellulab.cell.core import Cell
 from bluecellulab.cell.template import TemplateParams
@@ -21,7 +22,8 @@ class StimulusName(Enum):
 
 
 class Recording(NamedTuple):
-    """A tuple of the voltage and time."""
+    """A tuple of the current, voltage and time recordings."""
+    current: np.ndarray
     voltage: np.ndarray
     time: np.ndarray
 
@@ -53,16 +55,19 @@ def run_stimulus(
     """
     cell = Cell.from_template_parameters(template_params)
     cell.add_voltage_recording(section, segment)
-    cell.inject_current_waveform(
+    iclamp, _ = cell.inject_current_waveform(
         stimulus.time, stimulus.current, section=section, segx=segment
     )
+    current_vector = neuron.h.Vector()
+    current_vector.record(iclamp._ref_i)
     simulation = Simulation(cell)
     simulation.run(duration)
+    current = np.array(current_vector.to_python())
     voltage = cell.get_voltage_recording(section, segment)
     time = cell.get_time()
-    if len(time) != len(voltage):
-        raise ValueError("Time and voltage arrays are not the same length")
-    return Recording(voltage, time)
+    if len(time) != len(voltage) or len(time) != len(current):
+        raise ValueError("Time, current and voltage arrays are not the same length")
+    return Recording(current, voltage, time)
 
 
 def apply_multiple_step_stimuli(
