@@ -1,7 +1,7 @@
 """Module for injecting a sequence of protocols to the cell."""
 from __future__ import annotations
 from enum import Enum, auto
-from typing import NamedTuple
+from typing import NamedTuple, Sequence
 
 import neuron
 import numpy as np
@@ -73,7 +73,7 @@ def run_stimulus(
 def apply_multiple_step_stimuli(
     cell: Cell,
     stimulus_name: StimulusName,
-    amplitudes: list[float],
+    amplitudes: Sequence[float],
     duration: float,
     section: NeuronSection | None = None,
     segment: float = 0.5,
