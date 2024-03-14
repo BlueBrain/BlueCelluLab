@@ -116,10 +116,10 @@ class Cell(InjectableMixin, PlottableMixin):
                 self.hypamp = self.cell.getHypAmp()
             except AttributeError:
                 self.hypamp = None
-        try:
-            self.threshold = self.cell.getThreshold()
-        except AttributeError:
-            self.threshold = 0.0
+            try:
+                self.threshold = self.cell.getThreshold()
+            except AttributeError:
+                self.threshold = 0.0
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
