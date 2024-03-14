@@ -2,13 +2,15 @@
 
 import neuron
 
-import bluecellulab
+from bluecellulab import RNGSettings
 from bluecellulab.exceptions import UndefinedRNGException
 
 
 def test_setting_rngmodes():
     """Test the setting of rng mode."""
-    rng_obj = bluecellulab.RNGSettings(mode="Compatibility")
+    rng_obj = RNGSettings.get_instance()
+    rng_obj.mode = "Compatibility"
+    initial_obj_id = id(rng_obj)  # this should never change - Singleton object
     assert neuron.h.rngMode == 0
 
     rng_obj.mode = "Random123"
@@ -17,13 +19,10 @@ def test_setting_rngmodes():
     rng_obj.mode = "UpdatedMCell"
     assert neuron.h.rngMode == 2
 
-    bluecellulab.RNGSettings(mode="Random123")
+    rng_obj.mode = "Random123"
     assert neuron.h.rngMode == 1
     assert rng_obj.mode == "Random123"
-
-    bluecellulab.RNGSettings()
-    assert neuron.h.rngMode == 1
-    assert rng_obj.mode == "Random123"
+    assert id(rng_obj) == initial_obj_id
 
     try:
         rng_obj.mode = "MersenneTwister"
@@ -31,12 +30,15 @@ def test_setting_rngmodes():
         assert isinstance(e, UndefinedRNGException)
 
     # make sure only one object is created
-    assert rng_obj is bluecellulab.RNGSettings()
+    assert rng_obj is RNGSettings.get_instance()
+    assert id(rng_obj) == id(RNGSettings.get_instance()) == initial_obj_id
 
 
 def test_str_repr_obj():
     """Test the str and repr methods of RNGSettings."""
-    rng_obj = bluecellulab.RNGSettings(mode="UpdatedMCell")
+    rng_obj = RNGSettings.get_instance()
+    rng_obj.set_seeds()
+    rng_obj.mode = "UpdatedMCell"
     assert repr(rng_obj) == "RNGSettings(mode=UpdatedMCell, base_seed=0, " \
                             "synapse_seed=0, " \
                             "ionchannel_seed=0, stimulus_seed=0, " \

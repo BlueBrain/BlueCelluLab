@@ -47,7 +47,6 @@ class Synapse:
 
     def __init__(
             self,
-            rng_settings: RNGSettings,
             cell_id: CellId,
             hoc_args: SynapseHocArgs,
             syn_id: tuple[str, int],
@@ -57,7 +56,6 @@ class Synapse:
         """Constructor.
 
         Args:
-            rng_settings: Random number generator settings.
             gid: The post-synaptic cell gid.
             hoc_args: The synapse location and section in hoc.
             syn_id: A tuple containing a synapse identifier, where the string is
@@ -87,8 +85,6 @@ class Synapse:
         self.hoc_args = hoc_args
         self.mech_name: str = "not-yet-defined"
         self.randseed3: Optional[int] = None
-
-        self.rng_settings = rng_settings
 
     @property
     def delay_weights(self) -> list[tuple[float, float]]:
@@ -147,31 +143,32 @@ class Synapse:
         Raises:
             ValueError: when rng mode is not recognised.
         """
-        if self.rng_settings.mode == "Random123":
+        rng_settings = RNGSettings.get_instance()
+        if rng_settings.mode == "Random123":
             self.randseed1 = self.post_cell_id.id + 250
             self.randseed2 = self.syn_id.sid + 100
             self.randseed3 = self.source_popid * 65536 + self.target_popid + \
-                self.rng_settings.synapse_seed + 300
+                rng_settings.synapse_seed + 300
             self.hsynapse.setRNG(  # type: ignore
                 self.randseed1,
                 self.randseed2,
                 self.randseed3)
         else:
             rndd = neuron.h.Random()
-            if self.rng_settings.mode == "Compatibility":
+            if rng_settings.mode == "Compatibility":
                 self.randseed1 = self.syn_id.sid * 100000 + 100
                 self.randseed2 = self.post_cell_id.id + \
-                    250 + self.rng_settings.base_seed
-            elif self.rng_settings.mode == "UpdatedMCell":
+                    250 + rng_settings.base_seed
+            elif rng_settings.mode == "UpdatedMCell":
                 self.randseed1 = self.syn_id.sid * 1000 + 100
                 self.randseed2 = self.source_popid * 16777216 + \
                     self.post_cell_id.id + \
-                    250 + self.rng_settings.base_seed + \
-                    self.rng_settings.synapse_seed
+                    250 + rng_settings.base_seed + \
+                    rng_settings.synapse_seed
             else:
                 raise ValueError(
                     "Synapse: unknown RNG mode: %s" %
-                    self.rng_settings.mode)
+                    rng_settings.mode)
             self.randseed3 = None  # Not used in this case
             rndd.MCellRan4(self.randseed1, self.randseed2)
             rndd.uniform(0, 1)
@@ -241,8 +238,8 @@ class Synapse:
 
 class GluSynapse(Synapse):
 
-    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
-        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_glusynapse_helper()
 
     def use_glusynapse_helper(self) -> None:
@@ -290,7 +287,8 @@ class GluSynapse(Synapse):
 
         self.randseed1 = self.post_cell_id.id
         self.randseed2 = 100000 + self.syn_id.sid
-        self.randseed3 = self.rng_settings.synapse_seed + 200
+        rng_settings = RNGSettings.get_instance()
+        self.randseed3 = rng_settings.synapse_seed + 200
         self.hsynapse.setRNG(self.randseed1, self.randseed2, self.randseed3)
         self.hsynapse.synapseID = self.syn_id.sid
 
@@ -303,8 +301,8 @@ class GluSynapse(Synapse):
 
 class GabaabSynapse(Synapse):
 
-    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium, randomize_risetime=True):
-        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium, randomize_risetime=True):
+        super().__init__(gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_gabaab_helper(randomize_risetime)
 
     def use_gabaab_helper(self, randomize_gaba_risetime: bool) -> None:
@@ -329,20 +327,21 @@ class GabaabSynapse(Synapse):
 
         if randomize_gaba_risetime is True:
             rng = neuron.h.Random()
-            if self.rng_settings.mode == "Compatibility":
+            rng_settings = RNGSettings.get_instance()
+            if rng_settings.mode == "Compatibility":
                 rng.MCellRan4(
                     self.syn_id.sid * 100000 + 100,
-                    self.post_cell_id.id + 250 + self.rng_settings.base_seed)
-            elif self.rng_settings.mode == "UpdatedMCell":
+                    self.post_cell_id.id + 250 + rng_settings.base_seed)
+            elif rng_settings.mode == "UpdatedMCell":
                 rng.MCellRan4(
                     self.syn_id.sid * 1000 + 100,
                     self.source_popid *
                     16777216 +
                     self.post_cell_id.id +
                     250 +
-                    self.rng_settings.base_seed +
-                    self.rng_settings.synapse_seed)
-            elif self.rng_settings.mode == "Random123":
+                    rng_settings.base_seed +
+                    rng_settings.synapse_seed)
+            elif rng_settings.mode == "Random123":
                 rng.Random123(
                     self.post_cell_id.id +
                     250,
@@ -351,12 +350,12 @@ class GabaabSynapse(Synapse):
                     self.source_popid *
                     65536 +
                     self.target_popid +
-                    self.rng_settings.synapse_seed +
+                    rng_settings.synapse_seed +
                     450)
             else:
                 raise ValueError(
                     "Synapse: unknown RNG mode: %s" %
-                    self.rng_settings.mode)
+                    rng_settings.mode)
 
             rng.lognormal(0.2, 0.1)
             self.hsynapse.tau_r_GABAA = rng.repick()
@@ -386,8 +385,8 @@ class GabaabSynapse(Synapse):
 
 class AmpanmdaSynapse(Synapse):
 
-    def __init__(self, rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
-        super().__init__(rng_settings, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
+    def __init__(self, gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium):
+        super().__init__(gid, hoc_args, syn_id, syn_description, popids, extracellular_calcium)
         self.use_ampanmda_helper()
 
     def use_ampanmda_helper(self) -> None:

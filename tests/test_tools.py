@@ -1,6 +1,5 @@
 """Unit tests for tools.py"""
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +8,7 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.tools import NumpyEncoder, Singleton, template_accepts_cvode, check_empty_topology
+from bluecellulab.tools import template_accepts_cvode, check_empty_topology
 
 script_dir = Path(__file__).parent
 
@@ -32,42 +31,6 @@ def test_calculate_SS_voltage_subprocess():
         emodel_properties=None,
         step_level=0)
     assert abs(SS_voltage_stoch - -73.9235504304) < 0.001
-
-
-def test_singleton():
-    """Make sure only 1 object gets created in a singleton."""
-
-    class TestClass(metaclass=Singleton):
-        """Class to test Singleton object creation."""
-
-        n_init_calls = 0
-
-        def __init__(self):
-            print("I'm called but not re-instantiated")
-            TestClass.n_init_calls += 1
-
-    test_obj1 = TestClass()
-    test_obj2 = TestClass()
-    test_objs = [TestClass() for _ in range(10)]
-
-    assert test_obj1 is test_obj2
-    assert id(test_obj1) == id(test_obj2)
-
-    assert len(set(test_objs)) == 1
-
-    assert TestClass.n_init_calls == 12
-
-
-def test_numpy_encoder():
-    """Tools: Test NumpyEncoder"""
-    assert json.dumps(np.int32(1), cls=NumpyEncoder) == "1"
-    assert json.dumps(np.float32(1.2), cls=NumpyEncoder)[0:3] == "1.2"
-    assert json.dumps(np.array([1, 2, 3]), cls=NumpyEncoder) == "[1, 2, 3]"
-    assert json.dumps(np.array([1.2, 2.3, 3.4]), cls=NumpyEncoder) == "[1.2, 2.3, 3.4]"
-    assert (
-        json.dumps(np.array([True, False, True]), cls=NumpyEncoder)
-        == "[true, false, true]"
-    )
 
 
 def test_detect_spike():
@@ -179,6 +142,25 @@ class TestOnSonataCell:
             step_level=step_level,
         )
         assert spike_occurred is True
+
+    def test_search_threshold_current(self):
+        """Unit test for search_threshold_current."""
+        hyp_level = -2
+        inj_start, inj_stop = 100, 200
+        min_current, max_current = 0, 10
+
+        threshold_current = bluecellulab.search_threshold_current(
+            template_name=self.template_name,
+            morphology_path=self.morphology_path,
+            template_format=self.template_format,
+            emodel_properties=self.emodel_properties,
+            hyp_level=hyp_level,
+            inj_start=inj_start,
+            inj_stop=inj_stop,
+            min_current=min_current,
+            max_current=max_current,
+        )
+        assert threshold_current == pytest.approx(2.00195, abs=1e-5)
 
     def test_detect_spike_step_subprocess(self):
         """Unit test for detect_spike_step_subprocess."""

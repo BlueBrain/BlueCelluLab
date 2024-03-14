@@ -1,6 +1,11 @@
-"""Utility functions."""
+"""Utility functions used within BlueCellulab."""
+from __future__ import annotations
 import contextlib
 import io
+import json
+from multiprocessing.pool import Pool
+
+import numpy as np
 
 
 def run_once(func):
@@ -23,3 +28,27 @@ class CaptureOutput(list):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._redirect_stdout.__exit__(exc_type, exc_val, exc_tb)
         self.extend(self._stringio.getvalue().splitlines())
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
+                            np.int16, np.int32, np.int64, np.uint8,
+                            np.uint16, np.uint32, np.uint64)):
+            return int(obj)
+        elif isinstance(obj, (np.float_, np.float16, np.float32,
+                              np.float64)):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
+class IsolatedProcess(Pool):
+    """Multiprocessing Pool that restricts a worker to run max 1 process.
+
+    Use this when running isolated NEURON simulations. Running 2 NEURON
+    simulations on a single process is to be avoided.
+    """
+    def __init__(self):
+        super().__init__(processes=1, maxtasksperchild=1)

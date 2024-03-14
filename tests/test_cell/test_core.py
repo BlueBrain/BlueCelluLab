@@ -38,7 +38,7 @@ def test_load_template():
     """Test the neuron template loading."""
     hoc_path = parent_dir / "examples/cell_example1/test_cell.hoc"
     morph_path = parent_dir / "examples/cell_example1/test_cell.asc"
-    template = NeuronTemplate(hoc_path, morph_filepath=morph_path)
+    template = NeuronTemplate(hoc_path, morph_path, "v5", None)
     template_name = template.template_name
     assert template_name == f"test_cell_bluecellulab_{hex(id(template))}"
 

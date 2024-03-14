@@ -48,7 +48,8 @@ class NeuronTemplate:
     """NeuronTemplate representation."""
 
     def __init__(
-        self, template_filepath: str | Path, morph_filepath: str | Path
+        self, template_filepath: str | Path, morph_filepath: str | Path,
+        template_format: str, emodel_properties: Optional[EmodelProperties]
     ) -> None:
         """Load the hoc template and init object."""
         if isinstance(template_filepath, Path):
@@ -63,18 +64,18 @@ class NeuronTemplate:
 
         self.template_name = self.load(template_filepath)
         self.morph_filepath = morph_filepath
+        self.template_format = template_format
+        self.emodel_properties = emodel_properties
 
-    def get_cell(
-        self, template_format: str, gid: Optional[int], emodel_properties: Optional[EmodelProperties]
-    ) -> HocObjectType:
+    def get_cell(self, gid: Optional[int]) -> HocObjectType:
         """Returns the hoc object matching the template format."""
         morph_dir, morph_fname = os.path.split(self.morph_filepath)
-        if template_format == "v6":
+        if self.template_format == "v6":
             attr_names = getattr(
                 neuron.h, self.template_name.split('_bluecellulab')[0] + "_NeededAttributes", None
             )
             if attr_names is not None:
-                if emodel_properties is None:
+                if self.emodel_properties is None:
                     raise BluecellulabError(
                         "EmodelProperties must be provided for template "
                         "format v6 that specifies _NeededAttributes"
@@ -83,7 +84,7 @@ class NeuronTemplate:
                     gid,
                     morph_dir,
                     morph_fname,
-                    *[emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
+                    *[self.emodel_properties.__getattribute__(name) for name in attr_names.split(";")]
                 )
             else:
                 cell = getattr(neuron.h, self.template_name)(
@@ -91,7 +92,7 @@ class NeuronTemplate:
                     morph_dir,
                     morph_fname,
                 )
-        elif template_format == "bluepyopt":
+        elif self.template_format == "bluepyopt":
             cell = getattr(neuron.h, self.template_name)(morph_dir, morph_fname)
         else:
             cell = getattr(neuron.h, self.template_name)(gid, self.morph_filepath)
@@ -137,31 +138,21 @@ class NeuronTemplate:
         return template_name
 
 
-def shorten_and_hash_string(label, keep_length=40, hash_length=9):
-    """Convert string to a shorter string if required.
+def shorten_and_hash_string(label: str, keep_length=40, hash_length=9) -> str:
+    """Converts a string to a shorter string if required.
 
-    Parameters
-    ----------
-    label : string
-            a string to be converted
-    keep_length : int
-                    length of the original string to keep. Default is 40
-                    characters.
-    hash_length : int
-                    length of the hash to generate, should not be more then
-                    20. Default is 9 characters.
+    Args:
+        label: A string to be converted.
+        keep_length: Length of the original string to keep.
+        hash_length: Length of the hash to generate, should not be more than 20.
 
-    Returns
-    -------
-    new_label : string
-        If the length of the original label is shorter than the sum of
-        'keep_length' and 'hash_length' plus one the original string is
-        returned. Otherwise, a string with structure <partial>_<hash> is
-        returned, where <partial> is the first part of the original string
-        with length equal to <keep_length> and the last part is a hash of
-        'hash_length' characters, based on the original string.
+    Returns:
+        If the length of the original label is shorter than the sum of 'keep_length'
+        and 'hash_length' plus one, the original string is returned. Otherwise, a
+        string with structure <partial>_<hash> is returned, where <partial> is the
+        first part of the original string with length equal to <keep_length> and the
+        last part is a hash of 'hash_length' characters, based on the original string.
     """
-
     if hash_length > 20:
         raise ValueError(
             "Parameter hash_length should not exceed 20, "
@@ -175,46 +166,24 @@ def shorten_and_hash_string(label, keep_length=40, hash_length=9):
     return "{}_{}".format(label[0:keep_length], hash_string[0:hash_length])
 
 
-def check_compliance_with_neuron(template_name):
+def check_compliance_with_neuron(template_name: str) -> bool:
     """Verify that a given name is compliant with the rules for a NEURON.
 
-    Parameters
-    ----------
-    template name : string
-                    a name should be a non-empty alphanumeric string,
-                    and start with a letter. Underscores are allowed.
-                    The length should not exceed 50 characters.
-
-    Returns
-    -------
-    compliant : boolean
-                True if compliant, false otherwise.
+    A name should be a non-empty alphanumeric string, and start with a
+    letter. Underscores are allowed. The length should not exceed 50
+    characters.
     """
     max_len = 50
     return (
-        template_name
+        bool(template_name)
         and template_name[0].isalpha()
         and template_name.replace("_", "").isalnum()
         and len(template_name) <= max_len
     )
 
 
-def get_neuron_compliant_template_name(name):
-    """Get template name that is compliant with NEURON based on given name.
-
-    Parameters
-    ----------
-    name : string
-            template_name to transform
-
-    Returns
-    -------
-    new_name : string
-                If `name` is NEURON-compliant, the same string is return.
-                Otherwise, hyphens are replaced by underscores and if
-                appropriate, the string is shortened.
-                Leading numbers are removed.
-    """
+def get_neuron_compliant_template_name(name: str) -> str:
+    """Get template name that is compliant with NEURON based on given name."""
     template_name = name
     if not check_compliance_with_neuron(template_name):
         template_name = template_name.lstrip(string.digits).replace("-", "_")

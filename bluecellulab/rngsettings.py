@@ -18,35 +18,59 @@ import logging
 from typing import Optional
 
 import neuron
-from bluecellulab import Singleton
-from bluecellulab.circuit.circuit_access import CircuitAccess
+from bluecellulab.circuit.config.definition import SimulationConfig
 from bluecellulab.exceptions import UndefinedRNGException
 from bluecellulab.importer import load_hoc_and_mod_files
 
 logger = logging.getLogger(__name__)
 
 
-class RNGSettings(metaclass=Singleton):
-    """Class that represents RNG settings in bluecellulab."""
+class RNGSettings:
+    """Singleton object that represents RNG settings in bluecellulab."""
+
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        """Return the instance of the class."""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     @load_hoc_and_mod_files
     def __init__(
+        self,
+        mode="Random123",
+        base_seed=0,
+        synapse_seed=0,
+        ionchannel_seed=0,
+        stimulus_seed=0,
+        minis_seed=0,
+    ) -> None:
+        self.mode = mode
+        self.base_seed = base_seed
+        self.synapse_seed = synapse_seed
+        self.ionchannel_seed = ionchannel_seed
+        self.stimulus_seed = stimulus_seed
+        self.minis_seed = minis_seed
+
+    def set_seeds(
             self,
             mode: Optional[str] = None,
-            circuit_access: Optional[CircuitAccess] = None,
+            sim_config: Optional[SimulationConfig] = None,
             base_seed: Optional[int] = None):
         """Constructor.
 
         Parameters
         ----------
         mode : rng mode, if not specified mode is taken from circuit_access
-        circuit: circuit access object, if present seeds are read from simulation
+        sim_config: simulation config object, if present seeds are read from simulation
         base_seed: base seed for entire sim, overrides config value
         """
         self._mode = ""
         if mode is None:
-            if circuit_access is not None:
-                self.mode = circuit_access.config.rng_mode if circuit_access else "Compatibility"
+            if sim_config is not None:
+                self.mode = sim_config.rng_mode if sim_config else "Compatibility"
             else:
                 self.mode = "Random123"
         else:
@@ -55,7 +79,7 @@ class RNGSettings(metaclass=Singleton):
         logger.debug("Setting rng mode to: %s", self._mode)
 
         if base_seed is None:
-            self.base_seed = circuit_access.config.base_seed if circuit_access else 0
+            self.base_seed = sim_config.base_seed if sim_config else 0
         else:
             self.base_seed = base_seed
         neuron.h.globalSeed = self.base_seed
@@ -64,17 +88,11 @@ class RNGSettings(metaclass=Singleton):
             rng = neuron.h.Random()
             rng.Random123_globalindex(self.base_seed)
 
-        self.synapse_seed = circuit_access.config.synapse_seed if circuit_access else 0
-        neuron.h.synapseSeed = self.synapse_seed
-
-        self.ionchannel_seed = circuit_access.config.ionchannel_seed if circuit_access else 0
-        neuron.h.ionchannelSeed = self.ionchannel_seed
-
-        self.stimulus_seed = circuit_access.config.stimulus_seed if circuit_access else 0
-        neuron.h.stimulusSeed = self.stimulus_seed
-
-        self.minis_seed = circuit_access.config.minis_seed if circuit_access else 0
-        neuron.h.minisSeed = self.minis_seed
+        if sim_config:
+            self.synapse_seed = sim_config.synapse_seed
+            self.ionchannel_seed = sim_config.ionchannel_seed
+            self.stimulus_seed = sim_config.stimulus_seed
+            self.minis_seed = sim_config.minis_seed
 
     @property
     def mode(self):

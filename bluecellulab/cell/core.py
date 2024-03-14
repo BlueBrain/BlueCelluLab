@@ -61,47 +61,46 @@ class Cell(InjectableMixin, PlottableMixin):
                  cell_id: Optional[CellId] = None,
                  record_dt: Optional[float] = None,
                  template_format: str = "v5",
-                 emodel_properties: Optional[EmodelProperties] = None,
-                 rng_settings: Optional[RNGSettings] = None) -> None:
+                 emodel_properties: Optional[EmodelProperties] = None) -> None:
         """Initializes a Cell object.
 
         Args:
-            template_path: Full path to hoc template file.
+            template_path: Path to hoc template file.
             morphology_path: Path to morphology file.
-            gid: ID of the cell, used in RNG seeds. Defaults to 0.
+            cell_id: ID of the cell, used in RNG seeds.
             record_dt: Timestep for the recordings.
-                If not provided, a default is used. Defaults to None.
-            template_format: Cell template format such as 'v5'
-                or 'v6_air_scaler'. Defaults to "v5".
-            emodel_properties: Properties such as
-                threshold_current, holding_current. Defaults to None.
-            rng_settings: Random number generation setting
-                object used by the Cell. Defaults to None.
+            template_format: Cell template format such as 'v5' or 'v6_air_scaler'.
+            emodel_properties: Template specific emodel properties.
         """
         super().__init__()
         if cell_id is None:
             cell_id = CellId("", Cell.last_id)
             Cell.last_id += 1
         self.cell_id = cell_id
-        # Persistent objects, like clamps, that exist as long
-        # as the object exists
-        self.persistent: list[HocObjectType] = []
-
-        self.morphology_path = morphology_path
 
         # Load the template
-        neuron_template = NeuronTemplate(template_path, morphology_path)
+        neuron_template = NeuronTemplate(template_path, morphology_path, template_format, emodel_properties)
         self.template_id = neuron_template.template_name  # useful to map NEURON and python objects
-        self.cell = neuron_template.get_cell(template_format, self.cell_id.id, emodel_properties)
+        self.cell = neuron_template.get_cell(self.cell_id.id)
+        if template_format == 'v6':
+            if emodel_properties is None:
+                raise BluecellulabError('EmodelProperties must be provided for v6 template')
+            self.hypamp: float | None = emodel_properties.holding_current
+            self.threshold: float | None = emodel_properties.threshold_current
+        else:
+            try:
+                self.hypamp = self.cell.getHypAmp()
+            except AttributeError:
+                self.hypamp = None
+
+            try:
+                self.threshold = self.cell.getThreshold()
+            except AttributeError:
+                self.threshold = None
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
         neuron.h.finitialize()
-
-        if rng_settings is None:
-            self.rng_settings = RNGSettings("Random123")  # SONATA value
-        else:
-            self.rng_settings = rng_settings
 
         self.recordings: dict[str, HocObjectType] = {}
         self.synapses: dict[SynapseID, Synapse] = {}
@@ -121,29 +120,16 @@ class Cell(InjectableMixin, PlottableMixin):
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
         self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
 
-        self.emodel_properties = emodel_properties
-        if template_format == 'v6':
-            if self.emodel_properties is None:
-                raise BluecellulabError('EmodelProperties must be provided for v6 template')
-            self.hypamp: float | None = self.emodel_properties.holding_current
-            self.threshold: float | None = self.emodel_properties.threshold_current
-        else:
-            try:
-                self.hypamp = self.cell.getHypAmp()
-            except AttributeError:
-                self.hypamp = None
-
-            try:
-                self.threshold = self.cell.getThreshold()
-            except AttributeError:
-                self.threshold = None
-
         # Keep track of when a cell is made passive by make_passive()
         # Used to know when re_init_rng() can be executed
         self.is_made_passive = False
 
         neuron.h.pop_section()  # Undoing soma push
         self.sonata_proxy: Optional[SonataProxy] = None
+
+        # Persistent objects, like clamps, that exist as long
+        # as the object exists
+        self.persistent: list[HocObjectType] = []
 
     @property
     def somatic(self) -> list[NeuronSection]:
@@ -486,7 +472,6 @@ class Cell(InjectableMixin, PlottableMixin):
 
         sid = synapse_id[1]
 
-        base_seed = self.rng_settings.base_seed
         weight = syn_description[SynapseProperty.G_SYNX]
         # numpy int to int
         post_sec_id = int(syn_description[SynapseProperty.POST_SECTION_ID])
@@ -526,9 +511,10 @@ class Cell(InjectableMixin, PlottableMixin):
                 # NC_SPONTMINI
                 self.syn_mini_netcons[synapse_id].weight[nc_type_param] = 1
 
-            if self.rng_settings.mode == 'Random123':
+            rng_settings = RNGSettings.get_instance()
+            if rng_settings.mode == 'Random123':
                 seed2 = source_popid * 65536 + target_popid \
-                    + self.rng_settings.minis_seed
+                    + rng_settings.minis_seed
                 self.ips[synapse_id].setRNGs(
                     sid + 200,
                     self.cell_id.id + 250,
@@ -543,25 +529,26 @@ class Cell(InjectableMixin, PlottableMixin):
                 uniformrng = neuron.h.Random()
                 self.persistent.append(uniformrng)
 
-                if self.rng_settings.mode == 'Compatibility':
+                base_seed = rng_settings.base_seed
+                if rng_settings.mode == 'Compatibility':
                     exp_seed1 = sid * 100000 + 200
                     exp_seed2 = self.cell_id.id + 250 + base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                     uniform_seed1 = sid * 100000 + 300
                     uniform_seed2 = self.cell_id.id + 250 + base_seed + \
-                        self.rng_settings.minis_seed
-                elif self.rng_settings.mode == "UpdatedMCell":
+                        rng_settings.minis_seed
+                elif rng_settings.mode == "UpdatedMCell":
                     exp_seed1 = sid * 1000 + 200
                     exp_seed2 = source_popid * 16777216 + self.cell_id.id + 250 + \
                         base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                     uniform_seed1 = sid * 1000 + 300
                     uniform_seed2 = source_popid * 16777216 + self.cell_id.id + 250 \
                         + base_seed + \
-                        self.rng_settings.minis_seed
+                        rng_settings.minis_seed
                 else:
                     raise ValueError(
-                        f"Cell: Unknown rng mode: {self.rng_settings.mode}")
+                        f"Cell: Unknown rng mode: {rng_settings.mode}")
 
                 exprng.MCellRan4(exp_seed1, exp_seed2)
                 exprng.negexp(1.0)
