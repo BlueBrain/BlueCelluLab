@@ -50,5 +50,5 @@ class IsolatedProcess(Pool):
     Use this when running isolated NEURON simulations. Running 2 NEURON
     simulations on a single process is to be avoided.
     """
-    def __init__(self):
-        super().__init__(processes=1, maxtasksperchild=1)
+    def __init__(self, processes=1):
+        super().__init__(processes=processes, maxtasksperchild=1)
