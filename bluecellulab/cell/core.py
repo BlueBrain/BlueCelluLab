@@ -110,17 +110,13 @@ class Cell(InjectableMixin, PlottableMixin):
             if emodel_properties is None:
                 raise BluecellulabError('EmodelProperties must be provided for v6 template')
             self.hypamp: float | None = emodel_properties.holding_current
-            self.threshold: float | None = emodel_properties.threshold_current
+            self.threshold: float = emodel_properties.threshold_current
         else:
             try:
                 self.hypamp = self.cell.getHypAmp()
             except AttributeError:
                 self.hypamp = None
-
-            try:
-                self.threshold = self.cell.getThreshold()
-            except AttributeError:
-                self.threshold = None
+            self.threshold = self.cell.getThreshold()
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
