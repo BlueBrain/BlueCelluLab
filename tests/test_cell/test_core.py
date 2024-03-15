@@ -408,6 +408,11 @@ class TestCellV6:
         with pytest.raises(BluecellulabError):
             self.cell.get_voltage_recording(self.cell.basal[0])
 
+    def test_from_template_parameters(self):
+        """Unit test creating Cell from template_parameters."""
+        new_cell = bluecellulab.Cell.from_template_parameters(self.cell.template_params)
+        assert new_cell.template_params == self.cell.template_params
+
 
 @pytest.mark.v6
 def test_add_synapse_replay():
