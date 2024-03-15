@@ -15,11 +15,13 @@ def test_run_stimulus():
     assert len(recording.time) == len(recording.current)
 
 
+# this group is to prevent deadlock
+@pytest.mark.xdist_group(name="isolated-pool")
 def test_apply_multiple_step_stimuli():
     """Test the apply_multiple_step_stimuli function."""
     cell = create_ball_stick()
     amplitudes = [80, 100, 120, 140]
-    recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, duration=40, n_processes=1)
+    recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, duration=400, n_processes=4)
     assert len(recordings) == len(amplitudes)
     for recording in recordings.values():
         assert len(recording.time) > 0
@@ -27,5 +29,5 @@ def test_apply_multiple_step_stimuli():
         assert len(recording.time) == len(recording.current)
 
     with pytest.raises(ValueError) as exc_info:
-        apply_multiple_step_stimuli(cell, "unknown", amplitudes, duration=400)
+        apply_multiple_step_stimuli(cell, "unknown", amplitudes, duration=400, n_processes=4)
     assert "Unknown stimulus name" in str(exc_info.value)
