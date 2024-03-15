@@ -392,6 +392,22 @@ class TestCellV6:
         assert isinstance(self.cell.all, list)
         assert len(self.cell.all) > 0
 
+    def test_add_voltage_recording(self):
+        """Test adding a voltage recording to a section."""
+        self.cell.add_voltage_recording()
+        assert f"neuron.h.{self.cell.soma.name()}(0.5)._ref_v" in self.cell.recordings
+        self.cell.add_voltage_recording(self.cell.apical[1])
+        assert f"neuron.h.{self.cell.apical[1].name()}(0.5)._ref_v" in self.cell.recordings
+
+    def test_get_voltage_recording(self):
+        """Test getting the voltage recording of a section."""
+        self.cell.add_voltage_recording()
+        self.cell.get_voltage_recording()  # get soma voltage recording
+        recording = self.cell.get_voltage_recording(self.cell.soma)
+        assert len(recording) == 0
+        with pytest.raises(BluecellulabError):
+            self.cell.get_voltage_recording(self.cell.basal[0])
+
 
 @pytest.mark.v6
 def test_add_synapse_replay():
