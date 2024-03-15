@@ -1,8 +1,7 @@
 from __future__ import annotations
 """Module for injecting a sequence of protocols to the cell."""
 from enum import Enum, auto
-from typing import NamedTuple, Sequence
-from typing_extensions import TypeAlias
+from typing import NamedTuple, Sequence, Dict
 
 import neuron
 import numpy as np
@@ -29,7 +28,7 @@ class Recording(NamedTuple):
     time: np.ndarray
 
 
-StimulusRecordings: TypeAlias = dict[str, Recording]
+StimulusRecordings = Dict[str, Recording]
 
 
 def run_stimulus(
