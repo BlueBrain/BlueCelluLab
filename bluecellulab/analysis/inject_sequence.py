@@ -1,5 +1,5 @@
-from __future__ import annotations
 """Module for injecting a sequence of protocols to the cell."""
+from __future__ import annotations
 from enum import Enum, auto
 from typing import NamedTuple, Sequence, Dict
 

@@ -1,4 +1,3 @@
-from __future__ import annotations
 """Unit tests for the inject_sequence module."""
 import pytest
 from bluecellulab import create_ball_stick
