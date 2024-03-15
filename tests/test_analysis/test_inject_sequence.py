@@ -19,7 +19,7 @@ def test_apply_multiple_step_stimuli():
     """Test the apply_multiple_step_stimuli function."""
     cell = create_ball_stick()
     amplitudes = [80, 100, 120, 140]
-    recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, duration=400)
+    recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, duration=40, n_processes=1)
     assert len(recordings) == len(amplitudes)
     for recording in recordings.values():
         assert len(recording.time) > 0
