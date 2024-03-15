@@ -100,24 +100,30 @@ def apply_multiple_step_stimuli(
     """
     res: StimulusRecordings = {}
     stim_factory = StimulusFactory(dt=1.0)
-    tasks = []
+    task_args = []
+
+    # Prepare arguments for each stimulus
+    for amplitude in amplitudes:
+        if stimulus_name == StimulusName.AP_WAVEFORM:
+            stimulus = stim_factory.ap_waveform(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        elif stimulus_name == StimulusName.IDREST:
+            stimulus = stim_factory.idrest(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        elif stimulus_name == StimulusName.IV:
+            stimulus = stim_factory.iv(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        elif stimulus_name == StimulusName.FIRE_PATTERN:
+            stimulus = stim_factory.fire_pattern(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        else:
+            raise ValueError("Unknown stimulus name.")
+
+        task_args.append((cell.template_params, stimulus, section, segment, duration))
+
     with IsolatedProcess(processes=n_processes) as pool:
-        for amplitude in amplitudes:
-            if stimulus_name == StimulusName.AP_WAVEFORM:
-                stimulus = stim_factory.ap_waveform(threshold_current=cell.threshold, threshold_percentage=amplitude)
-            elif stimulus_name == StimulusName.IDREST:
-                stimulus = stim_factory.idrest(threshold_current=cell.threshold, threshold_percentage=amplitude)
-            elif stimulus_name == StimulusName.IV:
-                stimulus = stim_factory.iv(threshold_current=cell.threshold, threshold_percentage=amplitude)
-            elif stimulus_name == StimulusName.FIRE_PATTERN:
-                stimulus = stim_factory.fire_pattern(threshold_current=cell.threshold, threshold_percentage=amplitude)
-            else:
-                raise ValueError("Unknown stimulus name.")
+        # Map expects a function and a list of argument tuples
+        results = pool.starmap(run_stimulus, task_args)
 
-            result = pool.apply_async(run_stimulus, [cell.template_params, stimulus, section, segment, duration])
-            tasks.append((f"{stimulus}_{amplitude}", result))
-
-        for key, result in tasks:
-            res[key] = result.get()
+    # Associate each result with a key
+    for amplitude, result in zip(amplitudes, results):
+        key = f"{stimulus_name}_{amplitude}"
+        res[key] = result
 
     return res
