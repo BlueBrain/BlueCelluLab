@@ -11,7 +11,7 @@ def test_run_stimulus():
     """Test the run_stimulus function."""
     template_params = create_ball_stick().template_params
     stimulus = StimulusFactory(dt=1.0).idrest(threshold_current=0.1)
-    recording = run_stimulus(template_params, stimulus, None, 0.5, 50.0)
+    recording = run_stimulus(template_params, stimulus, "soma", 0.5, 50.0)
     assert len(recording.time) > 0
     assert len(recording.time) == len(recording.voltage)
     assert len(recording.time) == len(recording.current)

@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.cell.recording import section_to_voltage_recording_str
 from bluecellulab.psection import PSection, init_psections
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
@@ -44,7 +45,7 @@ from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
-from bluecellulab.type_aliases import HocObjectType, NeuronSection
+from bluecellulab.type_aliases import HocObjectType, NeuronSection, SectionMapping
 
 logger = logging.getLogger(__name__)
 
@@ -154,25 +155,32 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[HocObjectType] = []
 
-    @property
-    def somatic(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).somatic)
+    def extract_sections(self, sections) -> SectionMapping:
+        res: SectionMapping = {}
+        for section in sections:
+            key_name = str(section).split(".")[-1]
+            res[key_name] = section
+        return res
 
     @property
-    def basal(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).basal)
+    def somatic(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).somatic)
 
     @property
-    def apical(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).apical)
+    def basal(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).basal)
 
     @property
-    def axonal(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).axonal)
+    def apical(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).apical)
 
     @property
-    def all(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).all)
+    def axonal(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).axonal)
+
+    @property
+    def all(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
@@ -189,17 +197,17 @@ class Cell(InjectableMixin, PlottableMixin):
         if not self.is_made_passive:
             if use_random123_stochkv:
                 channel_id = 0
-                for section in self.somatic:
+                for section in self.somatic.values():
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
                         neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
                         channel_id += 1
-                for section in self.basal:
+                for section in self.basal.values():
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
                         neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
                         channel_id += 1
-                for section in self.apical:
+                for section in self.apical.values():
                     for seg in section:
                         neuron.h.setdata_StochKv(seg.x, sec=section)
                         neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
@@ -220,7 +228,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
-        for section in self.all:
+        for section in self.all.values():
             mech_names = set()
             for seg in section:
                 for mech in seg:
@@ -255,14 +263,14 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def _default_enable_ttx(self) -> None:
         """Default enable_ttx implementation."""
-        for section in self.all:
+        for section in self.all.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
     def _default_disable_ttx(self) -> None:
         """Default disable_ttx implementation."""
-        for section in self.all:
+        for section in self.all.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
@@ -270,7 +278,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def area(self) -> float:
         """The total surface area of the cell."""
         area = 0.0
-        for section in self.all:
+        for section in self.all.values():
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
             for x in x_s:
@@ -334,7 +342,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if section is None:
             section = self.soma
-        var_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        var_name = section_to_voltage_recording_str(section, segx)
         self.add_recording(var_name, dt)
 
     def get_voltage_recording(
@@ -356,7 +364,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if section is None:
             section = self.soma
-        recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        recording_name = section_to_voltage_recording_str(section, segx)
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
         else:
