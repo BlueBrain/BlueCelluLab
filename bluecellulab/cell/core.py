@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.cell.recording import section_to_voltage_recording_str
 from bluecellulab.psection import PSection, init_psections
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
@@ -44,7 +45,7 @@ from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
-from bluecellulab.type_aliases import HocObjectType, NeuronSection
+from bluecellulab.type_aliases import HocObjectType, NeuronSection, SectionMapping
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +155,13 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[HocObjectType] = []
 
+    def extract_sections(self, sections) -> SectionMapping:
+        res: SectionMapping = {}
+        for section in sections:
+            key_name = str(section).split(".")[-1]
+            res[key_name] = section
+        return res
+
     @property
     def somatic(self) -> list[NeuronSection]:
         return list(public_hoc_cell(self.cell).somatic)
@@ -171,8 +179,8 @@ class Cell(InjectableMixin, PlottableMixin):
         return list(public_hoc_cell(self.cell).axonal)
 
     @property
-    def all(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).all)
+    def sections(self) -> SectionMapping:
+        return self.extract_sections(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
@@ -220,7 +228,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
-        for section in self.all:
+        for section in self.sections.values():
             mech_names = set()
             for seg in section:
                 for mech in seg:
@@ -255,14 +263,14 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def _default_enable_ttx(self) -> None:
         """Default enable_ttx implementation."""
-        for section in self.all:
+        for section in self.sections.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
     def _default_disable_ttx(self) -> None:
         """Default disable_ttx implementation."""
-        for section in self.all:
+        for section in self.sections.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
@@ -270,7 +278,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def area(self) -> float:
         """The total surface area of the cell."""
         area = 0.0
-        for section in self.all:
+        for section in self.sections.values():
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
             for x in x_s:
@@ -334,7 +342,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if section is None:
             section = self.soma
-        var_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        var_name = section_to_voltage_recording_str(section, segx)
         self.add_recording(var_name, dt)
 
     def get_voltage_recording(
@@ -356,7 +364,7 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if section is None:
             section = self.soma
-        recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        recording_name = section_to_voltage_recording_str(section, segx)
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
         else:
@@ -367,15 +375,13 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
-        all_sections = public_hoc_cell(self.cell).all
-        for section in all_sections:
+        for section in self.sections.values():
             self.add_voltage_recording(section, dt=self.record_dt)
 
     def get_allsections_voltagerecordings(self) -> dict[str, np.ndarray]:
         """Get all the voltage recordings from all the sections."""
         all_section_voltages = {}
-        all_sections = public_hoc_cell(self.cell).all
-        for section in all_sections:
+        for section in self.sections.values():
             recording = self.get_voltage_recording(section)
             all_section_voltages[section.name()] = recording
         return all_section_voltages
@@ -453,10 +459,10 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if location == "soma":
             sec = public_hoc_cell(self.cell).soma[0]
-            source = public_hoc_cell(self.cell).soma[0](1)._ref_v
+            source = sec(1)._ref_v
         elif location == "AIS":
             sec = public_hoc_cell(self.cell).axon[1]
-            source = public_hoc_cell(self.cell).axon[1](0.5)._ref_v
+            source = sec(0.5)._ref_v
         else:
             raise ValueError("Spike detection location must be soma or AIS")
         netcon = neuron.h.NetCon(source, target, sec=sec)
@@ -711,7 +717,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def getNumberOfSegments(self) -> int:
         """Get the number of segments in the cell."""
-        return sum(section.nseg for section in self.all)
+        return sum(section.nseg for section in self.sections.values())
 
     def add_synapse_replay(
         self, stimulus: SynapseReplay, spike_threshold: float, spike_location: str

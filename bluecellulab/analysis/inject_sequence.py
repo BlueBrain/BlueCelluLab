@@ -9,7 +9,6 @@ from bluecellulab.cell.core import Cell
 from bluecellulab.cell.template import TemplateParams
 from bluecellulab.simulation.simulation import Simulation
 from bluecellulab.stimulus.factory import Stimulus, StimulusFactory
-from bluecellulab.type_aliases import NeuronSection
 from bluecellulab.utils import IsolatedProcess
 
 
@@ -34,7 +33,7 @@ StimulusRecordings = Dict[str, Recording]
 def run_stimulus(
     template_params: TemplateParams,
     stimulus: Stimulus,
-    section: NeuronSection | None,
+    section: str,
     segment: float,
     duration: float,
 ) -> Recording:
@@ -43,7 +42,7 @@ def run_stimulus(
     Args:
         template_params: The parameters to create the cell from a template.
         stimulus: The input stimulus to inject into the cell.
-        section: The section of the cell where the stimulus is to be injected.
+        section: Name of the section of cell where the stimulus is to be injected.
         segment: The segment of the section where the stimulus is to be injected.
         duration: The duration for which the simulation is to be run.
 
@@ -54,16 +53,17 @@ def run_stimulus(
         ValueError: If the time and voltage arrays are not the same length.
     """
     cell = Cell.from_template_parameters(template_params)
-    cell.add_voltage_recording(section, segment)
+    neuron_section = cell.sections[section]
+    cell.add_voltage_recording(neuron_section, segment)
     iclamp, _ = cell.inject_current_waveform(
-        stimulus.time, stimulus.current, section=section, segx=segment
+        stimulus.time, stimulus.current, section=neuron_section, segx=segment
     )
     current_vector = neuron.h.Vector()
     current_vector.record(iclamp._ref_i)
     simulation = Simulation(cell)
     simulation.run(duration)
     current = np.array(current_vector.to_python())
-    voltage = cell.get_voltage_recording(section, segment)
+    voltage = cell.get_voltage_recording(neuron_section, segment)
     time = cell.get_time()
     if len(time) != len(voltage) or len(time) != len(current):
         raise ValueError("Time, current and voltage arrays are not the same length")
@@ -75,7 +75,7 @@ def apply_multiple_step_stimuli(
     stimulus_name: StimulusName,
     amplitudes: Sequence[float],
     duration: float,
-    section: NeuronSection | None = None,
+    section: str | None = None,
     segment: float = 0.5,
     n_processes: int | None = None,
 ) -> StimulusRecordings:
@@ -86,7 +86,7 @@ def apply_multiple_step_stimuli(
         stimulus_name: The name of the stimulus to apply.
         amplitudes: The amplitudes of the stimuli to apply.
         duration: The duration for which each stimulus is applied.
-        section: The section of the cell where the stimuli are applied.
+        section: The section name of the cell where the stimuli are applied.
           If None, the stimuli are applied at the soma of the cell.
         segment: The segment of the section where the stimuli are applied.
         n_processes: The number of processes to use for running the stimuli.
@@ -101,6 +101,7 @@ def apply_multiple_step_stimuli(
     res: StimulusRecordings = {}
     stim_factory = StimulusFactory(dt=1.0)
     task_args = []
+    section_name = section if section is not None else "soma[0]"
 
     # Prepare arguments for each stimulus
     for amplitude in amplitudes:
@@ -115,7 +116,7 @@ def apply_multiple_step_stimuli(
         else:
             raise ValueError("Unknown stimulus name.")
 
-        task_args.append((cell.template_params, stimulus, section, segment, duration))
+        task_args.append((cell.template_params, stimulus, section_name, segment, duration))
 
     with IsolatedProcess(processes=n_processes) as pool:
         # Map expects a function and a list of argument tuples

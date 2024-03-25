@@ -8,3 +8,5 @@ NeuronRNG: TypeAlias = hoc_type
 NeuronVector: TypeAlias = hoc_type
 NeuronSection: TypeAlias = hoc_type
 TStim: TypeAlias = hoc_type
+
+SectionMapping = dict[str, NeuronSection]

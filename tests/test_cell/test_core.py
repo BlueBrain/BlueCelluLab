@@ -388,9 +388,11 @@ class TestCellV6:
         assert len(self.cell.axonal) > 0
 
     def test_all_sections(self):
-        """Test that the all property returns a non-empty list of all sections."""
-        assert isinstance(self.cell.all, list)
-        assert len(self.cell.all) > 0
+        """Test that the sections property returns a non-empty dict of sections."""
+        assert isinstance(self.cell.sections, dict)
+        assert "axon[0]" in self.cell.sections
+        assert "dend[0]" in self.cell.sections
+        assert len(self.cell.sections) > 0
 
     def test_add_voltage_recording(self):
         """Test adding a voltage recording to a section."""

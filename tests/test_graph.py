@@ -3,6 +3,7 @@
 import networkx as nx
 from pathlib import Path
 
+import matplotlib
 from matplotlib import pyplot as plt
 
 from bluecellulab import SSim
@@ -10,6 +11,7 @@ from bluecellulab.graph import build_graph, plot_graph
 from bluecellulab.circuit import CellId
 
 script_dir = Path(__file__).parent
+matplotlib.use('Agg')  # Use the Agg backend to avoid displaying figures during tests
 
 
 class TestGraph():
