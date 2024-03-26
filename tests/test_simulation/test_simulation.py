@@ -7,6 +7,7 @@ from pytest import approx
 import pytest
 
 import bluecellulab
+from bluecellulab.simulation.neuron_globals import set_temperature
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -54,6 +55,7 @@ class TestCellcSTUTRandom123BaseClass:
 
     def test_run(self):
         """Simulation: Run a simulation with cSTUT and Random123 for 300 ms"""
+        set_temperature(34.0)
         self.sim.run(300, cvode=False, use_random123_stochkv=True)
 
         time = self.cell.get_time()
@@ -90,6 +92,7 @@ class TestCellcSTUTBaseClass:
 
     def test_run(self):
         """Simulation: Run a simulation with cSTUT and MCellRan4 for 300 ms"""
+        set_temperature(34.0)
         self.sim.run(300, cvode=False, use_random123_stochkv=False)
 
         time = self.cell.get_time()

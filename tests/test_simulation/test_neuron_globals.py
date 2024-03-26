@@ -5,7 +5,7 @@ import neuron
 
 from bluecellulab.circuit.config.sections import ConditionEntry, Conditions, MechanismConditions
 from bluecellulab.importer import _load_hoc_and_mod_files
-from bluecellulab.simulation.neuron_globals import set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values, set_tstop_value
+from bluecellulab.simulation.neuron_globals import set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values, set_temperature, set_tstop_value
 
 
 def test_set_tstop_value():
@@ -56,3 +56,10 @@ def test_set_minis_single_vesicle_values():
     assert neuron.h.minis_single_vesicle_ProbAMPANMDA_EMS == 1.0
     assert neuron.h.minis_single_vesicle_ProbGABAAB_EMS == 0.0
     assert neuron.h.minis_single_vesicle_GluSynapse == 0.0
+
+
+def test_set_temperature():
+    """Unit test for set_temperature."""
+    assert neuron.h.celsius != 37.0
+    set_temperature(37.0)
+    assert neuron.h.celsius == 37.0

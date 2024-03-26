@@ -88,7 +88,6 @@ class Simulation:
             cvode=True,
             cvode_minstep=None,
             cvode_maxstep=None,
-            celsius=34,
             v_init=-65,
             dt=0.025,
             forward_skip=None,
@@ -108,7 +107,6 @@ class Simulation:
             self.progress_dt = maxtime / 100
             self.init_progress_callback()
 
-        neuron.h.celsius = celsius
         neuron.h.tstop = maxtime
 
         cvode_old_status = neuron.h.cvode_active()

@@ -25,6 +25,7 @@ import numpy as np
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import UnsteadyCellError
+from bluecellulab.simulation.neuron_globals import set_temperature
 from bluecellulab.utils import CaptureOutput, IsolatedProcess
 
 logger = logging.getLogger(__name__)
@@ -60,6 +61,9 @@ def calculate_SS_voltage(
     template_format: str,
     emodel_properties: EmodelProperties | None,
     step_level: float,
+    check_for_spiking=False,
+    spike_threshold=-20.0,
+    temperature=34.0,
 ) -> float:
     """Calculate the steady state voltage at a certain current step."""
     with IsolatedProcess() as runner:
@@ -71,6 +75,9 @@ def calculate_SS_voltage(
                 template_format,
                 emodel_properties,
                 step_level,
+                check_for_spiking,
+                spike_threshold,
+                temperature,
             ],
         )
     return SS_voltage
@@ -82,8 +89,9 @@ def calculate_SS_voltage_subprocess(
     template_format: str,
     emodel_properties: EmodelProperties | None,
     step_level: float,
-    check_for_spiking=False,
-    spike_threshold=-20.0,
+    check_for_spiking: bool,
+    spike_threshold: float,
+    temperature: float
 ) -> float:
     """Subprocess wrapper of calculate_SS_voltage.
 
@@ -92,6 +100,7 @@ def calculate_SS_voltage_subprocess(
     100ms to the end of the simulation indicating no steady state was
     reached.
     """
+    set_temperature(temperature)
     cell = bluecellulab.Cell(
         template_path=template_path,
         morphology_path=morphology_path,
@@ -116,8 +125,9 @@ def calculate_SS_voltage_subprocess(
     return SS_voltage
 
 
-def holding_current_subprocess(v_hold, enable_ttx, cell_kwargs):
+def holding_current_subprocess(v_hold, temperature, enable_ttx, cell_kwargs):
     """Subprocess wrapper of holding_current."""
+    set_temperature(temperature)
     cell = bluecellulab.Cell(**cell_kwargs)
 
     if enable_ttx:
@@ -144,6 +154,7 @@ def holding_current(
     cell_id: int | tuple[str, int],
     circuit_path: str | Path,
     enable_ttx=False,
+    temperature=34.0,
 ) -> Tuple[float, float]:
     """Calculate the holding current necessary for a given holding voltage."""
     cell_id = bluecellulab.circuit.node_id.create_cell_id(cell_id)
@@ -152,7 +163,7 @@ def holding_current(
     cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
     with IsolatedProcess() as runner:
         i_hold, v_control = runner.apply(
-            holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]
+            holding_current_subprocess, [v_hold, temperature, enable_ttx, cell_kwargs]
         )
 
     return i_hold, v_control

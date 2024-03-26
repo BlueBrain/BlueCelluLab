@@ -8,7 +8,6 @@ except ImportError:
     BLUEPY_AVAILABLE = False
 
 from .importer import *  # NOQA
-from .tools import *  # NOQA
 from .verbosity import *
 from .cell import Cell, create_ball_stick  # NOQA
 from .connection import Connection  # NOQA

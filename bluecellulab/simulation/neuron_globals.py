@@ -65,3 +65,8 @@ def set_minis_single_vesicle_values(mech_conditions: MechanismConditions) -> Non
 def set_tstop_value(tstop: float) -> None:
     """Set the tstop value required by Tstim noise stimuli."""
     neuron.h.tstop = tstop
+
+
+def set_temperature(temperature: float) -> None:
+    """Set the temperature value in NEURON."""
+    neuron.h.celsius = temperature
