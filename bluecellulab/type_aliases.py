@@ -1,5 +1,5 @@
 """Type aliases used within the package."""
-
+from __future__ import annotations
 from typing_extensions import TypeAlias
 from neuron import h as hoc_type
 

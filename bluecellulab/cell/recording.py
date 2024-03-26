@@ -1,4 +1,5 @@
 """Neuron recordings related functions."""
+from __future__ import annotations
 from bluecellulab.type_aliases import NeuronSection
 
 
