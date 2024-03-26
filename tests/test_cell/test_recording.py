@@ -1,6 +1,7 @@
 """Tests for the recording module."""
 from neuron import h
 
+
 def section_to_voltage_recording_str(section: h.Section, segment=0.5) -> str:
     """Converts a section and segment to voltage recording string."""
     return f"neuron.h.{section.name()}({segment})._ref_v"
