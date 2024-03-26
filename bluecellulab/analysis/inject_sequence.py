@@ -75,7 +75,7 @@ def apply_multiple_step_stimuli(
     stimulus_name: StimulusName,
     amplitudes: Sequence[float],
     duration: float,
-    section: str | None = None,
+    section_name: str | None = None,
     segment: float = 0.5,
     n_processes: int | None = None,
 ) -> StimulusRecordings:
@@ -86,8 +86,8 @@ def apply_multiple_step_stimuli(
         stimulus_name: The name of the stimulus to apply.
         amplitudes: The amplitudes of the stimuli to apply.
         duration: The duration for which each stimulus is applied.
-        section: The section name of the cell where the stimuli are applied.
-          If None, the stimuli are applied at the soma of the cell.
+        section_name: Section name of the cell where the stimuli are applied.
+          If None, the stimuli are applied at the soma[0] of the cell.
         segment: The segment of the section where the stimuli are applied.
         n_processes: The number of processes to use for running the stimuli.
 
@@ -101,7 +101,7 @@ def apply_multiple_step_stimuli(
     res: StimulusRecordings = {}
     stim_factory = StimulusFactory(dt=1.0)
     task_args = []
-    section_name = section if section is not None else "soma[0]"
+    section_name = section_name if section_name is not None else "soma[0]"
 
     # Prepare arguments for each stimulus
     for amplitude in amplitudes:
