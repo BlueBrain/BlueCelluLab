@@ -11,7 +11,7 @@ import pytest
 
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
+from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.ssim import SSim
 
@@ -393,6 +393,15 @@ class TestCellV6:
         assert "axon[0]" in self.cell.sections
         assert "dend[0]" in self.cell.sections
         assert len(self.cell.sections) > 0
+
+    def test_extract_sections(self):
+        """Unit test for _extract_sections."""
+        sections = self.cell._extract_sections(public_hoc_cell(self.cell.cell).axonal)
+        assert len(sections) == len(self.cell.axonal)
+
+    def test_n_segments(self):
+        """Unit test for the n_segments method/property."""
+        assert self.cell.n_segments == 247
 
     def test_add_voltage_recording(self):
         """Test adding a voltage recording to a section."""

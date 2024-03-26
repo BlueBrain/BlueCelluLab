@@ -155,7 +155,7 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[HocObjectType] = []
 
-    def extract_sections(self, sections) -> SectionMapping:
+    def _extract_sections(self, sections) -> SectionMapping:
         res: SectionMapping = {}
         for section in sections:
             key_name = str(section).split(".")[-1]
@@ -180,7 +180,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     @property
     def sections(self) -> SectionMapping:
-        return self.extract_sections(public_hoc_cell(self.cell).all)
+        return self._extract_sections(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
@@ -715,7 +715,8 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get a vector of AIS voltage."""
         return self.get_recording('self.axonal[1](0.5)._ref_v')
 
-    def getNumberOfSegments(self) -> int:
+    @property
+    def n_segments(self) -> int:
         """Get the number of segments in the cell."""
         return sum(section.nseg for section in self.sections.values())
 
