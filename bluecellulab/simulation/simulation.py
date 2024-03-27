@@ -92,8 +92,8 @@ class Simulation:
             dt=0.025,
             forward_skip=None,
             forward_skip_value=False,
-            show_progress=None,
-            use_random123_stochkv=False):
+            show_progress=None
+        ):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
@@ -127,7 +127,7 @@ class Simulation:
 
         for cell in self.cells:
             with contextlib.suppress(AttributeError):
-                cell.re_init_rng(use_random123_stochkv=use_random123_stochkv)
+                cell.re_init_rng()
         neuron.h.dt = dt
         neuron.h.steps_per_ms = 1.0 / dt
 

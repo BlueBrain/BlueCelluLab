@@ -160,29 +160,10 @@ class Cell(InjectableMixin, PlottableMixin):
         """Connect this cell to a circuit via sonata proxy."""
         self.sonata_proxy = sonata_proxy
 
-    def re_init_rng(self, use_random123_stochkv: bool = False) -> None:
+    def re_init_rng(self) -> None:
         """Reinitialize the random number generator for stochastic channels."""
-
         if not self.is_made_passive:
-            if use_random123_stochkv:
-                channel_id = 0
-                for section in self.somatic:
-                    for seg in section:
-                        neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
-                        channel_id += 1
-                for section in self.basal:
-                    for seg in section:
-                        neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
-                        channel_id += 1
-                for section in self.apical:
-                    for seg in section:
-                        neuron.h.setdata_StochKv(seg.x, sec=section)
-                        neuron.h.setRNG_StochKv(channel_id, self.cell_id.id)
-                        channel_id += 1
-            else:
-                self.cell.re_init_rng()
+            self.cell.re_init_rng()
 
     def get_psection(self, section_id: int | str) -> PSection:
         """Return a python section with the specified section id."""
