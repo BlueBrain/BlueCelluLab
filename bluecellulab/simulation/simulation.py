@@ -174,6 +174,3 @@ class Simulation:
             neuron.h.cvode_active(cvode_old_status)
 
         logger.debug("Finished simulation.")
-
-    def __del__(self):
-        pass
