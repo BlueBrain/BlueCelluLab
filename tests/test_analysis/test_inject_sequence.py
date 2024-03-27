@@ -50,3 +50,9 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
     with pytest.raises(ValueError) as exc_info:
         apply_multiple_step_stimuli(cell, "unknown", amplitudes, duration=400, n_processes=4)
     assert "Unknown stimulus name" in str(exc_info.value)
+
+    short_amplitudes = [80]
+    other_stim = [StimulusName.AP_WAVEFORM, StimulusName.IV, StimulusName.IDREST]
+    for stim in other_stim:
+        res = apply_multiple_step_stimuli(cell, stim, short_amplitudes, duration=4, n_processes=1)
+        assert len(res) == len(short_amplitudes)
