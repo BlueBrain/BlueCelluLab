@@ -93,7 +93,7 @@ class Simulation:
             forward_skip=None,
             forward_skip_value=False,
             show_progress=None
-        ):
+    ):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
