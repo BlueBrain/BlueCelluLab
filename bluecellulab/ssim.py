@@ -47,7 +47,6 @@ import bluecellulab.stimulus.circuit_stimulus_definitions as circuit_stimulus_de
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.simulation import (
     set_global_condition_parameters,
-    set_tstop_value
 )
 from bluecellulab.synapse.synapse_types import SynapseID
 
@@ -106,11 +105,6 @@ class SSim:
         self.cells: CellDict = CellDict()
 
         self.gids_instantiated = False
-
-        # Make sure tstop is set correctly, because it is used by the
-        # TStim noise stimulus
-        if self.circuit_access.config.duration is not None:
-            set_tstop_value(self.circuit_access.config.duration)
 
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location

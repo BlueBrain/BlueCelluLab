@@ -4,14 +4,7 @@ import pytest
 import neuron
 
 from bluecellulab.circuit.config.sections import ConditionEntry, Conditions, MechanismConditions
-from bluecellulab.importer import _load_hoc_and_mod_files
-from bluecellulab.simulation.neuron_globals import set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values, set_temperature, set_tstop_value
-
-
-def test_set_tstop_value():
-    _load_hoc_and_mod_files()  # this is a run_once function
-    set_tstop_value(100.0)
-    assert neuron.h.tstop == 100.0
+from bluecellulab.simulation.neuron_globals import set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values, set_temperature
 
 
 @mock.patch("neuron.h")
