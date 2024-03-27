@@ -11,7 +11,7 @@ import pytest
 
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
+from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.ssim import SSim
 
@@ -388,9 +388,41 @@ class TestCellV6:
         assert len(self.cell.axonal) > 0
 
     def test_all_sections(self):
-        """Test that the all property returns a non-empty list of all sections."""
-        assert isinstance(self.cell.all, list)
-        assert len(self.cell.all) > 0
+        """Test that the sections property returns a non-empty dict of sections."""
+        assert isinstance(self.cell.sections, dict)
+        assert "axon[0]" in self.cell.sections
+        assert "dend[0]" in self.cell.sections
+        assert len(self.cell.sections) > 0
+
+    def test_extract_sections(self):
+        """Unit test for _extract_sections."""
+        sections = self.cell._extract_sections(public_hoc_cell(self.cell.cell).axonal)
+        assert len(sections) == len(self.cell.axonal)
+
+    def test_n_segments(self):
+        """Unit test for the n_segments method/property."""
+        assert self.cell.n_segments == 247
+
+    def test_add_voltage_recording(self):
+        """Test adding a voltage recording to a section."""
+        self.cell.add_voltage_recording()
+        assert f"neuron.h.{self.cell.soma.name()}(0.5)._ref_v" in self.cell.recordings
+        self.cell.add_voltage_recording(self.cell.apical[1])
+        assert f"neuron.h.{self.cell.apical[1].name()}(0.5)._ref_v" in self.cell.recordings
+
+    def test_get_voltage_recording(self):
+        """Test getting the voltage recording of a section."""
+        self.cell.add_voltage_recording()
+        self.cell.get_voltage_recording()  # get soma voltage recording
+        recording = self.cell.get_voltage_recording(self.cell.soma)
+        assert len(recording) == 0
+        with pytest.raises(BluecellulabError):
+            self.cell.get_voltage_recording(self.cell.basal[0])
+
+    def test_from_template_parameters(self):
+        """Unit test creating Cell from template_parameters."""
+        new_cell = bluecellulab.Cell.from_template_parameters(self.cell.template_params)
+        assert new_cell.template_params == self.cell.template_params
 
 
 @pytest.mark.v6

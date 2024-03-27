@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 import re
 import string
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import neuron
 
@@ -42,6 +42,13 @@ def public_hoc_cell(cell: HocObjectType) -> HocObjectType:
     else:
         raise BluecellulabError("""Public cell properties cannot be accessed
          from the hoc model. Either getCell() or CellRef needs to be provided""")
+
+
+class TemplateParams(NamedTuple):
+    template_filepath: str | Path
+    morph_filepath: str | Path
+    template_format: str
+    emodel_properties: Optional[EmodelProperties]
 
 
 class NeuronTemplate:
