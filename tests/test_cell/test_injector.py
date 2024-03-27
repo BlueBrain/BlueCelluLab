@@ -13,7 +13,6 @@ import bluecellulab
 
 from bluecellulab.circuit import SonataCircuitAccess
 from bluecellulab.circuit.node_id import CellId
-from bluecellulab.simulation.neuron_globals import set_temperature
 from bluecellulab.stimulus.circuit_stimulus_definitions import (
     Pulse,
     Noise,
@@ -97,7 +96,6 @@ class TestInjector:
         assert seclamp_obj.dur1 == stop_time
         assert seclamp_obj.rs == rs
 
-        set_temperature(34.0)
         self.sim.run(10, dt=1, cvode=False)
         current = self.cell.get_recording("test_volt_clamp")
         assert current == approx(np.array(
@@ -120,7 +118,6 @@ class TestInjector:
         assert seclamp_obj.dur1 == stop_time
         assert seclamp_obj.rs == rs
 
-        set_temperature(34.0)
         self.sim.run(10, dt=1, cvode=False)
         current = self.cell.get_recording("test_volt_clamp_dt")
         assert current == approx(np.array(

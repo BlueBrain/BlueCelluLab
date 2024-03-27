@@ -41,7 +41,7 @@ from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
 from bluecellulab.importer import load_hoc_and_mod_files
 from bluecellulab.rngsettings import RNGSettings
-from bluecellulab.simulation.neuron_globals import set_temperature
+from bluecellulab.simulation.neuron_globals import NeuronGlobals
 from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
 import bluecellulab.stimulus.circuit_stimulus_definitions as circuit_stimulus_definitions
 from bluecellulab.exceptions import BluecellulabError
@@ -591,7 +591,7 @@ class SSim:
             forward_skip_value = self.circuit_access.config.forward_skip
         if celsius is None:
             celsius = self.circuit_access.config.celsius
-            set_temperature(celsius)
+            NeuronGlobals.get_instance().temperature = celsius
         if v_init is None:
             v_init = self.circuit_access.config.v_init
 

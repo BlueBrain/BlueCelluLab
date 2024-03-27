@@ -7,7 +7,6 @@ from pytest import approx
 import pytest
 
 import bluecellulab
-from bluecellulab.simulation.neuron_globals import set_temperature
 
 parent_dir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -56,7 +55,6 @@ class TestCellcSTUTBaseClass:
 
     def test_run(self):
         """Simulation: Run a simulation with cSTUT and MCellRan4 for 300 ms"""
-        set_temperature(34.0)
         self.sim.run(300, cvode=False)
 
         time = self.cell.get_time()

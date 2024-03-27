@@ -24,7 +24,6 @@ def test_calculate_SS_voltage_subprocess():
         emodel_properties=None,
         step_level=0,
         spike_threshold=-20,
-        temperature=34.0,
         check_for_spiking=False,
     )
     assert abs(SS_voltage - -73.9235504304) < 0.001
@@ -37,8 +36,6 @@ def test_calculate_SS_voltage_subprocess():
         step_level=0,
         check_for_spiking=False,
         spike_threshold=-20,
-        temperature=34.0,
-
     )
     assert abs(SS_voltage_stoch - -73.9235504304) < 0.001
 
@@ -126,7 +123,6 @@ class TestOnSonataCell:
                 step_level=step_level,
                 check_for_spiking=True,
                 spike_threshold=-20,
-                temperature=34.0,
             )
 
     def test_template_accepts_cvode(self):
@@ -220,7 +216,7 @@ class TestOnSonataCircuit:
         cell_id = bluecellulab.circuit.node_id.create_cell_id(self.cell_id)
         cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
         i_hold, v_control = holding_current_subprocess(
-            v_hold, temperature=34.0, enable_ttx=True, cell_kwargs=cell_kwargs
+            v_hold, enable_ttx=True, cell_kwargs=cell_kwargs
         )
         assert i_hold == pytest.approx(-0.03160848349)
         assert v_control == pytest.approx(v_hold)

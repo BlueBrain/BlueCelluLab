@@ -13,7 +13,6 @@ import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.cell.template import NeuronTemplate, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.simulation.neuron_globals import set_temperature
 from bluecellulab.ssim import SSim
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -272,7 +271,6 @@ class TestCellSpikes:
         """Cell: Test get_recorded_spikes."""
         self.cell.start_recording_spikes(None, "soma", -30)
         self.cell.add_step(start_time=2.0, stop_time=22.0, level=1.0)
-        set_temperature(34.0)
         self.sim.run(24, cvode=False)
         spikes = self.cell.get_recorded_spikes("soma")
         ground_truth = [3.350000000100014, 11.52500000009988, 19.9750000000994]

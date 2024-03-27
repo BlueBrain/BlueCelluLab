@@ -18,3 +18,8 @@ from .psegment import PSegment  # NOQA
 from .simulation import Simulation  # NOQA
 from .rngsettings import RNGSettings  # NOQA
 from .ssim import SSim  # NOQA
+
+
+from .simulation.neuron_globals import NeuronGlobals
+
+_ = NeuronGlobals.get_instance()  # initiate the singleton

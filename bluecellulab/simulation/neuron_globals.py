@@ -62,6 +62,27 @@ def set_minis_single_vesicle_values(mech_conditions: MechanismConditions) -> Non
             )
 
 
-def set_temperature(temperature: float) -> None:
-    """Set the temperature value in NEURON."""
-    neuron.h.celsius = temperature
+class NeuronGlobals:
+    _instance = None
+
+    def __init__(self):
+        raise RuntimeError('Call get_instance() instead')
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls.__new__(cls)
+            # Initialize default values
+            cls._instance._temperature = 34.0  # Default temperature
+            # Set the default values in NEURON
+            neuron.h.celsius = cls._instance._temperature
+        return cls._instance
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        self._temperature = value
+        neuron.h.celsius = value
