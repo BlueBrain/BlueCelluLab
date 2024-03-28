@@ -3,6 +3,7 @@ clean:
 	rm -rf *.png
 
 	rm -f .coverage
+	rm -f .coverage.*
 	rm -f *.coverage
 	rm -f coverage.xml
 	rm -f *.nrndat

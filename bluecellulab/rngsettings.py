@@ -20,7 +20,7 @@ from typing import Optional
 import neuron
 from bluecellulab.circuit.config.definition import SimulationConfig
 from bluecellulab.exceptions import UndefinedRNGException
-from bluecellulab.importer import load_hoc_and_mod_files
+from bluecellulab.importer import load_mod_files
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class RNGSettings:
             cls._instance = cls()
         return cls._instance
 
-    @load_hoc_and_mod_files
+    @load_mod_files
     def __init__(
         self,
         mode="Random123",

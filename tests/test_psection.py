@@ -2,7 +2,8 @@
 
 import pytest
 from pathlib import Path
-from bluecellulab import Cell, EmodelProperties
+from bluecellulab import Cell
+from bluecellulab.circuit.circuit_access.definition import EmodelProperties
 from bluecellulab.psection import init_psections
 from bluecellulab.cell.template import public_hoc_cell
 

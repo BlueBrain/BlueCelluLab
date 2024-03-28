@@ -39,14 +39,14 @@ from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
-from bluecellulab.importer import load_hoc_and_mod_files
+from bluecellulab.importer import load_mod_files
 from bluecellulab.rngsettings import RNGSettings
+from bluecellulab.simulation.neuron_globals import NeuronGlobals
 from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
 import bluecellulab.stimulus.circuit_stimulus_definitions as circuit_stimulus_definitions
 from bluecellulab.exceptions import BluecellulabError
 from bluecellulab.simulation import (
     set_global_condition_parameters,
-    set_tstop_value
 )
 from bluecellulab.synapse.synapse_types import SynapseID
 
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
-    @load_hoc_and_mod_files
+    @load_mod_files
     def __init__(
         self,
         simulation_config: str | Path | SimulationConfig,
@@ -105,11 +105,6 @@ class SSim:
         self.cells: CellDict = CellDict()
 
         self.gids_instantiated = False
-
-        # Make sure tstop is set correctly, because it is used by the
-        # TStim noise stimulus
-        if self.circuit_access.config.duration is not None:
-            set_tstop_value(self.circuit_access.config.duration)
 
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
@@ -596,8 +591,10 @@ class SSim:
             forward_skip_value = self.circuit_access.config.forward_skip
         if celsius is None:
             celsius = self.circuit_access.config.celsius
+            NeuronGlobals.get_instance().temperature = celsius
         if v_init is None:
             v_init = self.circuit_access.config.v_init
+            NeuronGlobals.get_instance().v_init = v_init
 
         sim = bluecellulab.Simulation(self.pc)
         for cell_id in self.cells:
@@ -612,8 +609,6 @@ class SSim:
             t_stop,
             cvode=cvode,
             dt=dt,
-            celsius=celsius,
-            v_init=v_init,
             forward_skip=forward_skip,
             forward_skip_value=forward_skip_value,
             show_progress=show_progress)

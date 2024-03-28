@@ -8,7 +8,8 @@ import pytest
 import bluecellulab
 from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
-from bluecellulab.tools import template_accepts_cvode, check_empty_topology
+from bluecellulab.exceptions import UnsteadyCellError
+from bluecellulab.tools import calculate_SS_voltage, calculate_SS_voltage_subprocess, calculate_input_resistance, detect_hyp_current, detect_spike, detect_spike_step, detect_spike_step_subprocess, holding_current, holding_current_subprocess, search_threshold_current, template_accepts_cvode, check_empty_topology
 
 script_dir = Path(__file__).parent
 
@@ -16,20 +17,26 @@ script_dir = Path(__file__).parent
 @pytest.mark.v5
 def test_calculate_SS_voltage_subprocess():
     """Tools: Test calculate_SS_voltage"""
-    SS_voltage = bluecellulab.calculate_SS_voltage_subprocess(
+    SS_voltage = calculate_SS_voltage_subprocess(
         template_path=script_dir / "examples/cell_example1/test_cell.hoc",
         morphology_path=script_dir / "examples/cell_example1",
         template_format="v5",
         emodel_properties=None,
-        step_level=0)
+        step_level=0,
+        spike_threshold=-20,
+        check_for_spiking=False,
+    )
     assert abs(SS_voltage - -73.9235504304) < 0.001
 
-    SS_voltage_stoch = bluecellulab.calculate_SS_voltage_subprocess(
+    SS_voltage_stoch = calculate_SS_voltage_subprocess(
         template_path=script_dir / "examples/cell_example2/test_cell.hoc",
         morphology_path=script_dir / "examples/cell_example2",
         template_format="v5",
         emodel_properties=None,
-        step_level=0)
+        step_level=0,
+        check_for_spiking=False,
+        spike_threshold=-20,
+    )
     assert abs(SS_voltage_stoch - -73.9235504304) < 0.001
 
 
@@ -38,19 +45,19 @@ def test_detect_spike():
 
     # Case where there is a spike
     voltage_with_spike = np.array([-80, -70, -50, -10, -60, -80])
-    assert bluecellulab.detect_spike(voltage_with_spike) is True
+    assert detect_spike(voltage_with_spike) is True
 
     # Case where there is no spike
     voltage_without_spike = np.array([-80, -70, -60, -50, -60, -80])
-    assert bluecellulab.detect_spike(voltage_without_spike) is False
+    assert detect_spike(voltage_without_spike) is False
 
     # Edge case where the voltage reaches exactly -20 mV but does not surpass it
     voltage_at_edge = np.array([-80, -70, -60, -20, -60, -80])
-    assert bluecellulab.detect_spike(voltage_at_edge) is False
+    assert detect_spike(voltage_at_edge) is False
 
     # Test with an empty array
     voltage_empty = np.array([])
-    assert bluecellulab.detect_spike(voltage_empty) is False
+    assert detect_spike(voltage_empty) is False
 
 
 @pytest.mark.v6
@@ -72,7 +79,7 @@ class TestOnSonataCell:
     def test_detect_hyp_current(self):
         """Unit test detect_hyp_current."""
         target_voltage = -85
-        hyp_current = bluecellulab.detect_hyp_current(
+        hyp_current = detect_hyp_current(
             template_path=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -83,7 +90,7 @@ class TestOnSonataCell:
 
     def test_calculate_input_resistance(self):
         """Unit test calculate_input_resistance."""
-        input_resistance = bluecellulab.calculate_input_resistance(
+        input_resistance = calculate_input_resistance(
             template_path=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -95,7 +102,7 @@ class TestOnSonataCell:
     def test_calculate_SS_voltage(self):
         """Unit test calculate_SS_voltage."""
         step_level = 0
-        SS_voltage = bluecellulab.calculate_SS_voltage(
+        SS_voltage = calculate_SS_voltage(
             template_path=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -107,14 +114,15 @@ class TestOnSonataCell:
     def test_calculate_SS_voltage_subprocess_exception(self):
         """Unit test calculate_SS_voltage_subprocess."""
         step_level = 2
-        with pytest.raises(bluecellulab.UnsteadyCellError):
-            _ = bluecellulab.calculate_SS_voltage_subprocess(
+        with pytest.raises(UnsteadyCellError):
+            _ = calculate_SS_voltage_subprocess(
                 template_path=self.template_name,
                 morphology_path=self.morphology_path,
                 template_format=self.template_format,
                 emodel_properties=self.emodel_properties,
                 step_level=step_level,
                 check_for_spiking=True,
+                spike_threshold=-20,
             )
 
     def test_template_accepts_cvode(self):
@@ -131,7 +139,7 @@ class TestOnSonataCell:
         inj_stop = 200  # some stop time for the current injection
         step_level = 4  # some current level for the step
 
-        spike_occurred = bluecellulab.detect_spike_step(
+        spike_occurred = detect_spike_step(
             template_path=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -149,7 +157,7 @@ class TestOnSonataCell:
         inj_start, inj_stop = 100, 200
         min_current, max_current = 0, 10
 
-        threshold_current = bluecellulab.search_threshold_current(
+        threshold_current = search_threshold_current(
             template_name=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -169,7 +177,7 @@ class TestOnSonataCell:
         inj_stop = 200
         step_level = 4
 
-        spike_occurred = bluecellulab.detect_spike_step_subprocess(
+        spike_occurred = detect_spike_step_subprocess(
             template_path=self.template_name,
             morphology_path=self.morphology_path,
             template_format=self.template_format,
@@ -194,7 +202,7 @@ class TestOnSonataCircuit:
     def test_holding_current(self):
         """Unit test for holding_current on a SONATA circuit."""
         v_hold = -70  # arbitrary holding voltage for the test
-        i_hold, v_control = bluecellulab.holding_current(
+        i_hold, v_control = holding_current(
             v_hold, cell_id=self.cell_id, circuit_path=self.circuit_path
         )
 
@@ -207,7 +215,7 @@ class TestOnSonataCircuit:
         ssim = bluecellulab.SSim(self.circuit_path)
         cell_id = bluecellulab.circuit.node_id.create_cell_id(self.cell_id)
         cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
-        i_hold, v_control = bluecellulab.holding_current_subprocess(
+        i_hold, v_control = holding_current_subprocess(
             v_hold, enable_ttx=True, cell_kwargs=cell_kwargs
         )
         assert i_hold == pytest.approx(-0.03160848349)
