@@ -74,6 +74,7 @@ class NeuronGlobals:
             cls._instance = cls.__new__(cls)
             # Initialize default values
             cls._instance._temperature = 34.0  # Default temperature
+            cls._instance.v_init = neuron.h.v_init
             # Set the default values in NEURON
             neuron.h.celsius = cls._instance._temperature
         return cls._instance
@@ -86,3 +87,12 @@ class NeuronGlobals:
     def temperature(self, value):
         self._temperature = value
         neuron.h.celsius = value
+
+    @property
+    def v_init(self):
+        return self._v_init
+
+    @v_init.setter
+    def v_init(self, value):
+        self._v_init = value
+        neuron.h.v_init = value

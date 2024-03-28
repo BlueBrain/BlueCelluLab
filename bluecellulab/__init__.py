@@ -22,4 +22,6 @@ from .ssim import SSim  # NOQA
 
 from .simulation.neuron_globals import NeuronGlobals
 
+logger.debug("Loading the hoc files.")
+import_hoc(neuron)
 _ = NeuronGlobals.get_instance()  # initiate the singleton

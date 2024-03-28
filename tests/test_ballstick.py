@@ -11,6 +11,7 @@ import numpy as np
 
 import bluecellulab
 from bluecellulab import create_ball_stick
+from bluecellulab.simulation.neuron_globals import NeuronGlobals
 
 script_dir = os.path.dirname(__file__)
 
@@ -172,7 +173,8 @@ def run_bluecellulab(params):
 
     sim = bluecellulab.Simulation()
     sim.add_cell(cell)
-    sim.run(params.T_STOP, v_init=params.V_INIT, cvode=False, dt=params.DT)
+    NeuronGlobals.get_instance().v_init = params.V_INIT
+    sim.run(params.T_STOP, cvode=False, dt=params.DT)
     bluecellulab_t = cell.get_time()
     bluecellulab_v = cell.get_soma_voltage()
 

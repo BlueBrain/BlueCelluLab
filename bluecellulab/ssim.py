@@ -39,7 +39,7 @@ from bluecellulab.circuit.config import SimulationConfig
 from bluecellulab.circuit.format import determine_circuit_format, CircuitFormat
 from bluecellulab.circuit.node_id import create_cell_id, create_cell_ids
 from bluecellulab.circuit.simulation_access import BluepySimulationAccess, SimulationAccess, SonataSimulationAccess, _sample_array
-from bluecellulab.importer import load_hoc_and_mod_files
+from bluecellulab.importer import load_mod_files
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.simulation.neuron_globals import NeuronGlobals
 from bluecellulab.stimulus.circuit_stimulus_definitions import Noise, OrnsteinUhlenbeck, RelativeOrnsteinUhlenbeck, RelativeShotNoise, ShotNoise
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 class SSim:
     """Class that loads a circuit simulation to do cell simulations."""
 
-    @load_hoc_and_mod_files
+    @load_mod_files
     def __init__(
         self,
         simulation_config: str | Path | SimulationConfig,
@@ -594,6 +594,7 @@ class SSim:
             NeuronGlobals.get_instance().temperature = celsius
         if v_init is None:
             v_init = self.circuit_access.config.v_init
+            NeuronGlobals.get_instance().v_init = v_init
 
         sim = bluecellulab.Simulation(self.pc)
         for cell_id in self.cells:
@@ -608,7 +609,6 @@ class SSim:
             t_stop,
             cvode=cvode,
             dt=dt,
-            v_init=v_init,
             forward_skip=forward_skip,
             forward_skip_value=forward_skip_value,
             show_progress=show_progress)

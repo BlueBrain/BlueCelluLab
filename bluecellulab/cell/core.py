@@ -38,7 +38,7 @@ from bluecellulab.circuit import EmodelProperties, SynapseProperty
 from bluecellulab.circuit.node_id import CellId
 from bluecellulab.circuit.simulation_access import get_synapse_replay_spikes
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.importer import load_hoc_and_mod_files
+from bluecellulab.importer import load_mod_files
 from bluecellulab.neuron_interpreter import eval_neuron
 from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
@@ -54,7 +54,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     last_id = 0
 
-    @load_hoc_and_mod_files
+    @load_mod_files
     def __init__(self,
                  template_path: str | Path,
                  morphology_path: str | Path,

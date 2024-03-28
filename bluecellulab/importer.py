@@ -52,8 +52,8 @@ def import_mod_lib(neuron: ModuleType) -> str:
     return res
 
 
-def import_neurodamus(neuron: ModuleType) -> None:
-    """Import neurodamus."""
+def import_hoc(neuron: ModuleType) -> None:
+    """Import hoc dependencies."""
     neuron.h.load_file("stdrun.hoc")  # nrn
     hoc_files = [
         "Cell.hoc",  # ND
@@ -75,17 +75,15 @@ def print_header(neuron: ModuleType, mod_lib_path: str) -> None:
 
 
 @run_once
-def _load_hoc_and_mod_files() -> None:
+def _load_mod_files() -> None:
     """Import hoc and mod files."""
     logger.debug("Loading the mod files.")
     mod_lib_paths = import_mod_lib(neuron)
-    logger.debug("Loading the hoc files.")
-    import_neurodamus(neuron)
     print_header(neuron, mod_lib_paths)
 
 
-def load_hoc_and_mod_files(func):
+def load_mod_files(func):
     def wrapper(*args, **kwargs):
-        _load_hoc_and_mod_files()
+        _load_mod_files()
         return func(*args, **kwargs)
     return wrapper

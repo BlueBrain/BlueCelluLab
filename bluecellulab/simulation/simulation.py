@@ -88,7 +88,6 @@ class Simulation:
             cvode=True,
             cvode_minstep=None,
             cvode_maxstep=None,
-            v_init=-65,
             dt=0.025,
             forward_skip=None,
             forward_skip_value=False,
@@ -122,8 +121,6 @@ class Simulation:
                                "temporarily disabling it in run() because cvode=False "
                                "was set")
             neuron.h.cvode_active(0)
-
-        neuron.h.v_init = v_init
 
         for cell in self.cells:
             with contextlib.suppress(AttributeError):
