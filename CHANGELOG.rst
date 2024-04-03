@@ -1,6 +1,13 @@
 Changelog
 ==========
 
+2.4.1
+------
+
+* add analysis/inject_sequence.py to inject multiple stim to the same cell in isolation
+* core.py:: rename attribute 'all' to 'sections'
+* have a class TemplateParams to represent all template related values
+
 2.4.0
 ------
 
