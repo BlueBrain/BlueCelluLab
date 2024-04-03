@@ -72,6 +72,14 @@ def test_public_hoc_cell_v6_template():
     assert hoc_public.gid == 5.0
 
 
+def test_public_hoc_cell_v6_template_raises_bluecellulaberror():
+    """Test when NeuronTemplate constructor raises a BluecellulabError."""
+    with pytest.raises(BluecellulabError) as excinfo:
+        template = NeuronTemplate(v6_hoc_path, v6_morph_path, "v6", emodel_properties=None)
+        cell = template.get_cell(5)
+    assert "EmodelProperties must be provided for template format v6 that specifies _NeededAttributes" in str(excinfo.value)
+
+
 def test_public_hoc_cell_failure():
     """Unit test for public_hoc_cell when neither getCell nor CellRef is provided."""
     cell_without_getCell_or_CellRef = Mock(spec=[])  # spec=[] ensures no attributes exist

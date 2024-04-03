@@ -27,12 +27,13 @@ import numpy as np
 import pandas as pd
 
 import bluecellulab
+from bluecellulab.cell.recording import section_to_voltage_recording_str
 from bluecellulab.psection import PSection, init_psections
 from bluecellulab.cell.injector import InjectableMixin
 from bluecellulab.cell.plotting import PlottableMixin
 from bluecellulab.cell.section_distance import EuclideanSectionDistance
 from bluecellulab.cell.sonata_proxy import SonataProxy
-from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell
+from bluecellulab.cell.template import NeuronTemplate, TemplateParams, public_hoc_cell
 from bluecellulab.circuit.config.sections import Conditions
 from bluecellulab.circuit import EmodelProperties, SynapseProperty
 from bluecellulab.circuit.node_id import CellId
@@ -44,7 +45,7 @@ from bluecellulab.rngsettings import RNGSettings
 from bluecellulab.stimulus.circuit_stimulus_definitions import SynapseReplay
 from bluecellulab.synapse import SynapseFactory, Synapse
 from bluecellulab.synapse.synapse_types import SynapseID
-from bluecellulab.type_aliases import HocObjectType, NeuronSection
+from bluecellulab.type_aliases import HocObjectType, NeuronSection, SectionMapping
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,24 @@ class Cell(InjectableMixin, PlottableMixin):
     """Represents a Cell object."""
 
     last_id = 0
+
+    @classmethod
+    def from_template_parameters(
+        cls, template_params: TemplateParams, cell_id: Optional[CellId] = None,
+        record_dt: Optional[float] = None
+    ) -> Cell:
+        """Create a cell from a TemplateParams object.
+
+        Useful in isolating runs.
+        """
+        return cls(
+            template_path=template_params.template_filepath,
+            morphology_path=template_params.morph_filepath,
+            cell_id=cell_id,
+            record_dt=record_dt,
+            template_format=template_params.template_format,
+            emodel_properties=template_params.emodel_properties,
+        )
 
     @load_hoc_and_mod_files
     def __init__(self,
@@ -73,6 +92,12 @@ class Cell(InjectableMixin, PlottableMixin):
             emodel_properties: Template specific emodel properties.
         """
         super().__init__()
+        self.template_params = TemplateParams(
+            template_filepath=template_path,
+            morph_filepath=morphology_path,
+            template_format=template_format,
+            emodel_properties=emodel_properties,
+        )
         if cell_id is None:
             cell_id = CellId("", Cell.last_id)
             Cell.last_id += 1
@@ -86,17 +111,16 @@ class Cell(InjectableMixin, PlottableMixin):
             if emodel_properties is None:
                 raise BluecellulabError('EmodelProperties must be provided for v6 template')
             self.hypamp: float | None = emodel_properties.holding_current
-            self.threshold: float | None = emodel_properties.threshold_current
+            self.threshold: float = emodel_properties.threshold_current
         else:
             try:
                 self.hypamp = self.cell.getHypAmp()
             except AttributeError:
                 self.hypamp = None
-
             try:
                 self.threshold = self.cell.getThreshold()
             except AttributeError:
-                self.threshold = None
+                self.threshold = 0.0
         self.soma = public_hoc_cell(self.cell).soma[0]
         # WARNING: this finitialize 'must' be here, otherwhise the
         # diameters of the loaded morph are wrong
@@ -131,6 +155,13 @@ class Cell(InjectableMixin, PlottableMixin):
         # as the object exists
         self.persistent: list[HocObjectType] = []
 
+    def _extract_sections(self, sections) -> SectionMapping:
+        res: SectionMapping = {}
+        for section in sections:
+            key_name = str(section).split(".")[-1]
+            res[key_name] = section
+        return res
+
     @property
     def somatic(self) -> list[NeuronSection]:
         return list(public_hoc_cell(self.cell).somatic)
@@ -148,8 +179,8 @@ class Cell(InjectableMixin, PlottableMixin):
         return list(public_hoc_cell(self.cell).axonal)
 
     @property
-    def all(self) -> list[NeuronSection]:
-        return list(public_hoc_cell(self.cell).all)
+    def sections(self) -> SectionMapping:
+        return self._extract_sections(public_hoc_cell(self.cell).all)
 
     def __repr__(self) -> str:
         base_info = f"Cell Object: {super().__repr__()}"
@@ -197,7 +228,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def make_passive(self) -> None:
         """Make the cell passive by deactivating all the active channels."""
-        for section in self.all:
+        for section in self.sections.values():
             mech_names = set()
             for seg in section:
                 for mech in seg:
@@ -232,14 +263,14 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def _default_enable_ttx(self) -> None:
         """Default enable_ttx implementation."""
-        for section in self.all:
+        for section in self.sections.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1.0
 
     def _default_disable_ttx(self) -> None:
         """Default disable_ttx implementation."""
-        for section in self.all:
+        for section in self.sections.values():
             if not neuron.h.ismembrane("TTXDynamicsSwitch"):
                 section.insert('TTXDynamicsSwitch')
             section.ttxo_level_TTXDynamicsSwitch = 1e-14
@@ -247,7 +278,7 @@ class Cell(InjectableMixin, PlottableMixin):
     def area(self) -> float:
         """The total surface area of the cell."""
         area = 0.0
-        for section in self.all:
+        for section in self.sections.values():
             x_s = np.arange(1.0 / (2 * section.nseg), 1.0,
                             1.0 / (section.nseg))
             for x in x_s:
@@ -297,7 +328,7 @@ class Cell(InjectableMixin, PlottableMixin):
         self.add_recording("self.axonal[1](0.5)._ref_v", dt=dt)
 
     def add_voltage_recording(
-        self, section: "neuron.h.Section", segx: float = 0.5, dt: Optional[float] = None
+        self, section: Optional[NeuronSection] = None, segx: float = 0.5, dt: Optional[float] = None
     ) -> None:
         """Add a voltage recording to a certain section at a given segment
         (segx).
@@ -309,11 +340,13 @@ class Cell(InjectableMixin, PlottableMixin):
             dt: Recording time step. If not provided, the recording step will
                 default to the simulator's time step.
         """
-        var_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        if section is None:
+            section = self.soma
+        var_name = section_to_voltage_recording_str(section, segx)
         self.add_recording(var_name, dt)
 
     def get_voltage_recording(
-        self, section: "neuron.h.Section", segx: float = 0.5
+        self, section: Optional[NeuronSection] = None, segx: float = 0.5
     ) -> np.ndarray:
         """Get a voltage recording for a certain section at a given segment
         (segx).
@@ -329,7 +362,9 @@ class Cell(InjectableMixin, PlottableMixin):
         Raises:
             BluecellulabError: If voltage recording was not added previously using add_voltage_recording.
         """
-        recording_name = f"neuron.h.{section.name()}({segx})._ref_v"
+        if section is None:
+            section = self.soma
+        recording_name = section_to_voltage_recording_str(section, segx)
         if recording_name in self.recordings:
             return self.get_recording(recording_name)
         else:
@@ -340,15 +375,13 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def add_allsections_voltagerecordings(self):
         """Add a voltage recording to every section of the cell."""
-        all_sections = public_hoc_cell(self.cell).all
-        for section in all_sections:
+        for section in self.sections.values():
             self.add_voltage_recording(section, dt=self.record_dt)
 
     def get_allsections_voltagerecordings(self) -> dict[str, np.ndarray]:
         """Get all the voltage recordings from all the sections."""
         all_section_voltages = {}
-        all_sections = public_hoc_cell(self.cell).all
-        for section in all_sections:
+        for section in self.sections.values():
             recording = self.get_voltage_recording(section)
             all_section_voltages[section.name()] = recording
         return all_section_voltages
@@ -426,10 +459,10 @@ class Cell(InjectableMixin, PlottableMixin):
         """
         if location == "soma":
             sec = public_hoc_cell(self.cell).soma[0]
-            source = public_hoc_cell(self.cell).soma[0](1)._ref_v
+            source = sec(1)._ref_v
         elif location == "AIS":
             sec = public_hoc_cell(self.cell).axon[1]
-            source = public_hoc_cell(self.cell).axon[1](0.5)._ref_v
+            source = sec(0.5)._ref_v
         else:
             raise ValueError("Spike detection location must be soma or AIS")
         netcon = neuron.h.NetCon(source, target, sec=sec)
@@ -682,9 +715,10 @@ class Cell(InjectableMixin, PlottableMixin):
         """Get a vector of AIS voltage."""
         return self.get_recording('self.axonal[1](0.5)._ref_v')
 
-    def getNumberOfSegments(self) -> int:
+    @property
+    def n_segments(self) -> int:
         """Get the number of segments in the cell."""
-        return sum(section.nseg for section in self.all)
+        return sum(section.nseg for section in self.sections.values())
 
     def add_synapse_replay(
         self, stimulus: SynapseReplay, spike_threshold: float, spike_location: str
