@@ -58,6 +58,10 @@ def test_neuron_globals():
     NeuronGlobals.get_instance().temperature = 37.0
     assert neuron.h.celsius == 37.0
 
+    assert neuron.h.v_init == -65.0
+    NeuronGlobals.get_instance().v_init = -70.0
+    assert neuron.h.v_init == -70.0
+
     # exception initiating singleton
     with pytest.raises(RuntimeError):
         NeuronGlobals()
