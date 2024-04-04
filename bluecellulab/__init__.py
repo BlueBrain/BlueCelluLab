@@ -10,6 +10,7 @@ except ImportError:
 from .importer import *  # NOQA
 from .verbosity import *
 from .cell import Cell, create_ball_stick  # NOQA
+from .circuit import EmodelProperties
 from .connection import Connection  # NOQA
 from .plotwindow import PlotWindow  # NOQA
 from .dendrogram import Dendrogram  # NOQA
