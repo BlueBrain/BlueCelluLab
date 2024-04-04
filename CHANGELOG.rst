@@ -1,6 +1,13 @@
 Changelog
 ==========
 
+2.5.0
+-----
+
+* Breaking Change: sim.run() no longer takes celsius and v_init
+* NeuronGlobals is added to control the global NEURON parameters such as celsius and v_init
+* removed use_random123_stochkv param from re_init_rng
+
 2.4.1
 ------
 
