@@ -8,7 +8,7 @@ import pytest
 
 import bluecellulab
 from bluecellulab.exceptions import NeuronEvalError
-from bluecellulab.importer import _load_hoc_and_mod_files
+from bluecellulab.importer import _load_mod_files
 from bluecellulab.neuron_interpreter import eval_neuron
 
 script_dir = os.path.dirname(__file__)
@@ -16,7 +16,7 @@ script_dir = os.path.dirname(__file__)
 
 def test_eval_neuron():
     """Unit test for the eval_neuron function."""
-    _load_hoc_and_mod_files()
+    _load_mod_files()
     eval_neuron("neuron.h.nil", neuron=neuron)
     with raises(NeuronEvalError):
         eval_neuron("1+1")

@@ -60,6 +60,8 @@ def calculate_SS_voltage(
     template_format: str,
     emodel_properties: EmodelProperties | None,
     step_level: float,
+    check_for_spiking=False,
+    spike_threshold=-20.0,
 ) -> float:
     """Calculate the steady state voltage at a certain current step."""
     with IsolatedProcess() as runner:
@@ -71,6 +73,8 @@ def calculate_SS_voltage(
                 template_format,
                 emodel_properties,
                 step_level,
+                check_for_spiking,
+                spike_threshold,
             ],
         )
     return SS_voltage
@@ -82,8 +86,8 @@ def calculate_SS_voltage_subprocess(
     template_format: str,
     emodel_properties: EmodelProperties | None,
     step_level: float,
-    check_for_spiking=False,
-    spike_threshold=-20.0,
+    check_for_spiking: bool,
+    spike_threshold: float,
 ) -> float:
     """Subprocess wrapper of calculate_SS_voltage.
 

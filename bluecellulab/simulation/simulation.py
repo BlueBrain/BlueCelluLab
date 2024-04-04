@@ -88,13 +88,11 @@ class Simulation:
             cvode=True,
             cvode_minstep=None,
             cvode_maxstep=None,
-            celsius=34,
-            v_init=-65,
             dt=0.025,
             forward_skip=None,
             forward_skip_value=False,
-            show_progress=None,
-            use_random123_stochkv=False):
+            show_progress=None
+    ):
         """Run the simulation."""
         # if maxtime <= neuron.h.t:
         #     raise Exception("Simulation: need to provide a maxtime (=%f) "
@@ -108,7 +106,6 @@ class Simulation:
             self.progress_dt = maxtime / 100
             self.init_progress_callback()
 
-        neuron.h.celsius = celsius
         neuron.h.tstop = maxtime
 
         cvode_old_status = neuron.h.cvode_active()
@@ -125,11 +122,9 @@ class Simulation:
                                "was set")
             neuron.h.cvode_active(0)
 
-        neuron.h.v_init = v_init
-
         for cell in self.cells:
             with contextlib.suppress(AttributeError):
-                cell.re_init_rng(use_random123_stochkv=use_random123_stochkv)
+                cell.re_init_rng()
         neuron.h.dt = dt
         neuron.h.steps_per_ms = 1.0 / dt
 
@@ -176,6 +171,3 @@ class Simulation:
             neuron.h.cvode_active(cvode_old_status)
 
         logger.debug("Finished simulation.")
-
-    def __del__(self):
-        pass

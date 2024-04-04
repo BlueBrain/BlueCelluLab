@@ -58,7 +58,7 @@ def test_import_mod_lib_no_env_with_folder():
 )
 def test_import_neurodamus(mocked_resources):
     mock_neuron = MagicMock()
-    importer.import_neurodamus(mock_neuron)
+    importer.import_hoc(mock_neuron)
     assert mock_neuron.h.load_file.called
     # Check that it was called with the expected arguments
     mock_neuron.h.load_file.assert_any_call("/fake/path/hoc/Cell.hoc")
@@ -78,9 +78,9 @@ def test_print_header(caplog):
 
 
 def test_print_header_with_decorator(caplog):
-    """Ensure the decorator loading hoc and mod files work as expected."""
+    """Ensure the decorator loading mod files work as expected."""
     with caplog.at_level(logging.DEBUG):
-        @importer.load_hoc_and_mod_files
+        @importer.load_mod_files
         def x():
             pass
 
@@ -89,4 +89,3 @@ def test_print_header_with_decorator(caplog):
         x()
 
     assert caplog.text.count("Loading the mod files.") == 1
-    assert caplog.text.count("Loading the hoc files.") == 1
