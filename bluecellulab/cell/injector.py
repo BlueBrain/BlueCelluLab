@@ -443,14 +443,14 @@ class InjectableMixin:
         time_vector = neuron.h.Vector().from_python(t_content)
         current_vector = neuron.h.Vector().from_python(i_content)
 
-        pulse = neuron.h.IClamp(segx, sec=section)
-        self.persistent.extend([pulse, time_vector, current_vector])
+        iclamp = neuron.h.IClamp(segx, sec=section)
+        self.persistent.extend([iclamp, time_vector, current_vector])
 
-        pulse.delay = t_content[0]
-        pulse.dur = t_content[-1] - t_content[0]
-        current_vector.play(pulse._ref_amp, time_vector)
+        iclamp.delay = t_content[0]
+        iclamp.dur = t_content[-1] - t_content[0]
+        current_vector.play(iclamp._ref_amp, time_vector)
 
-        return current_vector
+        return iclamp, current_vector
 
     @deprecated("Use add_sin_current instead.")
     def addSineCurrentInject(self, start_time, stop_time, freq,
