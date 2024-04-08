@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bluecellulab"
-description = "The Pythonic Blue Brain simulator access"
+description = "Biologically detailed neural network simulations and analysis."
 readme = "README.rst"
 authors = [{ name = "Blue Brain Project, EPFL" }]
 dynamic = ["version"]
