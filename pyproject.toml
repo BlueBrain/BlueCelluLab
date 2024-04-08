@@ -56,7 +56,6 @@ markers = [
     "v6: tests on the neocortex circuit version 6.",
     "thal: tests on the thalamus circuit.",
     "unit: unit tests.",
-    "debugtest: test for debugging purposes.",
 ]
 
 [tool.mypy]
