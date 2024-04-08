@@ -57,7 +57,6 @@ class BluepyCircuitAccess:
             raise FileNotFoundError(
                 f"Circuit config file {simulation_config} not found.")
 
-        # to allow the usage of SimulationConfig outside of Ssim
         if isinstance(simulation_config, BluepySimulationConfig):
             simulation_config = simulation_config.impl
 

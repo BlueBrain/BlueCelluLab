@@ -151,9 +151,9 @@ def holding_current(
 ) -> Tuple[float, float]:
     """Calculate the holding current necessary for a given holding voltage."""
     cell_id = bluecellulab.circuit.node_id.create_cell_id(cell_id)
-    ssim = bluecellulab.SSim(circuit_path)
+    circuit_sim = bluecellulab.CircuitSimulation(circuit_path)
 
-    cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
+    cell_kwargs = circuit_sim.fetch_cell_kwargs(cell_id)
     with IsolatedProcess() as runner:
         i_hold, v_control = runner.apply(
             holding_current_subprocess, [v_hold, enable_ttx, cell_kwargs]

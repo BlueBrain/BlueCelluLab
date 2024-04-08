@@ -1,11 +1,11 @@
-"""Testing SSim with SONATA simulations."""
+"""Testing CircuitSimulation with SONATA simulations."""
 
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from bluecellulab import SSim
+from bluecellulab import CircuitSimulation
 
 parent_dir = Path(__file__).resolve().parent
 
@@ -25,8 +25,7 @@ def test_sim_quick_scx_sonata(input_type):
         / f"simulation_config_{input_type}.json"
     )
 
-    # Create SSim object
-    sim = SSim(sonata_sim_path)
+    sim = CircuitSimulation(sonata_sim_path)
     cell_id = ("NodeA", 2)  # has a spike + hyperpolarises
     sim.instantiate_gids(cell_id, add_stimuli=True)
     t_stop = 10.0
@@ -59,8 +58,7 @@ def test_sim_quick_scx_sonata_multicircuit(input_type):
     cell_ids = [("NodeA", 1), ("NodeA", 2)]
     # investivate NodeA, 0 further. It shows small discrepancies,
     # even on a single population circuit
-    # Create SSim object
-    sim = SSim(sonata_sim_path)
+    sim = CircuitSimulation(sonata_sim_path)
     sim.instantiate_gids(cell_ids, add_stimuli=True)
     t_stop = 20.0
     sim.run(t_stop)
@@ -74,7 +72,7 @@ def test_sim_quick_scx_sonata_multicircuit(input_type):
 
 
 @pytest.mark.v6
-def test_ssim_intersect_pre_gids_multipopulation():
+def test_circuit_sim_intersect_pre_gids_multipopulation():
     """Test instantiate_gids with intersect_pre_gids on Sonata."""
     sonata_sim_path = (
         parent_dir
@@ -84,13 +82,13 @@ def test_ssim_intersect_pre_gids_multipopulation():
     )
     cell_ids = [("NodeA", 0), ("NodeA", 1)]
 
-    sim = SSim(sonata_sim_path)
+    sim = CircuitSimulation(sonata_sim_path)
     sim.instantiate_gids(cell_ids, add_synapses=True)
     assert len([x.synapses for x in sim.cells.values()][0]) == 6
     assert len([x.synapses for x in sim.cells.values()][1]) == 2
 
     # pre gids are intersected, synapses are filtered
-    sim2 = SSim(sonata_sim_path)
+    sim2 = CircuitSimulation(sonata_sim_path)
     sim2.instantiate_gids(cell_ids, add_synapses=True, intersect_pre_gids=[("NodeB", 0)])
     assert len([x.synapses for x in sim2.cells.values()][0]) == 2
     assert len([x.synapses for x in sim2.cells.values()][1]) == 0
@@ -107,9 +105,9 @@ def test_merge_pre_spike_trains_edge_case():
         / "simulation_config_noinput.json"
     )
     cell_id = ("NodeA", 0)
-    ssim = SSim(sonata_sim_path)
-    ssim.instantiate_gids(cell_id, add_minis=True, add_replay=True,
-                          add_stimuli=False, add_synapses=True,
-                          intersect_pre_gids=None)
-    cell_info_dict = ssim.cells[cell_id].info_dict
+    circuit_sim = CircuitSimulation(sonata_sim_path)
+    circuit_sim.instantiate_gids(cell_id, add_minis=True, add_replay=True,
+                                 add_stimuli=False, add_synapses=True,
+                                 intersect_pre_gids=None)
+    cell_info_dict = circuit_sim.cells[cell_id].info_dict
     assert cell_info_dict["connections"] != {}

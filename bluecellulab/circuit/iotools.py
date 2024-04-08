@@ -32,7 +32,7 @@ def parse_outdat(path: str | Path) -> dict[CellId, np.ndarray]:
     # convert Series to DataFrame with 2 columns for `groupby` operation
     spike_df = spikes.to_frame().reset_index()
     if (spike_df["t"] < 0).any():
-        logger.warning('SSim: Found negative spike times in out.dat ! '
+        logger.warning('Found negative spike times in out.dat ! '
                        'Clipping them to 0')
         spike_df["t"].clip(lower=0., inplace=True)
 

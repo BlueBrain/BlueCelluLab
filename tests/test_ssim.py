@@ -1,11 +1,11 @@
-"""Unit tests for SSim."""
+"""Unit tests for CircuitSimulation."""
 import numpy as np
 
-import bluecellulab
+from bluecellulab import CircuitSimulation
 
 
 def test_merge_pre_spike_trains():
-    """SSim: Testing merge_pre_spike_trains"""
+    """CircuitSimulation: Testing merge_pre_spike_trains"""
 
     train1 = {1: [5, 100], 2: [5, 8, 120]}
     train2 = {2: [7], 3: [8]}
@@ -15,18 +15,18 @@ def test_merge_pre_spike_trains():
 
     np.testing.assert_equal(
         {},
-        bluecellulab.ssim.SSim.merge_pre_spike_trains(None))
+        CircuitSimulation.merge_pre_spike_trains(None))
     np.testing.assert_equal(
         train1,
-        bluecellulab.ssim.SSim.merge_pre_spike_trains(train1))
+        CircuitSimulation.merge_pre_spike_trains(train1))
     np.testing.assert_equal(
         train1,
-        bluecellulab.ssim.SSim.merge_pre_spike_trains(
+        CircuitSimulation.merge_pre_spike_trains(
             None,
             train1))
     np.testing.assert_equal(
         trains_merged,
-        bluecellulab.ssim.SSim.merge_pre_spike_trains(
+        CircuitSimulation.merge_pre_spike_trains(
             train1,
             None,
             train2,

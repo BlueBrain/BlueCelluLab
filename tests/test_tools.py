@@ -5,9 +5,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import bluecellulab
+from bluecellulab import CircuitSimulation
 from bluecellulab.cell.ballstick import create_ball_stick
 from bluecellulab.circuit.circuit_access import EmodelProperties
+from bluecellulab.circuit.node_id import create_cell_id
 from bluecellulab.exceptions import UnsteadyCellError
 from bluecellulab.tools import calculate_SS_voltage, calculate_SS_voltage_subprocess, calculate_input_resistance, detect_hyp_current, detect_spike, detect_spike_step, detect_spike_step_subprocess, holding_current, holding_current_subprocess, search_threshold_current, template_accepts_cvode, check_empty_topology
 
@@ -212,9 +213,9 @@ class TestOnSonataCircuit:
     def test_holding_current_subprocess(self):
         """Unit test for holding_current_subprocess on a SONATA circuit."""
         v_hold = -80
-        ssim = bluecellulab.SSim(self.circuit_path)
-        cell_id = bluecellulab.circuit.node_id.create_cell_id(self.cell_id)
-        cell_kwargs = ssim.fetch_cell_kwargs(cell_id)
+        circuit_sim = CircuitSimulation(self.circuit_path)
+        cell_id = create_cell_id(self.cell_id)
+        cell_kwargs = circuit_sim.fetch_cell_kwargs(cell_id)
         i_hold, v_control = holding_current_subprocess(
             v_hold, enable_ttx=True, cell_kwargs=cell_kwargs
         )
