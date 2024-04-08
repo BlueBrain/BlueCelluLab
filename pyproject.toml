@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bluecellulab"
-description = "The Pythonic Blue Brain simulator access"
+description = "Biologically detailed neural network simulations and analysis."
 readme = "README.rst"
 authors = [{ name = "Blue Brain Project, EPFL" }]
 dynamic = ["version"]
@@ -48,7 +48,7 @@ version_scheme = "python-simplified-semver"
 local_scheme = "no-local-version"
 
 [tool.setuptools.packages.find]
-include = ["bluecellulab", "bluecellulab.*"]
+include = ["bluecellulab"]
 
 [tool.pytest.ini_options]
 markers = [
