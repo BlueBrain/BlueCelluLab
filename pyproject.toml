@@ -39,7 +39,6 @@ dependencies = [
 ]
 requires-python = ">=3.8"
 
-
 [project.urls]
 Homepage = "https://github.com/BlueBrain/BlueCelluLab"
 
@@ -47,10 +46,8 @@ Homepage = "https://github.com/BlueBrain/BlueCelluLab"
 version_scheme = "python-simplified-semver"
 local_scheme = "no-local-version"
 
-
 [tool.setuptools.packages.find]
 include = ["bluecellulab", "bluecellulab.*"]
-
 
 [tool.pytest.ini_options]
 markers = [
