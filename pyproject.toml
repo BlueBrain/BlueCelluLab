@@ -41,6 +41,7 @@ requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/BlueBrain/BlueCelluLab"
+Documentation = "https://bluecellulab.readthedocs.io/"
 
 [tool.setuptools_scm]
 version_scheme = "python-simplified-semver"
