@@ -1,3 +1,51 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluecellulab"
+description = "The Pythonic Blue Brain simulator access"
+readme = "README.rst"
+authors = [
+    { name = "Blue Brain Project, EPFL" }
+]
+dynamic = ["version"]
+license = { text = "Apache2.0" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities"
+]
+keywords = ["computational neuroscience", "simulation", "analysis", "parameters", "Blue Brain Project"]
+dependencies = [
+    "NEURON>=8.0.2,<9.0.0",
+    "numpy>=1.8.0,<2.0.0",
+    "matplotlib>=3.0.0,<4.0.0",
+    "pandas>=1.0.0,<3.0.0",
+    "bluepysnap>=3.0.0,<4.0.0",
+    "pydantic>=2.5.2,<3.0.0",
+    "typing-extensions>=4.8.0",
+    "networkx>=3.1"
+]
+requires-python = ">=3.8"
+
+
+[project.urls]
+Homepage = "https://github.com/BlueBrain/BlueCelluLab"
+
+[tool.setuptools_scm]
+version_scheme = "python-simplified-semver"
+local_scheme = "no-local-version"
+
+
+[tool.setuptools.packages.find]
+include = ["bluecellulab", "bluecellulab.*"]
+
+
 [tool.pytest.ini_options]
 markers = [
     "v5: tests on the neocortex circuit version 5.",
