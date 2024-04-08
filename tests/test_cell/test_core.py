@@ -189,7 +189,7 @@ class TestCellBaseClass1:
             assert distance_euclid == distance_hand
 
 
-@pytest.mark.debugtest
+@pytest.mark.v5
 class TestCellBaseClassVClamp:
 
     """First Cell test class"""
