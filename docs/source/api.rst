@@ -12,6 +12,7 @@ bluecellulab
    :toctree: _autosummary
    :recursive:
 
+   analysis
    cell
    circuit
    connection
@@ -25,7 +26,7 @@ bluecellulab
    psegment
    rngsettings
    simulation
-   ssim
+   circuit_simulation
    stimulus
    synapse
    tools
