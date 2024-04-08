@@ -48,7 +48,7 @@ version_scheme = "python-simplified-semver"
 local_scheme = "no-local-version"
 
 [tool.setuptools.packages.find]
-include = ["bluecellulab", "bluecellulab.*"]
+include = ["bluecellulab"]
 
 [tool.pytest.ini_options]
 markers = [
