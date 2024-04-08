@@ -6,7 +6,7 @@ from pathlib import Path
 import matplotlib
 from matplotlib import pyplot as plt
 
-from bluecellulab import SSim
+from bluecellulab import CircuitSimulation
 from bluecellulab.graph import build_graph, plot_graph
 from bluecellulab.circuit import CellId
 
@@ -22,7 +22,7 @@ class TestGraph():
             script_dir
             / "examples/sim_quick_scx_sonata_multicircuit/simulation_config_hypamp.json"
         )
-        self.sim = SSim(circuit_path)
+        self.sim = CircuitSimulation(circuit_path)
         dstut_cells = [('NodeA', 0), ('NodeA', 1), ('NodeB', 0), ('NodeB', 1)]
 
         self.sim.instantiate_gids(dstut_cells, add_stimuli=True, add_synapses=True)

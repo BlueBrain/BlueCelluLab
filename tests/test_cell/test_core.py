@@ -13,7 +13,7 @@ import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.cell.template import NeuronTemplate, public_hoc_cell, shorten_and_hash_string
 from bluecellulab.exceptions import BluecellulabError
-from bluecellulab.ssim import SSim
+from bluecellulab import CircuitSimulation
 
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
@@ -435,13 +435,13 @@ def test_add_synapse_replay():
         / "synapse_replay"
         / "simulation_config.json"
     )
-    ssim = bluecellulab.SSim(sonata_sim_path)
-    ssim.spike_threshold = -900.0
+    circuit_sim = bluecellulab.CircuitSimulation(sonata_sim_path)
+    circuit_sim.spike_threshold = -900.0
     cell_id = ("hippocampus_neurons", 0)
-    ssim.instantiate_gids(cell_id,
-                          add_stimuli=True, add_synapses=True,
-                          interconnect_cells=False)
-    cell = ssim.cells[cell_id]
+    circuit_sim.instantiate_gids(cell_id,
+                                 add_stimuli=True, add_synapses=True,
+                                 interconnect_cells=False)
+    cell = circuit_sim.cells[cell_id]
     assert len(cell.connections) == 3
     assert cell.connections[
         ("hippocampus_projections__hippocampus_neurons__chemical", 0)
@@ -460,10 +460,10 @@ class TestWithinCircuit:
             / "simulation_config_noinput.json"
         )
         cell_id = ("NodeA", 0)
-        ssim = SSim(sonata_sim_path)
-        ssim.instantiate_gids(cell_id, add_synapses=True, add_stimuli=False)
-        self.cell = ssim.cells[cell_id]
-        self.ssim = ssim  # for persistance
+        circuit_sim = CircuitSimulation(sonata_sim_path)
+        circuit_sim.instantiate_gids(cell_id, add_synapses=True, add_stimuli=False)
+        self.cell = circuit_sim.cells[cell_id]
+        self.circuit_sim = circuit_sim  # for persistance
 
     def test_pre_gids(self):
         """Test get_pre_gids within a circuit."""

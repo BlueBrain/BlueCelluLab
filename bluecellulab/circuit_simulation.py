@@ -25,6 +25,8 @@ import neuron
 import numpy as np
 import pandas as pd
 from pydantic.types import NonNegativeInt
+from typing_extensions import deprecated
+
 import bluecellulab
 from bluecellulab.cell import CellDict
 from bluecellulab.cell.sonata_proxy import SonataProxy
@@ -53,7 +55,12 @@ from bluecellulab.synapse.synapse_types import SynapseID
 logger = logging.getLogger(__name__)
 
 
+@deprecated("SSim will be removed, use CircuitSimulation instead.")
 class SSim:
+    """Class that loads a circuit simulation to do cell simulations."""
+
+
+class CircuitSimulation:
     """Class that loads a circuit simulation to do cell simulations."""
 
     @load_mod_files
@@ -219,16 +226,17 @@ class SSim:
                 }
 
         if self.gids_instantiated:
-            raise Exception("SSim: instantiate_gids() called twice on the \
-                    same SSim, this is not supported yet")
+            raise BluecellulabError(
+                "instantiate_gids() is called twice on the "
+                "same CircuitSimumation, this is not supported")
         else:
             self.gids_instantiated = True
 
         if pre_spike_trains or add_replay:
             if add_synapses is False:
-                raise Exception("SSim: you need to set add_synapses to True "
-                                "if you want to specify use add_replay or "
-                                "pre_spike_trains")
+                raise BluecellulabError("You need to set add_synapses to True "
+                                        "if you want to specify use add_replay or "
+                                        "pre_spike_trains")
 
         if add_projections is True:
             projections = self.circuit_access.config.get_all_projection_names()
@@ -245,8 +253,8 @@ class SSim:
                 projections=projections)
         if add_replay or interconnect_cells or pre_spike_trains:
             if add_replay and not add_synapses:
-                raise Exception("SSim: add_replay option can not be used if "
-                                "add_synapses is False")
+                raise BluecellulabError("add_replay option can not be used if "
+                                        "add_synapses is False")
             self._add_connections(add_replay=add_replay,
                                   interconnect_cells=interconnect_cells,
                                   user_pre_spike_trains=pre_spike_trains)  # type: ignore
@@ -549,7 +557,7 @@ class SSim:
         cvode: bool = False,
         show_progress: bool = False,
     ):
-        """Simulate the SSim.
+        """Simulate the Circuit.
 
         Parameters
         ----------
@@ -705,7 +713,7 @@ class SSim:
         return voltage
 
     def delete(self):
-        """Delete ssim and all of its attributes.
+        """Delete CircuitSimulation and all of its attributes.
 
         NEURON objects are explicitly needed to be deleted.
         """
