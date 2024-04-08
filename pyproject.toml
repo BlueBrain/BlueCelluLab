@@ -6,9 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "bluecellulab"
 description = "The Pythonic Blue Brain simulator access"
 readme = "README.rst"
-authors = [
-    { name = "Blue Brain Project, EPFL" }
-]
+authors = [{ name = "Blue Brain Project, EPFL" }]
 dynamic = ["version"]
 license = { text = "Apache2.0" }
 classifiers = [
@@ -18,9 +16,17 @@ classifiers = [
     "Operating System :: POSIX",
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python :: 3",
-    "Topic :: Utilities"
+    "Topic :: Utilities",
 ]
-keywords = ["computational neuroscience", "simulation", "analysis", "parameters", "Blue Brain Project"]
+keywords = [
+    "computational neuroscience",
+    "simulation",
+    "analysis",
+    "SONATA",
+    "neural networks",
+    "neuron",
+    "Blue Brain Project",
+]
 dependencies = [
     "NEURON>=8.0.2,<9.0.0",
     "numpy>=1.8.0,<2.0.0",
@@ -29,7 +35,7 @@ dependencies = [
     "bluepysnap>=3.0.0,<4.0.0",
     "pydantic>=2.5.2,<3.0.0",
     "typing-extensions>=4.8.0",
-    "networkx>=3.1"
+    "networkx>=3.1",
 ]
 requires-python = ">=3.8"
 
@@ -52,7 +58,7 @@ markers = [
     "v6: tests on the neocortex circuit version 6.",
     "thal: tests on the thalamus circuit.",
     "unit: unit tests.",
-    "debugtest: test for debugging purposes."
+    "debugtest: test for debugging purposes.",
 ]
 
 [tool.mypy]
@@ -64,7 +70,7 @@ concurrency = ["multiprocessing"]
 parallel = true
 omit = [
     "bluecellulab/circuit/circuit_access/bluepy_circuit_access.py",
-    "bluecellulab/circuit/config/bluepy_simulation_config.py"
+    "bluecellulab/circuit/config/bluepy_simulation_config.py",
 ]
 
 [tool.coverage.report]
