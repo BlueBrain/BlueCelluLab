@@ -599,10 +599,10 @@ class CircuitSimulation:
             forward_skip_value = self.circuit_access.config.forward_skip
         if celsius is None:
             celsius = self.circuit_access.config.celsius
-            NeuronGlobals.get_instance().temperature = celsius
+        NeuronGlobals.get_instance().temperature = celsius
         if v_init is None:
             v_init = self.circuit_access.config.v_init
-            NeuronGlobals.get_instance().v_init = v_init
+        NeuronGlobals.get_instance().v_init = v_init
 
         sim = bluecellulab.Simulation(self.pc)
         for cell_id in self.cells:
