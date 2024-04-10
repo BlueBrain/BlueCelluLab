@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from bluecellulab import CircuitSimulation
+from bluecellulab.simulation.neuron_globals import NeuronGlobals
 
 parent_dir = Path(__file__).resolve().parent
 
@@ -71,27 +72,49 @@ def test_sim_quick_scx_sonata_multicircuit(input_type):
         assert rms_error < 0.25
 
 
-@pytest.mark.v6
-def test_circuit_sim_intersect_pre_gids_multipopulation():
-    """Test instantiate_gids with intersect_pre_gids on Sonata."""
-    sonata_sim_path = (
-        parent_dir
-        / "examples"
-        / "sim_quick_scx_sonata_multicircuit"
-        / "simulation_config_noinput.json"
-    )
-    cell_ids = [("NodeA", 0), ("NodeA", 1)]
+class TestCircuitSim:
+    def setup_method(self):
+        self.sonata_sim_path = (
+            parent_dir
+            / "examples"
+            / "sim_quick_scx_sonata_multicircuit"
+            / "simulation_config_noinput.json"
+        )
+        self.cell_ids = [("NodeA", 0), ("NodeA", 1)]
 
-    sim = CircuitSimulation(sonata_sim_path)
-    sim.instantiate_gids(cell_ids, add_synapses=True)
-    assert len([x.synapses for x in sim.cells.values()][0]) == 6
-    assert len([x.synapses for x in sim.cells.values()][1]) == 2
+    @pytest.mark.v6
+    def test_intersect_pre_gids_multipopulation(self):
+        """Test instantiate_gids with intersect_pre_gids on Sonata."""
+        sim = CircuitSimulation(self.sonata_sim_path)
+        sim.instantiate_gids(self.cell_ids, add_synapses=True)
+        assert len([x.synapses for x in sim.cells.values()][0]) == 6
+        assert len([x.synapses for x in sim.cells.values()][1]) == 2
 
-    # pre gids are intersected, synapses are filtered
-    sim2 = CircuitSimulation(sonata_sim_path)
-    sim2.instantiate_gids(cell_ids, add_synapses=True, intersect_pre_gids=[("NodeB", 0)])
-    assert len([x.synapses for x in sim2.cells.values()][0]) == 2
-    assert len([x.synapses for x in sim2.cells.values()][1]) == 0
+        # pre gids are intersected, synapses are filtered
+        sim2 = CircuitSimulation(self.sonata_sim_path)
+        sim2.instantiate_gids(self.cell_ids, add_synapses=True, intersect_pre_gids=[("NodeB", 0)])
+        assert len([x.synapses for x in sim2.cells.values()][0]) == 2
+        assert len([x.synapses for x in sim2.cells.values()][1]) == 0
+
+    @pytest.mark.v6
+    def test_run_with_v_init(self):
+        """Test run with v_init."""
+        sim = CircuitSimulation(self.sonata_sim_path)
+        sim.instantiate_gids(self.cell_ids, add_stimuli=True)
+        t_stop = 2.0
+        assert NeuronGlobals.get_instance().v_init != -99.0
+        sim.run(t_stop, v_init=-99.0)
+        assert NeuronGlobals.get_instance().v_init == -99.0
+
+    @pytest.mark.v6
+    def test_run_with_celsius(self):
+        """Test run with celsius."""
+        sim = CircuitSimulation(self.sonata_sim_path)
+        sim.instantiate_gids(self.cell_ids, add_stimuli=True)
+        t_stop = 2.0
+        assert NeuronGlobals.get_instance().temperature != 66.0
+        sim.run(t_stop, celsius=66.0)
+        assert NeuronGlobals.get_instance().temperature == 66.0
 
 
 @pytest.mark.v6
