@@ -319,6 +319,8 @@ def search_threshold_current(
     max_current: float,
 ):
     """Search current necessary to reach threshold."""
+    if abs(max_current - min_current) < .01:
+        return max_current
     med_current = min_current + abs(min_current - max_current) / 2
     logger.info("Med current %d" % med_current)
 
@@ -328,9 +330,7 @@ def search_threshold_current(
     )
     logger.info("Spike threshold detection at: %f nA" % med_current)
 
-    if abs(max_current - min_current) < .01:
-        return max_current
-    elif spike_detected:
+    if spike_detected:
         return search_threshold_current(template_name, morphology_path,
                                         template_format, emodel_properties,
                                         hyp_level, inj_start, inj_stop,
