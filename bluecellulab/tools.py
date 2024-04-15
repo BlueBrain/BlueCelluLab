@@ -317,7 +317,7 @@ def search_threshold_current(
     inj_stop: float,
     min_current: float,
     max_current: float,
-    current_precision: float = 0.01,
+    current_precision: Optional[float] = 0.01,
 ):
     """Search current necessary to reach threshold."""
     if abs(max_current - min_current) < current_precision:
