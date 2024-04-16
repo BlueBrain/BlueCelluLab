@@ -42,7 +42,9 @@ class Stimulus(ABC):
     def __add__(self, other: Stimulus) -> CombinedStimulus:
         """Override + operator to concatenate Stimulus objects."""
         if self.dt != other.dt:
-            raise ValueError("Stimulus objects must have the same dt to be concatenated")
+            raise ValueError(
+                "Stimulus objects must have the same dt to be concatenated"
+            )
         if len(self.time) == 0:
             return CombinedStimulus(other.dt, other.time, other.current)
         elif len(other.time) == 0:
@@ -58,6 +60,7 @@ class Stimulus(ABC):
 
 class CombinedStimulus(Stimulus):
     """Represents the Stimulus created by combining multiple stimuli."""
+
     def __init__(self, dt: float, time: np.ndarray, current: np.ndarray) -> None:
         super().__init__(dt)
         self._time = time
@@ -77,6 +80,7 @@ class EmptyStimulus(Stimulus):
 
     This is required by some Stimuli that expect the cell to rest.
     """
+
     def __init__(self, dt: float, duration: float) -> None:
         super().__init__(dt)
         self.duration = duration
@@ -106,7 +110,9 @@ class FlatStimulus(Stimulus):
 
 
 class Slope(Stimulus):
-    def __init__(self, dt: float, duration: float, amplitude_start: float, amplitude_end: float) -> None:
+    def __init__(
+        self, dt: float, duration: float, amplitude_start: float, amplitude_end: float
+    ) -> None:
         super().__init__(dt)
         self.duration = duration
         self.amplitude_start = amplitude_start
@@ -124,41 +130,43 @@ class Slope(Stimulus):
 class Step(Stimulus):
 
     def __init__(self):
-        raise NotImplementedError("This class cannot be instantiated directly. "
-                                  "Please use the class methods 'amplitude_based' "
-                                  "or 'threshold_based' to create objects.")
+        raise NotImplementedError(
+            "This class cannot be instantiated directly. "
+            "Please use the class methods 'amplitude_based' "
+            "or 'threshold_based' to create objects."
+        )
 
     @classmethod
     def amplitude_based(
         cls,
         dt: float,
-        start: float,
-        end: float,
-        post_wait: float,
+        pre_delay: float,
+        duration: float,
+        post_delay: float,
         amplitude: float,
     ) -> CombinedStimulus:
         """Create a Step stimulus from given time events and amplitude.
 
         Args:
             dt: The time step of the stimulus.
-            start: The start time of the step.
-            end: The end time of the step.
-            post_wait: The time to wait after the end of the step.
+            pre_delay: The delay before the start of the step.
+            duration: The duration of the step.
+            post_delay: The time to wait after the end of the step.
             amplitude: The amplitude of the step.
         """
         return (
-            EmptyStimulus(dt, duration=start)
-            + FlatStimulus(dt, duration=end - start, amplitude=amplitude)
-            + EmptyStimulus(dt, duration=post_wait)
+            EmptyStimulus(dt, duration=pre_delay)
+            + FlatStimulus(dt, duration=duration, amplitude=amplitude)
+            + EmptyStimulus(dt, duration=post_delay)
         )
 
     @classmethod
     def threshold_based(
         cls,
         dt: float,
-        start: float,
-        end: float,
-        post_wait: float,
+        pre_delay: float,
+        duration: float,
+        post_delay: float,
         threshold_current: float,
         threshold_percentage: float,
     ) -> CombinedStimulus:
@@ -167,55 +175,68 @@ class Step(Stimulus):
         Args:
 
             dt: The time step of the stimulus.
-            start: The start time of the step.
-            end: The end time of the step.
-            post_wait: The time to wait after the end of the step.
+            pre_delay: The delay before the start of the step.
+            duration: The duration of the step.
+            post_delay: The time to wait after the end of the step.
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
         amplitude = threshold_current * threshold_percentage / 100
-        res = cls.amplitude_based(dt, amplitude, start, end, post_wait)
+        res = cls.amplitude_based(
+            dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            amplitude=amplitude,
+        )
         return res
 
 
 class Ramp(Stimulus):
 
     def __init__(self):
-        raise NotImplementedError("This class cannot be instantiated directly. "
-                                  "Please use the class methods 'amplitude_based' "
-                                  "or 'threshold_based' to create objects.")
+        raise NotImplementedError(
+            "This class cannot be instantiated directly. "
+            "Please use the class methods 'amplitude_based' "
+            "or 'threshold_based' to create objects."
+        )
 
     @classmethod
     def amplitude_based(
         cls,
         dt: float,
-        start: float,
-        end: float,
-        post_wait: float,
+        pre_delay: float,
+        duration: float,
+        post_delay: float,
         amplitude: float,
     ) -> CombinedStimulus:
         """Create a Ramp stimulus from given time events and amplitudes.
 
         Args:
             dt: The time step of the stimulus.
-            start: The start time of the ramp.
-            end: The end time of the ramp.
-            post_wait: The time to wait after the end of the ramp.
+            pre_delay: The delay before the start of the ramp.
+            duration: The duration of the ramp.
+            post_delay: The time to wait after the end of the ramp.
             amplitude: The final amplitude of the ramp.
         """
         return (
-            EmptyStimulus(dt, duration=start)
-            + Slope(dt, duration=end - start, amplitude_start=0.0, amplitude_end=amplitude)
-            + EmptyStimulus(dt, duration=post_wait)
+            EmptyStimulus(dt, duration=pre_delay)
+            + Slope(
+                dt,
+                duration=duration - pre_delay,
+                amplitude_start=0.0,
+                amplitude_end=amplitude,
+            )
+            + EmptyStimulus(dt, duration=post_delay)
         )
 
     @classmethod
     def threshold_based(
         cls,
         dt: float,
-        start: float,
-        end: float,
-        post_wait: float,
+        pre_delay: float,
+        duration: float,
+        post_delay: float,
         threshold_current: float,
         threshold_percentage: float,
     ) -> CombinedStimulus:
@@ -224,14 +245,20 @@ class Ramp(Stimulus):
         Args:
 
             dt: The time step of the stimulus.
-            start: The start time of the ramp.
-            end: The end time of the ramp.
-            post_wait: The time to wait after the end of the ramp.
+            pre_delay: The delay before the start of the ramp.
+            duration: The duration of the ramp.
+            post_delay: The time to wait after the end of the ramp.
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
         amplitude = threshold_current * threshold_percentage / 100
-        res = cls.amplitude_based(dt, amplitude, start, end, post_wait)
+        res = cls.amplitude_based(
+            dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            amplitude=amplitude,
+        )
         return res
 
 
@@ -239,18 +266,30 @@ class StimulusFactory:
     def __init__(self, dt: float):
         self.dt = dt
 
-    def step(self, start: float, end: float, post_wait: float, amplitude: float) -> Stimulus:
-        return Step.amplitude_based(self.dt, start, end, post_wait, amplitude)
+    def step(
+        self, pre_delay: float, duration: float, post_delay: float, amplitude: float
+    ) -> Stimulus:
+        return Step.amplitude_based(
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            amplitude=amplitude,
+        )
 
     def ramp(
-        self, start: float, end: float, post_wait: float, amplitude: float
+        self, pre_delay: float, duration: float, post_delay: float, amplitude: float
     ) -> Stimulus:
-        return Ramp(self.dt, start, end, amplitude)
+        return Ramp.amplitude_based(
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            amplitude=amplitude,
+        )
 
     def ap_waveform(
-        self,
-        threshold_current: float,
-        threshold_percentage: float = 220.0
+        self, threshold_current: float, threshold_percentage: float = 220.0
     ) -> Stimulus:
         """Returns the APWaveform Stimulus object, a type of Step stimulus.
 
@@ -258,11 +297,16 @@ class StimulusFactory:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
-        start = 250.0  # the start time of the step
-        end = 300.0  # the end time of the step
-        post_wait = 250.0  # the time to wait after the end of the step
+        pre_delay = 250.0
+        duration = 50.0
+        post_delay = 250.0
         return Step.threshold_based(
-            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            threshold_current=threshold_current,
+            threshold_percentage=threshold_percentage,
         )
 
     def idrest(
@@ -276,11 +320,16 @@ class StimulusFactory:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
-        start = 250.0  # the start time of the step
-        end = 1600.0
-        post_wait = 250.0  # the time to wait after the end of the step
+        pre_delay = 250.0
+        duration = 1350.0
+        post_delay = 250.0
         return Step.threshold_based(
-            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            threshold_current=threshold_current,
+            threshold_percentage=threshold_percentage,
         )
 
     def iv(
@@ -294,11 +343,16 @@ class StimulusFactory:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
-        start = 250.0  # the start time of the step
-        end = 3250.0  # the end time of the step
-        post_wait = 250.0  # the time to wait after the end of the step
+        pre_delay = 250.0
+        duration = 3000.0
+        post_delay = 250.0
         return Step.threshold_based(
-            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            threshold_current=threshold_current,
+            threshold_percentage=threshold_percentage,
         )
 
     def fire_pattern(
@@ -312,9 +366,14 @@ class StimulusFactory:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
         """
-        start = 250.0  # the start time of the step
-        end = 3850.0  # the end time of the step
-        post_wait = 250.0  # the time to wait after the end of the step
+        pre_delay = 250.0
+        duration = 3600.0
+        post_delay = 250.0
         return Step.threshold_based(
-            self.dt, threshold_current, threshold_percentage, start, end, post_wait
+            self.dt,
+            pre_delay=pre_delay,
+            duration=duration,
+            post_delay=post_delay,
+            threshold_current=threshold_current,
+            threshold_percentage=threshold_percentage,
         )
