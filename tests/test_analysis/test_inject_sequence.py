@@ -11,7 +11,7 @@ def test_run_stimulus():
     """Test the run_stimulus function."""
     template_params = create_ball_stick().template_params
     stimulus = StimulusFactory(dt=1.0).idrest(threshold_current=0.1)
-    recording = run_stimulus(template_params, stimulus, "soma[0]", 0.5, 50.0)
+    recording = run_stimulus(template_params, stimulus, "soma[0]", 0.5)
     assert len(recording.time) > 0
     assert len(recording.time) == len(recording.voltage)
     assert len(recording.time) == len(recording.current)
@@ -39,7 +39,7 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
         # the mock process pool to return a list of MockRecordings
         mock_isolated_process.return_value.__enter__.return_value.starmap.return_value = [MockRecording() for _ in amplitudes]
 
-        recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, duration=400, n_processes=4)
+        recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, n_processes=4)
         assert len(recordings) == len(amplitudes)
         for recording in recordings.values():
             assert len(recording.time) > 0
@@ -48,11 +48,11 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
 
     # Testing unknown stimulus name
     with pytest.raises(ValueError) as exc_info:
-        apply_multiple_step_stimuli(cell, "unknown", amplitudes, duration=400, n_processes=4)
+        apply_multiple_step_stimuli(cell, "unknown", amplitudes, n_processes=4)
     assert "Unknown stimulus name" in str(exc_info.value)
 
     short_amplitudes = [80]
     other_stim = [StimulusName.AP_WAVEFORM, StimulusName.IV, StimulusName.IDREST]
     for stim in other_stim:
-        res = apply_multiple_step_stimuli(cell, stim, short_amplitudes, duration=4, n_processes=1)
+        res = apply_multiple_step_stimuli(cell, stim, short_amplitudes, n_processes=1)
         assert len(res) == len(short_amplitudes)

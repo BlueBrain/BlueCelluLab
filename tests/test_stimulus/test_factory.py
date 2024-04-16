@@ -11,25 +11,19 @@ class TestStimulus:
             s = Stimulus(0.1)
 
     def test_repr(self):
-        s = Step(0.1, 1, 2, 3)
-        assert repr(s) == "Step(dt=0.1)"
+        s = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
+        assert repr(s) == "CombinedStimulus(dt=0.1)"
 
     def test_len(self):
-        s = Step(0.1, 1, 2, 3)
+        s = Step.amplitude_based(0.1, 0.55, 0, 1, 0)
         assert len(s) == 10
 
     def test_plot(self):
-        s = Step(0.1, 1, 2, 3)
+        s = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
         ax = s.plot()
         assert ax.get_xlabel() == "Time (ms)"
         assert ax.get_ylabel() == "Current (nA)"
-        assert ax.get_title() == "Step"
-
-    def test_plot_during_simulation(self):
-        s = Step(0.1, 1, 2, 3)
-        duration = 15
-        ax = s.plot_during_simulation(duration)
-        assert ax.get_xlim() == (0, duration)
+        assert ax.get_title() == "CombinedStimulus"
 
 
 class TestStimulusFactory:
@@ -39,34 +33,35 @@ class TestStimulusFactory:
         self.factory = StimulusFactory(dt=self.dt)
 
     def test_create_step(self):
-        s = self.factory.step(1, 2, 3)
-        assert isinstance(s, Step)
-        assert np.all(s.time == np.arange(1, 2, self.dt))
-        assert np.all(s.current == np.full(10, 3))
+        stim = self.factory.step(0.55, 0, 1, 0)
+        assert isinstance(stim, CombinedStimulus)
+        assert np.all(stim.time == np.arange(0, 1, self.dt))
+        assert np.all(stim.current == np.full(10, 0.55))
 
     def test_create_ramp(self):
-        s = self.factory.ramp(1, 2, 3, 4)
+        s = self.factory.ramp(1, 2, 0, amplitude=3)
         assert isinstance(s, Ramp)
         assert np.all(s.time == np.arange(1, 2, self.dt))
-        assert np.all(s.current == np.linspace(3, 4, 10))
+        assert np.all(s.current == np.linspace(0, 3, 10))
 
     def test_create_ap_waveform(self):
         s = self.factory.ap_waveform(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         # below write np almost equal
-        np.testing.assert_allclose(s.time, np.arange(250, 550, self.dt))
-        assert s.current[0] == 2.2
+        np.testing.assert_allclose(s.time, np.arange(0, 550, self.dt))
+        assert s.current[0] == 0.0
+        assert s.current[2500] == 2.2
         assert s.current[-1] == 0.0
 
     def test_create_idrest(self):
         s = self.factory.idrest(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
-        assert s.stimulus_time == 1600
+        assert s.stimulus_time == 1850
 
     def test_create_iv(self):
         s = self.factory.iv(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
-        assert s.stimulus_time == 3250
+        assert s.stimulus_time == 3500
         # assert there are negative values
         assert np.any(s.current < 0)
         # assert no positive values
@@ -75,13 +70,13 @@ class TestStimulusFactory:
     def test_create_fire_pattern(self):
         s = self.factory.fire_pattern(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
-        assert s.stimulus_time == 3850
+        assert s.stimulus_time == 4100
 
 
 def test_combined_stimulus():
     """Test combining Stimulus objects."""
-    s1 = Step(0.1, 1, 2, 3)
-    s2 = Step(0.1, 3, 4, 5)
+    s1 = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
+    s2 = Step.threshold_based(0.1, 0.55, 200, 3, 4, 5)
     combined = s1 + s2
 
     assert isinstance(combined, CombinedStimulus)
@@ -93,8 +88,8 @@ def test_combined_stimulus():
 
 
 def test_combined_stimulus_different_dt():
-    s1 = Step(0.1, 1, 2, 3)
-    s2 = Step(0.2, 3, 4, 5)
+    s1 = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
+    s2 = Step.threshold_based(0.2, 0.55, 200, 3, 4, 5)
     with pytest.raises(ValueError):
         combined = s1 + s2
 
@@ -112,10 +107,10 @@ def test_empty_stimulus():
 def test_combine_multiple_stimuli():
     """Test combining multiple stimuli."""
     dt = 0.1
-    stim1 = Step(dt, 99, 101, 3)
+    stim1 = Step.amplitude_based(dt, 0.55, 50, 100, 50)
     stim2 = Ramp(dt, 3, 4, 2, 4)
     stim3 = EmptyStimulus(dt, 1)
-    stim4 = Step(dt, 5, 6, 1)
+    stim4 = Step.amplitude_based(dt, 0.66, 5, 10, 5)
 
     combined = stim1 + stim2 + stim3 + stim4
 
