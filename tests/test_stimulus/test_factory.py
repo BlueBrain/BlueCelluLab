@@ -3,7 +3,7 @@ import numpy as np
 
 from bluecellulab.stimulus.factory import (
     CombinedStimulus,
-    EmptyStimulus,
+    Empty,
     Stimulus,
     Step,
     Ramp,
@@ -33,7 +33,7 @@ class TestStimulus:
         assert ax.get_title() == "CombinedStimulus"
 
     def test_add(self):
-        zero_length_stim = EmptyStimulus(dt=0.1, duration=0)
+        zero_length_stim = Empty(dt=0.1, duration=0)
         step_stim = Step.amplitude_based(
             dt=0.1, pre_delay=0, duration=1, post_delay=0, amplitude=1
         )
@@ -128,7 +128,7 @@ def test_combined_stimulus():
 def test_empty_stimulus():
     dt = 0.2
     duration = 1.0
-    stimulus = EmptyStimulus(dt, duration)
+    stimulus = Empty(dt, duration)
 
     assert stimulus.dt == dt
     assert np.all(stimulus.time == np.arange(0, duration, dt))
@@ -140,7 +140,7 @@ def test_combine_multiple_stimuli():
     dt = 0.1
     stim1 = Step.amplitude_based(dt, 50, 100, 50, 0.55)
     stim2 = Ramp.amplitude_based(dt, 3, 4, 2, 0.55)
-    stim3 = EmptyStimulus(dt, 1)
+    stim3 = Empty(dt, 1)
     stim4 = Step.amplitude_based(dt, 5, 10, 5, 0.66)
 
     combined = stim1 + stim2 + stim3 + stim4

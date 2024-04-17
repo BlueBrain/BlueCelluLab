@@ -85,7 +85,7 @@ class CombinedStimulus(Stimulus):
         return self._current
 
 
-class EmptyStimulus(Stimulus):
+class Empty(Stimulus):
     """Represents empty stimulus (all zeros) that has no impact on the cell.
 
     This is required by some Stimuli that expect the cell to rest.
@@ -104,7 +104,7 @@ class EmptyStimulus(Stimulus):
         return np.zeros_like(self.time)
 
 
-class FlatStimulus(Stimulus):
+class Flat(Stimulus):
     def __init__(self, dt: float, duration: float, amplitude: float) -> None:
         super().__init__(dt)
         self.duration = duration
@@ -165,9 +165,9 @@ class Step(Stimulus):
             amplitude: The amplitude of the step.
         """
         return (
-            EmptyStimulus(dt, duration=pre_delay)
-            + FlatStimulus(dt, duration=duration, amplitude=amplitude)
-            + EmptyStimulus(dt, duration=post_delay)
+            Empty(dt, duration=pre_delay)
+            + Flat(dt, duration=duration, amplitude=amplitude)
+            + Empty(dt, duration=post_delay)
         )
 
     @classmethod
@@ -230,14 +230,14 @@ class Ramp(Stimulus):
             amplitude: The final amplitude of the ramp.
         """
         return (
-            EmptyStimulus(dt, duration=pre_delay)
+            Empty(dt, duration=pre_delay)
             + Slope(
                 dt,
                 duration=duration - pre_delay,
                 amplitude_start=0.0,
                 amplitude_end=amplitude,
             )
-            + EmptyStimulus(dt, duration=post_delay)
+            + Empty(dt, duration=post_delay)
         )
 
     @classmethod
