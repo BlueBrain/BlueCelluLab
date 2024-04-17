@@ -4,7 +4,7 @@ import pytest
 import neuron
 
 from bluecellulab.circuit.config.sections import ConditionEntry, Conditions, MechanismConditions
-from bluecellulab.simulation.neuron_globals import NeuronGlobals, set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values
+from bluecellulab.simulation.neuron_globals import NeuronGlobalParams, NeuronGlobals, set_global_condition_parameters, set_init_depleted_values, set_minis_single_vesicle_values
 
 
 @mock.patch("neuron.h")
@@ -62,6 +62,25 @@ def test_neuron_globals():
     NeuronGlobals.get_instance().v_init = -70.0
     assert neuron.h.v_init == -70.0
 
+    # set back to default
+    NeuronGlobals.get_instance().temperature = 34.0
+    NeuronGlobals.get_instance().v_init = -65.0
+
     # exception initiating singleton
     with pytest.raises(RuntimeError):
         NeuronGlobals()
+
+
+def test_neuron_global_params():
+    """Unit test for NeuronGlobalParams."""
+    params = NeuronGlobals.get_instance().export_params()
+    assert params.temperature == 34.0
+    assert params.v_init == -65.0
+
+    altered_params = NeuronGlobalParams(temperature=25.0, v_init=-95.0)
+    NeuronGlobals.get_instance().load_params(altered_params)
+    assert neuron.h.celsius == 25.0
+    assert neuron.h.v_init == -95.0
+
+    # set back to default
+    NeuronGlobals.get_instance().load_params(params)

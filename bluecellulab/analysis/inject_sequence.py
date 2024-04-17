@@ -7,6 +7,7 @@ import neuron
 import numpy as np
 from bluecellulab.cell.core import Cell
 from bluecellulab.cell.template import TemplateParams
+from bluecellulab.simulation.neuron_globals import NeuronGlobals
 from bluecellulab.simulation.simulation import Simulation
 from bluecellulab.stimulus.factory import Stimulus, StimulusFactory
 from bluecellulab.utils import IsolatedProcess
@@ -36,6 +37,7 @@ def run_stimulus(
     section: str,
     segment: float,
     duration: float,
+    neuron_global_params: NeuronGlobals,
 ) -> Recording:
     """Creates a cell and stimulates it with a given stimulus.
 
@@ -45,6 +47,7 @@ def run_stimulus(
         section: Name of the section of cell where the stimulus is to be injected.
         segment: The segment of the section where the stimulus is to be injected.
         duration: The duration for which the simulation is to be run.
+        neuron_global_params: The global parameters for the NEURON simulator.
 
     Returns:
         The voltage-time recording at the specified location.
@@ -52,6 +55,7 @@ def run_stimulus(
     Raises:
         ValueError: If the time and voltage arrays are not the same length.
     """
+    NeuronGlobals.get_instance().load_params(neuron_global_params)
     cell = Cell.from_template_parameters(template_params)
     neuron_section = cell.sections[section]
     cell.add_voltage_recording(neuron_section, segment)
@@ -102,6 +106,7 @@ def apply_multiple_step_stimuli(
     stim_factory = StimulusFactory(dt=1.0)
     task_args = []
     section_name = section_name if section_name is not None else "soma[0]"
+    neuron_global_params = NeuronGlobals.get_instance().export_params()
 
     # Prepare arguments for each stimulus
     for amplitude in amplitudes:
@@ -116,7 +121,7 @@ def apply_multiple_step_stimuli(
         else:
             raise ValueError("Unknown stimulus name.")
 
-        task_args.append((cell.template_params, stimulus, section_name, segment, duration))
+        task_args.append((cell.template_params, stimulus, section_name, segment, duration, neuron_global_params))
 
     with IsolatedProcess(processes=n_processes) as pool:
         # Map expects a function and a list of argument tuples
