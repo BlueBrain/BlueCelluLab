@@ -57,6 +57,16 @@ class Stimulus(ABC):
             combined_current = np.concatenate([self.current, other.current])
             return CombinedStimulus(self.dt, combined_time, combined_current)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Stimulus):
+            return NotImplemented
+        else:
+            return (
+                np.allclose(self.time, other.time)
+                and np.allclose(self.current, other.current)
+                and self.dt == other.dt
+            )
+
 
 class CombinedStimulus(Stimulus):
     """Represents the Stimulus created by combining multiple stimuli."""

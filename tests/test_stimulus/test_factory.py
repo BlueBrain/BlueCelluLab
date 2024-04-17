@@ -1,7 +1,14 @@
 import pytest
 import numpy as np
 
-from bluecellulab.stimulus.factory import CombinedStimulus, EmptyStimulus, Stimulus, Step, Ramp, StimulusFactory
+from bluecellulab.stimulus.factory import (
+    CombinedStimulus,
+    EmptyStimulus,
+    Stimulus,
+    Step,
+    Ramp,
+    StimulusFactory,
+)
 
 
 class TestStimulus:
@@ -24,6 +31,34 @@ class TestStimulus:
         assert ax.get_xlabel() == "Time (ms)"
         assert ax.get_ylabel() == "Current (nA)"
         assert ax.get_title() == "CombinedStimulus"
+
+    def test_add(self):
+        zero_length_stim = EmptyStimulus(dt=0.1, duration=0)
+        step_stim = Step.amplitude_based(
+            dt=0.1, pre_delay=0, duration=1, post_delay=0, amplitude=1
+        )
+        assert zero_length_stim + step_stim == step_stim
+        assert step_stim + zero_length_stim == step_stim
+
+        ramp_stim = Ramp.amplitude_based(
+            dt=0.1, pre_delay=0, duration=1, post_delay=0, amplitude=1
+        )
+        combined = step_stim + ramp_stim
+        assert isinstance(combined, CombinedStimulus)
+        assert len(combined) == len(step_stim) + len(ramp_stim)
+
+    def test_add_different_dt(self):
+        s1 = Step.amplitude_based(0.1, 0, 1, 0, 0.55)
+        s2 = Step.amplitude_based(0.2, 0, 1, 0, 0.55)
+        with pytest.raises(ValueError):
+            s1 + s2
+
+    def test__eq__(self):
+        s1 = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
+        s2 = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
+        assert s1 == s2
+        assert s1 != 5
+        assert s1 != "this string object"
 
 
 class TestStimulusFactory:
@@ -81,18 +116,13 @@ def test_combined_stimulus():
     combined = s1 + s2
 
     assert isinstance(combined, CombinedStimulus)
-    assert np.all(combined.time == np.concatenate([s1.time, s2.time + s1.time[-1] + 0.1]))
+    assert np.all(
+        combined.time == np.concatenate([s1.time, s2.time + s1.time[-1] + 0.1])
+    )
     assert np.all(combined.current == np.concatenate([s1.current, s2.current]))
     assert combined.dt == 0.1
     assert len(combined) == len(s1) + len(s2)
     assert combined.stimulus_time == (len(combined) * combined.dt)
-
-
-def test_combined_stimulus_different_dt():
-    s1 = Step.amplitude_based(0.1, 0.55, 1, 2, 3)
-    s2 = Step.threshold_based(0.2, 0.55, 200, 3, 4, 5)
-    with pytest.raises(ValueError):
-        combined = s1 + s2
 
 
 def test_empty_stimulus():
@@ -122,18 +152,22 @@ def test_combine_multiple_stimuli():
     shifted_stim3_time = stim3.time + shifted_stim2_time[-1] + dt
     shifted_stim4_time = stim4.time + shifted_stim3_time[-1] + dt
 
-    expected_time = np.concatenate([
-        stim1.time,
-        shifted_stim2_time,
-        shifted_stim3_time,
-        shifted_stim4_time,
-    ])
-    expected_current = np.concatenate([
-        stim1.current,
-        stim2.current,
-        stim3.current,
-        stim4.current,
-    ])
+    expected_time = np.concatenate(
+        [
+            stim1.time,
+            shifted_stim2_time,
+            shifted_stim3_time,
+            shifted_stim4_time,
+        ]
+    )
+    expected_current = np.concatenate(
+        [
+            stim1.current,
+            stim2.current,
+            stim3.current,
+            stim4.current,
+        ]
+    )
 
     assert np.all(combined.time == expected_time)
     assert np.all(combined.current == expected_current)
