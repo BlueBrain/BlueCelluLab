@@ -25,7 +25,8 @@ import numpy as np
 import bluecellulab
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.exceptions import UnsteadyCellError
-from bluecellulab.utils import CaptureOutput, IsolatedProcess
+from bluecellulab.simulation.parallel import IsolatedProcess
+from bluecellulab.utils import CaptureOutput
 
 logger = logging.getLogger(__name__)
 

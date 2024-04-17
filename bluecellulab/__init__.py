@@ -7,7 +7,7 @@ try:
 except ImportError:
     BLUEPY_AVAILABLE = False
 
-from .importer import *  # NOQA
+from bluecellulab.importer import import_hoc
 from .verbosity import *
 from .cell import Cell, create_ball_stick  # NOQA
 from .circuit import EmodelProperties
@@ -19,7 +19,7 @@ from .psegment import PSegment  # NOQA
 from .simulation import Simulation  # NOQA
 from .rngsettings import RNGSettings  # NOQA
 from .circuit_simulation import CircuitSimulation, CircuitSimulation  # NOQA
-
+import neuron
 
 from .simulation.neuron_globals import NeuronGlobals
 

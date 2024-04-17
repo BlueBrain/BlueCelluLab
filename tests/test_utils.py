@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from bluecellulab.utils import CaptureOutput, IsolatedProcess, NumpyEncoder, run_once
+from bluecellulab.utils import CaptureOutput, NumpyEncoder, run_once
 
 
 # Decorated function for testing
@@ -56,10 +56,3 @@ def test_numpy_encoder():
         json.dumps(np.array([True, False, True]), cls=NumpyEncoder)
         == "[true, false, true]"
     )
-
-
-def test_isolated_process():
-    """Test to ensure isolated process keeps its properties."""
-    runner = IsolatedProcess()
-    assert runner._processes == 1
-    assert runner._maxtasksperchild == 1

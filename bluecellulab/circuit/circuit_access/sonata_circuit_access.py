@@ -22,8 +22,9 @@ from bluepysnap.bbp import Cell as SnapCell
 from bluepysnap.circuit_ids import CircuitNodeId, CircuitEdgeIds
 from bluepysnap.exceptions import BluepySnapError
 from bluepysnap import Circuit as SnapCircuit
+import neuron
 import pandas as pd
-from bluecellulab import circuit, neuron
+from bluecellulab import circuit
 from bluecellulab.circuit.circuit_access.definition import EmodelProperties
 from bluecellulab.circuit import CellId, SynapseProperty
 from bluecellulab.circuit.config import SimulationConfig
