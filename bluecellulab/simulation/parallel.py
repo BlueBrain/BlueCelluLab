@@ -1,6 +1,6 @@
 """Controlled simulations in parallel."""
 
-
+from __future__ import annotations
 from multiprocessing.pool import Pool
 from bluecellulab.simulation.neuron_globals import NeuronGlobals
 
