@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from bluecellulab import create_ball_stick
 from bluecellulab.analysis.inject_sequence import StimulusName, apply_multiple_step_stimuli, run_stimulus
-from bluecellulab.simulation.neuron_globals import NeuronGlobals
 from bluecellulab.stimulus.factory import StimulusFactory
 
 
@@ -12,8 +11,7 @@ def test_run_stimulus():
     """Test the run_stimulus function."""
     template_params = create_ball_stick().template_params
     stimulus = StimulusFactory(dt=1.0).idrest(threshold_current=0.1)
-    neuron_global_params = NeuronGlobals.get_instance().export_params()
-    recording = run_stimulus(template_params, stimulus, "soma[0]", 0.5, 50.0, neuron_global_params)
+    recording = run_stimulus(template_params, stimulus, "soma[0]", 0.5, 50.0)
     assert len(recording.time) > 0
     assert len(recording.time) == len(recording.voltage)
     assert len(recording.time) == len(recording.current)
