@@ -290,8 +290,7 @@ def detect_spike_step_subprocess(
 
     time = cell.get_time()
     voltage = cell.get_soma_voltage()
-    time_step = time[np.where((time > inj_start) & (time < inj_stop))]
-    voltage_step = voltage[np.where((time_step > inj_start) & (time_step < inj_stop))]
+    voltage_step = voltage[np.where((time > inj_start) & (time < inj_stop))]
     spike_detected = detect_spike(voltage_step)
 
     cell.delete()
