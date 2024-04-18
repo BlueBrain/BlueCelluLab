@@ -233,7 +233,7 @@ class Ramp(Stimulus):
             Empty(dt, duration=pre_delay)
             + Slope(
                 dt,
-                duration=duration - pre_delay,
+                duration=duration,
                 amplitude_start=0.0,
                 amplitude_end=amplitude,
             )

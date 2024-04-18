@@ -74,9 +74,11 @@ class TestStimulusFactory:
         assert np.all(stim.current == np.full(10, 0.55))
 
     def test_create_ramp(self):
-        stim = self.factory.ramp(1, 2, 0, amplitude=3)
+        pre_delay, duration , post_delay = 1, 2, 0
+        total_time = sum([pre_delay, duration, post_delay])
+        stim = self.factory.ramp(pre_delay, duration, post_delay, amplitude=3)
         assert isinstance(stim, CombinedStimulus)
-        np.testing.assert_almost_equal(stim.time, np.arange(0, 2, self.dt), decimal=9)
+        np.testing.assert_almost_equal(stim.time, np.arange(0, total_time, self.dt), decimal=9)
         assert stim.current[0] == 0.0
         assert stim.current[-1] == 3.0
 
