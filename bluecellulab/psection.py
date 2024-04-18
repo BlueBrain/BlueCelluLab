@@ -75,21 +75,6 @@ class PSection:
         self.pchildren: list[PSection] = []
         self.isec = isec
 
-        if 'apic' in self.name:
-            self.section_type = 'apical'
-        elif 'dend' in self.name:
-            self.section_type = 'basal'
-        elif 'soma' in self.name:
-            self.section_type = 'somatic'
-        elif 'axon' in self.name:
-            self.section_type = 'axonal'
-        elif 'myelin' in self.name:
-            self.section_type = 'myelin'
-        else:
-            raise Exception(
-                "PSection: Section of unknown type: %s" %
-                self.name)
-
         self.psegments: list[PSegment] = []
         self.maxsegdiam = 0.0
         for hsegment in hsection:
@@ -100,6 +85,16 @@ class PSection:
 
         self.xSpacing = 1.0
         self.ySpacing = 5.0
+
+    @property
+    def section_type(self) -> str:
+        """Return the type of the section."""
+        # From Cell[0].soma[0] -> soma
+        try:
+            res = self.name.split('.')[-1].split('[')[0]
+        except Exception:
+            res = 'unknown'
+        return res
 
     @property
     def is_leaf(self) -> bool:
