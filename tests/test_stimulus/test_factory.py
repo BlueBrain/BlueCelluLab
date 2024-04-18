@@ -74,7 +74,7 @@ class TestStimulusFactory:
         assert np.all(stim.current == np.full(10, 0.55))
 
     def test_create_ramp(self):
-        pre_delay, duration , post_delay = 1, 2, 0
+        pre_delay, duration, post_delay = 1, 2, 0
         total_time = sum([pre_delay, duration, post_delay])
         stim = self.factory.ramp(pre_delay, duration, post_delay, amplitude=3)
         assert isinstance(stim, CombinedStimulus)
