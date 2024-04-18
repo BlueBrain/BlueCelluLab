@@ -137,6 +137,13 @@ def test_empty_stimulus():
     assert np.all(stimulus.current == np.zeros_like(stimulus.time))
 
 
+def test_threshold_based_ramp():
+    threshold_current, threshold_percentage = 0.77, 500
+    stim = Ramp.threshold_based(0.1, 1, 2, 3, threshold_current, threshold_percentage)
+    amplitude = threshold_current * threshold_percentage / 100
+    assert max(stim.current) == amplitude
+
+
 def test_combine_multiple_stimuli():
     """Test combining multiple stimuli."""
     dt = 0.1
