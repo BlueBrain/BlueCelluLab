@@ -79,3 +79,12 @@ class TestPSection:
         assert len(self.psections) > 0
         assert len(self.secname_to_psection) > 0
         assert len(self.psections) == len(self.secname_to_psection)
+
+    def test_section_type(self):
+        """Test section type property."""
+        soma_section = self.psections[0]
+        assert soma_section.section_type == "soma"
+        leaf_section = self.psections[245]
+        assert leaf_section.section_type == "apic"
+        leaf_section.name = "a pattern that does not match"
+        assert leaf_section.section_type == "unknown"

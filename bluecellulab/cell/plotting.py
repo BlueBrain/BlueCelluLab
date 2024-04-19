@@ -60,6 +60,7 @@ class PlottableMixin:
             scale_bar_size=10.0,
             fig_title=None):
         """Show a dendrogram of the cell."""
+        self._init_psections()
         cell_dendrogram = bluecellulab.Dendrogram(
             self.psections,
             variable=variable,

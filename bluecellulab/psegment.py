@@ -17,7 +17,7 @@ import neuron
 
 from bluecellulab.neuron_interpreter import eval_neuron
 
-type_colormap = {'apical': 'm', 'basal': 'r', 'somatic': 'k', 'axonal': 'b', 'myelin': 'g'}
+type_colormap = {'apic': 'm', 'dend': 'r', 'soma': 'k', 'axon': 'b', 'myelin': 'g', 'unknown': 'c'}
 
 
 class PSegment:

@@ -142,7 +142,8 @@ class Cell(InjectableMixin, PlottableMixin):
                             dt=self.record_dt)
 
         self.delayed_weights = queue.PriorityQueue()  # type: ignore
-        self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
+        self.psections: dict[int, PSection] = {}
+        self.secname_to_psection: dict[str, PSection] = {}
 
         # Keep track of when a cell is made passive by make_passive()
         # Used to know when re_init_rng() can be executed
@@ -154,6 +155,11 @@ class Cell(InjectableMixin, PlottableMixin):
         # Persistent objects, like clamps, that exist as long
         # as the object exists
         self.persistent: list[HocObjectType] = []
+
+    def _init_psections(self) -> None:
+        """Initialize the psections of the cell."""
+        if not self.psections:
+            self.psections, self.secname_to_psection = init_psections(public_hoc_cell(self.cell))
 
     def _extract_sections(self, sections) -> SectionMapping:
         res: SectionMapping = {}
@@ -198,6 +204,7 @@ class Cell(InjectableMixin, PlottableMixin):
 
     def get_psection(self, section_id: int | str) -> PSection:
         """Return a python section with the specified section id."""
+        self._init_psections()
         if isinstance(section_id, int):
             return self.psections[section_id]
         elif isinstance(section_id, str):
