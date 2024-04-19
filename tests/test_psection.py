@@ -86,3 +86,5 @@ class TestPSection:
         assert soma_section.section_type == "soma"
         leaf_section = self.psections[245]
         assert leaf_section.section_type == "apic"
+        leaf_section.name = "a pattern that does not match"
+        assert leaf_section.section_type == "unknown"

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Represents a python version of NEURON Section (for drawing)."""
 from __future__ import annotations
+import re
 import neuron
 
 import bluecellulab
@@ -90,11 +91,10 @@ class PSection:
     def section_type(self) -> str:
         """Return the type of the section."""
         # From Cell[0].soma[0] -> soma
-        try:
-            res = self.name.split('.')[-1].split('[')[0]
-        except Exception:
-            res = 'unknown'
-        return res
+        matches = re.findall(r'\.([^.\[\]]+)\[', self.name)
+        if matches:
+            return matches[-1]  # Return the last match
+        return 'unknown'  # Return 'unknown' if no matches are found
 
     @property
     def is_leaf(self) -> bool:
