@@ -35,7 +35,6 @@ def run_stimulus(
     stimulus: Stimulus,
     section: str,
     segment: float,
-    duration: float,
 ) -> Recording:
     """Creates a cell and stimulates it with a given stimulus.
 
@@ -44,7 +43,6 @@ def run_stimulus(
         stimulus: The input stimulus to inject into the cell.
         section: Name of the section of cell where the stimulus is to be injected.
         segment: The segment of the section where the stimulus is to be injected.
-        duration: The duration for which the simulation is to be run.
 
     Returns:
         The voltage-time recording at the specified location.
@@ -61,7 +59,7 @@ def run_stimulus(
     current_vector = neuron.h.Vector()
     current_vector.record(iclamp._ref_i)
     simulation = Simulation(cell)
-    simulation.run(duration)
+    simulation.run(stimulus.stimulus_time)
     current = np.array(current_vector.to_python())
     voltage = cell.get_voltage_recording(neuron_section, segment)
     time = cell.get_time()
@@ -74,7 +72,6 @@ def apply_multiple_step_stimuli(
     cell: Cell,
     stimulus_name: StimulusName,
     amplitudes: Sequence[float],
-    duration: float,
     section_name: str | None = None,
     segment: float = 0.5,
     n_processes: int | None = None,
@@ -85,7 +82,6 @@ def apply_multiple_step_stimuli(
         cell: The cell to which the stimuli are applied.
         stimulus_name: The name of the stimulus to apply.
         amplitudes: The amplitudes of the stimuli to apply.
-        duration: The duration for which each stimulus is applied.
         section_name: Section name of the cell where the stimuli are applied.
           If None, the stimuli are applied at the soma[0] of the cell.
         segment: The segment of the section where the stimuli are applied.
@@ -116,7 +112,7 @@ def apply_multiple_step_stimuli(
         else:
             raise ValueError("Unknown stimulus name.")
 
-        task_args.append((cell.template_params, stimulus, section_name, segment, duration))
+        task_args.append((cell.template_params, stimulus, section_name, segment))
 
     with IsolatedProcess(processes=n_processes) as pool:
         # Map expects a function and a list of argument tuples

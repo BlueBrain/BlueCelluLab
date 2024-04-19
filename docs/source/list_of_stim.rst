@@ -37,7 +37,7 @@ Step Stimulus
    :context: close-figs
    :include-source: True
 
-   step = stim_factory.step(start=20, end=180, amplitude=70)
+   step = stim_factory.step(pre_delay=20, duration=80, post_delay=20, amplitude=70)
    step.plot()
 
 
@@ -47,19 +47,19 @@ Multiple step stimuli with different amplitudes.
    :context: close-figs
    :include-source: True
 
-   step1 = stim_factory.step(start=50, end=150, amplitude=60)
-   step2 = stim_factory.step(start=50, end=150, amplitude=80)
-   step3 = stim_factory.step(start=50, end=150, amplitude=100)
-   step4 = stim_factory.step(start=50, end=150, amplitude=120)
+   step1 = stim_factory.step(pre_delay=50, duration=100, post_delay=50, amplitude=60)
+   step2 = stim_factory.step(pre_delay=50, duration=100, post_delay=50, amplitude=80)
+   step3 = stim_factory.step(pre_delay=50, duration=100, post_delay=50, amplitude=100)
+   step4 = stim_factory.step(pre_delay=50, duration=100, post_delay=50, amplitude=120)
 
    # Create a figure and an Axes object
    fig, ax = plt.subplots()
 
    # Plot the step functions on the same axes
-   step1.plot_during_simulation(200, ax=ax, color='red')
-   step2.plot_during_simulation(200, ax=ax, color='green')
-   step3.plot_during_simulation(200, ax=ax, color='blue')
-   step4.plot_during_simulation(200, ax=ax, color='orange')
+   step1.plot(ax=ax, color='red')
+   step2.plot(ax=ax, color='green')
+   step3.plot(ax=ax, color='blue')
+   step4.plot(ax=ax, color='orange')
 
    plt.show()
 
@@ -73,7 +73,7 @@ Ramp Stimulus
    :context: close-figs
    :include-source: True
 
-   ramp = stim_factory.ramp(start=20, end=180, amplitude_start=0.25, amplitude_end=0.5)
+   ramp = stim_factory.ramp(pre_delay=20, duration=160, post_delay=70, amplitude=0.5)
 
    ramp.plot()
 
@@ -89,7 +89,7 @@ APWaveform
    :include-source: True
 
    ap_waveform = stim_factory.ap_waveform(threshold_current=0.5)
-   ap_waveform.plot_during_simulation(600)
+   ap_waveform.plot()
 
 
 IDRest
@@ -102,7 +102,7 @@ IDRest
    :include-source: True
 
    id_rest = stim_factory.idrest(threshold_current=0.5)
-   id_rest.plot_during_simulation(2000)
+   id_rest.plot()
 
 IV
 ~~
@@ -114,7 +114,7 @@ IV
    :include-source: True
 
    iv = stim_factory.iv(threshold_current=0.5)
-   iv.plot_during_simulation(4500)
+   iv.plot()
 
 FirePattern
 ~~~~~~~~~~~~~
@@ -126,7 +126,7 @@ FirePattern
    :include-source: True
 
    fire_pattern = stim_factory.fire_pattern(threshold_current=0.5)
-   fire_pattern.plot_during_simulation(4500)
+   fire_pattern.plot()
 
 
 .. plot::
