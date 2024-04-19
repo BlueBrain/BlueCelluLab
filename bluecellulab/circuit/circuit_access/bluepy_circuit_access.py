@@ -19,8 +19,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
+import neuron
 import pandas as pd
-from bluecellulab import circuit, neuron
+from bluecellulab import circuit
 from bluecellulab.circuit.circuit_access import EmodelProperties
 from bluecellulab.circuit.config import BluepySimulationConfig
 from bluecellulab.circuit.config.definition import SimulationConfig

@@ -7,9 +7,9 @@ import neuron
 import numpy as np
 from bluecellulab.cell.core import Cell
 from bluecellulab.cell.template import TemplateParams
+from bluecellulab.simulation.parallel import IsolatedProcess
 from bluecellulab.simulation.simulation import Simulation
 from bluecellulab.stimulus.factory import Stimulus, StimulusFactory
-from bluecellulab.utils import IsolatedProcess
 
 
 class StimulusName(Enum):

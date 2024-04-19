@@ -13,6 +13,7 @@
 # limitations under the License.
 """Module that handles the global NEURON parameters."""
 
+from typing import NamedTuple
 import neuron
 from bluecellulab.circuit.config.sections import Conditions, MechanismConditions
 from bluecellulab.exceptions import error_context
@@ -62,6 +63,11 @@ def set_minis_single_vesicle_values(mech_conditions: MechanismConditions) -> Non
             )
 
 
+class NeuronGlobalParams(NamedTuple):
+    temperature: float
+    v_init: float
+
+
 class NeuronGlobals:
     _instance = None
 
@@ -96,3 +102,10 @@ class NeuronGlobals:
     def v_init(self, value):
         self._v_init = value
         neuron.h.v_init = value
+
+    def export_params(self) -> NeuronGlobalParams:
+        return NeuronGlobalParams(self.temperature, self.v_init)
+
+    def load_params(self, params: NeuronGlobalParams) -> None:
+        self.temperature = params.temperature
+        self.v_init = params.v_init
