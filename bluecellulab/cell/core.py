@@ -497,10 +497,6 @@ class Cell(InjectableMixin, PlottableMixin):
         # numpy int to int
         post_sec_id = int(syn_description[SynapseProperty.POST_SECTION_ID])
 
-        location = SynapseFactory.determine_synapse_location(
-            syn_description, self
-        )
-
         weight_scalar = connection_modifiers.get('Weight', 1.0)
         exc_mini_frequency, inh_mini_frequency = mini_frequencies \
             if mini_frequencies is not None else (None, None)
@@ -516,13 +512,15 @@ class Cell(InjectableMixin, PlottableMixin):
             spont_minis_rate = inh_mini_frequency
 
         if spont_minis_rate is not None and spont_minis_rate > 0:
-            sec = self.get_psection(post_sec_id).hsection
+            synapse_hoc_args = SynapseFactory.determine_synapse_location(
+                syn_description, self
+            )
             # add the *minis*: spontaneous synaptic events
             self.ips[synapse_id] = neuron.h.\
-                InhPoissonStim(location, sec=sec)
+                InhPoissonStim(synapse_hoc_args.location, sec=synapse_hoc_args.section)
 
             self.syn_mini_netcons[synapse_id] = neuron.h.\
-                NetCon(self.ips[synapse_id], synapse.hsynapse, sec=sec)
+                NetCon(self.ips[synapse_id], synapse.hsynapse, sec=synapse_hoc_args.section)
             self.syn_mini_netcons[synapse_id].delay = 0.1
             self.syn_mini_netcons[synapse_id].weight[0] = weight * weight_scalar
             # set netcon type
