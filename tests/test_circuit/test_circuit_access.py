@@ -89,7 +89,7 @@ class TestSonataCircuitAccess:
         cell_id = CellId("hippocampus_neurons", 1)
         projections = None
         res = self.circuit_access.extract_synapses(cell_id, projections)
-        assert res.shape == (1742, 15)
+        assert res.shape == (1742, 16)
         assert all(res["source_popid"] == 2126)
 
         assert all(res["source_population_name"] == "hippocampus_projections")
@@ -101,13 +101,13 @@ class TestSonataCircuitAccess:
         # projection parameter
         projection = "hippocampus_projections"
         res = self.circuit_access.extract_synapses(cell_id, projection)
-        assert res.shape == (1742, 15)
+        assert res.shape == (1742, 16)
         list_of_single_projection = [projection]
         res = self.circuit_access.extract_synapses(cell_id, list_of_single_projection)
-        assert res.shape == (1742, 15)
+        assert res.shape == (1742, 16)
         empty_projection = []
         res = self.circuit_access.extract_synapses(cell_id, empty_projection)
-        assert res.shape == (1742, 15)
+        assert res.shape == (1742, 16)
 
     def test_target_contains_cell(self):
         target = "most_central_10_SP_PC"

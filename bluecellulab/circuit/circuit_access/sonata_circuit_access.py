@@ -146,6 +146,8 @@ class SonataCircuitAccess:
                     edge_properties += list(SynapseProperties.plasticity)
 
                 snap_properties = properties_to_snap(edge_properties)
+                if "afferent_section_pos" in edge_population.property_names:
+                    snap_properties.append("afferent_section_pos")
                 synapses: pd.DataFrame = edge_population.get(afferent_edges, snap_properties)
                 column_names = list(synapses.columns)
                 synapses.columns = pd.Index(properties_from_snap(column_names))
