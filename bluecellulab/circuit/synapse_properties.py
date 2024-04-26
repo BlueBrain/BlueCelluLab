@@ -40,6 +40,7 @@ class SynapseProperty(Enum):
     NRRP = "NRRP"
     U_HILL_COEFFICIENT = "u_hill_coefficient"
     CONDUCTANCE_RATIO = "conductance_scale_factor"
+    AFFERENT_SECTION_POS = "afferent_section_pos"
 
     @classmethod
     def from_bluepy(cls, prop: BLPSynapse) -> SynapseProperty:
@@ -76,6 +77,7 @@ class SynapseProperties:
         SynapseProperty.NRRP,
         SynapseProperty.U_HILL_COEFFICIENT,
         SynapseProperty.CONDUCTANCE_RATIO,
+        SynapseProperty.AFFERENT_SECTION_POS,
     )
     plasticity = (
         "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
@@ -98,6 +100,7 @@ snap_to_synproperty = MappingProxyType({
     "n_rrp_vesicles": SynapseProperty.NRRP,
     "u_hill_coefficient": SynapseProperty.U_HILL_COEFFICIENT,
     "conductance_scale_factor": SynapseProperty.CONDUCTANCE_RATIO,
+    "afferent_section_pos": SynapseProperty.AFFERENT_SECTION_POS,
 })
 
 
