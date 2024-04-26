@@ -40,6 +40,7 @@ class SynapseProperty(Enum):
     NRRP = "NRRP"
     U_HILL_COEFFICIENT = "u_hill_coefficient"
     CONDUCTANCE_RATIO = "conductance_scale_factor"
+    AFFERENT_SECTION_POS = "afferent_section_pos"
 
     @classmethod
     def from_bluepy(cls, prop: BLPSynapse) -> SynapseProperty:
@@ -76,6 +77,7 @@ class SynapseProperties:
         SynapseProperty.NRRP,
         SynapseProperty.U_HILL_COEFFICIENT,
         SynapseProperty.CONDUCTANCE_RATIO,
+        SynapseProperty.AFFERENT_SECTION_POS,
     )
     plasticity = (
         "volume_CR", "rho0_GB", "Use_d_TM", "Use_p_TM", "gmax_d_AMPA",
@@ -98,6 +100,7 @@ snap_to_synproperty = MappingProxyType({
     "n_rrp_vesicles": SynapseProperty.NRRP,
     "u_hill_coefficient": SynapseProperty.U_HILL_COEFFICIENT,
     "conductance_scale_factor": SynapseProperty.CONDUCTANCE_RATIO,
+    "afferent_section_pos": SynapseProperty.AFFERENT_SECTION_POS,
 })
 
 
@@ -148,11 +151,16 @@ def properties_from_bluepy(
 def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse | str]:
     """Convert a list of SynapseProperty to bluepy Synapse properties, spare
     'str's."""
+    # bluepy does not have AFFERENT_SECTION_POS atm.
+    # jira_url/project/issues/browse/NSETM-2313
+    bluepy_recognised_props = props.copy()
+    if SynapseProperty.AFFERENT_SECTION_POS in bluepy_recognised_props:
+        bluepy_recognised_props.remove(SynapseProperty.AFFERENT_SECTION_POS)
     return [
         prop.to_bluepy()
         if isinstance(prop, SynapseProperty)
         else prop
-        for prop in props
+        for prop in bluepy_recognised_props
     ]
 
 
