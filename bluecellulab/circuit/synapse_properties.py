@@ -151,11 +151,15 @@ def properties_from_bluepy(
 def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse | str]:
     """Convert a list of SynapseProperty to bluepy Synapse properties, spare
     'str's."""
+    # bluepy does not have AFFERENT_SECTION_POS atm.
+    # jira_url/project/issues/browse/NSETM-2313
+    bluepy_recognised_props = props.copy()
+    bluepy_recognised_props.remove(SynapseProperty.AFFERENT_SECTION_POS)
     return [
         prop.to_bluepy()
         if isinstance(prop, SynapseProperty)
         else prop
-        for prop in props
+        for prop in bluepy_recognised_props
     ]
 
 
