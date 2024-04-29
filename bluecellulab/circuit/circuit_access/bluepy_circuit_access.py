@@ -195,7 +195,7 @@ class BluepyCircuitAccess:
                 if 'afferent_section_pos' in connectome.available_properties:
                     connectome_properties[
                         connectome_properties.index(SynapseProperty.POST_SEGMENT_OFFSET)
-                    ] = 'afferent_section_pos'
+                    ] = SynapseProperty.AFFERENT_SECTION_POS
 
                 connectome_properties = properties_to_bluepy(connectome_properties)
                 synapses = connectome.afferent_synapses(
