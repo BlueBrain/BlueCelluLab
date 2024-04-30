@@ -4,7 +4,6 @@ import networkx as nx
 from pathlib import Path
 
 import matplotlib
-from matplotlib import pyplot as plt
 
 from bluecellulab import CircuitSimulation
 from bluecellulab.graph import build_graph, plot_graph
@@ -72,5 +71,6 @@ class TestGraph():
 
     def test_plot_graph(self):
         """Test the plot_graph function"""
-        plot_graph(self.graph)
+        plt = plot_graph(self.graph)
+        plt.show()
         assert plt.fignum_exists(1), "No figure is created."

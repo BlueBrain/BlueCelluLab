@@ -25,3 +25,4 @@ nrnivmodl.log
 .pytest_cache
 *.btr
 *.whl
+.ipynb_checkpoints
