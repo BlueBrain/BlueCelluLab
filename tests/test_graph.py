@@ -4,7 +4,6 @@ import networkx as nx
 from pathlib import Path
 
 import matplotlib
-from matplotlib import pyplot as plt
 
 from bluecellulab import CircuitSimulation
 from bluecellulab.graph import build_graph, plot_graph
