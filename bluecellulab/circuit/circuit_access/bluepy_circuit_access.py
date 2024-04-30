@@ -191,23 +191,15 @@ class BluepyCircuitAccess:
 
             if isinstance(connectome._impl, SonataConnectome):
                 logger.debug('Using sonata style synapse file, not nrn.h5')
-                # load 'afferent_section_pos' instead of '_POST_DISTANCE'
-                if 'afferent_section_pos' in connectome.available_properties:
-                    connectome_properties[
-                        connectome_properties.index(SynapseProperty.POST_SEGMENT_OFFSET)
-                    ] = 'afferent_section_pos'
+                connectome_properties.remove(SynapseProperty.POST_SEGMENT_OFFSET)
+            else:  # afferent section_pos will be computed via post_segment_offset
+                connectome_properties.remove(SynapseProperty.AFFERENT_SECTION_POS)
 
-                connectome_properties = properties_to_bluepy(connectome_properties)
-                synapses = connectome.afferent_synapses(
-                    gid, properties=connectome_properties
-                )
-                synapses.columns = properties_from_bluepy(synapses.columns)
-            else:
-                connectome_properties = properties_to_bluepy(connectome_properties)
-                synapses = connectome.afferent_synapses(
-                    gid, properties=connectome_properties
-                )
-                synapses.columns = properties_from_bluepy(synapses.columns)
+            connectome_properties = properties_to_bluepy(connectome_properties)
+            synapses = connectome.afferent_synapses(
+                gid, properties=connectome_properties
+            )
+            synapses.columns = properties_from_bluepy(synapses.columns)
 
             synapses = synapses.reset_index(drop=True)
             synapses.index = pd.MultiIndex.from_tuples(

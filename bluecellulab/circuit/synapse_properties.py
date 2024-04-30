@@ -140,12 +140,15 @@ def properties_from_bluepy(
     'str's."""
     if not BLUEPY_AVAILABLE:
         raise ExtraDependencyMissingError("bluepy")
-    return [
-        SynapseProperty.from_bluepy(prop)
-        if isinstance(prop, BLPSynapse)
-        else prop
-        for prop in props
-    ]
+    res: list[SynapseProperty | str] = []
+    for prop in props:
+        if isinstance(prop, BLPSynapse):
+            res.append(SynapseProperty.from_bluepy(prop))
+        elif prop == "afferent_section_pos":  # jira_url/project/issues/browse/NSETM-2313
+            res.append(SynapseProperty.AFFERENT_SECTION_POS)
+        else:
+            res.append(prop)
+    return res
 
 
 def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse | str]:
@@ -154,14 +157,19 @@ def properties_to_bluepy(props: list[SynapseProperty | str]) -> list[BLPSynapse 
     # bluepy does not have AFFERENT_SECTION_POS atm.
     # jira_url/project/issues/browse/NSETM-2313
     bluepy_recognised_props = props.copy()
+    removed_afferent_section_pos = False
     if SynapseProperty.AFFERENT_SECTION_POS in bluepy_recognised_props:
+        removed_afferent_section_pos = True
         bluepy_recognised_props.remove(SynapseProperty.AFFERENT_SECTION_POS)
-    return [
+    res = [
         prop.to_bluepy()
         if isinstance(prop, SynapseProperty)
         else prop
         for prop in bluepy_recognised_props
     ]
+    if removed_afferent_section_pos:
+        res.append("afferent_section_pos")
+    return res
 
 
 def synapse_property_encoder(dct: dict[SynapseProperty | str, Any]) -> dict[str, Any]:

@@ -114,10 +114,10 @@ class SynapseFactory:
         section: NeuronSection = cell.get_psection(section_id=isec).hsection
 
         # old circuits don't have it, it needs to be computed via synlocation_to_segx
-        if ("afferent_section_pos" in syn_description and
-                not np.isnan(syn_description["afferent_section_pos"])):
+        if (SynapseProperty.AFFERENT_SECTION_POS in syn_description and
+                not np.isnan(syn_description[SynapseProperty.AFFERENT_SECTION_POS])):
             # position is pre computed in SONATA
-            location = syn_description["afferent_section_pos"]
+            location = syn_description[SynapseProperty.AFFERENT_SECTION_POS]
         else:
             ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
             syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]
