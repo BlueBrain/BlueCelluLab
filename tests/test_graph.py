@@ -72,5 +72,6 @@ class TestGraph():
 
     def test_plot_graph(self):
         """Test the plot_graph function"""
-        plot_graph(self.graph)
+        plt = plot_graph(self.graph)
+        plt.show()
         assert plt.fignum_exists(1), "No figure is created."

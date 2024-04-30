@@ -82,4 +82,4 @@ def plot_graph(G: nx.Graph, node_size: float = 400, edge_width: float = 0.4, nod
     # Add text at the bottom of the figure
     plt.figtext(0.5, 0.01, "Network of simulated cells", ha="center", fontsize=10, va="bottom")
 
-    plt.show()
+    return plt
