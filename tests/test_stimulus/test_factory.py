@@ -110,6 +110,16 @@ class TestStimulusFactory:
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 4100
 
+    def test_create_pos_cheops(self):
+        s = self.factory.pos_cheops(threshold_current=1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 19166.0
+
+    def test_create_neg_cheops(self):
+        s = self.factory.neg_cheops(threshold_current=1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 18220.0
+
 
 def test_combined_stimulus():
     """Test combining Stimulus objects."""

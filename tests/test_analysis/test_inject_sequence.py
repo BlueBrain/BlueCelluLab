@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 import pytest
 from bluecellulab import create_ball_stick
-from bluecellulab.analysis.inject_sequence import StimulusName, apply_multiple_step_stimuli, run_stimulus
+from bluecellulab.analysis.inject_sequence import StimulusName, apply_multiple_stimuli, run_stimulus
 from bluecellulab.stimulus.factory import StimulusFactory
 
 
@@ -39,7 +39,7 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
         # the mock process pool to return a list of MockRecordings
         mock_isolated_process.return_value.__enter__.return_value.starmap.return_value = [MockRecording() for _ in amplitudes]
 
-        recordings = apply_multiple_step_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, n_processes=4)
+        recordings = apply_multiple_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, n_processes=4)
         assert len(recordings) == len(amplitudes)
         for recording in recordings.values():
             assert len(recording.time) > 0
@@ -48,11 +48,11 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
 
     # Testing unknown stimulus name
     with pytest.raises(ValueError) as exc_info:
-        apply_multiple_step_stimuli(cell, "unknown", amplitudes, n_processes=4)
+        apply_multiple_stimuli(cell, "unknown", amplitudes, n_processes=4)
     assert "Unknown stimulus name" in str(exc_info.value)
 
     short_amplitudes = [80]
-    other_stim = [StimulusName.AP_WAVEFORM, StimulusName.IV, StimulusName.IDREST]
+    other_stim = [StimulusName.AP_WAVEFORM, StimulusName.IV, StimulusName.IDREST, StimulusName.POS_CHEOPS, StimulusName.NEG_CHEOPS]
     for stim in other_stim:
-        res = apply_multiple_step_stimuli(cell, stim, short_amplitudes, n_processes=1)
+        res = apply_multiple_stimuli(cell, stim, short_amplitudes, n_processes=1)
         assert len(res) == len(short_amplitudes)
