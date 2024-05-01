@@ -18,6 +18,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Protocol
 
+import h5py
 import pandas as pd
 
 from bluecellulab.circuit.config import SimulationConfig, SonataSimulationConfig
@@ -172,12 +173,14 @@ class SonataSimulationAccess:
 
 def get_synapse_replay_spikes(f_name: str) -> dict:
     """Read the .dat file containing the spike replays."""
-    data = np.genfromtxt(f_name, skip_header=1)
-    spikes = pd.DataFrame(data=data, columns=["t", "node_id"]).astype({"node_id": int})
-    # subtract 1 from all node_ids to make them 0-based
-    # source: https://sonata-extension.readthedocs.io/
-    # en/latest/blueconfig-projection-example.html#dat-spike-files
-    spikes["node_id"] -= 1
+    with h5py.File(f_name, 'r') as f:
+        # Access the timestamps and node_ids datasets
+        timestamps = f['/spikes/All/timestamps'][:]
+        node_ids = f['/spikes/All/node_ids'][:]
+
+        spikes = pd.DataFrame(data={'t': timestamps, 'node_id': node_ids})
+        spikes = spikes.astype({"node_id": int})
+
     if (spikes["t"] < 0).any():
         logger.warning("Found negative spike times... Clipping them to 0")
         spikes["t"].clip(lower=0., inplace=True)

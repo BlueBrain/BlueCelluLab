@@ -85,7 +85,7 @@ class TestSonataSimulationAccess:
 def test_get_synapse_replay_spikes():
     """.Test get_synapse_replay_spikes."""
     res = get_synapse_replay_spikes(
-        parent_dir / "data" / "synapse_replay_file" / "spikes.dat"
+        parent_dir / "data" / "synapse_replay_file" / "spikes.h5"
     )
     assert set(res.keys()) == {5382}
     assert res[5382].tolist() == [1500.0, 2000.0, 2500.0]
