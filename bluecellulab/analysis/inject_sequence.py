@@ -18,6 +18,8 @@ class StimulusName(Enum):
     IDREST = auto()
     IV = auto()
     FIRE_PATTERN = auto()
+    POS_CHEOPS = auto()
+    NEG_CHEOPS = auto()
 
 
 class Recording(NamedTuple):
@@ -68,7 +70,7 @@ def run_stimulus(
     return Recording(current, voltage, time)
 
 
-def apply_multiple_step_stimuli(
+def apply_multiple_stimuli(
     cell: Cell,
     stimulus_name: StimulusName,
     amplitudes: Sequence[float],
@@ -109,6 +111,10 @@ def apply_multiple_step_stimuli(
             stimulus = stim_factory.iv(threshold_current=cell.threshold, threshold_percentage=amplitude)
         elif stimulus_name == StimulusName.FIRE_PATTERN:
             stimulus = stim_factory.fire_pattern(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        elif stimulus_name == StimulusName.POS_CHEOPS:
+            stimulus = stim_factory.pos_cheops(threshold_current=cell.threshold, threshold_percentage=amplitude)
+        elif stimulus_name == StimulusName.NEG_CHEOPS:
+            stimulus = stim_factory.neg_cheops(threshold_current=cell.threshold, threshold_percentage=amplitude)
         else:
             raise ValueError("Unknown stimulus name.")
 

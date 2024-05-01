@@ -387,3 +387,71 @@ class StimulusFactory:
             threshold_current=threshold_current,
             threshold_percentage=threshold_percentage,
         )
+
+    def pos_cheops(
+        self,
+        threshold_current: float,
+        threshold_percentage: float = 300.0,
+    ) -> Stimulus:
+        """A combination of pyramid shaped Ramp stimuli with a positive
+        amplitude.
+
+        Args:
+            threshold_current: The threshold current of the Cell.
+            threshold_percentage: Percentage of desired threshold_current amplification.
+        """
+        delay = 250.0
+        ramp1_duration = 4000.0
+        ramp2_duration = 2000.0
+        ramp3_duration = 1333.0
+        inter_delay = 2000.0
+        post_delay = 250.0
+
+        amplitude = threshold_current * threshold_percentage / 100
+        result = (
+            Empty(self.dt, duration=delay)
+            + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp1_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=inter_delay)
+            + Slope(self.dt, duration=ramp2_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp2_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=inter_delay)
+            + Slope(self.dt, duration=ramp3_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp3_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=post_delay)
+        )
+        return result
+
+    def neg_cheops(
+        self,
+        threshold_current: float,
+        threshold_percentage: float = 300.0,
+    ) -> Stimulus:
+        """A combination of pyramid shaped Ramp stimuli with a negative
+        amplitude.
+
+        Args:
+            threshold_current: The threshold current of the Cell.
+            threshold_percentage: Percentage of desired threshold_current amplification.
+        """
+        delay = 1750.0
+        ramp1_duration = 3333.0
+        ramp2_duration = 1666.0
+        ramp3_duration = 1111.0
+        inter_delay = 2000.0
+        post_delay = 250.0
+
+        amplitude = - threshold_current * threshold_percentage / 100
+        result = (
+            Empty(self.dt, duration=delay)
+            + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp1_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=inter_delay)
+            + Slope(self.dt, duration=ramp2_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp2_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=inter_delay)
+            + Slope(self.dt, duration=ramp3_duration, amplitude_start=0.0, amplitude_end=amplitude)
+            + Slope(self.dt, duration=ramp3_duration, amplitude_start=amplitude, amplitude_end=0.0)
+            + Empty(self.dt, duration=post_delay)
+        )
+        return result
