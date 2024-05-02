@@ -50,7 +50,6 @@ local_scheme = "no-local-version"
 
 [tool.setuptools.packages.find]
 include = ["bluecellulab"]
-exclude = ["tests", "tests.*"]
 
 [tool.pytest.ini_options]
 markers = [
