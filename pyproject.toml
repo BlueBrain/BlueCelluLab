@@ -48,8 +48,9 @@ Documentation = "https://bluecellulab.readthedocs.io/"
 version_scheme = "python-simplified-semver"
 local_scheme = "no-local-version"
 
-[tool.setuptools]
-packages = ["bluecellulab", "tests"]
+[tool.setuptools.packages.find]
+where = ["bluecellulab"]
+exclude = ["tests", "tests.*"]
 
 [tool.pytest.ini_options]
 markers = [
