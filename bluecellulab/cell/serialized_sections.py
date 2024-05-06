@@ -15,17 +15,14 @@
 index."""
 from __future__ import annotations
 import logging
-import warnings
 import neuron
 from bluecellulab.type_aliases import HocObjectType, NeuronSection
 
 
 logger = logging.getLogger(__name__)
-warnings.filterwarnings("once", category=UserWarning, module=__name__)
 
 
 class SerializedSections:
-
     def __init__(self, cell: HocObjectType) -> None:
         self.isec2sec: dict[int, NeuronSection] = {}
         n = cell.nSecAll
@@ -37,7 +34,8 @@ class SerializedSections:
                 raise ValueError("Error: failure in mk2_isec2sec()")
 
             if v_value < 0:
-                warnings.warn(
-                    f"[Warning] SerializedSections: v(0.0001) < 0. index={index} v()={v_value}")
+                logging.debug(
+                    f"[Warning] SerializedSections: v(0.0001) < 0. index={index} v()={v_value}"
+                )
             else:
                 self.isec2sec[int(v_value)] = neuron.h.SectionRef(sec=sec)
