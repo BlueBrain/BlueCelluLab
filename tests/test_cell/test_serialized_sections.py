@@ -1,4 +1,5 @@
 """Unit tests for serialized_sections module."""
+import logging
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ script_dir = Path(__file__).parent.parent
 
 
 @pytest.mark.v5
-def test_serialized_sections():
+def test_serialized_sections(caplog):
     """Test the SerializedSections class."""
     cell = Cell(
         "%s/examples/cell_example1/test_cell.hoc" % script_dir,
@@ -32,8 +33,9 @@ def test_serialized_sections():
     section_list = modified_cell.all
     first_section = next(iter(section_list))
     first_section(0.0001).v = -2
-    with pytest.warns(UserWarning):
-        SerializedSections(modified_cell)
+    caplog.set_level(logging.DEBUG)
+    SerializedSections(modified_cell)
+    assert "[Warning] SerializedSections: v(0.0001) < 0" in caplog.text
 
     modified_cell.nSecAll = -1
     with pytest.raises(ValueError):
