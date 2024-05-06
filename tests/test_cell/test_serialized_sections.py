@@ -16,7 +16,8 @@ def test_serialized_sections(caplog):
     """Test the SerializedSections class."""
     cell = Cell(
         "%s/examples/cell_example1/test_cell.hoc" % script_dir,
-        "%s/examples/cell_example1" % script_dir)
+        "%s/examples/cell_example1" % script_dir,
+    )
 
     serialized_sections = SerializedSections(cell.cell.getCell())
     assert len(serialized_sections.isec2sec) == 135
