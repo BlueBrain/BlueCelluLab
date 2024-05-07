@@ -136,3 +136,28 @@ FirePattern
    # Testing
    assert len(ramp.current) > 0
    assert len(step.current) > 0
+
+PosCheops
+~~~~~~~~~
+
+**Definition**: The PosCheops stimulus is a sequence of increasing and decreasing ramps with a positive amplitude.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   pos_cheops = stim_factory.pos_cheops(threshold_current=0.5)
+   pos_cheops.plot()
+
+
+NegCheops
+~~~~~~~~~
+
+**Definition**: The NegCheops stimulus is a sequence of increasing and decreasing ramps with a negative amplitude.
+
+.. plot::
+   :context: close-figs
+   :include-source: True
+
+   neg_cheops = stim_factory.neg_cheops(threshold_current=0.5)
+   neg_cheops.plot()
