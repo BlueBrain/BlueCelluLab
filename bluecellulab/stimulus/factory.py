@@ -1,8 +1,11 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class Stimulus(ABC):
@@ -316,6 +319,20 @@ class StimulusFactory:
         duration = 50.0
         post_delay = 250.0
 
+        if amplitude is not None:
+            if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+                logger.info(
+                    "amplitude, threshold_current and threshold_percentage are all set in ap_waveform."
+                    " Will only keep amplitude value."
+                )
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+
         if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
@@ -324,15 +341,6 @@ class StimulusFactory:
                 post_delay=post_delay,
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
-            )
-
-        if amplitude is not None:
-            return Step.amplitude_based(
-                self.dt,
-                pre_delay=pre_delay,
-                duration=duration,
-                post_delay=post_delay,
-                amplitude=amplitude,
             )
 
         raise TypeError("You have to give either threshold_current or amplitude")
@@ -353,6 +361,21 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 1350.0
         post_delay = 250.0
+
+        if amplitude is not None:
+            if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+                logger.info(
+                    "amplitude, threshold_current and threshold_percentage are all set in idrest."
+                    " Will only keep amplitude value."
+                )
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+
         if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
@@ -361,15 +384,6 @@ class StimulusFactory:
                 post_delay=post_delay,
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
-            )
-
-        if amplitude is not None:
-            return Step.amplitude_based(
-                self.dt,
-                pre_delay=pre_delay,
-                duration=duration,
-                post_delay=post_delay,
-                amplitude=amplitude,
             )
 
         raise TypeError("You have to give either threshold_current or amplitude")
@@ -390,6 +404,21 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 3000.0
         post_delay = 250.0
+
+        if amplitude is not None:
+            if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+                logger.info(
+                    "amplitude, threshold_current and threshold_percentage are all set in iv."
+                    " Will only keep amplitude value."
+                )
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+
         if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
@@ -398,15 +427,6 @@ class StimulusFactory:
                 post_delay=post_delay,
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
-            )
-
-        if amplitude is not None:
-            return Step.amplitude_based(
-                self.dt,
-                pre_delay=pre_delay,
-                duration=duration,
-                post_delay=post_delay,
-                amplitude=amplitude,
             )
 
         raise TypeError("You have to give either threshold_current or amplitude")
@@ -427,6 +447,21 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 3600.0
         post_delay = 250.0
+
+        if amplitude is not None:
+            if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+                logger.info(
+                    "amplitude, threshold_current and threshold_percentage are all set in fire_pattern."
+                    " Will only keep amplitude value."
+                )
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+
         if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
@@ -435,15 +470,6 @@ class StimulusFactory:
                 post_delay=post_delay,
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
-            )
-
-        if amplitude is not None:
-            return Step.amplitude_based(
-                self.dt,
-                pre_delay=pre_delay,
-                duration=duration,
-                post_delay=post_delay,
-                amplitude=amplitude,
             )
 
         raise TypeError("You have to give either threshold_current or amplitude")
@@ -473,6 +499,11 @@ class StimulusFactory:
             if threshold_current is None or threshold_current == 0 or threshold_percentage is None:
                 raise TypeError("You have to give either threshold_current or amplitude")
             amplitude = threshold_current * threshold_percentage / 100
+        elif threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+            logger.info(
+                "amplitude, threshold_current and threshold_percentage are all set in pos_cheops."
+                " Will only keep amplitude value."
+            )
         result = (
             Empty(self.dt, duration=delay)
             + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
@@ -512,6 +543,11 @@ class StimulusFactory:
             if threshold_current is None or threshold_current == 0 or threshold_percentage is None:
                 raise TypeError("You have to give either threshold_current or amplitude")
             amplitude = - threshold_current * threshold_percentage / 100
+        elif threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
+            logger.info(
+                "amplitude, threshold_current and threshold_percentage are all set in neg_cheops."
+                " Will only keep amplitude value."
+            )
         result = (
             Empty(self.dt, duration=delay)
             + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
