@@ -32,6 +32,7 @@ def mock_run_stimulus():
 def test_apply_multiple_step_stimuli(mock_run_stimulus):
     """Do not run the code in parallel, mock the return value via MockRecording."""
     amplitudes = [80, 100, 120, 140]
+    thres_perc = [0.08]
     cell = create_ball_stick()
 
     with patch('bluecellulab.analysis.inject_sequence.IsolatedProcess') as mock_isolated_process, \
@@ -39,9 +40,11 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
         # the mock process pool to return a list of MockRecordings
         mock_isolated_process.return_value.__enter__.return_value.starmap.return_value = [MockRecording() for _ in amplitudes]
 
-        recordings = apply_multiple_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, n_processes=4)
+        recordings = apply_multiple_stimuli(cell, StimulusName.FIRE_PATTERN, amplitudes, threshold_based=False, n_processes=4)
+        recordings_thres = apply_multiple_stimuli(cell, StimulusName.FIRE_PATTERN, thres_perc, n_processes=4)
         assert len(recordings) == len(amplitudes)
-        for recording in recordings.values():
+        assert len(recordings_thres) == len(thres_perc)
+        for recording in list(recordings.values()) + list(recordings_thres.values()):
             assert len(recording.time) > 0
             assert len(recording.time) == len(recording.voltage)
             assert len(recording.time) == len(recording.current)
@@ -52,7 +55,10 @@ def test_apply_multiple_step_stimuli(mock_run_stimulus):
     assert "Unknown stimulus name" in str(exc_info.value)
 
     short_amplitudes = [80]
+    short_thres = [0.08]
     other_stim = [StimulusName.AP_WAVEFORM, StimulusName.IV, StimulusName.IDREST, StimulusName.POS_CHEOPS, StimulusName.NEG_CHEOPS]
     for stim in other_stim:
-        res = apply_multiple_stimuli(cell, stim, short_amplitudes, n_processes=1)
+        res = apply_multiple_stimuli(cell, stim, short_amplitudes, threshold_based=False, n_processes=1)
+        res_thres = apply_multiple_stimuli(cell, stim, short_thres, n_processes=1)
         assert len(res) == len(short_amplitudes)
+        assert len(res_thres) == len(short_thres)
