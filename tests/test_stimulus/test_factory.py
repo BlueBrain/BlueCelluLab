@@ -91,10 +91,27 @@ class TestStimulusFactory:
         assert s.current[2500] == 2.2
         assert s.current[-1] == 0.0
 
+        s = self.factory.ap_waveform(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.ap_waveform(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.ap_waveform()
+
     def test_create_idrest(self):
         s = self.factory.idrest(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 1850
+
+        s = self.factory.idrest(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 1850
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.idrest(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.idrest()
 
     def test_create_iv(self):
         s = self.factory.iv(threshold_current=1)
@@ -105,20 +122,56 @@ class TestStimulusFactory:
         # assert no positive values
         assert not np.any(s.current > 0)
 
+        s = self.factory.iv(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 3500
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.iv(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.iv()
+
     def test_create_fire_pattern(self):
         s = self.factory.fire_pattern(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 4100
+
+        s = self.factory.fire_pattern(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 4100
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.fire_pattern(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.fire_pattern()
 
     def test_create_pos_cheops(self):
         s = self.factory.pos_cheops(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 19166.0
 
+        s = self.factory.pos_cheops(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 19166.0
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.pos_cheops(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.pos_cheops()
+
     def test_create_neg_cheops(self):
         s = self.factory.neg_cheops(threshold_current=1)
         assert isinstance(s, CombinedStimulus)
         assert s.stimulus_time == 18220.0
+
+        s = self.factory.neg_cheops(amplitude=0.1)
+        assert isinstance(s, CombinedStimulus)
+        assert s.stimulus_time == 18220.0
+
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.neg_cheops(threshold_current=0.0)
+        with pytest.raises(TypeError, match="You have to give either threshold_current or amplitude"):
+            self.factory.neg_cheops()
 
 
 def test_combined_stimulus():

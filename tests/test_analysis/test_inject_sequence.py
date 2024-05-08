@@ -32,7 +32,7 @@ def mock_run_stimulus():
 def test_apply_multiple_step_stimuli(mock_run_stimulus):
     """Do not run the code in parallel, mock the return value via MockRecording."""
     amplitudes = [80, 100, 120, 140]
-    thres_perc = [0.08, 0.1, 0.12, 0.14]
+    thres_perc = [0.08]
     cell = create_ball_stick()
 
     with patch('bluecellulab.analysis.inject_sequence.IsolatedProcess') as mock_isolated_process, \
