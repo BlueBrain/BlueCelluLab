@@ -74,6 +74,7 @@ def apply_multiple_stimuli(
     cell: Cell,
     stimulus_name: StimulusName,
     amplitudes: Sequence[float],
+    threshold_based: bool = True,
     section_name: str | None = None,
     segment: float = 0.5,
     n_processes: int | None = None,
@@ -84,6 +85,8 @@ def apply_multiple_stimuli(
         cell: The cell to which the stimuli are applied.
         stimulus_name: The name of the stimulus to apply.
         amplitudes: The amplitudes of the stimuli to apply.
+        threshold_based: Whether to consider amplitudes to be
+            threshold percentages or to be raw amplitudes.
         section_name: Section name of the cell where the stimuli are applied.
           If None, the stimuli are applied at the soma[0] of the cell.
         segment: The segment of the section where the stimuli are applied.
@@ -103,18 +106,37 @@ def apply_multiple_stimuli(
 
     # Prepare arguments for each stimulus
     for amplitude in amplitudes:
+        if threshold_based:
+            thres_perc = amplitude
+            amp = None
+        else:
+            thres_perc = None
+            amp = amplitude
+
         if stimulus_name == StimulusName.AP_WAVEFORM:
-            stimulus = stim_factory.ap_waveform(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.ap_waveform(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         elif stimulus_name == StimulusName.IDREST:
-            stimulus = stim_factory.idrest(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.idrest(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         elif stimulus_name == StimulusName.IV:
-            stimulus = stim_factory.iv(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.iv(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         elif stimulus_name == StimulusName.FIRE_PATTERN:
-            stimulus = stim_factory.fire_pattern(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.fire_pattern(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         elif stimulus_name == StimulusName.POS_CHEOPS:
-            stimulus = stim_factory.pos_cheops(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.pos_cheops(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         elif stimulus_name == StimulusName.NEG_CHEOPS:
-            stimulus = stim_factory.neg_cheops(threshold_current=cell.threshold, threshold_percentage=amplitude)
+            stimulus = stim_factory.neg_cheops(
+                threshold_current=cell.threshold, threshold_percentage=thres_perc, amplitude=amp
+            )
         else:
             raise ValueError("Unknown stimulus name.")
 

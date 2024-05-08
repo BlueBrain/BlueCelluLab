@@ -299,99 +299,156 @@ class StimulusFactory:
         )
 
     def ap_waveform(
-        self, threshold_current: float, threshold_percentage: float = 220.0
+        self, threshold_current: float = None, threshold_percentage: float = 220.0, amplitude: float = None
     ) -> Stimulus:
         """Returns the APWaveform Stimulus object, a type of Step stimulus.
 
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         pre_delay = 250.0
         duration = 50.0
         post_delay = 250.0
-        return Step.threshold_based(
-            self.dt,
-            pre_delay=pre_delay,
-            duration=duration,
-            post_delay=post_delay,
-            threshold_current=threshold_current,
-            threshold_percentage=threshold_percentage,
-        )
+
+        if threshold_current is not None and threshold_percentage is not None:
+            return Step.threshold_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                threshold_current=threshold_current,
+                threshold_percentage=threshold_percentage,
+            )
+
+        if amplitude is not None:
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+
+        raise TypeError("You have to give either threshold_current or amplitude")
 
     def idrest(
         self,
-        threshold_current: float,
+        threshold_current: float = None,
         threshold_percentage: float = 200.0,
+        amplitude: float = None,
     ) -> Stimulus:
         """Returns the IDRest Stimulus object, a type of Step stimulus.
 
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         pre_delay = 250.0
         duration = 1350.0
         post_delay = 250.0
-        return Step.threshold_based(
-            self.dt,
-            pre_delay=pre_delay,
-            duration=duration,
-            post_delay=post_delay,
-            threshold_current=threshold_current,
-            threshold_percentage=threshold_percentage,
-        )
+        if threshold_current is not None and threshold_percentage is not None:
+            return Step.threshold_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                threshold_current=threshold_current,
+                threshold_percentage=threshold_percentage,
+            )
+        
+        if amplitude is not None:
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+        
+        raise TypeError("You have to give either threshold_current or amplitude")
 
     def iv(
         self,
-        threshold_current: float,
+        threshold_current: float = None,
         threshold_percentage: float = -40.0,
+        amplitude: float = None,
     ) -> Stimulus:
         """Returns the IV Stimulus object, a type of Step stimulus.
 
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         pre_delay = 250.0
         duration = 3000.0
         post_delay = 250.0
-        return Step.threshold_based(
-            self.dt,
-            pre_delay=pre_delay,
-            duration=duration,
-            post_delay=post_delay,
-            threshold_current=threshold_current,
-            threshold_percentage=threshold_percentage,
-        )
+        if threshold_current is not None and threshold_percentage is not None:
+            return Step.threshold_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                threshold_current=threshold_current,
+                threshold_percentage=threshold_percentage,
+            )
+        
+        if amplitude is not None:
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+        
+        raise TypeError("You have to give either threshold_current or amplitude")
 
     def fire_pattern(
         self,
-        threshold_current: float,
+        threshold_current: float = None,
         threshold_percentage: float = 200.0,
+        amplitude: float = None,
     ) -> Stimulus:
         """Returns the FirePattern Stimulus object, a type of Step stimulus.
 
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         pre_delay = 250.0
         duration = 3600.0
         post_delay = 250.0
-        return Step.threshold_based(
-            self.dt,
-            pre_delay=pre_delay,
-            duration=duration,
-            post_delay=post_delay,
-            threshold_current=threshold_current,
-            threshold_percentage=threshold_percentage,
-        )
+        if threshold_current is not None and threshold_percentage is not None:
+            return Step.threshold_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                threshold_current=threshold_current,
+                threshold_percentage=threshold_percentage,
+            )
+        
+        if amplitude is not None:
+            return Step.amplitude_based(
+                self.dt,
+                pre_delay=pre_delay,
+                duration=duration,
+                post_delay=post_delay,
+                amplitude=amplitude,
+            )
+        
+        raise TypeError("You have to give either threshold_current or amplitude")
 
     def pos_cheops(
         self,
-        threshold_current: float,
+        threshold_current: float = None,
         threshold_percentage: float = 300.0,
+        amplitude: float = None,
     ) -> Stimulus:
         """A combination of pyramid shaped Ramp stimuli with a positive
         amplitude.
@@ -399,6 +456,7 @@ class StimulusFactory:
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         delay = 250.0
         ramp1_duration = 4000.0
@@ -407,7 +465,10 @@ class StimulusFactory:
         inter_delay = 2000.0
         post_delay = 250.0
 
-        amplitude = threshold_current * threshold_percentage / 100
+        if amplitude is None:
+            if threshold_current is None:
+                raise TypeError("You have to give either threshold_current or amplitude")
+            amplitude = threshold_current * threshold_percentage / 100
         result = (
             Empty(self.dt, duration=delay)
             + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
@@ -424,8 +485,9 @@ class StimulusFactory:
 
     def neg_cheops(
         self,
-        threshold_current: float,
+        threshold_current: float = None,
         threshold_percentage: float = 300.0,
+        amplitude: float = None,
     ) -> Stimulus:
         """A combination of pyramid shaped Ramp stimuli with a negative
         amplitude.
@@ -433,6 +495,7 @@ class StimulusFactory:
         Args:
             threshold_current: The threshold current of the Cell.
             threshold_percentage: Percentage of desired threshold_current amplification.
+            amplitude: Raw amplitude of input current.
         """
         delay = 1750.0
         ramp1_duration = 3333.0
@@ -441,7 +504,10 @@ class StimulusFactory:
         inter_delay = 2000.0
         post_delay = 250.0
 
-        amplitude = - threshold_current * threshold_percentage / 100
+        if amplitude is None:
+            if threshold_current is None:
+                raise TypeError("You have to give either threshold_current or amplitude")
+            amplitude = - threshold_current * threshold_percentage / 100
         result = (
             Empty(self.dt, duration=delay)
             + Slope(self.dt, duration=ramp1_duration, amplitude_start=0.0, amplitude_end=amplitude)
