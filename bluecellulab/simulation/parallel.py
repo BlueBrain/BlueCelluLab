@@ -12,8 +12,8 @@ class IsolatedProcess(Pool):
     Use this when running isolated NEURON simulations. Running 2 NEURON
     simulations on a single process is to be avoided. Required global
     NEURON simulation parameters will automatically be passed to each
-    worker. `fork` mode of multiprocessing is used to pass the other
-    required global NEURON parameters to each worker.
+    worker. `fork` mode of multiprocessing is used to pass any other
+    global NEURON parameters to each worker.
     """
 
     def __init__(self, processes: int | None = 1):
