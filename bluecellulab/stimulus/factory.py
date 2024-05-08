@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -299,7 +300,10 @@ class StimulusFactory:
         )
 
     def ap_waveform(
-        self, threshold_current: float = None, threshold_percentage: float = 220.0, amplitude: float = None
+        self,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = 220.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """Returns the APWaveform Stimulus object, a type of Step stimulus.
 
@@ -312,7 +316,7 @@ class StimulusFactory:
         duration = 50.0
         post_delay = 250.0
 
-        if threshold_current is not None and threshold_percentage is not None:
+        if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
                 pre_delay=pre_delay,
@@ -335,9 +339,9 @@ class StimulusFactory:
 
     def idrest(
         self,
-        threshold_current: float = None,
-        threshold_percentage: float = 200.0,
-        amplitude: float = None,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = 200.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """Returns the IDRest Stimulus object, a type of Step stimulus.
 
@@ -349,7 +353,7 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 1350.0
         post_delay = 250.0
-        if threshold_current is not None and threshold_percentage is not None:
+        if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
                 pre_delay=pre_delay,
@@ -358,7 +362,7 @@ class StimulusFactory:
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
             )
-        
+
         if amplitude is not None:
             return Step.amplitude_based(
                 self.dt,
@@ -367,14 +371,14 @@ class StimulusFactory:
                 post_delay=post_delay,
                 amplitude=amplitude,
             )
-        
+
         raise TypeError("You have to give either threshold_current or amplitude")
 
     def iv(
         self,
-        threshold_current: float = None,
-        threshold_percentage: float = -40.0,
-        amplitude: float = None,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = -40.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """Returns the IV Stimulus object, a type of Step stimulus.
 
@@ -386,7 +390,7 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 3000.0
         post_delay = 250.0
-        if threshold_current is not None and threshold_percentage is not None:
+        if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
                 pre_delay=pre_delay,
@@ -395,7 +399,7 @@ class StimulusFactory:
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
             )
-        
+
         if amplitude is not None:
             return Step.amplitude_based(
                 self.dt,
@@ -404,14 +408,14 @@ class StimulusFactory:
                 post_delay=post_delay,
                 amplitude=amplitude,
             )
-        
+
         raise TypeError("You have to give either threshold_current or amplitude")
 
     def fire_pattern(
         self,
-        threshold_current: float = None,
-        threshold_percentage: float = 200.0,
-        amplitude: float = None,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = 200.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """Returns the FirePattern Stimulus object, a type of Step stimulus.
 
@@ -423,7 +427,7 @@ class StimulusFactory:
         pre_delay = 250.0
         duration = 3600.0
         post_delay = 250.0
-        if threshold_current is not None and threshold_percentage is not None:
+        if threshold_current is not None and threshold_current != 0 and threshold_percentage is not None:
             return Step.threshold_based(
                 self.dt,
                 pre_delay=pre_delay,
@@ -432,7 +436,7 @@ class StimulusFactory:
                 threshold_current=threshold_current,
                 threshold_percentage=threshold_percentage,
             )
-        
+
         if amplitude is not None:
             return Step.amplitude_based(
                 self.dt,
@@ -441,14 +445,14 @@ class StimulusFactory:
                 post_delay=post_delay,
                 amplitude=amplitude,
             )
-        
+
         raise TypeError("You have to give either threshold_current or amplitude")
 
     def pos_cheops(
         self,
-        threshold_current: float = None,
-        threshold_percentage: float = 300.0,
-        amplitude: float = None,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = 300.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """A combination of pyramid shaped Ramp stimuli with a positive
         amplitude.
@@ -466,7 +470,7 @@ class StimulusFactory:
         post_delay = 250.0
 
         if amplitude is None:
-            if threshold_current is None:
+            if threshold_current is None or threshold_current == 0 or threshold_percentage is None:
                 raise TypeError("You have to give either threshold_current or amplitude")
             amplitude = threshold_current * threshold_percentage / 100
         result = (
@@ -485,9 +489,9 @@ class StimulusFactory:
 
     def neg_cheops(
         self,
-        threshold_current: float = None,
-        threshold_percentage: float = 300.0,
-        amplitude: float = None,
+        threshold_current: Optional[float] = None,
+        threshold_percentage: Optional[float] = 300.0,
+        amplitude: Optional[float] = None,
     ) -> Stimulus:
         """A combination of pyramid shaped Ramp stimuli with a negative
         amplitude.
@@ -505,7 +509,7 @@ class StimulusFactory:
         post_delay = 250.0
 
         if amplitude is None:
-            if threshold_current is None:
+            if threshold_current is None or threshold_current == 0 or threshold_percentage is None:
                 raise TypeError("You have to give either threshold_current or amplitude")
             amplitude = - threshold_current * threshold_percentage / 100
         result = (
