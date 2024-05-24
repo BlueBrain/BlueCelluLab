@@ -25,7 +25,7 @@ class PSegment:
 
     def __init__(self, hsegment, parentsection):
         # import matplotlib as plt
-        from matplotlib import cm
+        from matplotlib import colormaps
 
         self.hsegment = hsegment
         self.parentsection = parentsection
@@ -35,7 +35,7 @@ class PSegment:
         self.figure = None
         self.figX = None
         self.figY = None
-        self.color_map = cm.get_cmap("hot")
+        self.color_map = colormaps["hot"]
         self.ax = None
         self.patch = None
         self.plotvariable = None

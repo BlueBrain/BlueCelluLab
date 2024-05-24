@@ -118,6 +118,10 @@ class SynapseFactory:
                 not np.isnan(syn_description[SynapseProperty.AFFERENT_SECTION_POS])):
             # position is pre computed in SONATA
             location = syn_description[SynapseProperty.AFFERENT_SECTION_POS]
+            if location == 0.0:
+                location = 0.0000001
+            elif location >= 1.0:
+                location = 0.9999999
         else:
             ipt = syn_description[SynapseProperty.POST_SEGMENT_ID]
             syn_offset = syn_description[SynapseProperty.POST_SEGMENT_OFFSET]

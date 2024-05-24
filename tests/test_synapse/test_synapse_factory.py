@@ -60,8 +60,11 @@ class TestSynapseFactory:
         # set afferent_section_pos
         self.syn_description[SynapseProperty.AFFERENT_SECTION_POS] = 1.2
         res = SynapseFactory.determine_synapse_location(self.syn_description, self.cell)
-        assert res.location == 1.2
+        assert res.location == 0.9999999
         assert res.section.L == pytest.approx(9.530376893488256)
+        self.syn_description[SynapseProperty.AFFERENT_SECTION_POS] = 0
+        res = SynapseFactory.determine_synapse_location(self.syn_description, self.cell)
+        assert res.location == 0.0000001
 
     def test_synlocation_to_segx(self):
         ipt = 13
