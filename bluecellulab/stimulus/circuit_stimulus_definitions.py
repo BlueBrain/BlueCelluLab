@@ -243,7 +243,6 @@ class Stimulus:
                 delay=stimulus_entry["delay"],
                 duration=stimulus_entry["duration"],
                 spike_file=stimulus_entry["spike_file"],
-                source=stimulus_entry["source"],
             )
         elif pattern == Pattern.SHOT_NOISE:
             return ShotNoise(
@@ -331,7 +330,6 @@ class RelativeLinear(Stimulus):
 @dataclass(frozen=True, config=dict(extra="forbid"))
 class SynapseReplay(Stimulus):
     spike_file: str
-    source: str
 
     @field_validator("spike_file")
     @classmethod
