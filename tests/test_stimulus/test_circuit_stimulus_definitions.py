@@ -10,7 +10,6 @@ def test_synapse_replay_validator():
     with pytest.raises(ValidationError):
         _ = SynapseReplay(
             target="target1",
-            source="source1",
             delay=0,
             duration=3000,
             spike_file="file_that_does_not_exist.dat",

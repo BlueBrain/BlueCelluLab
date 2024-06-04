@@ -719,27 +719,26 @@ class Cell(InjectableMixin, PlottableMixin):
             pre_gid = CellId(
                 source_population, int(synapse.syn_description[SynapseProperty.PRE_GID])
             )
-            if self.sonata_proxy.circuit_access.target_contains_cell(stimulus.source, pre_gid):
-                if pre_gid.id in synapse_spikes:
-                    spikes_of_interest = synapse_spikes[pre_gid.id]
-                    # filter spikes of interest >=stimulus.delay, <=stimulus.duration
-                    spikes_of_interest = spikes_of_interest[
-                        (spikes_of_interest >= stimulus.delay)
-                        & (spikes_of_interest <= stimulus.duration)
-                    ]
-                    connection = bluecellulab.Connection(
-                        synapse,
-                        pre_spiketrain=spikes_of_interest,
-                        pre_cell=None,
-                        stim_dt=self.record_dt,
-                        spike_threshold=spike_threshold,
-                        spike_location=spike_location,
-                    )
-                    logger.debug(
-                        f"Added synapse replay from {pre_gid} to {self.cell_id.id}, {synapse_id}"
-                    )
+            if pre_gid.id in synapse_spikes:
+                spikes_of_interest = synapse_spikes[pre_gid.id]
+                # filter spikes of interest >=stimulus.delay, <=stimulus.duration
+                spikes_of_interest = spikes_of_interest[
+                    (spikes_of_interest >= stimulus.delay)
+                    & (spikes_of_interest <= stimulus.duration)
+                ]
+                connection = bluecellulab.Connection(
+                    synapse,
+                    pre_spiketrain=spikes_of_interest,
+                    pre_cell=None,
+                    stim_dt=self.record_dt,
+                    spike_threshold=spike_threshold,
+                    spike_location=spike_location,
+                )
+                logger.debug(
+                    f"Added synapse replay from {pre_gid} to {self.cell_id.id}, {synapse_id}"
+                )
 
-                    self.connections[synapse_id] = connection
+                self.connections[synapse_id] = connection
 
     @property
     def info_dict(self):

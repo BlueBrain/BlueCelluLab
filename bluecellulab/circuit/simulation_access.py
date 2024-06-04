@@ -172,7 +172,7 @@ class SonataSimulationAccess:
 
 
 def get_synapse_replay_spikes(f_name: str) -> dict:
-    """Read the .dat file containing the spike replays."""
+    """Read the .h5 file containing the spike replays."""
     with h5py.File(f_name, 'r') as f:
         # Access the timestamps and node_ids datasets
         timestamps = f['/spikes/All/timestamps'][:]
