@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 from pydantic.types import NonNegativeInt
 from typing_extensions import deprecated
+from typing import Optional, List
 
 import bluecellulab
 from bluecellulab.cell import CellDict
@@ -115,6 +116,8 @@ class CircuitSimulation:
 
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
+
+        self.projections: Optional[List[str]] = None
 
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
