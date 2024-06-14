@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 from pydantic.types import NonNegativeInt
 from typing_extensions import deprecated
-from typing import Optional, List
+from typing import Optional
 
 import bluecellulab
 from bluecellulab.cell import CellDict
