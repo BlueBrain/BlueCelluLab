@@ -115,7 +115,7 @@ class SonataCircuitAccess:
         snap_node_id = CircuitNodeId(cell_id.population_name, cell_id.id)
         edges = self._circuit.edges
         # select edges that are in the projections, if there are projections
-        if projections is None or len(projections) == 0:
+        if projections is None:
             edge_population_names = [x for x in edges]
         elif isinstance(projections, str):
             edge_population_names = [x for x in edges if edges[x].source.name == projections]

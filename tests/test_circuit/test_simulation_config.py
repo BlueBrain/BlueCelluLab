@@ -140,7 +140,7 @@ def test_get_all_projection_names():
     sim_config = cond_params_conf_path.name
     with cwd(sim_dir):
         sim = SonataSimulationConfig(sim_config)
-        assert sim.get_all_projection_names() == []
+        assert sim.get_all_projection_names() == ['NodeA']
 
 
 def test_seeds():
