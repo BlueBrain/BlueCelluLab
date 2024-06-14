@@ -117,7 +117,7 @@ class CircuitSimulation:
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
 
-        self.projections: Optional[List[str]] = None
+        self.projections: list[str] | None = None
 
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
