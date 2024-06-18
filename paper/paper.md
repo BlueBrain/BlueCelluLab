@@ -35,13 +35,13 @@ affiliations:
     index: 1
   - name: Laboratory of Neural Microcircuitry (LNMC), Brain Mind Institute, School of Life Sciences, École Polytechnique Fédérale de Lausanne (EPFL), 1015 Lausanne, Switzerland
     index: 2
-  - name: Present address: Foundation for Research on Information Technologies in Society (IT’IS), Zurich 8004, Switzerland
+  - name: Present address -> Foundation for Research on Information Technologies in Society (IT’IS), Zurich 8004, Switzerland
     index: 3
-  - name: Present address: Roche Information Solutions, F. Hoffmann-La Roche AG, Basel, Switzerland
+  - name: Present address -> Roche Information Solutions, F. Hoffmann-La Roche AG, Basel, Switzerland
     index: 4
-  - name: Present address: Université de Montréal, CHU Ste-Justine Research Center (Architectures of Biological Learning Lab), Montréal, Canada
+  - name: Present address -> Université de Montréal, CHU Ste-Justine Research Center (Architectures of Biological Learning Lab), Montréal, Canada
     index: 5
-  - name: Present address: Mila Quebec AI Institute, Montréal, Canada
+  - name: Present address -> Mila Quebec AI Institute, Montréal, Canada
     index: 6
 date: 24 April 2024
 bibliography: paper.bib
