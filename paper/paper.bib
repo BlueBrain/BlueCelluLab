@@ -1,0 +1,158 @@
+@article{Hines2009,
+   abstract = {The NEURON simulation program now allows Python to be used, alone or in combination with NEURON's traditional Hoc interpreter. Adding Python to NEURON has the immediate benefi t of making available a very extensive suite of analysis tools written for engineering and science. It also catalyzes NEURON software development by offering users a modern programming tool that is recognized for its fl exibility and power to create and maintain complex programs. At the same time, nothing is lost because all existing models written in Hoc, including graphical user interface tools, continue to work without change and are also available within the Python context. An example of the benefi ts of Python availability is the use of the xml module in implementing NEURON's Import3D and CellBuild tools to read MorphML and NeuroML model specifi cations. © 2009 Hines, Davison and Muller.},
+   author = {Michael L. Hines and Andrew P. Davison and Eilif Muller},
+   doi = {10.3389/neuro.11.001.2009},
+   issn = {16625196},
+   issue = {JAN},
+   journal = {Frontiers in Neuroinformatics},
+   keywords = {Computational neuroscience,Python,Simulation environment},
+   month = {1},
+   publisher = {Frontiers Media S.A.},
+   title = {NEURON and Python},
+   volume = {3},
+   year = {2009},
+}
+
+@article{Tikidji2017,
+   abstract = {Numerical simulations of brain networks are a critical part of our efforts in understanding brain functions under pathological and normal conditions. For several decades, the community has developed many software packages and simulators to accelerate research in computational neuroscience. In this article, we select the three most popular simulators, as determined by the number of models in the ModelDB database, such as NEURON, GENESIS, and BRIAN, and perform an independent evaluation of these simulators. In addition, we study NEST, one of the lead simulators of the Human Brain Project. First, we study them based on one of the most important characteristics, the range of supported models. Our investigation reveals that brain network simulators may be biased toward supporting a specific set of models. However, all simulators tend to expand the supported range of models by providing a universal environment for the computational study of individual neurons and brain networks. Next, our investigations on the characteristics of computational architecture and efficiency indicate that all simulators compile the most computationally intensive procedures into binary code, with the aim of maximizing their computational performance. However, not all simulators provide the simplest method for module development and/or guarantee efficient binary code. Third, a study of their amenability for high-performance computing reveals that NEST can almost transparently map an existing model on a cluster or multicore computer, while NEURON requires code modification if the model developed for a single computer has to be mapped on a computational cluster. Interestingly, parallelization is the weakest characteristic of BRIAN, which provides no support for cluster computations and limited support for multicore computers. Fourth, we identify the level of user support and frequency of usage for all simulators. Finally, we carry out an evaluation using two case studies: a large network with simplified neural and synaptic models and a small network with detailed models. These two case studies allow us to avoid any bias toward a particular software package. The results indicate that BRIAN provides the most concise language for both cases considered. Furthermore, as expected, NEST mostly favors large network models, while NEURON is better suited for detailed models. Overall, the case studies reinforce our general observation that simulators have a bias in the computational performance toward specific types of the brain network models.},
+   author = {Ruben A. Tikidji-Hamburyan and Vikram Narayana and Zeki Bozkus and Tarek A. El-Ghazawi},
+   doi = {10.3389/fninf.2017.00046},
+   issn = {16625196},
+   journal = {Frontiers in Neuroinformatics},
+   keywords = {Brain network simulators,Comparative study,Computational neuroscience,Conductance-based model,Phenomenological model,Spiking neural networks},
+   month = {7},
+   pmid = {28775687},
+   publisher = {Frontiers Media S.A.},
+   title = {Software for brain network simulations: A comparative study},
+   volume = {11},
+   year = {2017},
+}
+
+@article{Kumbhar2019,
+   abstract = {The NEURON simulator has been developed over the past three decades and is widely used by neuroscientists to model the electrical activity of neuronal networks. Large network simulation projects using NEURON have supercomputer allocations that individually measure in the millions of core hours. Supercomputer centers are transitioning to next generation architectures and the work accomplished per core hour for these simulations could be improved by an order of magnitude if NEURON was able to better utilize those new hardware capabilities. In order to adapt NEURON to evolving computer architectures, the compute engine of the NEURON simulator has been extracted and has been optimized as a library called CoreNEURON. This paper presents the design, implementation, and optimizations of CoreNEURON. We describe how CoreNEURON can be used as a library with NEURON and then compare performance of different network models on multiple architectures including IBM BlueGene/Q, Intel Skylake, Intel MIC and NVIDIA GPU. We show how CoreNEURON can simulate existing NEURON network models with 4–7x less memory usage and 2–7x less execution time while maintaining binary result compatibility with NEURON.},
+   author = {Pramod Kumbhar and Michael Hines and Jeremy Fouriaux and Aleksandr Ovcharenko and James King and Fabien Delalondre and Felix Schürmann},
+   doi = {10.3389/fninf.2019.00063},
+   issn = {16625196},
+   journal = {Frontiers in Neuroinformatics},
+   keywords = {NEURON,neuronal networks,performance optimization,simulation,supercomputing},
+   month = {9},
+   publisher = {Frontiers Media S.A.},
+   title = {CoreNEURON : An Optimized Compute Engine for the NEURON Simulator},
+   volume = {13},
+   year = {2019},
+}
+
+@article{Awile2022,
+   abstract = {The need for reproducible, credible, multiscale biological modeling has led to the development of standardized simulation platforms, such as the widely-used NEURON environment for computational neuroscience. Developing and maintaining NEURON over several decades has required attention to the competing needs of backwards compatibility, evolving computer architectures, the addition of new scales and physical processes, accessibility to new users, and efficiency and flexibility for specialists. In order to meet these challenges, we have now substantially modernized NEURON, providing continuous integration, an improved build system and release workflow, and better documentation. With the help of a new source-to-source compiler of the NMODL domain-specific language we have enhanced NEURON's ability to run efficiently, via the CoreNEURON simulation engine, on a variety of hardware platforms, including GPUs. Through the implementation of an optimized in-memory transfer mechanism this performance optimized backend is made easily accessible to users, providing training and model-development paths from laptop to workstation to supercomputer and cloud platform. Similarly, we have been able to accelerate NEURON's reaction-diffusion simulation performance through the use of just-in-time compilation. We show that these efforts have led to a growing developer base, a simpler and more robust software distribution, a wider range of supported computer architectures, a better integration of NEURON with other scientific workflows, and substantially improved performance for the simulation of biophysical and biochemical models.},
+   author = {Omar Awile and Pramod Kumbhar and Nicolas Cornu and Salvador Dura-Bernal and James Gonzalo King and Olli Lupton and Ioannis Magkanaris and Robert A. McDougal and Adam J.H. Newton and Fernando Pereira and Alexandru Săvulescu and Nicholas T. Carnevale and William W. Lytton and Michael L. Hines and Felix Schürmann},
+   doi = {10.3389/fninf.2022.884046},
+   issn = {16625196},
+   journal = {Frontiers in Neuroinformatics},
+   keywords = {NEURON,computational neuroscience,multiscale computer modeling,neuronal networks,simulation,systems biology},
+   month = {6},
+   publisher = {Frontiers Media S.A.},
+   title = {Modernizing the NEURON Simulator for Sustainability, Portability, and Performance},
+   volume = {16},
+   year = {2022},
+}
+@book{kernighan1984unix,
+  title={The UNIX programming environment},
+  author={Kernighan, Brian W and Pike, Rob},
+  volume={270},
+  year={1984},
+  publisher={Prentice-Hall Englewood Cliffs, NJ}
+}
+@article{Dai2020,
+   abstract = {Increasing availability of comprehensive experimental datasets and of high-performance computing resources are driving rapid growth in scale, complexity, and biological realism of computational models in neuroscience. To support construction and simulation, as well as sharing of such large-scale models, a broadly applicable, flexible, and high-performance data format is necessary. To address this need, we have developed the Scalable Open Network Architecture TemplAte (SONATA) data format. It is designed for memory and computational efficiency and works across multiple platforms. The format represents neuronal circuits and simulation inputs and outputs via standardized files and provides much flexibility for adding new conventions or extensions. SONATA is used in multiple modeling and visualization tools, and we also provide reference Application Programming Interfaces and model examples to catalyze further adoption. SONATA format is free and open for the community to use and build upon with the goal of enabling efficient model building, sharing, and reproducibility.},
+   author = {Kael Dai and Juan Hernando and Yazan N. Billeh and Sergey L. Gratiy and Judit Planas and Andrew P. Davison and Salvador Dura-Bernal and Padraig Gleeson and Adrien Devresse and Benjamin K. Dichter and Michael Gevaert and James G. King and Werner A.H. van Geit and Arseny V. Povolotsky and Eilif Muller and Jean Denis Courcol and Anton Arkhipov},
+   doi = {10.1371/journal.pcbi.1007696},
+   issn = {15537358},
+   issue = {2},
+   journal = {PLoS Computational Biology},
+   pmid = {32092054},
+   publisher = {Public Library of Science},
+   title = {The SONATA data format for efficient description of large-scale network models},
+   volume = {16},
+   year = {2020},
+}
+
+@book{martin2003agile,
+  title={Agile software development: principles, patterns, and practices},
+  author={Martin, Robert Cecil},
+  year={2003},
+  publisher={Prentice Hall PTR}
+}
+
+@article{parnas1972criteria,
+  title={On the criteria to be used in decomposing systems into modules},
+  author={Parnas, David Lorge},
+  journal={Communications of the ACM},
+  volume={15},
+  number={12},
+  pages={1053--1058},
+  year={1972},
+  publisher={ACm New York, NY, USA}
+}
+
+@article{van2014pep,
+  title={Pep 484--type hints},
+  author={Van Rossum, Guido and Lehtosalo, Jukka and Langa, Lukasz},
+  journal={Index of Python Enhancement Proposals},
+  year={2014}
+}
+
+@phdthesis{lehtosalo2015adapting,
+  title={Adapting dynamic object-oriented languages to mixed dynamic and static typing},
+  author={Lehtosalo, Jukka Antero},
+  year={2015},
+  school={University of Cambridge}
+}
+
+@software{pydantic_v2.6.4,
+  author       = {Samuel Colvin and Eric Jolibois and Hasan Ramezani and Adrian Garcia Badaracco and Terrence Dorsey and David Montague and Serge Matveenko and Marcelo Trylesinski and Sydney Runkle and David Hewitt and Alex Hall},
+  title        = {Pydantic},
+  version      = {v2.6.4},
+  date         = {2024-03-12},
+  abstract     = {Pydantic is the most widely used data validation library for Python. Fast and extensible, Pydantic plays nicely with your linters/IDE/brain. Define how data should be in pure, canonical Python 3.8+; validate it with Pydantic.},
+  url          = {https://docs.pydantic.dev/latest/},
+  repository   = {https://github.com/pydantic/pydantic},
+  keywords     = {python, validation, parsing, json-schema, hints, typing},
+  license      = {MIT},
+}
+
+@software{fernando_pereira_2024_10809263,
+  author       = {Fernando Pereira and
+                  Weina Ji and
+                  Ioannis Magkanaris and
+                  Jorge Blanco Alonso and
+                  Pramod Kumbhar and
+                  Alexandru Săvulescu and
+                  Erik Heeren and
+                  Sergio and
+                  Antonio Bellotta and
+                  fabien delalondre and
+                  Matthias Wolf and
+                  Werner Van Geit and
+                  Olli Lupton and
+                  Luc Grosheintz and
+                  Alexander Temerev and
+                  Nicolas Cornu and
+                  Omar Awile and
+                  fschuerm and
+                  JCGoran and
+                  Jeremy FOURIAUX and
+                  Adev and
+                  haleepfl and
+                  bdelmarm and
+                  markovg and
+                  MikeG and
+                  anilbey and
+                  bbp-hpcteam},
+  title        = {BlueBrain/neurodamus: 3.1.0},
+  month        = mar,
+  year         = 2024,
+  publisher    = {Zenodo},
+  version      = {3.1.0},
+  doi          = {10.5281/zenodo.10809263},
+  url          = {https://doi.org/10.5281/zenodo.10809263}
+}
