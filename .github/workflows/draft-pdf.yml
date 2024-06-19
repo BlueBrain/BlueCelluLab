@@ -1,3 +1,4 @@
+# Prepares a draft PDF of the paper using the Open Journals draft action.
 name: Draft PDF
 on:
   push:
