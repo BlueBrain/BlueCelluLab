@@ -1,5 +1,5 @@
 # Prepares a draft PDF of the paper using the Open Journals draft action.
-name: Draft PDF
+name: Draft JOSS Paper PDF
 on:
   push:
     paths:
