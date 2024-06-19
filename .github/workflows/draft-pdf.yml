@@ -1,10 +1,6 @@
 # Prepares a draft PDF of the paper using the Open Journals draft action.
 name: Draft JOSS Paper PDF
-on:
-  push:
-    paths:
-    - paper/**
-    - .github/workflows/draft-pdf.yml
+on: push
 
 jobs:
   paper:
