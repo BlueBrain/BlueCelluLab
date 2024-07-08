@@ -37,6 +37,7 @@ def run_stimulus(
     stimulus: Stimulus,
     section: str,
     segment: float,
+    cvode: bool = True,
 ) -> Recording:
     """Creates a cell and stimulates it with a given stimulus.
 
@@ -45,6 +46,7 @@ def run_stimulus(
         stimulus: The input stimulus to inject into the cell.
         section: Name of the section of cell where the stimulus is to be injected.
         segment: The segment of the section where the stimulus is to be injected.
+        cvode: True to use variable time-steps. False for fixed time-steps.
 
     Returns:
         The voltage-time recording at the specified location.
@@ -61,7 +63,7 @@ def run_stimulus(
     current_vector = neuron.h.Vector()
     current_vector.record(iclamp._ref_i)
     simulation = Simulation(cell)
-    simulation.run(stimulus.stimulus_time)
+    simulation.run(stimulus.stimulus_time, cvode=cvode)
     current = np.array(current_vector.to_python())
     voltage = cell.get_voltage_recording(neuron_section, segment)
     time = cell.get_time()
@@ -78,6 +80,7 @@ def apply_multiple_stimuli(
     section_name: str | None = None,
     segment: float = 0.5,
     n_processes: int | None = None,
+    cvode: bool = True,
 ) -> StimulusRecordings:
     """Apply multiple stimuli to the cell on isolated processes.
 
@@ -91,6 +94,7 @@ def apply_multiple_stimuli(
           If None, the stimuli are applied at the soma[0] of the cell.
         segment: The segment of the section where the stimuli are applied.
         n_processes: The number of processes to use for running the stimuli.
+        cvode: True to use variable time-steps. False for fixed time-steps.
 
     Returns:
         A dictionary where the keys are the names of the stimuli and the values
@@ -140,7 +144,7 @@ def apply_multiple_stimuli(
         else:
             raise ValueError("Unknown stimulus name.")
 
-        task_args.append((cell.template_params, stimulus, section_name, segment))
+        task_args.append((cell.template_params, stimulus, section_name, segment, cvode))
 
     with IsolatedProcess(processes=n_processes) as pool:
         # Map expects a function and a list of argument tuples
