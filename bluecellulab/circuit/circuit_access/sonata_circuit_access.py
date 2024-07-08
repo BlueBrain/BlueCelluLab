@@ -47,7 +47,7 @@ class SonataCircuitAccess:
             raise FileNotFoundError(f"Circuit config file {simulation_config} not found.")
 
         if isinstance(simulation_config, SonataSimulationConfig):
-            self.config: SimulationConfig = simulation_config
+            self.config = simulation_config
         else:
             self.config = SonataSimulationConfig(simulation_config)
         circuit_config = self.config.impl.config["network"]
