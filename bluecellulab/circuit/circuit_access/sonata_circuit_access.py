@@ -191,7 +191,7 @@ class SonataCircuitAccess:
 
     @lru_cache(maxsize=16)
     def get_target_cell_ids(self, target: str) -> set[CellId]:
-        ids = self._circuit.nodes.ids(target)
+        ids = self._circuit.nodes.ids(self.config.impl.node_sets[target])
         return {CellId(x.population, x.id) for x in ids}
 
     @lru_cache(maxsize=100)
