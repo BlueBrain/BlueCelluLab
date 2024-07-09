@@ -424,8 +424,7 @@ class CircuitSimulation:
         )
         return syn_descriptions[filtered_rows]
 
-    def get_syn_descriptions(
-        self, cell_id: int | tuple[str, int]) -> pd.DataFrame:
+    def get_syn_descriptions(self, cell_id: int | tuple[str, int]) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
         cell_id = create_cell_id(cell_id)
         return self.circuit_access.extract_synapses(cell_id, projections=self.projections)
