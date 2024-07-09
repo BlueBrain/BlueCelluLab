@@ -41,6 +41,7 @@ class SonataSimulationConfig:
         unique_names = {
             n
             for n in self.impl.circuit.nodes
+            if self.impl.circuit.nodes[n].type == "virtual"
         }
         return list(unique_names)
 

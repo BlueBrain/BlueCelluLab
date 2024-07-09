@@ -117,7 +117,7 @@ class CircuitSimulation:
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
 
-        self.projections: list[str] | None = None
+        self.projections: list[str] = []
 
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
@@ -244,7 +244,7 @@ class CircuitSimulation:
         if add_projections is True:
             self.projections = self.circuit_access.config.get_all_projection_names()
         elif add_projections is False:
-            self.projections = None
+            self.projections = []
         else:
             self.projections = add_projections
 
@@ -425,20 +425,10 @@ class CircuitSimulation:
         return syn_descriptions[filtered_rows]
 
     def get_syn_descriptions(
-        self, cell_id: int | tuple[str, int], projections=None
-    ) -> pd.DataFrame:
+        self, cell_id: int | tuple[str, int]) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
-        if projections is not None and not isinstance(projections, (str, list)):
-            raise TypeError("projections must be None, a string, or a list of strings")
         cell_id = create_cell_id(cell_id)
-        if projections is not None:
-            if isinstance(projections, str):
-                projections = [projections]
-            if self.projections is not None:
-                projections = list(set(projections).intersection(self.projections))
-        else:
-            projections = self.projections
-        return self.circuit_access.extract_synapses(cell_id, projections=projections)
+        return self.circuit_access.extract_synapses(cell_id, projections=self.projections)
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts) -> dict[CellId, np.ndarray]:

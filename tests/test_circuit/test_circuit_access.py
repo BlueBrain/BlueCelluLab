@@ -107,7 +107,7 @@ class TestSonataCircuitAccess:
         assert res.shape == (1742, 16)
         empty_projection = []
         res = self.circuit_access.extract_synapses(cell_id, empty_projection)
-        assert res.shape == (0, 0)
+        assert res.shape == (1742, 16)
 
     def test_target_contains_cell(self):
         target = "most_central_10_SP_PC"
