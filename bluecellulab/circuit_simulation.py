@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 from pydantic.types import NonNegativeInt
 from typing_extensions import deprecated
+from typing import Optional
 
 import bluecellulab
 from bluecellulab.cell import CellDict
@@ -115,6 +116,8 @@ class CircuitSimulation:
 
         self.spike_threshold = self.circuit_access.config.spike_threshold
         self.spike_location = self.circuit_access.config.spike_location
+
+        self.projections: list[str] = []
 
         condition_parameters = self.circuit_access.config.condition_parameters()
         set_global_condition_parameters(condition_parameters)
@@ -239,18 +242,17 @@ class CircuitSimulation:
                                         "pre_spike_trains")
 
         if add_projections is True:
-            projections = self.circuit_access.config.get_all_projection_names()
+            self.projections = self.circuit_access.config.get_all_projection_names()
         elif add_projections is False:
-            projections = []
+            self.projections = []
         else:
-            projections = add_projections
+            self.projections = add_projections
 
         self._add_cells(cell_ids)
         if add_synapses:
             self._add_synapses(
                 pre_gids=pre_gids,
-                add_minis=add_minis,
-                projections=projections)
+                add_minis=add_minis)
         if add_replay or interconnect_cells or pre_spike_trains:
             if add_replay and not add_synapses:
                 raise BluecellulabError("add_replay option can not be used if "
@@ -357,18 +359,17 @@ class CircuitSimulation:
                 ornstein_uhlenbeck_stim_count += 1
 
     def _add_synapses(
-            self, pre_gids=None, add_minis=False, projections=None):
+            self, pre_gids=None, add_minis=False):
         """Instantiate all the synapses."""
         for cell_id in self.cells:
             self._add_cell_synapses(
                 cell_id, pre_gids=pre_gids,
-                add_minis=add_minis,
-                projections=projections)
+                add_minis=add_minis)
 
     def _add_cell_synapses(
-        self, cell_id: CellId, pre_gids=None, add_minis=False, projections=None
+        self, cell_id: CellId, pre_gids=None, add_minis=False
     ) -> None:
-        syn_descriptions = self.get_syn_descriptions(cell_id, projections=projections)
+        syn_descriptions = self.get_syn_descriptions(cell_id)
 
         if pre_gids is not None:
             if self.circuit_format == CircuitFormat.SONATA:
@@ -423,12 +424,10 @@ class CircuitSimulation:
         )
         return syn_descriptions[filtered_rows]
 
-    def get_syn_descriptions(
-        self, cell_id: int | tuple[str, int], projections=None
-    ) -> pd.DataFrame:
+    def get_syn_descriptions(self, cell_id: int | tuple[str, int]) -> pd.DataFrame:
         """Get synapse descriptions dataframe."""
         cell_id = create_cell_id(cell_id)
-        return self.circuit_access.extract_synapses(cell_id, projections=projections)
+        return self.circuit_access.extract_synapses(cell_id, projections=self.projections)
 
     @staticmethod
     def merge_pre_spike_trains(*train_dicts) -> dict[CellId, np.ndarray]:
