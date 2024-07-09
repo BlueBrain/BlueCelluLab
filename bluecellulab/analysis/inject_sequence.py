@@ -9,6 +9,7 @@ from bluecellulab.cell.core import Cell
 from bluecellulab.cell.template import TemplateParams
 from bluecellulab.simulation.parallel import IsolatedProcess
 from bluecellulab.simulation.simulation import Simulation
+from bluecellulab.stimulus.circuit_stimulus_definitions import Hyperpolarizing
 from bluecellulab.stimulus.factory import Stimulus, StimulusFactory
 
 
@@ -38,6 +39,7 @@ def run_stimulus(
     section: str,
     segment: float,
     cvode: bool = True,
+    add_hypamp: bool = True,
 ) -> Recording:
     """Creates a cell and stimulates it with a given stimulus.
 
@@ -56,6 +58,9 @@ def run_stimulus(
     """
     cell = Cell.from_template_parameters(template_params)
     neuron_section = cell.sections[section]
+    if add_hypamp:
+        hyp_stim = Hyperpolarizing(target="", delay=0.0, duration=stimulus.stimulus_time)
+        cell.add_replay_hypamp(hyp_stim)
     cell.add_voltage_recording(neuron_section, segment)
     iclamp, _ = cell.inject_current_waveform(
         stimulus.time, stimulus.current, section=neuron_section, segx=segment
@@ -81,6 +86,7 @@ def apply_multiple_stimuli(
     segment: float = 0.5,
     n_processes: int | None = None,
     cvode: bool = True,
+    add_hypamp: bool = True,
 ) -> StimulusRecordings:
     """Apply multiple stimuli to the cell on isolated processes.
 
@@ -95,6 +101,7 @@ def apply_multiple_stimuli(
         segment: The segment of the section where the stimuli are applied.
         n_processes: The number of processes to use for running the stimuli.
         cvode: True to use variable time-steps. False for fixed time-steps.
+        add_hypamp: True to add the cell's holding current stimulus
 
     Returns:
         A dictionary where the keys are the names of the stimuli and the values
@@ -144,7 +151,7 @@ def apply_multiple_stimuli(
         else:
             raise ValueError("Unknown stimulus name.")
 
-        task_args.append((cell.template_params, stimulus, section_name, segment, cvode))
+        task_args.append((cell.template_params, stimulus, section_name, segment, cvode, add_hypamp))
 
     with IsolatedProcess(processes=n_processes) as pool:
         # Map expects a function and a list of argument tuples
