@@ -170,7 +170,7 @@ class Stimulus:
                 decay_time=stimulus_entry["DecayTime"],
                 mean_percent=stimulus_entry["MeanPercent"],
                 sd_percent=stimulus_entry["SDPercent"],
-                amp_cv=stimulus_entry["AmpCV"],
+                relative_skew=stimulus_entry.get("RelativeSkew", 0.5),
                 seed=stimulus_entry.get("Seed", None),
                 mode=mode,
                 reversal=stimulus_entry.get("Reversal", 0.0)
@@ -269,7 +269,7 @@ class Stimulus:
                 decay_time=stimulus_entry["decay_time"],
                 mean_percent=stimulus_entry["mean_percent"],
                 sd_percent=stimulus_entry["sd_percent"],
-                amp_cv=stimulus_entry["amp_cv"],
+                relative_skew=stimulus_entry.get("RelativeSkew", 0.5),
                 seed=stimulus_entry.get("random_seed", None),
                 mode=ClampMode(stimulus_entry.get("input_type", "current_clamp").lower()),
                 reversal=stimulus_entry.get("reversal", 0.0)
@@ -365,7 +365,7 @@ class RelativeShotNoise(Stimulus):
     decay_time: float
     mean_percent: float
     sd_percent: float
-    amp_cv: float
+    relative_skew: float = 0.5
     dt: float = 0.25
     seed: Optional[int] = None
     mode: ClampMode = ClampMode.CURRENT
@@ -376,6 +376,13 @@ class RelativeShotNoise(Stimulus):
     def decay_time_gt_rise_time(cls, v, values):
         if v <= values.data["rise_time"]:
             raise ValueError("decay_time must be greater than rise_time")
+        return v
+
+    @field_validator("relative_skew")
+    @classmethod
+    def relative_skew_in_range(cls, v):
+        if v < 0.0 or v > 1.0:
+            raise ValueError("relative skewness must be in [0,1]")
         return v
 
 
