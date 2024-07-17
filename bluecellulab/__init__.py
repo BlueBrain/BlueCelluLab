@@ -18,7 +18,7 @@ from .psection import PSection  # NOQA
 from .psegment import PSegment  # NOQA
 from .simulation import Simulation  # NOQA
 from .rngsettings import RNGSettings  # NOQA
-from .circuit_simulation import CircuitSimulation, CircuitSimulation  # NOQA
+from .circuit_simulation import CircuitSimulation  # NOQA
 import neuron
 
 from .simulation.neuron_globals import NeuronGlobals
