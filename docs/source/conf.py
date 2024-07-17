@@ -19,6 +19,10 @@ autosummary_mock_imports = [  # these modules are not publicly available
     'bluepy_configfile'
 ]
 
+suppress_warnings = [
+    'autosummary.import_cycle',
+]
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 

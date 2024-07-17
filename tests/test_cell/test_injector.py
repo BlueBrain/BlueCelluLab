@@ -351,25 +351,33 @@ class TestInjector:
         """Unit test for add_replay_relative_shotnoise."""
         stimulus = RelativeShotNoise(
             target="single-cell", delay=0, duration=2,
-            rise_time=0.4, decay_time=4, mean_percent=70, sd_percent=40, amp_cv=0.63,
+            rise_time=0.4, decay_time=4, mean_percent=70, sd_percent=40,
             seed=12,
         )
         self.cell.threshold = 0.184062
         soma = self.cell.soma
         segx = 0.5
         tvec, svec = self.cell.add_replay_relative_shotnoise(soma, segx, stimulus)
-        assert svec.to_python() == approx([0., 0., 0., 0., 0.0204470197, 0.0301526984,
-                                          0.0341840080, 0.0352485557, 0.0347913472, 0.])
+        assert svec.to_python() == approx([0., 0., 0., 0.0261496222807232, 0.07428180924441198,
+                                           0.09639263342799839, 0.10479651831172629, 0.10607149236338352,
+                                           0.10381817238692868, 0.0])
         assert tvec.to_python() == approx([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
                                           2.0, 2.0])
 
         with raises(ValidationError):
             invalid_stim = RelativeShotNoise(
                 target="single-cell", delay=0, duration=2,
-                rise_time=4, decay_time=4, mean_percent=70, sd_percent=40, amp_cv=0.63,
+                rise_time=4, decay_time=4, mean_percent=70, sd_percent=40,
                 seed=12,
             )
             self.cell.add_replay_relative_shotnoise(soma, segx, invalid_stim)
+
+        with raises(ValidationError):
+            invalid_rel_skew = RelativeShotNoise(
+                target="single-cell", delay=0, duration=2,
+                rise_time=0.4, decay_time=4, mean_percent=70, sd_percent=40,
+                seed=12, relative_skew=1.3
+            )
 
         with raises(ZeroDivisionError):
             self.cell.threshold = 0.0

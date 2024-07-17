@@ -360,17 +360,15 @@ class InjectableMixin:
             stimulus: RelativeShotNoise,
             shotnoise_stim_count=0):
         """Add a replay relative shot noise stimulus."""
-        cv_square = stimulus.amp_cv**2
 
         stim_mode = stimulus.mode
         rel_prop = self.relativity_proportion(stim_mode)
 
         mean = stimulus.mean_percent / 100 * rel_prop
         sd = stimulus.sd_percent / 100 * rel_prop
-        var = sd * sd
 
         rate, amp_mean, amp_var = get_relative_shotnoise_params(
-            mean, var, stimulus.decay_time, stimulus.rise_time, cv_square)
+            mean, sd, stimulus.decay_time, stimulus.rise_time, stimulus.relative_skew)
 
         rng = self._get_shotnoise_step_rand(shotnoise_stim_count, stimulus.seed)
         tvec, svec = gen_shotnoise_signal(stimulus.decay_time, stimulus.rise_time, rate, amp_mean,
