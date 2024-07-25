@@ -1,0 +1,11 @@
+*.nrndat
+bin
+lib
+share
+.pytest_cache
+.tox-info.json
+.tox
+.neurodamus
+__pycache__
+x86_64
+nrnivmodl.log

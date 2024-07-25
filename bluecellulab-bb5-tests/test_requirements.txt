@@ -1,0 +1,8 @@
+bluepy-configfile>=0.1.18
+bluepy[bbp]>=2.5.0
+pytest
+pytest-timeout
+pytest-xdist
+pytest-forked
+ruff>=0.0.40
+mypy>=1.2.0
