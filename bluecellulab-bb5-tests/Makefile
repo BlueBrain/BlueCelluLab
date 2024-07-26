@@ -1,6 +1,5 @@
 # Variables
-PIP_INDEX_URL := https://bbpteam.epfl.ch/repository/devpi/bbprelman/dev/+simple
-PIP_EXTRA_INDEX_URL := https://pypi.python.org/simple
+PIP_INDEX_URL := https://pypi.python.org/simple
 NEURON_MODULE_OPTIONS := '-nogui'
 TESTS_DIR := tests
 MECHANISMS_DIR := ./../tests/mechanisms/
@@ -11,7 +10,7 @@ default: install_deps compile_mod run_lint run_tests
 
 # Rule for installing dependencies (similar to 'deps' in tox)
 install_deps:
-	python -m pip install --index-url $(PIP_INDEX_URL) --extra-index-url $(PIP_EXTRA_INDEX_URL) -r test_requirements.txt
+	python -m pip install --index-url $(PIP_INDEX_URL) -r test_requirements.txt
 
 # Rule for compiling mod (similar to the first 'commands' in tox)
 compile_mod:
