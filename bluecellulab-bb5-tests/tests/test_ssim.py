@@ -128,7 +128,7 @@ class TestSSimBaseClass_twocell_empty:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         assert rms_error < 0.2
 
 
@@ -179,7 +179,7 @@ class TestSSimBaseClass_twocell_replay:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         assert rms_error < 0.2
 
     def test_disable_replay(self):
@@ -193,9 +193,8 @@ class TestSSimBaseClass_twocell_replay:
             ]
         )
 
-        rms_error = np.sqrt(
-            np.mean((voltage_bglibpy_withoutreplay - voltage_bglib) ** 2)
-        )
+        rms_error = rms(voltage_bglibpy_withoutreplay, voltage_bglib)
+
         assert rms_error > 0.2
 
 
@@ -235,7 +234,7 @@ class TestSSimBaseClass_twocell_all_realconn:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         assert rms_error < 1.0
 
 
@@ -277,7 +276,7 @@ class TestSSimBaseClass_twocell_all:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
 
         assert rms_error < 1.0
 
@@ -290,7 +289,10 @@ class TestSSimBaseClass_twocell_all:
 
     def test_pre_gid_synapse_ids(self):
         """SSim: Test pre_gid_synapse_ids() of the cells for a two cell circuit"""
-        assert self.ssim_bglibpy.cells[self.gid].pre_gids() == [2]
+        pre_gids = self.ssim_bglibpy.cells[self.gid].pre_gids()
+
+        first_gid_synapse_ids = self.ssim_bglibpy.cells[self.gid].pre_gid_synapse_ids(pre_gids[0])
+        assert first_gid_synapse_ids == [('', 0), ('', 1), ('', 2), ('', 3), ('', 4)]
 
 
 @pytest.mark.v5
@@ -411,23 +413,9 @@ class TestSSimBaseClass_twocell_all_mvr:
     def test_mvr_trace_diff(self):
         """SSim: make sure MVR generates diff in neurodamus"""
 
-        rms_error = np.sqrt(
-            np.mean((self.voltage_bglib_all - self.voltage_bglib_mvr) ** 2)
-        )
+        rms_error = rms(self.voltage_bglib_all, self.voltage_bglib_mvr)
 
         assert rms_error > 10
-
-        """
-        import matplotlib
-        matplotlib.use('Agg')
-
-        import matplotlib.pyplot as plt
-        plt.plot(self.voltage_bglib_all, label='No MVR')
-        plt.plot(self.voltage_bglib_mvr, label='MVR')
-
-        plt.legend()
-        plt.savefig('mvr.png')
-        """
 
     def test_compare_traces(self):
         """SSim: Compare the output traces of BGLib against those of BGLibPy
@@ -439,9 +427,7 @@ class TestSSimBaseClass_twocell_all_mvr:
             0 : len(self.voltage_bglib_mvr)
         ]
 
-        rms_error = np.sqrt(
-            np.mean((voltage_bglibpy_mvr - self.voltage_bglib_mvr) ** 2)
-        )
+        rms_error = rms(voltage_bglibpy_mvr, self.voltage_bglib_mvr)
 
         assert rms_error < 1.0
 
@@ -499,7 +485,7 @@ class TestSSimBaseClass_twocell_minis_replay:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         assert rms_error < 1.0
 
     def test_disable_minis(self):
@@ -511,9 +497,8 @@ class TestSSimBaseClass_twocell_minis_replay:
             self.gid
         )[0 : len(voltage_bglib)]
 
-        rms_error = np.sqrt(
-            np.mean((voltage_bglibpy_withoutminis - voltage_bglib) ** 2)
-        )
+        rms_error = rms(voltage_bglibpy_withoutminis, voltage_bglib)
+
         assert rms_error > 1.0
 
 
@@ -564,7 +549,7 @@ class TestSSimBaseClass_twocell_noisestim:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         assert rms_error < 1.0
 
     def test_disable_stimuli(self):
@@ -576,7 +561,7 @@ class TestSSimBaseClass_twocell_noisestim:
             self.gid
         )[0 : len(voltage_bglib)]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy_withoutstim, voltage_bglib)
         assert rms_error > 1.0
 
 
@@ -626,7 +611,7 @@ class TestSSimBaseClass_twocell_pulsestim:
             0 : len(voltage_bglib)
         ]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
 
         assert rms_error < 2.5
 
@@ -639,7 +624,7 @@ class TestSSimBaseClass_twocell_pulsestim:
             self.gid
         )[0 : len(voltage_bglib)]
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy_withoutstim - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy_withoutstim, voltage_bglib)
         assert rms_error > 20.0
 
 

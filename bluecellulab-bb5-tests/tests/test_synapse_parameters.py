@@ -38,13 +38,13 @@ def assert_series_almost_equal(series1, series2, rtol=1e-05, atol=1e-08):
     assert len(series1) == len(series2), "The series have different lengths."
 
     # Iterate over each pair of elements
-    for i in range(len(series1)):
+    for i, (elem1, elem2) in enumerate(zip(series1, series2)):
         # Check for string first
-        if isinstance(series1[i], str) or isinstance(series2[i], str):
-            assert series1[i] == series2[i], f"Elements at index {i} are not equal."
+        if isinstance(elem1, str) or isinstance(elem2, str):
+            assert elem1 == elem2, f"Elements at index {i} are not equal."
         else:
             # For non-string values, use np.isclose for comparison
-            assert np.isclose(series1[i], series2[i], rtol=rtol, atol=atol)
+            assert np.isclose(elem1, elem2, rtol=rtol, atol=atol), f"Elements at index {i} are not close."
 
 
 @pytest.mark.v5

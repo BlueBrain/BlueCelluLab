@@ -27,6 +27,7 @@ from bluecellulab.circuit import SynapseProperty
 from bluecellulab.circuit.node_id import create_cell_id
 from bluecellulab.circuit.circuit_access import get_synapse_connection_parameters
 from bluecellulab.circuit.config.sections import Conditions
+from .test_ssim import rms
 
 script_dir = os.path.dirname(__file__)
 
@@ -123,7 +124,7 @@ class TestSSimBaseClass_full_run:
             gid, self.t_start, self.t_stop, self.record_dt
         )
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
 
         assert rms_error < 2.0
 
@@ -147,7 +148,6 @@ class TestSSimBaseClass_full_realconn:
         """SSim: Check if a multi - cell full replay of a simulation
         gives the same output trace as on BGQ"""
         gid = 75936
-        # gids = 116390, 116392
         gids = range(gid, gid + 5)
         self.ssim.instantiate_gids(
             gids,
@@ -167,7 +167,7 @@ class TestSSimBaseClass_full_realconn:
             gids[0], self.t_start, self.t_stop, self.record_dt
         )
 
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
 
         assert rms_error < 2.0
 
@@ -231,7 +231,7 @@ class TestSSimBaseClassSingleVesicleMinis:
         )
 
         assert len(voltage_bglibpy) == len(voltage_bglib)
-        rms_error = np.sqrt(np.mean((voltage_bglibpy - voltage_bglib) ** 2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
 
         assert rms_error < 4.38
 
@@ -245,8 +245,8 @@ class TestSSimBaseClassSingleVesicleMinis:
         ais_voltage_mainsim = ais_report.get_gid(self.gid).to_numpy()
 
         assert len(ais_voltage_bglibpy) == len(ais_voltage_mainsim)
-        voltage_diff = ais_voltage_bglibpy - ais_voltage_mainsim
-        rms_error = np.sqrt(np.mean(voltage_diff**2))
+
+        rms_error = rms(ais_voltage_bglibpy, ais_voltage_mainsim)
 
         assert rms_error < 14.91
 
@@ -268,8 +268,7 @@ def test_ssim_glusynapse():
     cell = gids[1]  # postcell
     voltage_bglibpy = ssim.get_voltage_trace(cell)
     voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[: len(voltage_bglibpy)]
-    voltage_diff = voltage_bglibpy - voltage_bglib
-    rms_error = np.sqrt(np.mean(voltage_diff**2))
+    rms_error = rms(voltage_bglibpy, voltage_bglib)
     assert rms_error < 1e-3
 
 
@@ -447,8 +446,7 @@ def test_shotnoise():
     for cell in gids:
         voltage_bglibpy = ssim.get_voltage_trace(cell)
         voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[: len(voltage_bglibpy)]
-        voltage_diff = voltage_bglibpy - voltage_bglib
-        rms_error = np.sqrt(np.mean(voltage_diff**2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         rms_errors.append(rms_error < 0.025)
 
     assert all(rms_errors)
@@ -487,8 +485,7 @@ def test_relative_shotnoise_conductance():
     for cell in gids:
         voltage_bglibpy = ssim.get_voltage_trace(cell)
         voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[: len(voltage_bglibpy)]
-        voltage_diff = voltage_bglibpy - voltage_bglib
-        rms_error = np.sqrt(np.mean(voltage_diff**2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         rms_errors.append(rms_error < 0.025)
 
     assert all(rms_errors)
@@ -505,8 +502,7 @@ def test_ornstein_uhlenbeck():
 
     voltage_bglibpy = ssim.get_voltage_trace(gid)
     voltage_bglib = ssim.get_mainsim_voltage_trace(gid)[: len(voltage_bglibpy)]
-    voltage_diff = voltage_bglibpy - voltage_bglib
-    rms_error = np.sqrt(np.mean(voltage_diff**2))
+    rms_error = rms(voltage_bglibpy, voltage_bglib)
     assert rms_error < 0.025
 
 
@@ -523,8 +519,7 @@ def test_relative_ornstein_uhlenbeck():
     for cell in gids:
         voltage_bglibpy = ssim.get_voltage_trace(cell)
         voltage_bglib = ssim.get_mainsim_voltage_trace(cell)[: len(voltage_bglibpy)]
-        voltage_diff = voltage_bglibpy - voltage_bglib
-        rms_error = np.sqrt(np.mean(voltage_diff**2))
+        rms_error = rms(voltage_bglibpy, voltage_bglib)
         rms_errors.append(rms_error < 0.025)
 
     assert all(rms_errors)
