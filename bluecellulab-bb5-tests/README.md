@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository tests bluecellulab on the large circuits located on bb5.
+This folder contains tests for bluecellulab on the large circuits located on bb5. Please note that these tests are not directly usable as they are due to dependencies.
 
 ## How to run locally
 
@@ -10,8 +10,7 @@ Simply clone the repository, install tox and type `tox` in the root directory of
 
 ## Continous Integration
 
-The scheduled continuous integration task makes sure to run the tests on the latest version of bluecellulab periodically.
-
+This module will continue to be part of the continuous integration (CI) pipeline on GitLab until the end of the year. The scheduled CI tasks will run the tests for this module periodically until 2024.12.31. After this date, the tests will no longer be included in the CI pipeline.
 
 ## Mechanisms
 
