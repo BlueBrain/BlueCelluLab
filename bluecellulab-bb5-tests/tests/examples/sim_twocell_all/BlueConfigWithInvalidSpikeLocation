@@ -1,0 +1,20 @@
+Run Default
+{
+    MorphologyPath ../circuit_twocell_example1/morphologies
+    METypePath ../circuit_twocell_example1/ccells
+
+    CircuitPath ../circuit_twocell_example1
+    nrnPath ../circuit_twocell_example1/ncsFunctionalAllRecipePathways
+
+    CurrentDir ./
+    OutputRoot .//output
+    TargetFile .//user.target
+
+    CircuitTarget mc2_Layer5
+    Duration 100
+    Dt 0.025
+
+    BaseSeed 12345
+    ExtracellularCalcium 1.25
+    SpikeLocation NeitherSomaNorAIS
+}
