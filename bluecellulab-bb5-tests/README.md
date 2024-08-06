@@ -2,7 +2,7 @@
 
 ## Description
 
-This folder contains tests for bluecellulab on the large circuits located on bb5. Please note that these tests are not directly usable as they are due to dependencies.
+This folder contains tests for bluecellulab on the large circuits located on bb5. Please note that these tests are not directly usable as they are, due to dependencies.
 
 ## How to run locally
 
