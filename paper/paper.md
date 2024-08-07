@@ -65,7 +65,7 @@ BlueCelluLab complements the Blue Brain Project's large-scale simulator neurodam
 
 ![Architecture of BlueCelluLab](figures/bluecellulab-system-overview.png)
 
-BlueCelluLab is built on top of the NEURON Python package, providing a high-level API tailored for the common use cases of single neuron or neural network simulations.
+The system overview, as illustrated in Figure 1, shows that BlueCelluLab is built on top of the NEURON Python package, providing a high-level API tailored for the common use cases of single neuron or neural network simulations. The figure depicts the key components and interactions within BlueCelluLab, highlighting the modular design that facilitates integration and extension.
 
 BlueCelluLab employs an IsolatedProcess mechanism to run simulations in separate processes when required. For example, prior to simulating neurons, users may need to conduct preliminary simulations to calculate specific properties of the neurons that will be utilised during the main simulation.
 
