@@ -114,17 +114,35 @@ def gen_shotnoise_signal(tau_D, tau_R, rate, amp_mean, amp_var,
     return tvec, P
 
 
-def get_relative_shotnoise_params(mean, var, tau_D, tau_R, cv_square):
+def get_relative_shotnoise_params(mean, sd, tau_D, tau_R, relative_skew):
     """Returns Rate, amp_mean and amp_var parameters."""
     # bi-exponential time to peak [ms]
     t_peak = math.log(tau_D / tau_R) / (1 / tau_R - 1 / tau_D)
     # bi-exponential peak height [1]
-    x_peak = math.exp(-t_peak / tau_D) - math.exp(-t_peak / tau_R)
+    F_peak = math.exp(-t_peak / tau_D) - math.exp(-t_peak / tau_R)
 
-    rate_ms = (1 + cv_square) / 2 * (mean ** 2 / var) / (tau_D + tau_R)
-    rate = rate_ms * 1000  # rate in 1 / s [Hz]
-    amp_mean = mean * x_peak / rate_ms / (tau_D - tau_R)
-    amp_var = cv_square * amp_mean ** 2
+    # utility constants
+    Xi = (tau_D - tau_R) / F_peak
+    A = 1 / (tau_D + tau_R)
+    B = 1 / ((tau_D + 2 * tau_R) * (2 * tau_D + tau_R))
+
+    # skewness
+    skew_bnd_min = (8 / 3) * (B / A ** 2) * (sd / mean)
+    skew = (1 + relative_skew) * skew_bnd_min
+    if skew < skew_bnd_min or skew > 2 * skew_bnd_min:
+        raise ValueError("skewness out of bounds")
+
+    # cumulants
+    lambda2_1 = sd ** 2 / mean                     # lambda2 over lambda1
+    lambda3_2 = sd * skew                          # lambda3 over lambda2
+    theta1pk = 2 / (A * Xi) * lambda2_1            # = (1 + k) * theta
+    theta2pk = (3 * A) / (4 * B * Xi) * lambda3_2  # = (2 + k) * theta
+
+    # derived parameters
+    amp_mean = 2 * theta1pk - theta2pk               # mean amplitude [nA or uS]
+    amp_var = amp_mean * (theta2pk - theta1pk)  # variance of amplitude [nA^2 or uS^2]
+    rate_ms = mean / (amp_mean * Xi)                 # event rate in 1 / ms
+    rate = rate_ms * 1000                            # event rate in 1 / s [Hz]
 
     return rate, amp_mean, amp_var
 

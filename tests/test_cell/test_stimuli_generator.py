@@ -1,3 +1,16 @@
+# Copyright 2012-2024 Blue Brain Project / EPFL
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Unit tests for the stimuli_generator module."""
 
 from pytest import approx
@@ -28,11 +41,11 @@ def test_gen_shotnoise_signal():
 def test_get_relative_shotnoise_params():
     """Unit test for _get_relative_shotnoise_params."""
     rate, amp_mean, amp_var = get_relative_shotnoise_params(
-        mean=40e-3, var=16e-4, tau_D=4.0, tau_R=0.4, cv_square=0.63**2
+        mean=40e-3, sd=0.04, tau_D=4.0, tau_R=0.4, relative_skew=0.5
     )
-    assert rate == approx(158.73863636363635)
-    assert amp_mean == approx(0.048776006926722876)
-    assert amp_var == approx(0.0009442643342459686)
+    assert rate == approx(227.27272727272705)
+    assert amp_mean == approx(0.03406760203796963)
+    assert amp_var == approx(0.0011606015086174707)
 
 
 def test_gen_ornstein_uhlenbeck():

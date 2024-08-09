@@ -116,6 +116,11 @@ Testing is set up using `tox`:
     tox -e py3  # runs the tests
     tox -e lint  # runs the format checks
 
+Contributing
+============
+
+We welcome contributions to BlueCelluLab! Please see the `CONTRIBUTING.rst <https://github.com/BlueBrain/BlueCelluLab/blob/main/CONTRIBUTING.rst>`_ for guidelines on how to contribute.
+
 Funding & Acknowledgements
 ==========================
 
