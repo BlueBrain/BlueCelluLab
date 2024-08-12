@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "BlueCelluLab"
+doi: 10.5281/zenodo.8113483
+url: https://zenodo.org/doi/10.5281/zenodo.8113483
+abstract: "The Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells. Use cases for which bluecellulab is well suited include: scripting and statistics across single or pairs of cells, light-weight detailed reporting on a few state variables post-simulation, development of synaptic plasticity rules, dynamics validations of e.g. synaptic properties, automation of in-silico whole-cell patching experiments, debugging both scientifically and computationally."
+authors:
+  - family-names: "Tuncel"
+    given-names: "Anil"
+  - family-names: "Van Geit"
+    given-names: "Werner"
+  - family-names: "Gevaert"
+    given-names: "Mike"
+  - family-names: "Torben-Nielsen"
+    given-names: "Benjamin"
+  - family-names: "Mandge"
+    given-names: "Darshan"
+  - family-names: "Kilic"
+    given-names: "Ilkan"
+  - family-names: "Jaquier"
+    given-names: "Aurélien"
+  - family-names: "Muller"
+    given-names: "Eilif"
+  - family-names: "Kanari"
+    given-names: "Lida"
+  - family-names: "Markram"
+    given-names: "Henry"
+date-released: 2020-03-01
+publisher: "Zenodo"
