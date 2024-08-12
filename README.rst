@@ -43,7 +43,7 @@ When you use this BlueCelluLab software for your research, we ask you to cite th
 .. code-block::
 
     @software{bluecellulab_zenodo,
-      author       = {Van Geit, Werner and Tuncel, Anil and Gevaert, Mike and Torben-Nielsen, Benjamin and Muller, Eilif},
+      author       = {Tuncel, Anil and Van Geit, Werner and Gevaert, Mike and Torben-Nielsen, Benjamin and Mandge, Darshan and Kilic, Ilkan and Jaquier, Aurélien and Muller, Eilif and Kanari, Lida and Markram, Henry},
       title        = {BlueCelluLab},
       month        = jul,
       year         = 2023,
