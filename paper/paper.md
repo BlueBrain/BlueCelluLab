@@ -92,7 +92,7 @@ time, voltage = cell.get_time(), cell.get_soma_voltage()
 
 A neuron model is created using the create_ball_stick function, representing a basic type of neuron model. A simulation environment is initialised with Simulation(), and the created cell is added to this environment using sim.add_cell(cell). Next, a stimulus is attached to the neuron, activating it between 5.0 ms and 20.0 ms with a stimulation level of 0.5 nA (nanoamperes). The simulation is run for a total of 25 ms. Finally, time and soma voltage data are retrieved for further analysis and visualisation.
 
-BlueCelluLab interfaces with various type systems, including those from Python, NEURON, network data formats, and dependencies such as numeric computing or data frame packages. To ensure type safety, it employs PEP-484 type annotations [@van2014pep] and a static type checker [@lehtosalo2015adapting] for early error detection during static analysis. For dynamic input lacking type information at static time, BlueCelluLab uses the Pydantic Data Validation package [@pydantic_v2.6.4] to identify errors at runtime, thereby enhancing system robustness.
+BlueCelluLab interfaces with various type systems, including those from Python, NEURON, network data formats, and dependencies such as numeric computing or data frame packages. To ensure type safety, it employs PEP-484 type annotations [@van2014pep] and a static type checker [@lehtosalo2017mypy] for early error detection during static analysis. For dynamic input lacking type information at static time, BlueCelluLab uses the Pydantic Data Validation package [@pydantic_v2.6.4] to identify errors at runtime, thereby enhancing system robustness.
 
 
 ![Applications](figures/use-case-plot.png)
