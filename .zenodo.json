@@ -6,13 +6,13 @@
   "creators": [
     {
       "affiliation": "Blue Brain Project, EPFL",
-      "name": "Van Geit, Werner",
-      "orcid": "0000-0002-2915-720X"
+      "name": "Tuncel, Anil",
+      "orcid": "0000-0003-0317-2556"
     },
     {
       "affiliation": "Blue Brain Project, EPFL",
-      "name": "Tuncel, Anil",
-      "orcid": "0000-0003-0317-2556"
+      "name": "Van Geit, Werner",
+      "orcid": "0000-0002-2915-720X"
     },
     {
       "affiliation": "Blue Brain Project, EPFL",
@@ -25,8 +25,33 @@
     },
     {
       "affiliation": "Blue Brain Project, EPFL",
+      "name": "Mandge, Darshan",
+      "orcid": "0000-0002-7104-4604"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Kilic, Ilkan",
+      "orcid": "0009-0004-4234-8766"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Jaquier, Aurélien",
+      "orcid": "0000-0001-6202-6175"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
       "name": "Muller, Eilif",
       "orcid": "0000-0003-4309-8266"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Kanari, Lida",
+      "orcid": "0000-0002-9539-5070"
+    },
+    {
+      "affiliation": "Blue Brain Project, EPFL",
+      "name": "Markram, Henry",
+      "orcid": "0000-0001-6164-2590"
     }
   ]
 }
