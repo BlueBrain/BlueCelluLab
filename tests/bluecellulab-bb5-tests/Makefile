@@ -2,7 +2,7 @@
 PIP_INDEX_URL := https://pypi.python.org/simple
 NEURON_MODULE_OPTIONS := '-nogui'
 TESTS_DIR := tests
-MECHANISMS_DIR := ./../tests/mechanisms/
+MECHANISMS_DIR := ./../mechanisms/
 PYTEST_OPTS := --numprocesses=auto --timeout=600 -vsx --forked
 
 # Default rule (similar to 'testenv' in tox)

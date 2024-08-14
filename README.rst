@@ -129,7 +129,7 @@ The development and maintenance of this code is supported by funding to the Blue
 Copyright
 =========
 
-Copyright (c) 2023 Blue Brain Project/EPFL
+Copyright (c) 2023-2024 Blue Brain Project/EPFL
 
 This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE-2.0.html>`_
 
