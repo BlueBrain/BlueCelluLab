@@ -23,3 +23,5 @@ BlueCelluLab's usage examples
      - Exploring the stimuli available at BlueCelluLab
    * - `stimuli-sequence.ipynb <6-stimuli-sequence/stimuli-sequence.ipynb>`_
      - Simulating a sequence of stimuli on a cell in parallel
+   * - `Multiple-protocols.ipynb <7-Extra-Simutlation/Multiple-protocols.ipynb>`_
+     - Simulating multiple protocols on a cell using previous examples
