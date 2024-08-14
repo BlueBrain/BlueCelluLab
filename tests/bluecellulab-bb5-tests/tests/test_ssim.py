@@ -125,7 +125,7 @@ class TestSSimBaseClass_twocell_empty:
         assert len(voltage_bglib) == len(time_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -176,7 +176,7 @@ class TestSSimBaseClass_twocell_replay:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -189,7 +189,7 @@ class TestSSimBaseClass_twocell_replay:
 
         voltage_bglibpy_withoutreplay = (
             self.ssim_bglibpy_withoutreplay.get_voltage_trace(self.gid)[
-                0 : len(voltage_bglib)
+                0: len(voltage_bglib)
             ]
         )
 
@@ -231,7 +231,7 @@ class TestSSimBaseClass_twocell_all_realconn:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -273,7 +273,7 @@ class TestSSimBaseClass_twocell_all:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -424,7 +424,7 @@ class TestSSimBaseClass_twocell_all_mvr:
         assert len(self.voltage_bglib_mvr) == 1000
 
         voltage_bglibpy_mvr = self.ssim_bglibpy_mvr.get_voltage_trace(self.gid)[
-            0 : len(self.voltage_bglib_mvr)
+            0: len(self.voltage_bglib_mvr)
         ]
 
         rms_error = rms(voltage_bglibpy_mvr, self.voltage_bglib_mvr)
@@ -482,7 +482,7 @@ class TestSSimBaseClass_twocell_minis_replay:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -495,7 +495,7 @@ class TestSSimBaseClass_twocell_minis_replay:
 
         voltage_bglibpy_withoutminis = self.ssim_bglibpy_withoutminis.get_voltage_trace(
             self.gid
-        )[0 : len(voltage_bglib)]
+        )[0: len(voltage_bglib)]
 
         rms_error = rms(voltage_bglibpy_withoutminis, voltage_bglib)
 
@@ -546,7 +546,7 @@ class TestSSimBaseClass_twocell_noisestim:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -559,7 +559,7 @@ class TestSSimBaseClass_twocell_noisestim:
 
         voltage_bglibpy_withoutstim = self.ssim_bglibpy_withoutstim.get_voltage_trace(
             self.gid
-        )[0 : len(voltage_bglib)]
+        )[0: len(voltage_bglib)]
 
         rms_error = rms(voltage_bglibpy_withoutstim, voltage_bglib)
         assert rms_error > 1.0
@@ -608,7 +608,7 @@ class TestSSimBaseClass_twocell_pulsestim:
         assert len(voltage_bglib) == 1000
 
         voltage_bglibpy = self.ssim_bglibpy.get_voltage_trace(self.gid)[
-            0 : len(voltage_bglib)
+            0: len(voltage_bglib)
         ]
 
         rms_error = rms(voltage_bglibpy, voltage_bglib)
@@ -622,7 +622,7 @@ class TestSSimBaseClass_twocell_pulsestim:
 
         voltage_bglibpy_withoutstim = self.ssim_bglibpy_withoutstim.get_voltage_trace(
             self.gid
-        )[0 : len(voltage_bglib)]
+        )[0: len(voltage_bglib)]
 
         rms_error = rms(voltage_bglibpy_withoutstim, voltage_bglib)
         assert rms_error > 20.0
