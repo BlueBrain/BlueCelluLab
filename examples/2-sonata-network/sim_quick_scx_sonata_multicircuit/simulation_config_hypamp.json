@@ -3,7 +3,8 @@
     "$OUTPUT_DIR": "."
   },
   "run": {
-    "tstop": 50.0,
+    "tstart": 1000.0,
+    "tstop":1275.0,
     "dt": 0.025,
     "random_seed": 1
   },
@@ -22,8 +23,8 @@
     "hypamp_mosaic": {
       "module": "hyperpolarizing",
       "input_type": "current_clamp",
-      "delay": 0.0,
-      "duration": 4000.0,
+      "delay": 1000.0,
+      "duration": 250.0,
       "node_set": "Mosaic_A"
     }
   },
@@ -33,10 +34,10 @@
       "variable_name": "v",
       "type": "compartment",
       "dt": 1.0,
-      "start_time": 0.0,
-      "end_time": 20.0,
+      "start_time": 1000.0,
+      "end_time": 1275.0,
       "sections": "soma",
       "compartments": "center"
-    } 
+    }
   }
 }
