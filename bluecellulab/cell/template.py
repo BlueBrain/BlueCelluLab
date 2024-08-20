@@ -21,6 +21,7 @@ from pathlib import Path
 import re
 import string
 from typing import NamedTuple, Optional
+import uuid
 
 import neuron
 
@@ -126,8 +127,8 @@ class NeuronTemplate:
         # templates load outside of bluecellulab
         template_name = "%s_bluecellulab" % template_name
         template_name = get_neuron_compliant_template_name(template_name)
-        obj_address = hex(id(self))
-        template_name = f"{template_name}_{obj_address}"
+        unique_id = uuid.uuid4().hex
+        template_name = f"{template_name}_{unique_id}"
 
         template_content = re.sub(
             r"begintemplate\s*(\S*)",
