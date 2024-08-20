@@ -18,7 +18,8 @@ BlueCelluLab
 +----------------+------------+
 | Citation       | |joss|     |
 +----------------+------------+
-
+| Zenodo         | |zenodo|   |
++----------------+------------+
 
 The Blue Brain Cellular Laboratory is designed for simulations and experiments on individual cells or groups of cells.
 Suitable use cases for BlueCelluLab include:
@@ -39,6 +40,8 @@ Citation
 ========
 
 When using the BlueCelluLab software for your research, please cite the following reference (including for poster presentations). If you need to cite a specific version, use the DOI provided in Zenodo, which you can access via the "Cite this repository" button at the top of the repository page.
+
+`BlueCelluLab: Biologically Detailed Neural Network Experimentation API <https://doi.org/10.21105/joss.07026>`_.
 
 .. code-block::
 
