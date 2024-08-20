@@ -17,7 +17,7 @@ import math
 import random
 import warnings
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import uuid
 
 import neuron

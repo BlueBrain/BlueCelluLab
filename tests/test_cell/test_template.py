@@ -44,6 +44,7 @@ v6_morph_path = (
     examples_dir / "circuit_sonata_quick_scx" / "components" / "morphologies" / "asc" / "rr110330_C3_idA.asc"
 )
 
+
 @patch('uuid.uuid4')
 def test_get_cell_with_bluepyopt_template(mock_uuid):
     """Unit test for the get_cell method with bluepyopt_template."""
