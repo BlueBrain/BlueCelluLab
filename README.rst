@@ -16,7 +16,7 @@ BlueCelluLab
 +----------------+------------+
 | Gitter         | |gitter|   |
 +----------------+------------+
-| Paper           | |joss|     |
+| Paper          | |joss|     |
 +----------------+------------+
 | Zenodo         | |zenodo|   |
 +----------------+------------+
@@ -39,9 +39,7 @@ Suitable use cases for BlueCelluLab include:
 Citation
 ========
 
-When using the BlueCelluLab software for your research, please cite the following reference (including for poster presentations):
-
-`BlueCelluLab: Biologically Detailed Neural Network Experimentation API <https://doi.org/10.21105/joss.07026>`_
+When using the BlueCelluLab software for your research, please cite the following paper (including for poster presentations): `BlueCelluLab: Biologically Detailed Neural Network Experimentation API <https://doi.org/10.21105/joss.07026>`_
 
 .. code-block::
 
