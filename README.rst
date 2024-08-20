@@ -16,7 +16,7 @@ BlueCelluLab
 +----------------+------------+
 | Gitter         | |gitter|   |
 +----------------+------------+
-| Citation       | |zenodo|   |
+| Citation       | |joss|     |
 +----------------+------------+
 
 
@@ -38,18 +38,21 @@ Suitable use cases for BlueCelluLab include:
 Citation
 ========
 
-When you use this BlueCelluLab software for your research, we ask you to cite the following reference(this includes poster presentations):
+When using the BlueCelluLab software for your research, please cite the following reference (including for poster presentations). If you need to cite a specific version, use the DOI provided in Zenodo, which you can access via the "Cite this repository" button at the top of the repository page.
 
 .. code-block::
 
-    @software{bluecellulab_zenodo,
-      author       = {Tuncel, Anil and Van Geit, Werner and Gevaert, Mike and Torben-Nielsen, Benjamin and Mandge, Darshan and Kilic, Ilkan and Jaquier, Aurélien and Muller, Eilif and Kanari, Lida and Markram, Henry},
-      title        = {BlueCelluLab},
-      month        = jul,
-      year         = 2023,
-      publisher    = {Zenodo},
-      doi          = {10.5281/zenodo.8113483},
-      url          = {https://doi.org/10.5281/zenodo.8113483}
+    @article{Tuncel2024,
+        doi = {10.21105/joss.07026},
+        url = {https://doi.org/10.21105/joss.07026},
+        year = {2024},
+        publisher = {The Open Journal},
+        volume = {9},
+        number = {100},
+        pages = {7026},
+        author = {Anıl Tuncel and Werner Van Geit and Mike Gevaert and Benjamin Torben-Nielsen and Darshan Mandge and İlkan Kılıç and Aurélien Jaquier and Eilif Muller and Lida Kanari and Henry Markram},
+        title = {BlueCelluLab: Biologically Detailed Neural Network Experimentation API},
+        journal = {Journal of Open Source Software}
     }
 
 Support
@@ -160,6 +163,10 @@ The licenses of the morphology files used in this repository are available on: h
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
                  :target: https://gitter.im/BlueBrain/BlueCelluLab
                  :alt: Join the chat at https://gitter.im/BlueBrain/BlueCelluLab
+
+.. |joss| image:: https://joss.theoj.org/papers/effd553ca48734a2966d9d7ace3b05ff/status.svg
+                :target: https://joss.theoj.org/papers/effd553ca48734a2966d9d7ace3b05ff
+                :alt: JOSS
 
 .. |zenodo| image:: https://zenodo.org/badge/640805129.svg
                  :target: https://zenodo.org/badge/latestdoi/640805129
