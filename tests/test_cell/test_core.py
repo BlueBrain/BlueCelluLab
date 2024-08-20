@@ -17,6 +17,8 @@ import math
 import random
 import warnings
 from pathlib import Path
+from unittest.mock import patch
+import uuid
 
 import neuron
 import numpy as np
@@ -47,13 +49,17 @@ def test_longname():
 
 
 @pytest.mark.v5
-def test_load_template():
+@patch('uuid.uuid4')
+def test_load_template(mock_uuid):
     """Test the neuron template loading."""
+    id = '12345678123456781234567812345678'
+    mock_uuid.return_value = uuid.UUID(id)
+
     hoc_path = parent_dir / "examples/cell_example1/test_cell.hoc"
     morph_path = parent_dir / "examples/cell_example1/test_cell.asc"
     template = NeuronTemplate(hoc_path, morph_path, "v5", None)
     template_name = template.template_name
-    assert template_name == f"test_cell_bluecellulab_{hex(id(template))}"
+    assert template_name == f"test_cell_bluecellulab_{id}"
 
 
 def test_shorten_and_hash_string():
