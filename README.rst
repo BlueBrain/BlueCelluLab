@@ -41,7 +41,7 @@ Citation
 
 When using the BlueCelluLab software for your research, please cite the following reference (including for poster presentations):
 
-`BlueCelluLab: Biologically Detailed Neural Network Experimentation API <https://doi.org/10.21105/joss.07026>`_.
+`BlueCelluLab: Biologically Detailed Neural Network Experimentation API <https://doi.org/10.21105/joss.07026>`_
 
 .. code-block::
 
