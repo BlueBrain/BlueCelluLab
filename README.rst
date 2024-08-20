@@ -16,7 +16,7 @@ BlueCelluLab
 +----------------+------------+
 | Gitter         | |gitter|   |
 +----------------+------------+
-| JOSS           | |joss|     |
+| Paper           | |joss|     |
 +----------------+------------+
 | Zenodo         | |zenodo|   |
 +----------------+------------+
@@ -58,7 +58,7 @@ When using the BlueCelluLab software for your research, please cite the followin
         journal = {Journal of Open Source Software}
     }
 
-If you need to cite a specific version, use the DOI provided in Zenodo, which you can access via the "Cite this repository" button at the top of the repository page.
+If you need to cite a specific version, please use the DOI provided by `Zenodo <https://zenodo.org/records/8113483>`_, which you can access via the "Cite this repository" button at the top of the repository page.
 
 Support
 =======
