@@ -138,7 +138,6 @@ This work is licensed under `Apache 2.0 <https://www.apache.org/licenses/LICENSE
 
 For MOD files for which the original source is available on ModelDB, any specific licenses on mentioned on ModelDB, or the generic License of ModelDB apply.
 
-The licenses of the morphology files used in this repository are available on: https://zenodo.org/record/5909613
 
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
