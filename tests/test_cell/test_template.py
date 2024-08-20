@@ -14,7 +14,8 @@
 """Unit tests for template.py module."""
 
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+import uuid
 
 import pytest
 
@@ -43,12 +44,16 @@ v6_morph_path = (
     examples_dir / "circuit_sonata_quick_scx" / "components" / "morphologies" / "asc" / "rr110330_C3_idA.asc"
 )
 
-
-def test_get_cell_with_bluepyopt_template():
+@patch('uuid.uuid4')
+def test_get_cell_with_bluepyopt_template(mock_uuid):
     """Unit test for the get_cell method with bluepyopt_template."""
+
+    id = '12345678123456781234567812345678'
+    mock_uuid.return_value = uuid.UUID(id)
     template = NeuronTemplate(hipp_hoc_path, hipp_morph_path, "bluepyopt", None)
     cell = template.get_cell(gid=None)
-    assert cell.hname() == f"bACnoljp_bluecellulab_{(hex(id(template)))}[0]"
+
+    assert cell.hname() == f"bACnoljp_bluecellulab_{id}[0]"
 
 
 def test_neuron_template_init():
