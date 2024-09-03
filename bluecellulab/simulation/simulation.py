@@ -28,13 +28,14 @@ logger = logging.getLogger(__name__)
 class Simulation:
     """Class that represents a neuron simulation."""
 
-    def __init__(self, parallel_context=None) -> None:
+    def __init__(self, parallel_context=None, custom_progress_function=None) -> None:
         self.cells: list[bluecellulab.Cell] = []
         self.fih_progress = None
         self.progress = None
         self.progress_closed = None
         self.progress_dt: Optional[float] = None
         self.pc = parallel_context
+        self.custom_progress_function = custom_progress_function
 
     def add_cell(self, new_cell: bluecellulab.Cell) -> None:
         """Add a cell to a simulation."""
@@ -50,26 +51,29 @@ class Simulation:
 
     def progress_callback(self):
         """Callback function for the progress bar."""
-        if self.progress > 0:
-            sys.stdout.write("\x1b[3F")
+        if self.custom_progress_function is None:
+            if self.progress > 0:
+                sys.stdout.write("\x1b[3F")
 
-        self.progress += 1
-        self.progress_closed = not self.progress_closed
-        if self.progress_closed:
-            sys.stdout.write(" %s%s%s \n" % (" " * (
-                self.progress - 1), " ", " " * (100 - self.progress)))
-            sys.stdout.write("[%s%s%s]\n" % ("#" * (
-                self.progress - 1), "-", "." * (100 - self.progress)))
-            sys.stdout.write(" %s%s%s \n" % (" " * (
-                self.progress - 1), " ", " " * (100 - self.progress)))
+            self.progress += 1
+            self.progress_closed = not self.progress_closed
+            if self.progress_closed:
+                sys.stdout.write(" %s%s%s \n" % (" " * (
+                    self.progress - 1), " ", " " * (100 - self.progress)))
+                sys.stdout.write("[%s%s%s]\n" % ("#" * (
+                    self.progress - 1), "-", "." * (100 - self.progress)))
+                sys.stdout.write(" %s%s%s \n" % (" " * (
+                    self.progress - 1), " ", " " * (100 - self.progress)))
+            else:
+                sys.stdout.write(" %s%s%s \n" % (" " * (
+                    self.progress - 1), "/", " " * (100 - self.progress)))
+                sys.stdout.write("[%s%s%s]\n" % ("#" * (
+                    self.progress - 1), ">", "." * (100 - self.progress)))
+                sys.stdout.write(" %s%s%s \n" % (" " * (
+                    self.progress - 1), "\\", " " * (100 - self.progress)))
+            sys.stdout.flush()
         else:
-            sys.stdout.write(" %s%s%s \n" % (" " * (
-                self.progress - 1), "/", " " * (100 - self.progress)))
-            sys.stdout.write("[%s%s%s]\n" % ("#" * (
-                self.progress - 1), ">", "." * (100 - self.progress)))
-            sys.stdout.write(" %s%s%s \n" % (" " * (
-                self.progress - 1), "\\", " " * (100 - self.progress)))
-        sys.stdout.flush()
+            self.custom_progress_function()
 
         neuron.h.cvode.event(
             neuron.h.t + self.progress_dt, self.progress_callback)
